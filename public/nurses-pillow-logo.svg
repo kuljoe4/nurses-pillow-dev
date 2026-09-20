@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <defs>
+    <!-- Background circle gradient -->
+    <linearGradient id="npBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EFF6FB"/>
+      <stop offset="100%" stop-color="#D5E8F8"/>
+    </linearGradient>
+
+    <!-- Pillow gradient -->
+    <linearGradient id="npPillow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#FDF8EC"/>
+      <stop offset="100%" stop-color="#F7E6B8"/>
+    </linearGradient>
+
+    <!-- Shadow -->
+    <filter id="npShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#001848" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- Cross gradient -->
+    <linearGradient id="npCross" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A6FA8"/>
+      <stop offset="100%" stop-color="#005684"/>
+    </linearGradient>
+
+    <linearGradient id="npGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D78E"/>
+      <stop offset="100%" stop-color="#D4A738"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer circular border ring -->
+  <circle cx="80" cy="80" r="76" fill="url(#npBg)" stroke="#005684" stroke-width="2.5"/>
+  <circle cx="80" cy="80" r="71" fill="none" stroke="#F1CF78" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Plush Sanctuary Pillow Mark -->
+  <g filter="url(#npShadow)">
+    <!-- Contoured Pillow Base (rounded diamond-pillow shape with soft corner points) -->
+    <path d="M 80 34 
+             C 106 34, 126 54, 134 76 
+             C 126 98, 106 122, 80 124 
+             C 54 122, 34 98, 26 76 
+             C 34 54, 54 34, 80 34 Z" 
+          fill="url(#npPillow)" 
+          stroke="#C89729" 
+          stroke-width="1.5"/>
+
+    <!-- Corner Tufts / Pinch Folds -->
+    <path d="M 26 76 Q 38 74 46 76" stroke="#D4A738" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <path d="M 134 76 Q 122 74 114 76" stroke="#D4A738" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <path d="M 80 34 Q 80 44 80 50" stroke="#D4A738" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <path d="M 80 124 Q 80 114 80 108" stroke="#D4A738" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+
+    <!-- Subtle Pillow Crease Lines -->
+    <path d="M 46 62 Q 80 68 114 62" stroke="#E5B94E" stroke-width="1" fill="none" opacity="0.4"/>
+    <path d="M 46 90 Q 80 84 114 90" stroke="#E5B94E" stroke-width="1" fill="none" opacity="0.4"/>
+
+    <!-- Medical Plus Cross in Center -->
+    <g transform="translate(80, 76)">
+      <!-- Cross shadow/glow -->
+      <rect x="-7" y="-21" width="14" height="42" rx="4" fill="url(#npCross)"/>
+      <rect x="-21" y="-7" width="42" height="14" rx="4" fill="url(#npCross)"/>
+      
+      <!-- Inner gold highlight heart or cross core -->
+      <circle cx="0" cy="0" r="4.5" fill="#F1CF78"/>
+    </g>
+  </g>
+
+  <!-- Restful Crescent Moon Accent (Top Right) -->
+  <path d="M 116 40 A 10 10 0 0 0 108 52 A 11 11 0 0 1 116 40 Z" fill="#F1CF78"/>
+
+  <!-- Gentle Sparkle (Bottom Left) -->
+  <path d="M 44 112 Q 47 112 47 109 Q 47 112 50 112 Q 47 112 47 115 Q 47 112 44 112 Z" fill="#F1CF78"/>
+</svg>
