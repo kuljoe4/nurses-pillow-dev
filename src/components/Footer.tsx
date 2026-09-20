@@ -209,15 +209,15 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <span className="hover:text-[#005684] transition-colors cursor-pointer">
-                  Privacy Policy &amp; HIPAA Standards
+                  Privacy Policy
                 </span>
               </li>
               <li>
                 <button
                   onClick={onOpenSupport}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] transition-colors text-left cursor-pointer"
                 >
-                  Help &amp; Contact Support
+                  Help &amp; Contact
                 </button>
               </li>
             </ul>
@@ -231,10 +231,10 @@ export const Footer: React.FC<FooterProps> = ({
           }`}
         >
           <div className="text-sm">
-            © 2024 Nurses Pillow Inc. All clinical housing verified.
+            © 2026 Nurses Pillow Inc. All clinical housing verified.
           </div>
           <div
-            className="text-[#745b0d] text-[20px]"
+            className="text-[#745b0d] dark:text-[#E4C36D] text-[20px]"
             style={{ fontFamily: "'Kaushan Script', cursive" }}
           >
             Rest Well. Heal Better.

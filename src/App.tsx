@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { NavigationTab, VerificationStepId, VerificationFormData } from './types';
-import { INITIAL_VERIFICATION_DATA } from './data/mockData';
+import {
+  NavigationTab,
+  VerificationStepId,
+  VerificationFormData,
+  HousingListing,
+  BookingRequest,
+  UserRole,
+} from './types';
+import { INITIAL_VERIFICATION_DATA, MOCK_LISTINGS, MOCK_DEMAND_REPORTS, MOCK_ADMIN_LICENSE_REVIEWS } from './data/mockData';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { ClinicalLicenseStep } from './components/ClinicalLicenseStep';
@@ -8,15 +15,24 @@ import { IdentityStep } from './components/IdentityStep';
 import { ContactStep } from './components/ContactStep';
 import { WorkContractStep } from './components/WorkContractStep';
 import { FindHousingView } from './components/FindHousingView';
+import { SearchListingsView } from './components/SearchListingsView';
 import { HowItWorksView } from './components/HowItWorksView';
 import { ForHostsView } from './components/ForHostsView';
 import { VerifiedHospitalsView } from './components/VerifiedHospitalsView';
 import { VerificationSuccessModal } from './components/VerificationSuccessModal';
 import { NurseSupportModal } from './components/NurseSupportModal';
 import { SavedListingsModal } from './components/SavedListingsModal';
+import { PostmarkEmailVerificationView } from './components/PostmarkEmailVerificationView';
+import { TwilioPhoneOtpView } from './components/TwilioPhoneOtpView';
+import { ItemizedCheckoutModal } from './components/ItemizedCheckoutModal';
+import { NurseDashboardView } from './components/NurseDashboardView';
+import { HostPortalView } from './components/HostPortalView';
+import { AdminPortalView } from './components/AdminPortalView';
+import { AuthModal } from './components/AuthModal';
+import { GoogleSheetsSyncModal, AdminSheetsPreset } from './components/GoogleSheetsSyncModal';
 
 export default function App() {
-  // Navigation & verification step state (Default to Screen 1: Healthcare Assignment Housing Marketplace)
+  // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>('find-housing');
   const [verificationStep, setVerificationStep] = useState<VerificationStepId>(3);
   const [verificationData, setVerificationData] = useState<VerificationFormData>(
@@ -33,6 +49,63 @@ export default function App() {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  // Google Sheets integration state (Administrative Feature)
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+  const [sheetsPreset, setSheetsPreset] = useState<AdminSheetsPreset>('admin-demand');
+
+  const handleOpenGoogleSheets = (preset: AdminSheetsPreset = 'admin-demand') => {
+    setSheetsPreset(preset);
+    setIsSheetsModalOpen(true);
+  };
+
+  // Auth modal state (Screens AU-01 & AU-03)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signup');
+  const [currentUser, setCurrentUser] = useState<{ role: UserRole; name: string }>({
+    role: 'nurse',
+    name: 'Sarah Jenkins',
+  });
+
+  // Checkout modal state (Screen A4)
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutListing, setCheckoutListing] = useState<HousingListing>(MOCK_LISTINGS[0]);
+
+  // Dedicated search params state (Screen A2)
+  const [searchParamsState, setSearchParamsState] = useState({
+    hospital: 'UCSF Medical Center - Mission Bay (San Francisco, CA)',
+    duration: '13',
+    radius: 5,
+  });
+
+  // Shared booking requests across Portals A & B
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([
+    {
+      id: 'req-1',
+      listingId: 'sf-dogpatch-studio',
+      listingTitle: 'Modern Dogpatch Studio w/ Blackout & Parking',
+      clinicianName: 'Sarah Jenkins',
+      clinicianTitle: 'BSN, RN — PICU',
+      clinicianAvatar: 'https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80',
+      clinicianPhone: '+1 (919) 555-0198',
+      hospitalName: 'UCSF Medical Center - Mission Bay',
+      unitSpecialty: 'Pediatric ICU',
+      startDate: 'Oct 1, 2024',
+      endDate: 'Dec 31, 2024',
+      durationWeeks: 13,
+      monthlyRent: 1950,
+      cleaningFee: 150,
+      securityDeposit: 250,
+      petFee: 0,
+      travelerFee: 0,
+      totalInitialCharge: 2350,
+      hostNetPayout: 1852.5,
+      status: 'pending_host_approval',
+      submittedAt: 'Today, 2:15 PM',
+      deadlineHoursRemaining: 22,
+      specialRequests: 'Night shift schedule: 7 PM – 7 AM. 100% quiet daytime requirement.',
+    },
+  ]);
 
   // Synchronize document body class for dark/night mode
   useEffect(() => {
@@ -55,8 +128,40 @@ export default function App() {
     );
   };
 
-  const handleSelectHospitalFromDirectory = (hospitalName: string) => {
+  const handleSelectHospitalFromDirectory = () => {
     setCurrentTab('find-housing');
+  };
+
+  const handleOpenCheckout = (listing: HousingListing) => {
+    setCheckoutListing(listing);
+    setIsCheckoutOpen(true);
+  };
+
+  const handleConfirmCheckout = (booking: BookingRequest) => {
+    setBookingRequests((prev) => [booking, ...prev]);
+    setIsCheckoutOpen(false);
+    setCurrentTab('nurse-dashboard');
+  };
+
+  const handleApproveBooking = (id: string) => {
+    setBookingRequests((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, status: 'approved' } : b))
+    );
+  };
+
+  const handleDeclineBooking = (id: string) => {
+    setBookingRequests((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, status: 'declined' } : b))
+    );
+  };
+
+  const handleAuthenticated = (role: UserRole, name: string) => {
+    setCurrentUser({ role, name });
+    if (role === 'host') {
+      setCurrentTab('host-dashboard');
+    } else {
+      setCurrentTab('nurse-dashboard');
+    }
   };
 
   return (
@@ -78,11 +183,55 @@ export default function App() {
         onToggleNightShift={() => setIsNightShiftMode(!isNightShiftMode)}
         onOpenSupport={() => setIsSupportOpen(true)}
         isVerified={verificationData.licenseStatus === 'verified'}
+        onOpenAuth={(mode = 'signup') => {
+          setAuthModalMode(mode);
+          setIsAuthModalOpen(true);
+        }}
       />
 
       {/* Main Content Area */}
       <main className="w-full pt-20 flex-1 flex flex-col">
-        {/* Verification Flow View */}
+        {/* PORTAL A: Screen A5 Nurse Dashboard */}
+        {currentTab === 'nurse-dashboard' && (
+          <NurseDashboardView
+            isNightShiftMode={isNightShiftMode}
+            isVerified={verificationData.licenseStatus === 'verified'}
+            onGoToVerification={() => {
+              setCurrentTab('verification');
+              setVerificationStep(3);
+            }}
+            onGoToHousing={() => setCurrentTab('find-housing')}
+            onOpenSupport={() => setIsSupportOpen(true)}
+            savedListingIds={savedListingIds}
+            onToggleSave={handleToggleSaveListing}
+            allListings={MOCK_LISTINGS}
+            activeBookings={bookingRequests}
+          />
+        )}
+
+        {/* PORTAL B: Screens B1-B3 Host Portal */}
+        {currentTab === 'host-dashboard' && (
+          <HostPortalView
+            isNightShiftMode={isNightShiftMode}
+            bookingRequests={bookingRequests}
+            onApproveBooking={handleApproveBooking}
+            onDeclineBooking={handleDeclineBooking}
+            onGoToHousing={() => setCurrentTab('find-housing')}
+          />
+        )}
+
+        {/* PORTAL C: Screens C1-C4 Super-Admin Portal */}
+        {currentTab === 'admin-portal' && (
+          <AdminPortalView
+            isNightShiftMode={isNightShiftMode}
+            onGoToHousing={() => setCurrentTab('find-housing')}
+            onOpenGoogleSheets={handleOpenGoogleSheets}
+            bookingRequests={bookingRequests}
+            listings={MOCK_LISTINGS}
+          />
+        )}
+
+        {/* Portal A: Credentialing Flow View */}
         {currentTab === 'verification' && (
           <>
             {verificationStep === 1 && (
@@ -101,6 +250,8 @@ export default function App() {
                 onNextStep={() => setVerificationStep(3)}
                 onSelectStep={(step) => setVerificationStep(step)}
                 isNightShiftMode={isNightShiftMode}
+                onOpenPostmarkEmail={() => setCurrentTab('email-verification')}
+                onOpenTwilioOtp={() => setCurrentTab('phone-verification')}
               />
             )}
             {verificationStep === 3 && (
@@ -125,7 +276,7 @@ export default function App() {
           </>
         )}
 
-        {/* Find Housing Marketplace View */}
+        {/* Portal A: Home Page with Featured Sanctuary Listings (Screen A1) */}
         {currentTab === 'find-housing' && (
           <FindHousingView
             isNightShiftMode={isNightShiftMode}
@@ -135,6 +286,79 @@ export default function App() {
             onGoToVerification={() => {
               setCurrentTab('verification');
               setVerificationStep(3);
+            }}
+            onGoToEmailVerification={() => {
+              setCurrentTab('email-verification');
+            }}
+            onGoToPhoneVerification={() => {
+              setCurrentTab('phone-verification');
+            }}
+            onRequestToBookListing={handleOpenCheckout}
+            onGoToSearchListings={(params) => {
+              if (params) {
+                setSearchParamsState((prev) => ({
+                  hospital: params.hospital || prev.hospital,
+                  duration: params.duration || prev.duration,
+                  radius: params.radius ?? prev.radius,
+                }));
+              }
+              setCurrentTab('search-listings');
+            }}
+            onGoToHostPortal={() => setCurrentTab('host-dashboard')}
+          />
+        )}
+
+        {/* Portal A: Dedicated Search Listings & Interactive Map (Screen A2) */}
+        {currentTab === 'search-listings' && (
+          <SearchListingsView
+            isNightShiftMode={isNightShiftMode}
+            savedListingIds={savedListingIds}
+            onToggleSave={handleToggleSaveListing}
+            isVerified={verificationData.licenseStatus === 'verified'}
+            onGoToVerification={() => {
+              setCurrentTab('verification');
+              setVerificationStep(3);
+            }}
+            onRequestToBookListing={handleOpenCheckout}
+            initialHospital={searchParamsState.hospital}
+            initialDuration={searchParamsState.duration}
+            initialRadius={searchParamsState.radius}
+          />
+        )}
+
+        {/* Postmark Institutional Email Verification Step View */}
+        {currentTab === 'email-verification' && (
+          <PostmarkEmailVerificationView
+            isNightShiftMode={isNightShiftMode}
+            initialEmail={verificationData.workEmail}
+            onProceedToPhoneVerification={() => {
+              handleUpdateVerification({ isContactVerified: true });
+              setCurrentTab('phone-verification');
+            }}
+            onProceedToLicenseVerification={() => {
+              handleUpdateVerification({ isContactVerified: true });
+              setCurrentTab('verification');
+              setVerificationStep(3);
+            }}
+            onBackToOverview={() => {
+              setCurrentTab('verification');
+              setVerificationStep(2);
+            }}
+          />
+        )}
+
+        {/* Twilio SMS OTP Mobile Verification Step View */}
+        {currentTab === 'phone-verification' && (
+          <TwilioPhoneOtpView
+            isNightShiftMode={isNightShiftMode}
+            initialPhone={verificationData.mobilePhone}
+            onProceedToLicenseVerification={() => {
+              handleUpdateVerification({ phoneVerified: true });
+              setCurrentTab('verification');
+              setVerificationStep(3);
+            }}
+            onBackToEmail={() => {
+              setCurrentTab('email-verification');
             }}
           />
         )}
@@ -178,6 +402,25 @@ export default function App() {
         }}
       />
 
+      {/* Itemized Checkout Modal (Screen A4) */}
+      <ItemizedCheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        listing={checkoutListing}
+        isNightShiftMode={isNightShiftMode}
+        onBookingSubmitted={handleConfirmCheckout}
+      />
+
+      {/* Safe Clinical Onboarding & Sign-In Modal (Screens AU-01 & AU-03) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setIsAuthModalOpen(false)}
+        isNightShiftMode={isNightShiftMode}
+        onAuthenticated={handleAuthenticated}
+        onOpenEmailVerification={() => setCurrentTab('email-verification')}
+      />
+
       {/* Celebration / Success Modal */}
       <VerificationSuccessModal
         isOpen={isSuccessModalOpen}
@@ -210,6 +453,19 @@ export default function App() {
         onGoToHousing={() => {
           setCurrentTab('find-housing');
         }}
+      />
+
+      {/* Google Sheets Live Integration & Tax/Payout Sync Modal (Admin Tool) */}
+      <GoogleSheetsSyncModal
+        isOpen={isSheetsModalOpen}
+        onClose={() => setIsSheetsModalOpen(false)}
+        isNightShiftMode={isNightShiftMode}
+        initialPreset={sheetsPreset}
+        bookingRequests={bookingRequests}
+        listings={MOCK_LISTINGS}
+        demandReports={MOCK_DEMAND_REPORTS}
+        licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
+        userRole={currentUser.role}
       />
     </div>
   );

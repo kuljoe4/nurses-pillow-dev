@@ -7,6 +7,8 @@ interface ContactStepProps {
   onNextStep: () => void;
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
+  onOpenPostmarkEmail?: () => void;
+  onOpenTwilioOtp?: () => void;
 }
 
 export const ContactStep: React.FC<ContactStepProps> = ({
@@ -15,6 +17,8 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   onNextStep,
   onSelectStep,
   isNightShiftMode,
+  onOpenPostmarkEmail,
+  onOpenTwilioOtp,
 }) => {
   const [verificationCode, setVerificationCode] = useState('8492');
   const [isCodeSent, setIsCodeSent] = useState(true);
@@ -199,6 +203,47 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#195b4c] text-white">
               Active
             </span>
+          </div>
+
+          {/* Interactive Protocol Verification Flow Launchers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onOpenPostmarkEmail}
+              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">mark_email_read</span>
+                  Postmark Email Screen
+                </span>
+                <span className="material-symbols-outlined text-xs text-[#005684] dark:text-[#93ccff] group-hover:translate-x-0.5 transition-transform">
+                  arrow_forward
+                </span>
+              </div>
+              <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">
+                Launch 6-digit hospital email PIN &amp; institution domain verification UI.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenTwilioOtp}
+              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">sms</span>
+                  Twilio SMS OTP Screen
+                </span>
+                <span className="material-symbols-outlined text-xs text-[#005684] dark:text-[#93ccff] group-hover:translate-x-0.5 transition-transform">
+                  arrow_forward
+                </span>
+              </div>
+              <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">
+                Launch mobile carrier token dispatch &amp; shift communications timer UI.
+              </p>
+            </button>
           </div>
 
           <div className="pt-4 flex items-center justify-between gap-3">
