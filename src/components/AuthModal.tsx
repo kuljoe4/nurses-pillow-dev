@@ -8,6 +8,10 @@ interface AuthModalProps {
   isNightShiftMode: boolean;
   onAuthenticated: (role: UserRole, name: string) => void;
   onOpenEmailVerification?: () => void;
+  showScreenCodes?: boolean;
+  onToggleScreenCodes?: () => void;
+  isDeveloper?: boolean;
+  onDeveloperSignIn?: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -17,6 +21,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isNightShiftMode,
   onAuthenticated,
   onOpenEmailVerification,
+  showScreenCodes = false,
+  onToggleScreenCodes,
+  isDeveloper = false,
+  onDeveloperSignIn,
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [role, setRole] = useState<UserRole>('nurse');
@@ -99,6 +107,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
+
+        {/* Developer Screen Code Badge (Visible when showScreenCodes is enabled) */}
+        {showScreenCodes && (
+          <div className="mb-4 p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded font-mono font-bold bg-purple-600 text-white text-[11px]">
+                {mode === 'signup' ? 'SCREEN [AU-01]' : 'SCREEN [AU-03]'}
+              </span>
+              <span className="font-semibold text-purple-900 dark:text-purple-200">
+                {mode === 'signup' ? 'Registration & Role Selection' : 'Clinician & Host Sign-In'}
+              </span>
+            </div>
+            <span className="text-[10px] uppercase tracking-wider font-mono text-purple-700 dark:text-purple-300 font-bold">
+              Dev Mode
+            </span>
+          </div>
+        )}
 
         {/* Mode Switcher */}
         <div className="flex items-center justify-center gap-2 mb-6">
@@ -477,6 +502,125 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </form>
           </div>
         )}
+
+        {/* Quick Demo & Perspective Authentication Section */}
+        <div className="mt-6 pt-5 border-t border-gray-200 dark:border-[#233550] text-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+            <span className="font-bold text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px]">key</span>
+              <span>1-Click Perspective Sign-In (Client vs Developer)</span>
+            </span>
+            {onToggleScreenCodes && (
+              <button
+                type="button"
+                onClick={onToggleScreenCodes}
+                className={`px-2.5 py-1 rounded-full font-mono text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  showScreenCodes
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+                title="Toggle screen code tags like [AU-01], [HL-01], [A-01]"
+              >
+                <span className="material-symbols-outlined text-[13px]">
+                  {showScreenCodes ? 'visibility' : 'visibility_off'}
+                </span>
+                <span>Screen Codes [{showScreenCodes ? 'SHOWING' : 'HIDDEN'}]</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Clinician (Client) */}
+            <button
+              type="button"
+              onClick={() => {
+                onAuthenticated('nurse', 'Sarah Jenkins, RN');
+                onClose();
+              }}
+              className="p-2.5 rounded-xl border border-[#195b4c]/30 hover:border-[#195b4c] bg-[#195b4c]/5 hover:bg-[#195b4c]/10 text-left transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px]">stethoscope</span>
+                  <span>Clinician</span>
+                </div>
+                <div className="text-[10px] opacity-75 mt-0.5 truncate">Sarah Jenkins, RN</div>
+              </div>
+              <div className="text-[9px] mt-1 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                <span className="material-symbols-outlined text-[11px]">verified</span>
+                Verified
+              </div>
+            </button>
+
+            {/* Host (Client) */}
+            <button
+              type="button"
+              onClick={() => {
+                onAuthenticated('host', 'Michael Vance (Host)');
+                onClose();
+              }}
+              className="p-2.5 rounded-xl border border-[#005684]/30 hover:border-[#005684] bg-[#005684]/5 hover:bg-[#005684]/10 text-left transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px]">home</span>
+                  <span>Host</span>
+                </div>
+                <div className="text-[10px] opacity-75 mt-0.5 truncate">Michael Vance</div>
+              </div>
+              <div className="text-[9px] mt-1 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                <span className="material-symbols-outlined text-[11px]">verified</span>
+                Verified
+              </div>
+            </button>
+
+            {/* Super Admin */}
+            <button
+              type="button"
+              onClick={() => {
+                onAuthenticated('super_admin', 'Operations Admin');
+                onClose();
+              }}
+              className="p-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500 bg-amber-500/5 hover:bg-amber-500/10 text-left transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px]">admin_panel_settings</span>
+                  <span>Admin</span>
+                </div>
+                <div className="text-[10px] opacity-75 mt-0.5 truncate">Ops Admin</div>
+              </div>
+              <div className="text-[9px] mt-1 text-amber-600 font-bold">
+                Platform Ops
+              </div>
+            </button>
+
+            {/* Lead Developer (Developer Auth with Screen Codes) */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onDeveloperSignIn) {
+                  onDeveloperSignIn();
+                } else {
+                  onAuthenticated('developer', 'Joshua (Lead Developer)');
+                }
+                onClose();
+              }}
+              className="p-2.5 rounded-xl border border-purple-500/40 hover:border-purple-600 bg-purple-500/10 hover:bg-purple-500/15 text-left transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px]">terminal</span>
+                  <span>Developer</span>
+                </div>
+                <div className="text-[10px] opacity-75 mt-0.5 truncate">Joshua (Dev)</div>
+              </div>
+              <div className="text-[9px] mt-1 text-purple-600 dark:text-purple-300 font-bold">
+                Screen Codes
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

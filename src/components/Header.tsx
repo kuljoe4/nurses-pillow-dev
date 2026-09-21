@@ -17,6 +17,9 @@ interface HeaderProps {
   m2BypassMode: boolean;
   onToggleM2Bypass: () => void;
   isDeveloper?: boolean;
+  onLogout?: () => void;
+  showScreenCodes?: boolean;
+  onToggleScreenCodes?: () => void;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.svg';
@@ -36,6 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   m2BypassMode,
   onToggleM2Bypass,
   isDeveloper = false,
+  onLogout,
+  showScreenCodes = false,
+  onToggleScreenCodes,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -81,6 +87,8 @@ export const Header: React.FC<HeaderProps> = ({
         return 'Super-Admin';
       case 'developer':
         return 'Developer';
+      case 'guest':
+        return 'Guest Traveler';
     }
   };
 
@@ -94,6 +102,8 @@ export const Header: React.FC<HeaderProps> = ({
         return 'OA';
       case 'developer':
         return 'JD';
+      case 'guest':
+        return 'GT';
     }
   };
 
@@ -118,6 +128,11 @@ export const Header: React.FC<HeaderProps> = ({
         return {
           badge: 'bg-purple-500/15 text-purple-800 dark:text-purple-300',
           avatar: 'bg-purple-700 text-white',
+        };
+      case 'guest':
+        return {
+          badge: 'bg-gray-500/15 text-gray-700 dark:text-gray-300',
+          avatar: 'bg-gray-500 text-white',
         };
     }
   };
@@ -172,7 +187,12 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
-            Explore Stays
+            {showScreenCodes && (
+              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] mr-1.5 font-bold">
+                [HL-01]
+              </span>
+            )}
+            <span>Explore Stays</span>
           </button>
 
           <button
@@ -188,6 +208,11 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+            {showScreenCodes && (
+              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                [HL-02]
+              </span>
+            )}
             <span>Search &amp; Map</span>
           </button>
 
@@ -210,6 +235,11 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <span className="material-symbols-outlined text-[17px]">home</span>
+            {showScreenCodes && (
+              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                [H-01]
+              </span>
+            )}
             <span>For Property Hosts</span>
           </button>
 
@@ -225,7 +255,12 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
-            How It Works
+            {showScreenCodes && (
+              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] mr-1.5 font-bold">
+                [P-01]
+              </span>
+            )}
+            <span>How It Works</span>
           </button>
 
           {/* More Menu Dropdown */}
@@ -268,7 +303,14 @@ export const Header: React.FC<HeaderProps> = ({
                     local_hospital
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">Verified Hospitals Directory</div>
+                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
+                      {showScreenCodes && (
+                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
+                          [HOS-01]
+                        </span>
+                      )}
+                      <span>Verified Hospitals Directory</span>
+                    </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">NC trauma centers &amp; teaching systems</div>
                   </div>
                 </button>
@@ -285,7 +327,14 @@ export const Header: React.FC<HeaderProps> = ({
                     verified_user
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">Clinician Credentialing</div>
+                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
+                      {showScreenCodes && (
+                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
+                          [C-01]
+                        </span>
+                      )}
+                      <span>Clinician Credentialing</span>
+                    </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
                   </div>
                 </button>
@@ -308,7 +357,14 @@ export const Header: React.FC<HeaderProps> = ({
                     policy
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">Sanctuary Standards &amp; Policies</div>
+                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
+                      {showScreenCodes && (
+                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
+                          [P-05]
+                        </span>
+                      )}
+                      <span>Sanctuary Standards &amp; Policies</span>
+                    </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Quiet guarantee, contract flex &amp; auto-purge</div>
                   </div>
                 </button>
@@ -325,7 +381,14 @@ export const Header: React.FC<HeaderProps> = ({
                     dns
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">Platform Reliability &amp; Status</div>
+                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
+                      {showScreenCodes && (
+                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
+                          [P-12]
+                        </span>
+                      )}
+                      <span>Platform Reliability &amp; Status</span>
+                    </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Live uptime &amp; system health metrics</div>
                   </div>
                 </button>
@@ -441,270 +504,365 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Unified User Profile & Persona Capsule */}
-          <div className="relative" ref={profileMenuRef}>
-            <button
-              type="button"
-              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
-                isProfileMenuOpen
-                  ? isNightShiftMode
-                    ? 'bg-[#182840] border-[#005684]'
-                    : 'bg-white border-[#005684]'
-                  : isNightShiftMode
-                  ? 'bg-[#0E1A2E] border-[#233550] hover:border-[#385175]'
-                  : 'bg-white border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {/* Avatar with Verified checkmark */}
-              <div className="relative">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs tracking-tight ${roleStyles.avatar}`}
-                >
-                  {getRoleInitials(currentUser.role)}
-                </div>
-                {isVerified && (
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0E1A2E] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[8px] text-white font-bold">check</span>
-                  </span>
-                )}
-              </div>
-
-              {/* Identity Details (Desktop) */}
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="text-xs font-bold leading-tight max-w-[120px] truncate text-[#001848] dark:text-white">
-                  {currentUser.name}
-                </span>
-                <span className="text-[10px] font-semibold opacity-70 leading-none">
-                  {getRoleLabel(currentUser.role)}
-                </span>
-              </div>
-
-              <span className="material-symbols-outlined text-[16px] opacity-60">
-                {isProfileMenuOpen ? 'expand_less' : 'expand_more'}
-              </span>
-            </button>
-
-            {/* Profile & Perspective Switcher Popover */}
-            {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-72 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3">
-                {/* Account Card */}
-                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
+          {/* Guest Sign In & Register Buttons or User Profile Capsule */}
+          {currentUser.role === 'guest' ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onOpenAuth?.('signin')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  isNightShiftMode
+                    ? 'border-[#233550] text-[#93ccff] hover:bg-white/5'
+                    : 'border-gray-200 text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenAuth?.('signup')}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#001848] dark:bg-[#005684] text-white hover:opacity-90 transition-all cursor-pointer shadow-xs"
+              >
+                Get Started
+              </button>
+            </div>
+          ) : (
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
+                  isProfileMenuOpen
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] border-[#005684]'
+                      : 'bg-white border-[#005684]'
+                    : isNightShiftMode
+                    ? 'bg-[#0E1A2E] border-[#233550] hover:border-[#385175]'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {/* Avatar with Verified checkmark */}
+                <div className="relative">
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs tracking-tight ${roleStyles.avatar}`}
+                  >
                     {getRoleInitials(currentUser.role)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm truncate text-[#001848] dark:text-white">
-                      {currentUser.name}
+                  {isVerified && (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0E1A2E] flex items-center justify-center shadow-2xs"
+                      title="Verified Identity & Clinical Credentials"
+                    >
+                      <span className="material-symbols-outlined text-[9px] text-white font-bold">check</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Identity Details (Desktop) */}
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-bold leading-tight max-w-[120px] truncate text-[#001848] dark:text-white">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-[10px] font-semibold opacity-70 leading-none flex items-center gap-1">
+                    <span>{getRoleLabel(currentUser.role)}</span>
+                    {isVerified && (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[9px]">✓</span>
+                    )}
+                  </span>
+                </div>
+
+                <span className="material-symbols-outlined text-[16px] opacity-60">
+                  {isProfileMenuOpen ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+
+              {/* Profile & Perspective Switcher Popover */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-80 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3">
+                  {/* Account Card */}
+                  <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
+                      {getRoleInitials(currentUser.role)}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleStyles.badge}`}>
-                        {getRoleLabel(currentUser.role)}
-                      </span>
-                      {isVerified && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                          <span className="material-symbols-outlined text-[12px]">verified</span>
-                          Verified
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-sm truncate text-[#001848] dark:text-white flex items-center gap-1.5">
+                        <span className="truncate">{currentUser.name}</span>
+                        {isVerified && (
+                          <span
+                            className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0"
+                            title="Verified Platform Credentials"
+                          >
+                            <span className="material-symbols-outlined text-[10px] font-bold">check</span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleStyles.badge}`}>
+                          {getRoleLabel(currentUser.role)}
                         </span>
-                      )}
+                        {isVerified && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (currentUser.role === 'nurse') onSelectTab('verification');
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 hover:underline cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">verified</span>
+                            <span>Verified Status</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Primary Workspace Action */}
-                <div className="space-y-1">
-                  {currentUser.role === 'nurse' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('nurse-dashboard');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] transition-colors cursor-pointer"
-                    >
+                  {/* Developer Screen Codes Toggle HUD */}
+                  {onToggleScreenCodes && (
+                    <div className="p-2.5 rounded-2xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">clinical_notes</span>
-                        <span>Open Clinician Dashboard</span>
+                        <span className="material-symbols-outlined text-[17px] text-purple-600 dark:text-purple-400">
+                          code
+                        </span>
+                        <div>
+                          <div className="text-[11px] font-bold text-purple-900 dark:text-purple-200">
+                            Screen Codes [XX-00]
+                          </div>
+                          <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {showScreenCodes ? 'Visible (Dev Mode Active)' : 'Clean Client View (Hidden)'}
+                          </div>
+                        </div>
                       </div>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={onToggleScreenCodes}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                          showScreenCodes
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                        title="Toggle Developer Screen Codes in navigation and UI"
+                      >
+                        {showScreenCodes ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
                   )}
 
-                  {currentUser.role === 'host' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('host-dashboard');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">real_estate_agent</span>
-                        <span>Open Host Portal</span>
-                      </div>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </button>
-                  )}
-
-                  {currentUser.role === 'super_admin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('admin-portal');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                        <span>Open Admin Operations Hub</span>
-                      </div>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </button>
-                  )}
-
-                  {currentUser.role === 'developer' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('phase1-inventory');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px]">terminal</span>
-                        <span>Developer System Specs</span>
-                      </div>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Switch Perspective Section */}
-                <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
-                  <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
-                    Switch Perspective
-                  </div>
+                  {/* Primary Workspace Action */}
                   <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSwitchRole('nurse');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                        currentUser.role === 'nurse'
-                          ? 'bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] font-bold'
-                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[16px]">stethoscope</span>
-                        <span>Clinician (Sarah Jenkins)</span>
-                      </div>
-                      {currentUser.role === 'nurse' && (
-                        <span className="material-symbols-outlined text-[14px]">check</span>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSwitchRole('host');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                        currentUser.role === 'host'
-                          ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] font-bold'
-                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[16px]">home</span>
-                        <span>Property Host (Michael Vance)</span>
-                      </div>
-                      {currentUser.role === 'host' && (
-                        <span className="material-symbols-outlined text-[14px]">check</span>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSwitchRole('super_admin');
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                        currentUser.role === 'super_admin'
-                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
-                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[16px]">shield_person</span>
-                        <span>Super-Admin Operations</span>
-                      </div>
-                      {currentUser.role === 'super_admin' && (
-                        <span className="material-symbols-outlined text-[14px]">check</span>
-                      )}
-                    </button>
-
-                    {isDeveloper && (
+                    {currentUser.role === 'nurse' && (
                       <button
                         type="button"
                         onClick={() => {
-                          onSwitchRole('developer');
+                          onSelectTab('nurse-dashboard');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[18px]">clinical_notes</span>
+                          <span>Open Clinician Dashboard</span>
+                        </div>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </button>
+                    )}
+
+                    {currentUser.role === 'host' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectTab('host-dashboard');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[18px]">real_estate_agent</span>
+                          <span>Open Host Portal</span>
+                        </div>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </button>
+                    )}
+
+                    {currentUser.role === 'super_admin' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectTab('admin-portal');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                          <span>Open Admin Operations Hub</span>
+                        </div>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </button>
+                    )}
+
+                    {currentUser.role === 'developer' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectTab('phase1-inventory');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[18px]">terminal</span>
+                          <span>Developer System Specs</span>
+                        </div>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Switch Perspective Section */}
+                  <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
+                    <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                      Switch Perspective
+                    </div>
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSwitchRole('nurse');
                           setIsProfileMenuOpen(false);
                         }}
                         className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                          currentUser.role === 'developer'
-                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
+                          currentUser.role === 'nurse'
+                            ? 'bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] font-bold'
                             : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px]">terminal</span>
-                          <span>Lead Developer (Joshua)</span>
+                          <span className="material-symbols-outlined text-[16px]">stethoscope</span>
+                          <span>Clinician (Sarah Jenkins)</span>
                         </div>
-                        {currentUser.role === 'developer' && (
+                        {currentUser.role === 'nurse' && (
                           <span className="material-symbols-outlined text-[14px]">check</span>
                         )}
                       </button>
-                    )}
-                  </div>
-                </div>
 
-                {/* Support & Auth Modal Trigger */}
-                <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onOpenSupport();
-                      setIsProfileMenuOpen(false);
-                    }}
-                    className="text-xs opacity-75 hover:opacity-100 hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">help_outline</span>
-                    <span>Support</span>
-                  </button>
-                  {onOpenAuth && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSwitchRole('host');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                          currentUser.role === 'host'
+                            ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] font-bold'
+                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px]">home</span>
+                          <span>Property Host (Michael Vance)</span>
+                        </div>
+                        {currentUser.role === 'host' && (
+                          <span className="material-symbols-outlined text-[14px]">check</span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSwitchRole('super_admin');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                          currentUser.role === 'super_admin'
+                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
+                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                          <span>Super-Admin Operations</span>
+                        </div>
+                        {currentUser.role === 'super_admin' && (
+                          <span className="material-symbols-outlined text-[14px]">check</span>
+                        )}
+                      </button>
+
+                      {isDeveloper && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchRole('developer');
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                            currentUser.role === 'developer'
+                              ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
+                              : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px]">terminal</span>
+                            <span>Lead Developer (Joshua)</span>
+                          </div>
+                          {currentUser.role === 'developer' && (
+                            <span className="material-symbols-outlined text-[14px]">check</span>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Support & Auth Modal Trigger */}
+                  <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
                     <button
                       type="button"
                       onClick={() => {
-                        onOpenAuth('signin');
+                        onOpenSupport();
                         setIsProfileMenuOpen(false);
                       }}
-                      className="text-xs text-[#005684] dark:text-[#93ccff] font-bold hover:underline cursor-pointer"
+                      className="text-xs opacity-75 hover:opacity-100 hover:underline flex items-center gap-1 cursor-pointer"
                     >
-                      Switch Account
+                      <span className="material-symbols-outlined text-[15px]">help_outline</span>
+                      <span>Support</span>
                     </button>
+                    {onOpenAuth && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenAuth('signin');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="text-xs text-[#005684] dark:text-[#93ccff] font-bold hover:underline cursor-pointer"
+                      >
+                        Switch Account
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Dedicated Log Out Button */}
+                  {onLogout && (
+                    <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onLogout();
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center justify-between hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[17px]">logout</span>
+                          <span>Log Out</span>
+                        </div>
+                        <span className="text-[10px] opacity-75 font-normal">Switch to Guest</span>
+                      </button>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Mobile Menu Hamburger Button */}
           <button
@@ -739,66 +897,175 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Active User Card & Perspective Selector */}
-            <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${roleStyles.avatar}`}>
-                    {getRoleInitials(currentUser.role)}
+            {currentUser.role === 'guest' ? (
+              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-300">
+                    <span className="material-symbols-outlined text-[20px]">person</span>
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#001848] dark:text-white leading-tight">
-                      {currentUser.name}
+                    <div className="text-sm font-bold text-[#001848] dark:text-white">
+                      Welcome, Guest
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {getRoleLabel(currentUser.role)}
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                      Sign in to access verified hospital booking
                     </div>
                   </div>
                 </div>
-                {isVerified && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[12px]">verified</span>
-                    Verified
-                  </span>
-                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAuth?.('signin');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-2 px-3 rounded-xl border border-gray-300 dark:border-[#233550] text-xs font-bold text-[#001848] dark:text-white text-center cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAuth?.('signup');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-2 px-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold text-center cursor-pointer shadow-xs"
+                  >
+                    Get Started
+                  </button>
+                </div>
               </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs ${roleStyles.avatar}`}>
+                      {getRoleInitials(currentUser.role)}
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#001848] dark:text-white leading-tight flex items-center gap-1.5">
+                        <span>{currentUser.name}</span>
+                        {isVerified && (
+                          <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px] font-bold">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                        <span>{getRoleLabel(currentUser.role)}</span>
+                        {isVerified && (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Verified</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {isVerified ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentUser.role === 'nurse') onSelectTab('verification');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[12px]">verified</span>
+                      Status
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('verification');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center gap-1 cursor-pointer"
+                    >
+                      Verify
+                    </button>
+                  )}
+                </div>
 
-              {/* Role Toggle Tabs */}
-              <div className="flex rounded-xl bg-gray-200/70 dark:bg-gray-800 p-1 gap-1 text-[11px] font-bold">
+                {/* Role Toggle Tabs */}
+                <div className="flex rounded-xl bg-gray-200/70 dark:bg-gray-800 p-1 gap-1 text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => onSwitchRole('nurse')}
+                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                      currentUser.role === 'nurse'
+                        ? 'bg-white dark:bg-[#195b4c] text-[#195b4c] dark:text-white shadow-xs'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    Clinician
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSwitchRole('host')}
+                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                      currentUser.role === 'host'
+                        ? 'bg-white dark:bg-[#005684] text-[#005684] dark:text-white shadow-xs'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    Host
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSwitchRole('super_admin')}
+                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                      currentUser.role === 'super_admin'
+                        ? 'bg-white dark:bg-amber-600 text-amber-800 dark:text-white shadow-xs'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    Admin
+                  </button>
+                  {isDeveloper && (
+                    <button
+                      type="button"
+                      onClick={() => onSwitchRole('developer')}
+                      className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                        currentUser.role === 'developer'
+                          ? 'bg-white dark:bg-purple-700 text-purple-800 dark:text-white shadow-xs'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}
+                    >
+                      Dev
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Developer Screen Codes Toggle (Mobile) */}
+            {onToggleScreenCodes && (
+              <div className="p-3 rounded-2xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px] text-purple-600 dark:text-purple-400">
+                    code
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-purple-900 dark:text-purple-200">
+                      Screen Codes [XX-00]
+                    </div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {showScreenCodes ? 'Visible for developer reference' : 'Hidden for client review'}
+                    </div>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  onClick={() => onSwitchRole('nurse')}
-                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
-                    currentUser.role === 'nurse'
-                      ? 'bg-white dark:bg-[#195b4c] text-[#195b4c] dark:text-white shadow-xs'
-                      : 'text-gray-600 dark:text-gray-400'
+                  onClick={onToggleScreenCodes}
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                    showScreenCodes
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  Clinician
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSwitchRole('host')}
-                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
-                    currentUser.role === 'host'
-                      ? 'bg-white dark:bg-[#005684] text-[#005684] dark:text-white shadow-xs'
-                      : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  Host
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSwitchRole('super_admin')}
-                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
-                    currentUser.role === 'super_admin'
-                      ? 'bg-white dark:bg-amber-600 text-amber-800 dark:text-white shadow-xs'
-                      : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  Admin
+                  {showScreenCodes ? 'ON' : 'OFF'}
                 </button>
               </div>
-            </div>
+            )}
 
             {/* Main Links */}
             <div className="space-y-1">
@@ -969,7 +1236,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
-            {/* Support and Sign In Actions */}
+            {/* Support and Sign In / Log Out Actions */}
             <div className="pt-2 flex flex-col gap-2">
               <button
                 type="button"
@@ -983,7 +1250,19 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>24/7 Clinical Support</span>
               </button>
 
-              {onOpenAuth && (
+              {currentUser.role !== 'guest' && onLogout ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[17px]">logout</span>
+                  <span>Log Out (Switch to Guest)</span>
+                </button>
+              ) : onOpenAuth ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -994,7 +1273,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   Sign In / Access Account
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

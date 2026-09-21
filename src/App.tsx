@@ -125,6 +125,30 @@ export default function App() {
     }
   };
 
+  // Screen Code visibility state [XX-00]
+  const [showScreenCodes, setShowScreenCodes] = useState<boolean>(() => {
+    return localStorage.getItem('np_show_screen_codes') === 'true';
+  });
+
+  const handleToggleScreenCodes = () => {
+    setShowScreenCodes((prev) => {
+      const next = !prev;
+      localStorage.setItem('np_show_screen_codes', String(next));
+      return next;
+    });
+  };
+
+  // Standard Logout handler (switches to Guest role and lands on Explore Stays)
+  const handleLogout = () => {
+    setCurrentUser({ role: 'guest', name: 'Guest Explorer' });
+    if (stagingUser === 'developer') {
+      setStagingUser('client');
+      sessionStorage.setItem('np_staging_user', 'client');
+      setM2BypassMode(false);
+    }
+    setCurrentTab('find-housing');
+  };
+
   // Checkout modal state (Screen A4)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutListing, setCheckoutListing] = useState<HousingListing>(MOCK_LISTINGS[0]);
@@ -217,6 +241,15 @@ export default function App() {
     setCurrentUser({ role, name });
     if (role === 'host') {
       setCurrentTab('host-dashboard');
+    } else if (role === 'super_admin') {
+      setCurrentTab('admin-portal');
+    } else if (role === 'developer') {
+      setStagingUser('developer');
+      sessionStorage.setItem('np_staging_user', 'developer');
+      setM2BypassMode(true);
+      setCurrentTab('phase1-inventory');
+    } else if (role === 'guest') {
+      setCurrentTab('find-housing');
     } else {
       setCurrentTab('nurse-dashboard');
     }
@@ -362,6 +395,9 @@ export default function App() {
         m2BypassMode={m2BypassMode}
         onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
         isDeveloper={isDeveloper}
+        onLogout={handleLogout}
+        showScreenCodes={showScreenCodes}
+        onToggleScreenCodes={handleToggleScreenCodes}
       />
 
       {/* Main Content Area */}
@@ -731,6 +767,10 @@ export default function App() {
         isNightShiftMode={isNightShiftMode}
         onAuthenticated={handleAuthenticated}
         onOpenEmailVerification={() => setCurrentTab('email-verification')}
+        showScreenCodes={showScreenCodes}
+        onToggleScreenCodes={handleToggleScreenCodes}
+        isDeveloper={isDeveloper}
+        onDeveloperSignIn={handleDeveloperSignIn}
       />
 
       {/* Celebration / Success Modal */}
