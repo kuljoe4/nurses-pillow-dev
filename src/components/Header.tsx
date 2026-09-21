@@ -885,7 +885,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-50 overflow-y-auto"
+          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-40 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsMobileMenuOpen(false);

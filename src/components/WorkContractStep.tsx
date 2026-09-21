@@ -158,8 +158,11 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-1.5">Contract Duration</label>
-              <select
+              <label className="block text-sm font-semibold mb-1.5">Contract Duration (Weeks)</label>
+              <input
+                type="number"
+                min="1"
+                step="1"
                 value={data.contractDurationWeeks}
                 onChange={(e) => onChange({ contractDurationWeeks: Number(e.target.value) })}
                 className={`w-full rounded-xl px-4 py-3 text-sm font-medium focus:outline-none ${
@@ -167,12 +170,8 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
                     ? 'bg-[#15233a] text-white border border-[#233550]'
                     : 'bg-[#f2f3ff] text-[#001848]'
                 }`}
-              >
-                <option value={4}>4 Weeks (Short Assignment)</option>
-                <option value={8}>8 Weeks (Mid Assignment)</option>
-                <option value={13}>13 Weeks (Standard Clinical Assignment)</option>
-                <option value={26}>26 Weeks (Extended Contract)</option>
-              </select>
+                placeholder="e.g., 13"
+              />
             </div>
           </div>
 
