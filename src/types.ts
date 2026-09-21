@@ -11,9 +11,13 @@ export type NavigationTab =
   | 'how-it-works'
   | 'for-hosts'
   | 'nurse-support'
-  | 'verified-hospitals';
+  | 'verified-hospitals'
+  | 'phase1-inventory'
+  | 'legal-policies'
+  | 'mobile-preview'
+  | 'system-status';
 
-export type UserRole = 'nurse' | 'host' | 'super_admin';
+export type UserRole = 'nurse' | 'host' | 'super_admin' | 'developer';
 
 export type CancellationTier = 'flexible_30d' | 'moderate_60d' | 'strict_90d';
 
@@ -151,6 +155,9 @@ export interface HousingListing {
   hostType?: string;
   highlightBadges?: string[];
   distanceBadge?: string;
+  requiresSecurityDeposit?: boolean;
+  securityDeposit?: number;
+  depositTermsExplainer?: string;
 }
 
 export interface Hospital {

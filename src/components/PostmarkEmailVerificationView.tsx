@@ -545,7 +545,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                   <p className="text-xs text-[#404850] dark:text-[#c0c7d1]">
                     Having trouble? Contact{' '}
                     <span className="font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer">
-                      Nurse Concierge Support (1-800-RN-PILLOW)
+                      Clinician Support Team (1-800-RN-PILLOW)
                     </span>{' '}
                     or{' '}
                     <button

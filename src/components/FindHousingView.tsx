@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
@@ -14,6 +14,8 @@ interface FindHousingViewProps {
   onRequestToBookListing?: (listing: HousingListing) => void;
   onGoToSearchListings: (params?: { hospital?: string; duration?: string; radius?: number }) => void;
   onGoToHostPortal?: () => void;
+  userRole?: string;
+  userName?: string;
 }
 
 export const FindHousingView: React.FC<FindHousingViewProps> = ({
@@ -25,14 +27,42 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   onRequestToBookListing,
   onGoToSearchListings,
   onGoToHostPortal,
+  userRole,
+  userName,
 }) => {
-  const [selectedHospital, setSelectedHospital] = useState('UCSF Medical Center - Mission Bay (San Francisco, CA)');
+  const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital - Durham, NC');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
-  const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>('clinicians');
+  const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
+    userRole === 'host' ? 'hosts' : 'clinicians'
+  );
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
+
+  const hospitalDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click or Escape key
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (hospitalDropdownRef.current && !hospitalDropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const durationOptions = [
     { label: '4 wks', value: '4' },
@@ -49,13 +79,13 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   ];
 
   const popularHubs = [
-    'UCSF Medical Center - Mission Bay (San Francisco, CA)',
-    'Stanford Health Care - Main Hospital (Stanford, CA)',
-    'Johns Hopkins Hospital - Baltimore, MD',
-    'Mayo Clinic Campus - Rochester, MN',
-    'Cedars-Sinai Medical Center - Los Angeles, CA',
     'Duke University Hospital - Durham, NC',
-    'Texas Medical Center - Houston, TX',
+    'UNC Medical Center - Chapel Hill, NC',
+    'WakeMed Raleigh Campus - Raleigh, NC',
+    'Atrium Health Carolinas Medical Center - Charlotte, NC',
+    'Stanford Health Care - Main Hospital (Stanford, CA)',
+    'UCSF Medical Center - Mission Bay (San Francisco, CA)',
+    'Cedars-Sinai Medical Center - Los Angeles, CA',
   ];
 
   // Curated Featured Listings for the Home Page
@@ -80,6 +110,26 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         <div className="absolute top-1/2 -right-32 w-[520px] h-[520px] rounded-full bg-[#195b4c]/10 dark:bg-[#195b4c]/20 blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
+          {/* Host Perspective Notice when logged in as Host */}
+          {userRole === 'host' && (
+            <div className="mb-6 w-full max-w-2xl px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-lg">home</span>
+                <span className="font-bold">Active Perspective: Property Host ({userName || 'Michael Vance'})</span>
+              </div>
+              {onGoToHostPortal && (
+                <button
+                  type="button"
+                  onClick={onGoToHostPortal}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  <span>Go to Host Portal</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Brand Script Greeting */}
           <div className="flex items-center gap-1.5 mb-3">
             <span className="material-symbols-outlined text-[#745b0d] dark:text-[#E4C36D] text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -132,7 +182,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               <label className="block text-xs font-bold text-[#001848] dark:text-white uppercase tracking-wider mb-2">
                 Hospital or Medical System
               </label>
-              <div className="relative">
+              <div ref={hospitalDropdownRef} className="relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#005684] dark:text-[#93ccff] pointer-events-none">
                   domain
                 </span>
@@ -520,59 +570,129 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             </button>
           </div>
 
-          {/* 3 Protection Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
-            <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
-                  1
+          {/* 3 Protection Cards - Dynamic based on activeProtectionTab */}
+          {activeProtectionTab === 'clinicians' ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
+              <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                <div>
+                  <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
+                    1
+                  </div>
+                  <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">Hospital Search</h3>
+                  <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                    Search listings indexed strictly by verified drive time, hospital shuttle lines, or walking transit to your medical center.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">Hospital Search</h3>
-                <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
-                  Search listings indexed strictly by verified drive time, hospital shuttle lines, or walking transit to your medical center.
-                </p>
+                <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                  <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
+                    Radius slider &amp; day-shift filters
+                  </span>
+                </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
-                  Radius slider &amp; day-shift filters
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
-                  2
+              <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                <div>
+                  <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
+                    2
+                  </div>
+                  <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">4–Step Verification</h3>
+                  <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                    Quick 2FA mobile auth, Stripe biometric ID match, and automated Nursys nursing board check create your vetted profile in minutes.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">4–Step Verification</h3>
-                <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
-                  Quick 2FA mobile auth, Stripe biometric ID match, and automated Nursys nursing board check create your vetted profile in minutes.
-                </p>
+                <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                  <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
+                    License numbers remain private
+                  </span>
+                </div>
               </div>
-              <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
-                  License numbers remain private
-                </span>
-              </div>
-            </div>
 
-            <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
-                  3
+              <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                <div>
+                  <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
+                    3
+                  </div>
+                  <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">$0 Booking Fees</h3>
+                  <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                    Travelers pay exactly what hosts list. Escrow pre-authorization hold with 24–hour host response SLA and shift-cancellation tiers.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">$0 Booking Fees</h3>
-                <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
-                  Travelers pay exactly what hosts list. Escrow pre-authorization hold with 24–hour host response SLA and shift-cancellation tiers.
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
-                  All utilities itemized &amp; guaranteed
-                </span>
+                <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                  <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
+                    All utilities itemized &amp; guaranteed
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
+                <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-full bg-[#195b4c] dark:bg-[#aff0db] text-white dark:text-[#0B1626] flex items-center justify-center font-bold text-sm mb-6">
+                      1
+                    </div>
+                    <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">100% Verified Clinicians</h3>
+                    <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                      Every guest is an active licensed healthcare professional verified via primary-source Nursys and state medical boards. Zero party tolerance, quiet day-sleepers, and respectful professionals.
+                    </p>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                    <span className="text-xs text-[#195b4c] dark:text-[#aff0db] font-semibold">
+                      Board-verified license &amp; ID screening
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-full bg-[#005684] text-white flex items-center justify-center font-bold text-sm mb-6">
+                      2
+                    </div>
+                    <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">Guaranteed Mid-Term Income</h3>
+                    <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                      Enjoy predictable 30 to 90-day stays aligned with 13-week hospital rotations. Transparent 5% flat platform fee with automated direct deposits powered by Stripe Connect Escrow.
+                    </p>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                    <span className="text-xs text-[#005684] dark:text-[#93ccff] font-semibold">
+                      Zero guest churn • Flat 5% host take-rate
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-[#15233a] p-8 rounded-3xl shadow-xs border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-full bg-[#745b0d] text-white flex items-center justify-center font-bold text-sm mb-6">
+                      3
+                    </div>
+                    <h3 className="text-lg font-bold text-[#001848] dark:text-white mb-2">Contract Flex Vacancy Protection</h3>
+                    <p className="text-sm text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                      If a nurse's clinical placement is unexpectedly cancelled by the hospital with staffing agency documentation, hosts receive a guaranteed 14-day vacancy stipend payout and re-listing boost.
+                    </p>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                    <span className="text-xs text-[#745b0d] dark:text-[#ffdf91] font-semibold">
+                      14-day vacancy stipend guarantee
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {onGoToHostPortal && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={onGoToHostPortal}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#001848] hover:bg-[#005684] text-white text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add_home</span>
+                    <span>Enter Host Workspace &amp; Add Sanctuary Listing →</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -600,7 +720,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   onClick={onGoToHostPortal}
                   className="px-6 py-3.5 rounded-xl bg-[#001848] hover:bg-[#005684] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
-                  Enter Host Portal (Screen B1-B3)
+                  Enter Host Portal
                 </button>
               )}
               <div className="flex items-center gap-2 text-xs text-[#195b4c] font-bold">

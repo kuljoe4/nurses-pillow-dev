@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS } from '../data/mockData';
 
@@ -21,6 +21,17 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
   isNightShiftMode,
   onGoToHousing,
 }) => {
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const savedListings = MOCK_LISTINGS.filter((item) =>
@@ -28,13 +39,21 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-xs">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-xs"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
         className={`w-full max-w-md h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto transition-colors ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-l border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <div>
           {/* Header */}

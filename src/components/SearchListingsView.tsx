@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
@@ -43,6 +43,31 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [mapNotification, setMapNotification] = useState<string | null>(null);
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
   const [activeAmenityCount, setActiveAmenityCount] = useState(4);
+
+  const hospitalDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click or Escape key
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (hospitalDropdownRef.current && !hospitalDropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false);
+        setIsGsaModalOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const durationOptions = [
     { label: '4 wks', value: '4' },
@@ -145,7 +170,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
                 Assigned Hospital Campus
               </label>
-              <div className="relative">
+              <div ref={hospitalDropdownRef} className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#005684] dark:text-[#93ccff] pointer-events-none text-[18px]">
                   local_hospital
                 </span>
@@ -752,8 +777,18 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
       {/* GSA Stipend Audit Modal */}
       {isGsaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-2xl border border-[rgba(11,37,89,0.1)] text-[#001848] dark:text-white">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-start"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsGsaModalOpen(false);
+            }
+          }}
+        >
+          <div
+            className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-2xl border border-[rgba(11,37,89,0.1)] text-[#001848] dark:text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>

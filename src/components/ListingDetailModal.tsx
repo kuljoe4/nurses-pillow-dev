@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HousingListing } from '../types';
 
 interface ListingDetailModalProps {
@@ -24,6 +24,17 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!listing) return null;
 
   // Sample photo mosaic collection if listing only has 1 or 2
@@ -36,13 +47,21 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-start"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className={`w-full max-w-5xl my-6 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative border ${
+        className={`w-full max-w-5xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative border ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button

@@ -223,7 +223,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-bold text-[#001848] dark:text-white">
-                        24/7 Clinical Shift Concierge
+                        24/7 Clinician Support Desk
                       </div>
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#eaedff] dark:bg-[#152438] text-[#005684] dark:text-[#93ccff] font-bold">
                         1-800-RN-PILLOW

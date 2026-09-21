@@ -450,6 +450,9 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 >
                   PDF, JPG, or PNG up to 15MB. Your sensitive data is encrypted with HIPAA-compliant standards.
                 </p>
+                <p className="text-[11px] text-[#195b4c] dark:text-[#aff0db] font-semibold mt-2">
+                  🔒 Uploaded license documents and IDs are permanently purged post-approval. Raw license numbers remain private and hidden from hosts.
+                </p>
               </div>
             </div>
 
@@ -516,7 +519,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 isNightShiftMode ? 'text-[#8ea5c8]' : 'text-[#404850]'
               }`}
             >
-              Nurses Pillow verifies active standing directly with State Boards of Nursing. Your license number is never displayed publicly to hosts.
+              <strong>Clinician Privacy Guarantee:</strong> Uploaded license documents and IDs are permanently purged post-approval. Raw license numbers remain private and hidden from hosts.
             </p>
           </div>
 

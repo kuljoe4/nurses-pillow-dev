@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { VerificationFormData } from '../types';
 
 interface VerificationSuccessModalProps {
@@ -16,16 +16,35 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
   onGoToHousing,
   isNightShiftMode,
 }) => {
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/60 backdrop-blur-sm flex justify-center items-start animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className={`w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
+        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close icon */}
         <button

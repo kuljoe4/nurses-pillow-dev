@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserRole } from '../types';
 
 interface AuthModalProps {
@@ -21,9 +21,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [role, setRole] = useState<UserRole>('nurse');
 
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Form states
   const [fullName, setFullName] = useState('Sarah Jenkins');
   const [specialty, setSpecialty] = useState('rn');
+  const [propertyType, setPropertyType] = useState('entire');
   const [email, setEmail] = useState('sarah.jenkins@alumni.duke.edu');
   const [phone, setPhone] = useState('+1 (919) 555-0198');
   const [password, setPassword] = useState('NurseHero2024!#');
@@ -62,13 +74,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-start"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className={`w-full max-w-2xl my-8 rounded-3xl p-6 sm:p-8 shadow-2xl relative border ${
+        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl relative border transition-all ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
@@ -92,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-[#404850] dark:text-[#c0c7d1]'
               }`}
             >
-              AU-01: Create Sanctuary Account
+              Create Sanctuary Account
             </button>
             <button
               type="button"
@@ -103,12 +123,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-[#404850] dark:text-[#c0c7d1]'
               }`}
             >
-              AU-03: Sign In
+              Sign In
             </button>
           </div>
         </div>
 
-        {/* SCREEN AU-01: Role Selection & Safe Clinical Sign-Up */}
+        {/* Role Selection & Safe Clinical Sign-Up */}
         {mode === 'signup' && (
           <div>
             <div className="text-center mb-6">
@@ -121,12 +141,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
             </div>
 
-            {/* Role Selection Buttons */}
+            {/* Role Selection Buttons (Fixed min-height to eliminate CLS) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
               <button
                 type="button"
                 onClick={() => setRole('nurse')}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all min-h-[76px] flex flex-col justify-center ${
                   role === 'nurse'
                     ? 'border-[#005684] bg-[#0a6fa8] text-white shadow-sm'
                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
@@ -147,7 +167,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="button"
                 onClick={() => setRole('host')}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all min-h-[76px] flex flex-col justify-center ${
                   role === 'host'
                     ? 'border-[#005684] bg-[#0a6fa8] text-white shadow-sm'
                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
@@ -166,17 +186,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             </div>
 
-            {/* Role Context Pill Banner */}
-            <div className="p-3.5 rounded-2xl bg-[#aff0db]/25 border border-[#aff0db]/60 text-xs text-[#195b4c] dark:text-[#aff0db] mb-5 flex items-start gap-2.5">
+            {/* Role Context Pill Banner (Fixed min-height prevents layout shift) */}
+            <div className="p-3.5 rounded-2xl bg-[#aff0db]/25 border border-[#aff0db]/60 text-xs text-[#195b4c] dark:text-[#aff0db] mb-5 flex items-start gap-2.5 min-h-[76px]">
               <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5">verified</span>
-              <div>
-                <strong>
-                  {role === 'nurse' ? 'Healthcare Professional & Clinician Privileges' : 'Host Partner Program Privileges'}
-                </strong>
-                <p className="mt-0.5 text-[11px] leading-relaxed">
+              <div className="flex-1">
+                <div className="font-bold leading-tight">
+                  {role === 'nurse' ? 'Healthcare Professional Privileges' : 'Verified Property Host Privileges'}
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed">
                   {role === 'nurse'
-                    ? 'Exclusive access to day-sleeper sanctuaries calibrated for 4, 8, 13, and 26-week assignments with zero-penalty contract cancellation safeguards.'
-                    : 'List entire properties or private furnished rooms with 100% booking approval autonomy and ~95% Net Payout via Stripe Connect Express.'}
+                    ? 'Exclusive access to day-sleeper sanctuaries with zero-penalty contract cancellation safeguards.'
+                    : 'List entire properties or private furnished rooms with 100% booking autonomy and ~95% Net Payout.'}
                 </p>
               </div>
             </div>
@@ -198,7 +218,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              {role === 'nurse' && (
+              {/* Matched slot for both roles eliminates vertical jump (CLS) */}
+              {role === 'nurse' ? (
                 <div>
                   <label className="block font-bold mb-1">Specialty / Clinical Discipline</label>
                   <select
@@ -211,6 +232,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <option value="pa_np">Physician Assistant (PA) / Nurse Practitioner (NP / APRN)</option>
                     <option value="therapy">Therapist (Physical PT / Occupational OT / Speech SLP)</option>
                     <option value="allied">Allied Health / Respiratory Therapist (CRT, RRT) / Pharmacist</option>
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block font-bold mb-1">Property Type / Housing Portfolio</label>
+                  <select
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111e33] focus:outline-none"
+                  >
+                    <option value="entire">Entire Residential Home (Condo, Townhouse, Single-Family)</option>
+                    <option value="private_suite">Private Bedroom Suite with Dedicated En-Suite Bathroom</option>
+                    <option value="guest_house">In-Law Suite / Dedicated Accessory Dwelling Unit (ADU)</option>
+                    <option value="compound">Multi-Room Mid-Term Assignment Compound</option>
                   </select>
                 </div>
               )}

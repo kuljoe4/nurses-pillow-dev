@@ -306,7 +306,7 @@ export function buildHostEarningsLedgerData(bookings: BookingRequest[]): {
     b.hostNetPayout || b.monthlyRent * 0.95,
     b.status === 'approved' ? 'PAID / ESCROWED' : 'PENDING APPROVAL',
     'Automated to Bank Account',
-    b.specialRequests || 'Standard Daytime Quiet Protocol',
+    b.specialRequests || 'Standard Quiet Daytime Environment',
   ]);
 
   return { headers, rows };

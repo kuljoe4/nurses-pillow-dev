@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HousingListing, BookingRequest } from '../types';
 
 interface ItemizedCheckoutModalProps {
@@ -25,14 +25,27 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const monthlyRent = listing.monthlyRate || 1950;
-  const securityDeposit = 250;
+  const hostRequiresDeposit = listing.requiresSecurityDeposit ?? (listing.securityDeposit !== undefined ? listing.securityDeposit > 0 : true);
+  const securityDeposit = hostRequiresDeposit ? (listing.securityDeposit ?? 250) : 0;
   const cleaningFee = 150;
   const petFee = 0;
   const travelerFee = 0;
-  const totalInitialCharge = monthlyRent + securityDeposit + cleaningFee + petFee + travelerFee;
+  // Upfront charge includes initial month lodging and cleaning fee. Security deposit is a Stripe auth hold only.
+  const totalInitialCharge = monthlyRent + cleaningFee + petFee + travelerFee;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,13 +89,21 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-start"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className={`w-full max-w-2xl my-8 rounded-3xl p-6 sm:p-8 shadow-2xl relative border ${
+        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl relative border transition-all ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
@@ -103,7 +124,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               </div>
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#005684] dark:text-[#93ccff]">
-                  Screen A4 • Itemized Checkout &amp; Request
+                  Itemized Checkout &amp; Reservation Request
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
                   Request to Book Shift Sanctuary
@@ -145,14 +166,14 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                   <span>Stripe Identity Verified</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[#195b4c] dark:text-[#aff0db] font-medium">
-                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                  <span>CA BRN RN-9482015 Active</span>
+                  <span className="material-symbols-outlined text-[14px]">health_and_safety</span>
+                  <span>Primary Registry Active</span>
                 </div>
               </div>
             </div>
 
             {/* Itemized Cost Summary Table */}
-            <div className="border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl p-4 mb-5 space-y-2.5 text-xs">
+            <div className="border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl p-4 mb-4 space-y-2.5 text-xs">
               <div className="text-xs font-bold text-[#001848] dark:text-white border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] pb-2">
                 Itemized Cost Breakdown
               </div>
@@ -161,11 +182,19 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                 <span className="font-bold text-[#001848] dark:text-white">${monthlyRent.toLocaleString()}.00</span>
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                <span className="flex items-center gap-1">
-                  Refundable Security Deposit Hold (Stripe Auth Hold)
-                  <span className="material-symbols-outlined text-[13px] text-gray-400" title="Released at checkout">info</span>
+                <span className="flex items-center gap-1.5">
+                  <span>Host Security Deposit</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                    securityDeposit > 0
+                      ? 'bg-[#005684]/10 text-[#005684] dark:bg-[#93ccff]/15 dark:text-[#93ccff]'
+                      : 'bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db]'
+                  }`}>
+                    {securityDeposit > 0 ? 'Stripe Auth Hold (Not Billed Today)' : '$0 Deposit Required'}
+                  </span>
                 </span>
-                <span className="font-bold text-[#001848] dark:text-white">${securityDeposit.toFixed(2)}</span>
+                <span className="font-bold text-[#001848] dark:text-white">
+                  {securityDeposit > 0 ? `$${securityDeposit.toFixed(2)} Hold` : '$0.00'}
+                </span>
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                 <span>One-Time Scrub Sanitization &amp; Cleaning Fee</span>
@@ -182,22 +211,50 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                 </span>
                 <span>$0.00</span>
               </div>
-              <div className="pt-2 border-t border-[rgba(11,37,89,0.1)] dark:border-[#233550] flex justify-between items-baseline">
-                <div>
-                  <div className="font-bold text-sm text-[#001848] dark:text-white">Total Initial Pre-Authorization</div>
-                  <div className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">No charges until Host Sarah confirms your shift schedule</div>
+
+              {/* Total Due Now vs Auth Hold */}
+              <div className="pt-2.5 border-t border-[rgba(11,37,89,0.1)] dark:border-[#233550] space-y-1.5">
+                <div className="flex justify-between items-baseline">
+                  <div>
+                    <div className="font-bold text-sm text-[#001848] dark:text-white">Due Today at Confirmation</div>
+                    <div className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">First month lodging + cleaning fee (held in escrow)</div>
+                  </div>
+                  <div className="text-xl font-black text-[#005684] dark:text-[#93ccff]">
+                    ${totalInitialCharge.toLocaleString()}.00
+                  </div>
                 </div>
-                <div className="text-xl font-black text-[#005684] dark:text-[#93ccff]">
-                  ${totalInitialCharge.toLocaleString()}.00
-                </div>
+                {securityDeposit > 0 && (
+                  <div className="flex justify-between items-center text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-dashed border-gray-200 dark:border-gray-700">
+                    <span>Stripe Authorization Hold (48h prior to check-in):</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-200">${securityDeposit.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Host Security Deposit Explainer Box */}
+            {securityDeposit > 0 ? (
+              <div className="p-3.5 rounded-2xl bg-[#eaedff]/70 dark:bg-[#15233a] border border-[#005684]/20 text-xs text-[#404850] dark:text-[#c0c7d1] mb-5 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#005684] dark:text-[#93ccff]">
+                  <span className="material-symbols-outlined text-[16px]">lock_clock</span>
+                  <span>Stripe Pre-Authorization Hold Explainer</span>
+                </div>
+                <p className="leading-relaxed">
+                  The <strong>${securityDeposit.toFixed(2)} security deposit is NOT charged to your card today</strong>. It is placed as a temporary pre-authorization hold 48 hours before check-in and releases automatically within 7 days after checkout, protecting both host and traveling nurse.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 rounded-2xl bg-[#aff0db]/20 border border-[#195b4c]/20 text-xs text-[#195b4c] dark:text-[#aff0db] mb-5 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">verified</span>
+                <span><strong>No Security Deposit Required:</strong> This host has set a $0 deposit requirement for verified traveling nurses.</span>
+              </div>
+            )}
 
             {/* Payment Method (Stripe Elements Card Container Simulation) */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-[#001848] dark:text-white mb-1">
-                  Stripe Payment Pre-Authorization Hold
+                  Payment Method (Encrypted via Stripe Elements)
                 </label>
                 <div className="p-3 rounded-xl border border-[rgba(11,37,89,0.15)] dark:border-[#233550] bg-white dark:bg-[#111e33] flex items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-2 flex-1">
@@ -265,7 +322,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                   required
                 />
                 <span>
-                  I agree to the host's <strong>Shift-Flexible Tier</strong> (100% refund up to 14 days prior to arrival; 100% penalty protection if hospital cancels assignment with agency proof) and the Day-Sleeper Quiet Protocol.
+                  I agree to the host's <strong>Shift-Flexible Tier</strong> (100% refund up to 14 days prior to arrival; 100% penalty protection if hospital cancels assignment with agency proof) and the Quiet Daytime Environment commitment.
                 </span>
               </label>
 

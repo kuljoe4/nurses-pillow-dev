@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface NurseSupportModalProps {
   isOpen: boolean;
@@ -15,6 +15,17 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,13 +39,21 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/60 backdrop-blur-sm flex justify-center items-start"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
-        className={`w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
+        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
@@ -50,9 +69,9 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
             <span className="material-symbols-outlined text-2xl">support_agent</span>
           </div>
           <div>
-            <h3 className="text-xl font-bold tracking-tight">24/7 Nurse Concierge</h3>
+            <h3 className="text-xl font-bold tracking-tight">Clinician Support Desk</h3>
             <p className="text-xs opacity-75">
-              Available 24 hours for clinicians working night and day shifts.
+              Available for traveling nurses and hosts with booking or shift assistance.
             </p>
           </div>
         </div>
@@ -80,7 +99,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
               Quiet Hours Hotline
             </span>
             <span className="text-sm font-bold text-[#195b4c] dark:text-[#aff0db]">
-              Direct Text Concierge
+              Direct Text Support
             </span>
           </div>
         </div>
@@ -88,9 +107,9 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         {isSubmitted ? (
           <div className="p-6 rounded-2xl bg-[#195b4c]/20 text-[#195b4c] dark:text-[#aff0db] text-center">
             <span className="material-symbols-outlined text-3xl mb-1">check_circle</span>
-            <p className="text-sm font-bold">Message Dispatched to Nurse Team</p>
+            <p className="text-sm font-bold">Message Dispatched to Support Team</p>
             <p className="text-xs mt-1">
-              A clinical concierge officer will respond in under 5 minutes.
+              A clinician support representative will respond shortly.
             </p>
           </div>
         ) : (

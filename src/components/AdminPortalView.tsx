@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AdminLicenseReview, MarketDemandReport, PromoCode, BookingRequest, HousingListing } from '../types';
 import { AdminSheetsPreset } from './GoogleSheetsSyncModal';
+import { Milestone2ScopeGate } from './Milestone2ScopeGate';
 
 interface AdminPortalViewProps {
   isNightShiftMode: boolean;
@@ -8,6 +9,7 @@ interface AdminPortalViewProps {
   onOpenGoogleSheets?: (preset?: AdminSheetsPreset) => void;
   bookingRequests?: BookingRequest[];
   listings?: HousingListing[];
+  isDeveloper?: boolean;
 }
 
 export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
@@ -16,8 +18,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   onOpenGoogleSheets,
   bookingRequests = [],
   listings = [],
+  isDeveloper = false,
 }) => {
   const [activeAdminTab, setActiveAdminTab] = useState<'queue' | 'fees' | 'analytics' | 'sheets'>('queue');
+  const [isAnalyticsUnlocked, setIsAnalyticsUnlocked] = useState(false);
 
   // Screen C1 State
   const [reviews, setReviews] = useState<AdminLicenseReview[]>([
@@ -222,7 +226,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
             }`}
           >
-            License Queue (C1)
+            License Queue
           </button>
           <button
             type="button"
@@ -238,24 +242,26 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
             }`}
           >
-            Fee Control (C2)
+            Platform Fees &amp; Escrow
           </button>
-          <button
-            type="button"
-            role="tab"
-            id="admin-tab-analytics"
-            aria-selected={activeAdminTab === 'analytics'}
-            aria-controls="admin-panel-analytics"
-            tabIndex={activeAdminTab === 'analytics' ? 0 : -1}
-            onClick={() => setActiveAdminTab('analytics')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
-              activeAdminTab === 'analytics'
-                ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
-            }`}
-          >
-            Analytics (C3)
-          </button>
+          {isDeveloper && (
+            <button
+              type="button"
+              role="tab"
+              id="admin-tab-analytics"
+              aria-selected={activeAdminTab === 'analytics'}
+              aria-controls="admin-panel-analytics"
+              tabIndex={activeAdminTab === 'analytics' ? 0 : -1}
+              onClick={() => setActiveAdminTab('analytics')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
+                activeAdminTab === 'analytics'
+                  ? 'bg-[#001848] text-white shadow-xs'
+                  : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              }`}
+            >
+              Marketplace Analytics
+            </button>
+          )}
           <button
             type="button"
             role="tab"
@@ -504,8 +510,18 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </div>
       )}
 
-      {/* SCREEN C3: Marketplace Analytics & Demand Reports */}
-      {activeAdminTab === 'analytics' && (
+      {/* SCREEN C3: Marketplace Analytics & Demand Reports (Milestone 2 Deliverable) */}
+      {activeAdminTab === 'analytics' && !isAnalyticsUnlocked && (
+        <Milestone2ScopeGate
+          isNightShiftMode={isNightShiftMode}
+          featureTitle="Super-Admin Marketplace Analytics & Revenue Engine (/admin/analytics)"
+          featureDescription="In accordance with the Final Scope Addendum, deep GMV forecasting, multi-hospital search telemetry, and automated fee distribution analytics are scheduled under Milestone 2 post-M1 marketplace acceptance."
+          onReturnToMarketplace={() => setActiveAdminTab('queue')}
+          onBypassGate={() => setIsAnalyticsUnlocked(true)}
+        />
+      )}
+
+      {activeAdminTab === 'analytics' && isAnalyticsUnlocked && (
         <div
           role="tabpanel"
           id="admin-panel-analytics"

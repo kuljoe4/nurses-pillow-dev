@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface HealthcareAmenitiesFilterModalProps {
   isOpen: boolean;
@@ -23,6 +23,17 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
 
   // Section 2: Hospital Proximity & Commute
   const [commuteRadius, setCommuteRadius] = useState<'1' | '3' | '5' | '10'>('3');
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
   const [rapidTransitShuttle, setRapidTransitShuttle] = useState(false);
 
   // Section 3: Rental Type & Space Configuration
@@ -103,7 +114,14 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#162e62]/60 backdrop-blur-xs transition-opacity flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-[#162e62]/60 backdrop-blur-xs transition-opacity flex justify-center items-start"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       {/* Modal Container */}
       <div
         role="dialog"
@@ -114,6 +132,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Top Decorative Clinical Hue Accent Line */}
         <div className="w-full h-1.5 bg-gradient-to-r from-[#005684] via-[#0a6fa8] to-[#195b4c]" />

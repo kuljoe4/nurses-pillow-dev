@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HousingListing, BookingRequest } from '../types';
+import { TrustBreakdownCard } from './TrustBreakdownCard';
 
 interface NurseDashboardViewProps {
   isNightShiftMode: boolean;
@@ -26,7 +27,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   onGoToVerification,
   onOpenSupport,
 }) => {
-  const [activeTab, setActiveTab] = useState<'current' | 'saved' | 'verification' | 'messages' | 'receipts'>('current');
+  const [activeTab, setActiveTab] = useState<'current' | 'profile' | 'saved' | 'verification' | 'messages' | 'receipts'>('current');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [extendedNotice, setExtendedNotice] = useState(false);
 
@@ -78,10 +79,21 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Sarah Jenkins, BSN, RN</h1>
-                <span className="px-3 py-0.5 rounded-full bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] text-xs font-bold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">verified</span>
-                  <span>Board Certified RN #9482015-CA • Verified</span>
+                <span
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
+                  style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+                >
+                  <span className="material-symbols-outlined text-[15px]">verified_user</span>
+                  <span>Nurses Pillow Verified</span>
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('profile')}
+                  className="text-xs font-semibold text-[#0a6fa8] dark:text-[#93ccff] hover:underline flex items-center gap-0.5 cursor-pointer ml-1"
+                >
+                  <span>Profile &amp; Trust Credentials</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
               </div>
               <p className="text-xs sm:text-sm text-[#404850] dark:text-[#c0c7d1]">
                 Active Contract: <strong>PICU at UCSF Mission Bay</strong> (Week 4 of 13) • 07:00 – 19:30 Shift Rotation
@@ -138,7 +150,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 5-Tab Console Switcher */}
+      {/* 6-Tab Console Switcher */}
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-1.5 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] mb-8 flex flex-wrap gap-1">
         <button
           type="button"
@@ -151,6 +163,25 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         >
           <span className="material-symbols-outlined text-[18px]">hotel</span>
           <span>Current &amp; Upcoming Stays</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            activeTab === 'profile'
+              ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">account_circle</span>
+          <span>Clinician Profile</span>
+          <span
+            className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+            style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+          >
+            Verified
+          </span>
         </button>
 
         <button
@@ -431,6 +462,141 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       )}
 
+      {/* TAB: Nurse Profile & Account Settings */}
+      {activeTab === 'profile' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+              <div>
+                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider">
+                  Clinician Profile &amp; Account Settings
+                </span>
+                <h2 className="text-2xl font-bold text-[#001848] dark:text-white">
+                  Clinician Profile &amp; Trust Credentials
+                </h2>
+              </div>
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
+                style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+              >
+                <span className="material-symbols-outlined text-[15px]">verified_user</span>
+                <span>Nurses Pillow Verified</span>
+              </span>
+            </div>
+
+            {/* Expanded Trust Breakdown Card (Rule Compliant) */}
+            <TrustBreakdownCard
+              isNightShiftMode={isNightShiftMode}
+              clinicianName="Sarah Jenkins, BSN, RN"
+              clinicianTitle="Pediatric Intensive Care Unit (PICU)"
+              verificationTimestamp="September 2026"
+              stateBoard="State Board of Nursing"
+              titleBadge="Credential Audit"
+            />
+
+            {/* Profile Field Sections (ND-04 Specification) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {/* Clinical Specialty & Shift Preference */}
+              <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#14233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#001848] dark:text-white">
+                  <span className="material-symbols-outlined text-[#005684] dark:text-[#93ccff]">medical_services</span>
+                  <span>Specialty &amp; Shift Preference</span>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-gray-400 block mb-1">Clinical Specialty</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      Pediatric Intensive Care Unit (PICU) / Pediatric Trauma
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-gray-400 block mb-1">Shift Preference (Housing Matching)</label>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#195b4c]/10 text-[#195b4c] dark:text-[#aff0db] font-bold">
+                      <span className="material-symbols-outlined text-[15px]">bedtime</span>
+                      <span>19:00 – 07:30 Night Shift (Day Sleeper Protocol)</span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Enforces blackout curtains, acoustic white noise buffer, and zero-daytime lawnmower/maintenance guarantees.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-gray-400 block mb-1">Total Acute Care Experience</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      6+ Years Level 1 Pediatric Trauma Center
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agency & Hospital Assignment */}
+              <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#14233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#001848] dark:text-white">
+                  <span className="material-symbols-outlined text-[#005684] dark:text-[#93ccff]">domain</span>
+                  <span>Travel Agency &amp; Hospital Assignment</span>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-gray-400 block mb-1">Staffing Agency Partner</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      Aya Healthcare (Travel Nurse Division)
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-gray-400 block mb-1">Current Healthcare System Assignment</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      UCSF Medical Center - Mission Bay (San Francisco, CA)
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-gray-400 block mb-1">Active Contract Rotation</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      13-Week Contract (Week 4 in progress)
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Emergency Contact */}
+              <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#14233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#001848] dark:text-white">
+                  <span className="material-symbols-outlined text-[#005684] dark:text-[#93ccff]">contact_phone</span>
+                  <span>Emergency &amp; Shift Supervisor Contacts</span>
+                </div>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-gray-400 block mb-1">Primary Emergency Contact</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      David Jenkins (Spouse) • +1 (919) 555-0144
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-gray-400 block mb-1">Unit Clinical Supervisor</label>
+                    <div className="font-semibold text-[#001848] dark:text-white">
+                      PICU Nursing Operations Admin • Ext. 4920
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Privacy Protocol Guarantee */}
+              <div className="p-5 rounded-2xl bg-[#E1EFE9]/40 dark:bg-[#142823] border border-[#2F6E5E]/20 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-[#2F6E5E] dark:text-[#aff0db]">
+                  <span className="material-symbols-outlined">shield</span>
+                  <span>Zero Raw License Exposure Policy</span>
+                </div>
+                <p className="text-xs text-[#2F6E5E] dark:text-[#aff0db] leading-relaxed">
+                  In compliance with Nurses Pillow privacy standards, raw state license numbers and government identity documents are never displayed to hosts or third parties. All credentials are verified via primary source registries and permanently purged post-validation.
+                </p>
+                <div className="text-[11px] font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[15px]">lock</span>
+                  <span>Identity documents and license numbers permanently purged post-verification.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TAB 2: My Saved Pillows */}
       {activeTab === 'saved' && (
         <div className="space-y-6">
@@ -503,74 +669,109 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
       {/* TAB 3: Verification Center */}
       {activeTab === 'verification' && (
-        <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-[#195b4c] dark:text-[#aff0db] uppercase tracking-wider">
-                Clinical Security Center
-              </span>
-              <h2 className="text-2xl font-bold">Verification &amp; Credentialing Status</h2>
-            </div>
-            <span className="px-3.5 py-1 rounded-full bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] text-xs font-bold flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
-              <span>All 4 Tiers Cleared</span>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-[#005684]">badge</span>
-                <div>
-                  <div className="font-bold text-xs">Stripe Identity (ID &amp; Bio Selfie)</div>
-                  <div className="text-[11px] text-gray-500">Government RealID Verified</div>
-                </div>
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+              <div>
+                <span className="text-xs font-bold text-[#195b4c] dark:text-[#aff0db] uppercase tracking-wider">
+                  Clinical Security Center
+                </span>
+                <h2 className="text-2xl font-bold">Verification &amp; Credentialing Audit</h2>
               </div>
-              <span className="text-xs font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">check</span> Verified
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
+                style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+              >
+                <span className="material-symbols-outlined text-[15px]">verified_user</span>
+                <span>Nurses Pillow Verified</span>
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-[#005684]">phonelink_ring</span>
-                <div>
-                  <div className="font-bold text-xs">Twilio Shift Carrier Token</div>
-                  <div className="text-[11px] text-gray-500">+1 (919) 555-0198 Verified</div>
+            {/* Expanded Trust Breakdown Card */}
+            <TrustBreakdownCard
+              isNightShiftMode={isNightShiftMode}
+              clinicianName="Sarah Jenkins, BSN, RN"
+              clinicianTitle="Registered Nurse • PICU Specialty"
+              verificationTimestamp="September 2026"
+              stateBoard="California &amp; North Carolina State Boards"
+              titleBadge="Primary Source Registry Verified"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#005684]/10 dark:bg-[#005684]/20 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                    <span className="material-symbols-outlined text-[20px]">badge</span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs">Stripe Identity (ID &amp; Bio Selfie)</div>
+                    <div className="text-[11px] text-gray-500">Government RealID Verified</div>
+                  </div>
                 </div>
+                <span
+                  className="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+                >
+                  Verified
+                </span>
               </div>
-              <span className="text-xs font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">check</span> Verified
+
+              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#005684]/10 dark:bg-[#005684]/20 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                    <span className="material-symbols-outlined text-[20px]">phonelink_ring</span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs">Twilio Shift Carrier Token</div>
+                    <div className="text-[11px] text-gray-500">+1 (919) 555-0198 Verified</div>
+                  </div>
+                </div>
+                <span
+                  className="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+                >
+                  Verified
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#2F6E5E]/15 dark:bg-[#2F6E5E]/25 flex items-center justify-center text-[#2F6E5E] dark:text-[#aff0db]">
+                    <span className="material-symbols-outlined text-[20px]">health_and_safety</span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs">Official Primary Source Registry &amp; State</div>
+                    <div className="text-[11px] text-gray-500">Active, Clear &amp; Unencumbered Standing</div>
+                  </div>
+                </div>
+                <span
+                  className="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                  style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+                >
+                  Active
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#005684]/10 dark:bg-[#005684]/20 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                    <span className="material-symbols-outlined text-[20px]">public</span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs">eNLC Compact Endorsement</div>
+                    <div className="text-[11px] text-gray-500">Multi-state Travel Ready (41 states)</div>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff]">Eligible</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#aff0db]/25 border border-[#aff0db]/60 text-xs text-[#195b4c] dark:text-[#aff0db] leading-relaxed flex items-start gap-2">
+              <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5">lock</span>
+              <span>
+                <strong>Data Privacy Safeguard:</strong> Identity documents and license numbers permanently purged post-verification. Only the cryptographically signed <em>Nurses Pillow Verified</em> token is retained.
               </span>
             </div>
-
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-[#195b4c]">health_and_safety</span>
-                <div>
-                  <div className="font-bold text-xs">California BRN RN-9482015</div>
-                  <div className="text-[11px] text-gray-500">Active, Clear &amp; Unencumbered</div>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">check</span> Verified
-              </span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-[#005684]">public</span>
-                <div>
-                  <div className="font-bold text-xs">eNLC Compact Endorsement</div>
-                  <div className="text-[11px] text-gray-500">Multi-state Travel Ready (41 states)</div>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff]">Eligible</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#aff0db]/25 border border-[#aff0db]/60 text-xs text-[#195b4c] dark:text-[#aff0db] leading-relaxed">
-            <strong>Data Privacy Safeguard:</strong> State license documents uploaded during onboarding are automatically purged from primary storage upon validation. Only the permanent <em>Nurses Pillow Verified</em> token is retained.
           </div>
         </div>
       )}

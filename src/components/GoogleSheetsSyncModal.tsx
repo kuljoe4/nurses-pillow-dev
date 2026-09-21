@@ -276,7 +276,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/60 backdrop-blur-xs flex justify-center items-start"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sheets-modal-title"
@@ -289,7 +289,8 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
     >
       <div
         ref={modalRef}
-        className={`relative w-full max-w-4xl rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all max-h-[92vh] overflow-y-auto ${
+        onClick={(e) => e.stopPropagation()}
+        className={`relative w-full max-w-4xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all max-h-[92vh] overflow-y-auto ${
           isNightShiftMode
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'
@@ -799,18 +800,24 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
         {/* Explicit User Confirmation Dialog (MANDATORY per Workspace guidelines) */}
         {showConfirmModal && (
           <div
-            className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs flex items-center justify-center p-6"
+            className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs overflow-y-auto p-4 sm:p-6 flex justify-center items-start"
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
             aria-describedby="confirm-dialog-desc"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowConfirmModal(false);
+              }
+            }}
           >
             <div
-              className={`w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border ${
+              className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-2xl border ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] text-[#E6ECF7] border-[#233550]'
                   : 'bg-white text-[#001848] border-gray-200'
               }`}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-12 rounded-2xl bg-[#0F9D58]/20 text-[#0F9D58] flex items-center justify-center mb-3.5">
                 <span className="material-symbols-outlined text-[26px]">contactless</span>

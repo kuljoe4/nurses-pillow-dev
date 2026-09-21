@@ -1,17 +1,18 @@
 import React from 'react';
-import { LOGO_URL } from './Header';
 import { NursesPillowLogo } from './NursesPillowLogo';
 
 interface FooterProps {
   isNightShiftMode: boolean;
   onOpenSupport: () => void;
   onSelectTab: (tab: any) => void;
+  isDeveloper?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   isNightShiftMode,
   onOpenSupport,
   onSelectTab,
+  isDeveloper = false,
 }) => {
   return (
     <footer
@@ -39,7 +40,7 @@ export const Footer: React.FC<FooterProps> = ({
               Sanctuary-grade housing built exclusively for traveling clinicians navigating grueling shifts.
             </p>
 
-            {/* 24/7 Concierge badge */}
+            {/* 24/7 Clinician Support badge */}
             <button
               onClick={onOpenSupport}
               type="button"
@@ -58,10 +59,10 @@ export const Footer: React.FC<FooterProps> = ({
                     isNightShiftMode ? 'text-white' : 'text-[#001848]'
                   }`}
                 >
-                  24/7 Nurse Concierge
+                  Clinician Help &amp; Support
                 </div>
                 <div className="text-[11px] opacity-80 leading-none">
-                  Clinical shift support team
+                  Shift assistance &amp; ticket portal
                 </div>
               </div>
             </button>
@@ -201,23 +202,54 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <button
-                  onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  onClick={() => onSelectTab('legal-policies')}
+                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
                 >
-                  Lease Cancellation Terms
+                  Cancellation &amp; Refund Policy
                 </button>
               </li>
               <li>
-                <span className="hover:text-[#005684] transition-colors cursor-pointer">
-                  Privacy Policy
-                </span>
+                <button
+                  onClick={() => onSelectTab('legal-policies')}
+                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                >
+                  Privacy Policy &amp; Terms
+                </button>
+              </li>
+              {isDeveloper && (
+                <>
+                  <li>
+                    <button
+                      onClick={() => onSelectTab('phase1-inventory')}
+                      className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                    >
+                      Product Scope &amp; Specifications
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => onSelectTab('mobile-preview')}
+                      className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                    >
+                      Mobile App Experience (M2)
+                    </button>
+                  </li>
+                </>
+              )}
+              <li>
+                <button
+                  onClick={() => onSelectTab('system-status')}
+                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                >
+                  Platform Reliability &amp; Status
+                </button>
               </li>
               <li>
                 <button
                   onClick={onOpenSupport}
-                  className="hover:text-[#005684] transition-colors text-left cursor-pointer"
+                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left cursor-pointer"
                 >
-                  Help &amp; Contact
+                  Help &amp; Clinical Support
                 </button>
               </li>
             </ul>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavigationTab } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavigationTab, UserRole } from '../types';
 import { NursesPillowLogo } from './NursesPillowLogo';
 
 interface HeaderProps {
@@ -12,9 +12,14 @@ interface HeaderProps {
   onOpenSupport: () => void;
   isVerified: boolean;
   onOpenAuth?: (mode?: 'signin' | 'signup') => void;
+  currentUser: { role: UserRole; name: string };
+  onSwitchRole: (role: UserRole) => void;
+  m2BypassMode: boolean;
+  onToggleM2Bypass: () => void;
+  isDeveloper?: boolean;
 }
 
-export const LOGO_URL = '/nurses-pillow-logo.png';
+export const LOGO_URL = '/nurses-pillow-logo.svg';
 
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
@@ -26,19 +31,109 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSupport,
   isVerified,
   onOpenAuth,
+  currentUser,
+  onSwitchRole,
+  m2BypassMode,
+  onToggleM2Bypass,
+  isDeveloper = false,
 }) => {
-  const [isPortalsDropdownOpen, setIsPortalsDropdownOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close menus on outside click or Escape key
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsMoreMenuOpen(false);
+        setIsProfileMenuOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const getRoleLabel = (role: UserRole) => {
+    switch (role) {
+      case 'nurse':
+        return 'Clinician';
+      case 'host':
+        return 'Property Host';
+      case 'super_admin':
+        return 'Super-Admin';
+      case 'developer':
+        return 'Developer';
+    }
+  };
+
+  const getRoleInitials = (role: UserRole) => {
+    switch (role) {
+      case 'nurse':
+        return 'SJ';
+      case 'host':
+        return 'MV';
+      case 'super_admin':
+        return 'OA';
+      case 'developer':
+        return 'JD';
+    }
+  };
+
+  const getRoleColorStyles = (role: UserRole) => {
+    switch (role) {
+      case 'nurse':
+        return {
+          badge: 'bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db]',
+          avatar: 'bg-[#195b4c] text-white',
+        };
+      case 'host':
+        return {
+          badge: 'bg-[#005684]/10 text-[#005684] dark:bg-[#93ccff]/15 dark:text-[#93ccff]',
+          avatar: 'bg-[#005684] text-white',
+        };
+      case 'super_admin':
+        return {
+          badge: 'bg-amber-500/15 text-amber-800 dark:text-amber-300',
+          avatar: 'bg-amber-600 text-white',
+        };
+      case 'developer':
+        return {
+          badge: 'bg-purple-500/15 text-purple-800 dark:text-purple-300',
+          avatar: 'bg-purple-700 text-white',
+        };
+    }
+  };
+
+  const roleStyles = getRoleColorStyles(currentUser.role);
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ${
         isNightShiftMode
-          ? 'bg-[#0B1626] border-b border-[#233550] shadow-[0_4px_20px_rgba(0,0,0,0.5)] text-[#E6ECF7]'
-          : 'bg-white border-b border-[rgba(11,37,89,0.12)] shadow-[0_4px_20px_rgba(11,37,89,0.06)] text-[#001848]'
+          ? 'bg-[#0B1626]/95 backdrop-blur-md border-b border-[#233550] shadow-[0_4px_24px_rgba(0,0,0,0.5)] text-[#E6ECF7]'
+          : 'bg-white/95 backdrop-blur-md border-b border-[rgba(11,37,89,0.08)] shadow-[0_4px_24px_rgba(11,37,89,0.04)] text-[#001848]'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 h-20 flex items-center justify-between gap-3">
-        {/* Brand */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        {/* Brand Lockup */}
         <button
           onClick={() => onSelectTab('find-housing')}
           className="flex items-center gap-3 shrink-0 text-left focus:outline-none group cursor-pointer"
@@ -48,14 +143,14 @@ export const Header: React.FC<HeaderProps> = ({
           <NursesPillowLogo size={36} className="h-9 w-9 transition-transform group-hover:scale-105" />
           <div className="flex flex-col">
             <span
-              className={`text-[20px] font-bold tracking-tight leading-tight transition-colors ${
+              className={`text-[19px] sm:text-[20px] font-bold tracking-tight leading-tight transition-colors ${
                 isNightShiftMode ? 'text-white' : 'text-[#001848]'
               }`}
             >
               Nurses Pillow
             </span>
             <span
-              className="text-[#745b0d] dark:text-[#ffdf91] text-[15px] leading-none -mt-0.5"
+              className="text-[#745b0d] dark:text-[#ffdf91] text-[13px] sm:text-[14px] leading-none"
               style={{ fontFamily: "'Kaushan Script', cursive" }}
             >
               Rest Well. Heal Better.
@@ -63,289 +158,847 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </button>
 
-        {/* Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-6">
+        {/* Desktop Primary Navigation - Streamlined & Reduced Density */}
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
           <button
             onClick={() => onSelectTab('find-housing')}
-            className={`text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer ${
               currentTab === 'find-housing'
                 ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
+                  ? 'bg-[#182840] text-[#93ccff] font-bold'
+                  : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
-            Home
+            Explore Stays
           </button>
 
           <button
             onClick={() => onSelectTab('search-listings')}
-            className={`text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               currentTab === 'search-listings'
                 ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
+                  ? 'bg-[#182840] text-[#93ccff] font-bold'
+                  : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">travel_explore</span>
-            <span>Search Stays</span>
+            <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+            <span>Search &amp; Map</span>
           </button>
 
           <button
-            onClick={() => onSelectTab('nurse-dashboard')}
-            className={`text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-              currentTab === 'nurse-dashboard'
+            onClick={() => {
+              if (currentUser.role === 'host') {
+                onSelectTab('host-dashboard');
+              } else {
+                onSelectTab('for-hosts');
+              }
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+              currentTab === 'for-hosts' || currentTab === 'host-dashboard'
                 ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
+                  ? 'bg-[#005684]/25 text-[#93ccff] font-bold'
+                  : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
-            <span>Nurse Dashboard</span>
-            <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db]">
-              Portal A
-            </span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('host-dashboard')}
-            className={`text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-              currentTab === 'host-dashboard' || currentTab === 'for-hosts'
-                ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
-                : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
-            }`}
-          >
-            <span>Host Portal</span>
-            <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-[#005684]/15 text-[#005684] dark:text-[#93ccff]">
-              Portal B
-            </span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('admin-portal')}
-            className={`text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-              currentTab === 'admin-portal'
-                ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
-                : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
-            }`}
-          >
-            <span>Super-Admin</span>
-            <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-[#745b0d]/15 text-[#745b0d] dark:text-[#ffdf91]">
-              Portal C
-            </span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('verification')}
-            className={`text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-              currentTab === 'verification'
-                ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
-                : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
-            }`}
-          >
-            <span>Credentialing</span>
+            <span className="material-symbols-outlined text-[17px]">home</span>
+            <span>For Property Hosts</span>
           </button>
 
           <button
             onClick={() => onSelectTab('how-it-works')}
-            className={`text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer ${
               currentTab === 'how-it-works'
                 ? isNightShiftMode
-                  ? 'text-[#3E9AD1] font-bold border-b-2 border-[#3E9AD1] pb-0.5'
-                  : 'text-[#005684] font-bold border-b-2 border-[#005684] pb-0.5'
+                  ? 'bg-[#182840] text-[#93ccff] font-bold'
+                  : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white'
-                : 'text-[#404850] hover:text-[#001848]'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
             }`}
           >
             How It Works
           </button>
-        </nav>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* RN Verified Pill */}
-          <div
-            onClick={() => onSelectTab('verification')}
-            className={`cursor-pointer hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-              isNightShiftMode
-                ? 'bg-[#195b4c]/30 text-[#aff0db] border-[#195b4c]/60 hover:bg-[#195b4c]/40'
-                : 'bg-[#367464]/15 text-[#195b4c] border-[#94d3c0]/60 hover:bg-[#367464]/20'
-            }`}
-            title="Click to view your credentialing verification status"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#aff0db] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#195b4c]"></span>
-            </span>
-            <span className="text-[11px] font-bold tracking-wide">
-              {isVerified ? 'RN Verified' : 'Verification Active'}
-            </span>
-          </div>
-
-          {/* Auth Button */}
-          {onOpenAuth && (
+          {/* More Menu Dropdown */}
+          <div className="relative" ref={moreMenuRef}>
             <button
               type="button"
-              onClick={() => onOpenAuth('signup')}
-              className="hidden md:flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#001848] dark:bg-[#005684] hover:bg-[#162e62] text-white text-xs font-bold shadow-xs cursor-pointer"
+              onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+              className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                isMoreMenuOpen
+                  ? isNightShiftMode
+                    ? 'bg-[#182840] text-white'
+                    : 'bg-gray-100 text-[#001848]'
+                  : isNightShiftMode
+                  ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                  : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+              }`}
             >
-              <span className="material-symbols-outlined text-[16px]">lock</span>
-              <span>Sign In / Join</span>
+              <span>More</span>
+              <span className="material-symbols-outlined text-[18px] transition-transform duration-200">
+                {isMoreMenuOpen ? 'expand_less' : 'expand_more'}
+              </span>
             </button>
-          )}
+
+            {isMoreMenuOpen && (
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-2 z-50 text-xs">
+                {/* Section 1: Healthcare & Verification */}
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Healthcare Directory &amp; Licenses
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('verified-hospitals');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
+                    local_hospital
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">Verified Hospitals Directory</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">NC trauma centers &amp; teaching systems</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('verification');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
+                    verified_user
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">Clinician Credentialing</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
+                  </div>
+                </button>
+
+                {/* Section 2: Standards & Protections */}
+                <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Standards &amp; Reliability
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('legal-policies');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
+                    policy
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">Sanctuary Standards &amp; Policies</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Quiet guarantee, contract flex &amp; auto-purge</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('system-status');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
+                    dns
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">Platform Reliability &amp; Status</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Live uptime &amp; system health metrics</div>
+                  </div>
+                </button>
+
+                {/* Section 3: Developer Tools - STRICTLY SHOWN ONLY IF isDeveloper IS TRUE */}
+                {isDeveloper && (
+                  <>
+                    <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
+                    <div className="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <span>Developer Deliverables</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
+                        Dev Access
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('mobile-preview');
+                        setIsMoreMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
+                          smartphone
+                        </span>
+                        <span className="font-medium text-[#001848] dark:text-white">Mobile Native App</span>
+                      </div>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
+                        Milestone 2
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('phase1-inventory');
+                        setIsMoreMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
+                          integration_instructions
+                        </span>
+                        <span className="font-medium text-[#001848] dark:text-white">Product Scope &amp; Screens</span>
+                      </div>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
+                        Developer
+                      </span>
+                    </button>
+
+                    <div className="mt-1 pt-2 border-t border-gray-100 dark:border-[#1e3048] px-3 pb-1 flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300">
+                        Milestone 2 Scope
+                      </span>
+                      <button
+                        type="button"
+                        onClick={onToggleM2Bypass}
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all cursor-pointer ${
+                          m2BypassMode
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                        }`}
+                      >
+                        {m2BypassMode ? 'UNLOCKED' : 'GATED'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* Right Action Cluster - Refined & Unified UX */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Saved Listings Counter */}
+          <button
+            onClick={onOpenSaved}
+            type="button"
+            aria-label="View saved listings"
+            className={`relative p-2.5 rounded-xl transition-all cursor-pointer ${
+              isNightShiftMode
+                ? 'text-[#9CB3D3] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+            }`}
+            title="Saved shift sanctuaries"
+          >
+            <span className="material-symbols-outlined text-[20px]">bed</span>
+            {savedCount > 0 && (
+              <span className="absolute 1 top-1 right-1 w-4 h-4 rounded-full bg-[#005684] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+                {savedCount}
+              </span>
+            )}
+          </button>
 
           {/* Night Shift Mode Toggle */}
           <button
             onClick={onToggleNightShift}
             type="button"
             aria-label="Toggle Night Shift Mode"
-            title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode'}
-            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
               isNightShiftMode
-                ? 'bg-[#0E1A2E] border border-[#233550] text-[#ffdf91] hover:bg-[#162744]'
-                : 'bg-white border border-[rgba(11,37,89,0.08)] shadow-xs text-[#001848] hover:bg-[#f2f3ff]'
+                ? 'text-[#ffdf91] hover:bg-white/5'
+                : 'text-[#001848] hover:bg-gray-100'
             }`}
+            title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode (Day-Sleeper Dark)'}
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {isNightShiftMode ? 'light_mode' : 'bedtime'}
+            <span className="material-symbols-outlined text-[20px]">
+              {isNightShiftMode ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
 
-          {/* Saved listings bed button */}
-          <button
-            onClick={onOpenSaved}
-            type="button"
-            aria-label="Saved listings"
-            title="Saved Housing Sanctuaries"
-            className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              isNightShiftMode
-                ? 'bg-[#0E1A2E] border border-[#233550] text-white hover:bg-[#162744]'
-                : 'bg-white border border-[rgba(11,37,89,0.08)] shadow-xs text-[#001848] hover:bg-[#f2f3ff]'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[19px]">bed</span>
-            {savedCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 rounded-full bg-[#0a6fa8] text-white text-[10px] font-bold items-center justify-center border-2 border-white">
-                {savedCount}
-              </span>
-            )}
-          </button>
-
-          {/* Mobile Portals Menu Button */}
-          <div className="relative lg:hidden">
+          {/* Unified User Profile & Persona Capsule */}
+          <div className="relative" ref={profileMenuRef}>
             <button
-              onClick={() => setIsPortalsDropdownOpen(!isPortalsDropdownOpen)}
               type="button"
-              className="w-9 h-9 rounded-full bg-[#eaedff] dark:bg-[#182840] flex items-center justify-center text-[#001848] dark:text-white cursor-pointer"
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
+                isProfileMenuOpen
+                  ? isNightShiftMode
+                    ? 'bg-[#182840] border-[#005684]'
+                    : 'bg-white border-[#005684]'
+                  : isNightShiftMode
+                  ? 'bg-[#0E1A2E] border-[#233550] hover:border-[#385175]'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
+              }`}
             >
-              <span className="material-symbols-outlined text-[20px]">menu</span>
+              {/* Avatar with Verified checkmark */}
+              <div className="relative">
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs tracking-tight ${roleStyles.avatar}`}
+                >
+                  {getRoleInitials(currentUser.role)}
+                </div>
+                {isVerified && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0E1A2E] flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[8px] text-white font-bold">check</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Identity Details (Desktop) */}
+              <div className="hidden sm:flex flex-col text-left">
+                <span className="text-xs font-bold leading-tight max-w-[120px] truncate text-[#001848] dark:text-white">
+                  {currentUser.name}
+                </span>
+                <span className="text-[10px] font-semibold opacity-70 leading-none">
+                  {getRoleLabel(currentUser.role)}
+                </span>
+              </div>
+
+              <span className="material-symbols-outlined text-[16px] opacity-60">
+                {isProfileMenuOpen ? 'expand_less' : 'expand_more'}
+              </span>
             </button>
 
-            {isPortalsDropdownOpen && (
-              <div className="absolute right-0 top-12 w-60 rounded-2xl bg-white dark:bg-[#0B1626] border border-gray-200 dark:border-gray-800 shadow-xl p-2 z-50 text-xs font-semibold space-y-1">
-                <button
-                  onClick={() => {
-                    onSelectTab('find-housing');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-bold"
-                >
-                  Home (Featured Stays)
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('search-listings');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-between"
-                >
-                  <span className="font-bold text-[#005684] dark:text-[#93ccff]">Search Stays &amp; Map</span>
-                  <span className="text-[10px] text-[#005684] font-bold">Screen A2</span>
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('nurse-dashboard');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-between"
-                >
-                  <span>Nurse Dashboard</span>
-                  <span className="text-[10px] text-[#195b4c] font-bold">Portal A</span>
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('host-dashboard');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-between"
-                >
-                  <span>Host Portal</span>
-                  <span className="text-[10px] text-[#005684] font-bold">Portal B</span>
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('admin-portal');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-between"
-                >
-                  <span>Super-Admin Hub</span>
-                  <span className="text-[10px] text-[#745b0d] font-bold">Portal C</span>
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('verification');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5"
-                >
-                  Clinician Credentialing
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab('how-it-works');
-                    setIsPortalsDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5"
-                >
-                  How It Works
-                </button>
-                {onOpenAuth && (
+            {/* Profile & Perspective Switcher Popover */}
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-72 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3">
+                {/* Account Card */}
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
+                    {getRoleInitials(currentUser.role)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm truncate text-[#001848] dark:text-white">
+                      {currentUser.name}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleStyles.badge}`}>
+                        {getRoleLabel(currentUser.role)}
+                      </span>
+                      {isVerified && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                          <span className="material-symbols-outlined text-[12px]">verified</span>
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primary Workspace Action */}
+                <div className="space-y-1">
+                  {currentUser.role === 'nurse' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('nurse-dashboard');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">clinical_notes</span>
+                        <span>Open Clinician Dashboard</span>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  )}
+
+                  {currentUser.role === 'host' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('host-dashboard');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">real_estate_agent</span>
+                        <span>Open Host Portal</span>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  )}
+
+                  {currentUser.role === 'super_admin' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('admin-portal');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                        <span>Open Admin Operations Hub</span>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  )}
+
+                  {currentUser.role === 'developer' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('phase1-inventory');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px]">terminal</span>
+                        <span>Developer System Specs</span>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Switch Perspective Section */}
+                <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
+                  <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+                    Switch Perspective
+                  </div>
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSwitchRole('nurse');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                        currentUser.role === 'nurse'
+                          ? 'bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] font-bold'
+                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">stethoscope</span>
+                        <span>Clinician (Sarah Jenkins)</span>
+                      </div>
+                      {currentUser.role === 'nurse' && (
+                        <span className="material-symbols-outlined text-[14px]">check</span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSwitchRole('host');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                        currentUser.role === 'host'
+                          ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] font-bold'
+                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">home</span>
+                        <span>Property Host (Michael Vance)</span>
+                      </div>
+                      {currentUser.role === 'host' && (
+                        <span className="material-symbols-outlined text-[14px]">check</span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSwitchRole('super_admin');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                        currentUser.role === 'super_admin'
+                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
+                          : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                        <span>Super-Admin Operations</span>
+                      </div>
+                      {currentUser.role === 'super_admin' && (
+                        <span className="material-symbols-outlined text-[14px]">check</span>
+                      )}
+                    </button>
+
+                    {isDeveloper && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSwitchRole('developer');
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
+                          currentUser.role === 'developer'
+                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
+                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px]">terminal</span>
+                          <span>Lead Developer (Joshua)</span>
+                        </div>
+                        {currentUser.role === 'developer' && (
+                          <span className="material-symbols-outlined text-[14px]">check</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Support & Auth Modal Trigger */}
+                <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
                   <button
+                    type="button"
                     onClick={() => {
-                      onOpenAuth('signup');
-                      setIsPortalsDropdownOpen(false);
+                      onOpenSupport();
+                      setIsProfileMenuOpen(false);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl bg-[#001848] text-white font-bold"
+                    className="text-xs opacity-75 hover:opacity-100 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    Sign In / Join
+                    <span className="material-symbols-outlined text-[15px]">help_outline</span>
+                    <span>Support</span>
                   </button>
-                )}
+                  {onOpenAuth && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onOpenAuth('signin');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="text-xs text-[#005684] dark:text-[#93ccff] font-bold hover:underline cursor-pointer"
+                    >
+                      Switch Account
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
+
+          {/* Mobile Menu Hamburger Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            type="button"
+            className={`lg:hidden p-2.5 rounded-xl cursor-pointer ${
+              isNightShiftMode
+                ? 'text-[#9CB3D3] hover:text-white hover:bg-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+            }`}
+            aria-label="Open mobile navigation menu"
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {isMobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-50 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsMobileMenuOpen(false);
+            }
+          }}
+        >
+          <div
+            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-2xl p-5 space-y-5 max-w-lg mx-auto cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Active User Card & Perspective Selector */}
+            <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${roleStyles.avatar}`}>
+                    {getRoleInitials(currentUser.role)}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#001848] dark:text-white leading-tight">
+                      {currentUser.name}
+                    </div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {getRoleLabel(currentUser.role)}
+                    </div>
+                  </div>
+                </div>
+                {isVerified && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[12px]">verified</span>
+                    Verified
+                  </span>
+                )}
+              </div>
+
+              {/* Role Toggle Tabs */}
+              <div className="flex rounded-xl bg-gray-200/70 dark:bg-gray-800 p-1 gap-1 text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => onSwitchRole('nurse')}
+                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
+                    currentUser.role === 'nurse'
+                      ? 'bg-white dark:bg-[#195b4c] text-[#195b4c] dark:text-white shadow-xs'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  Clinician
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSwitchRole('host')}
+                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
+                    currentUser.role === 'host'
+                      ? 'bg-white dark:bg-[#005684] text-[#005684] dark:text-white shadow-xs'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  Host
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSwitchRole('super_admin')}
+                  className={`flex-1 py-1 rounded-lg text-center transition-all ${
+                    currentUser.role === 'super_admin'
+                      ? 'bg-white dark:bg-amber-600 text-amber-800 dark:text-white shadow-xs'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  Admin
+                </button>
+              </div>
+            </div>
+
+            {/* Main Links */}
+            <div className="space-y-1">
+              <button
+                onClick={() => {
+                  onSelectTab('find-housing');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                  currentTab === 'find-housing'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                }`}
+              >
+                Explore Stays
+              </button>
+
+              <button
+                onClick={() => {
+                  onSelectTab('search-listings');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                  currentTab === 'search-listings'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                }`}
+              >
+                Search Stays &amp; Map
+              </button>
+
+              <button
+                onClick={() => {
+                  if (currentUser.role === 'host') {
+                    onSelectTab('host-dashboard');
+                  } else {
+                    onSelectTab('for-hosts');
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between ${
+                  currentTab === 'for-hosts' || currentTab === 'host-dashboard'
+                    ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff]'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                }`}
+              >
+                <span>For Property Hosts</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold">
+                  {currentUser.role === 'host' ? 'My Portal' : 'Learn More'}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onSelectTab('how-it-works');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                  currentTab === 'how-it-works'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                }`}
+              >
+                How It Works &amp; Quiet Guarantee
+              </button>
+            </div>
+
+            {/* Additional Links */}
+            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1">
+              <button
+                onClick={() => {
+                  onSelectTab('verified-hospitals');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+              >
+                <span className="material-symbols-outlined text-[17px] text-[#005684]">
+                  local_hospital
+                </span>
+                <span>Verified Hospitals Directory</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onSelectTab('verification');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+              >
+                <span className="material-symbols-outlined text-[17px] text-[#195b4c]">
+                  verified_user
+                </span>
+                <span>Clinician Credentialing (Nursys)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onSelectTab('legal-policies');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+              >
+                <span className="material-symbols-outlined text-[17px] text-gray-500">
+                  policy
+                </span>
+                <span>Sanctuary Standards &amp; Policies</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onSelectTab('system-status');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+              >
+                <span className="material-symbols-outlined text-[17px] text-emerald-600 dark:text-emerald-400">
+                  dns
+                </span>
+                <span>Platform Reliability &amp; Status</span>
+              </button>
+            </div>
+
+            {/* Developer Section (Mobile) */}
+            {isDeveloper && (
+              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1">
+                <div className="px-3 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                  <span>Developer &amp; Milestone 2</span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
+                    Dev Access
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onSelectTab('mobile-preview');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[17px] text-purple-600">
+                      smartphone
+                    </span>
+                    <span>Mobile App Simulator</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
+                    M2
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onSelectTab('phase1-inventory');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[17px] text-purple-600">
+                      inventory_2
+                    </span>
+                    <span>Product Scope &amp; Screens</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
+                    Dev
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Support and Sign In Actions */}
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenSupport();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-[#233550] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[17px]">support_agent</span>
+                <span>24/7 Clinical Support</span>
+              </button>
+
+              {onOpenAuth && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenAuth('signin');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  Sign In / Access Account
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
