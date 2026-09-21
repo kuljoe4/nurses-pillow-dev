@@ -48,7 +48,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-md h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto transition-colors ${
+        className={`w-full max-w-md h-full shadow-lg p-6 flex flex-col justify-between overflow-y-auto transition-colors ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-l border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
@@ -70,7 +70,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
             <button
               onClick={onClose}
               type="button"
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors"
             >
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
@@ -102,7 +102,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
               {savedListings.map((listing) => (
                 <div
                   key={listing.id}
-                  className={`p-3.5 rounded-2xl border flex gap-3 cursor-pointer transition-all hover:scale-[1.01] ${
+                  className={`p-3.5 rounded-2xl border flex gap-3 cursor-pointer transition-all duration-200 ease-in-out hover:scale-[1.01] ${
                     isNightShiftMode
                       ? 'bg-[#15233a] border-[#233550]'
                       : 'bg-[#f2f3ff] border-[#eaedff]'
@@ -153,7 +153,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-full border border-current text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-center"
+            className="w-full py-2.5 rounded-full border border-current text-xs font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors text-center"
           >
             Close Panel
           </button>

@@ -18,7 +18,7 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <div
-        className={`rounded-3xl p-6 sm:p-10 shadow-xl border transition-all ${
+        className={`rounded-3xl p-6 sm:p-10 shadow-md border transition-all duration-200 ease-in-out ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-black/5 text-[#001848]'
@@ -118,7 +118,7 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
           <button
             type="button"
             onClick={onReturnToMarketplace}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-sm font-semibold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">arrow_back</span>
             <span>Return to Milestone 1 Marketplace</span>
@@ -130,8 +130,8 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
               onClick={onBypassGate}
               className={`w-full sm:w-auto px-5 py-2.5 rounded-full text-xs font-medium border transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                 isNightShiftMode
-                  ? 'border-[#233550] text-[#93ccff] hover:bg-[#15233a]'
-                  : 'border-[#dae2ff] text-[#005684] hover:bg-[#f2f3ff]'
+                  ? 'border-[#233550] text-[#93ccff] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
+                  : 'border-[#dae2ff] text-[#005684] hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff]'
               }`}
             >
               <span className="material-symbols-outlined text-sm">visibility</span>

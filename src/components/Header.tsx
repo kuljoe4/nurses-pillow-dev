@@ -177,14 +177,14 @@ export const Header: React.FC<HeaderProps> = ({
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
           <button
             onClick={() => onSelectTab('find-housing')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
               currentTab === 'find-housing'
                 ? isNightShiftMode
                   ? 'bg-[#182840] text-[#93ccff] font-bold'
                   : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
             }`}
           >
             {showScreenCodes && (
@@ -197,14 +197,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('search-listings')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
               currentTab === 'search-listings'
                 ? isNightShiftMode
                   ? 'bg-[#182840] text-[#93ccff] font-bold'
                   : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
             }`}
           >
             <span className="material-symbols-outlined text-[17px]">travel_explore</span>
@@ -224,14 +224,14 @@ export const Header: React.FC<HeaderProps> = ({
                 onSelectTab('for-hosts');
               }
             }}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
               currentTab === 'for-hosts' || currentTab === 'host-dashboard'
                 ? isNightShiftMode
                   ? 'bg-[#005684]/25 text-[#93ccff] font-bold'
                   : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
             }`}
           >
             <span className="material-symbols-outlined text-[17px]">home</span>
@@ -245,14 +245,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => onSelectTab('how-it-works')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
               currentTab === 'how-it-works'
                 ? isNightShiftMode
                   ? 'bg-[#182840] text-[#93ccff] font-bold'
                   : 'bg-[#eaedff] text-[#005684] font-bold'
                 : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
             }`}
           >
             {showScreenCodes && (
@@ -268,14 +268,14 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-              className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out flex items-center gap-1 cursor-pointer ${
                 isMoreMenuOpen
                   ? isNightShiftMode
                     ? 'bg-[#182840] text-white'
                     : 'bg-gray-100 text-[#001848]'
                   : isNightShiftMode
-                  ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                  : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100/80'
+                  ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                  : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
               }`}
             >
               <span>More</span>
@@ -285,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {isMoreMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-2 z-50 text-xs">
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-2 z-50 text-xs">
                 {/* Section 1: Healthcare & Verification */}
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Healthcare Directory &amp; Licenses
@@ -297,7 +297,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('verified-hospitals');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
                     local_hospital
@@ -321,7 +321,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('verification');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
                     verified_user
@@ -351,7 +351,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('legal-policies');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
                     policy
@@ -375,7 +375,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('system-status');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
                     dns
@@ -410,7 +410,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectTab('mobile-preview');
                         setIsMoreMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center justify-between transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
@@ -429,7 +429,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectTab('phase1-inventory');
                         setIsMoreMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center justify-between transition-colors cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
@@ -449,7 +449,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={onToggleM2Bypass}
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all cursor-pointer ${
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all duration-200 ease-in-out cursor-pointer ${
                           m2BypassMode
                             ? 'bg-purple-600 text-white'
                             : 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
@@ -472,10 +472,10 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenSaved}
             type="button"
             aria-label="View saved listings"
-            className={`relative p-2.5 rounded-xl transition-all cursor-pointer ${
+            className={`relative p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
               isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                ? 'text-[#9CB3D3] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
             }`}
             title="Saved shift sanctuaries"
           >
@@ -492,10 +492,10 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleNightShift}
             type="button"
             aria-label="Toggle Night Shift Mode"
-            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+            className={`p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
               isNightShiftMode
-                ? 'text-[#ffdf91] hover:bg-white/5'
-                : 'text-[#001848] hover:bg-gray-100'
+                ? 'text-[#ffdf91] hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
             }`}
             title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode (Day-Sleeper Dark)'}
           >
@@ -510,10 +510,10 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('signin')}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ease-in-out cursor-pointer ${
                   isNightShiftMode
-                    ? 'border-[#233550] text-[#93ccff] hover:bg-white/5'
-                    : 'border-gray-200 text-[#001848] hover:bg-gray-100'
+                    ? 'border-[#233550] text-[#93ccff] hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                    : 'border-gray-200 text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
                 }`}
               >
                 Sign In
@@ -521,7 +521,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('signup')}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#001848] dark:bg-[#005684] text-white hover:opacity-90 transition-all cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#001848] dark:bg-[#005684] text-white hover:opacity-90 transition-all duration-200 ease-in-out cursor-pointer shadow-xs"
               >
                 Get Started
               </button>
@@ -531,7 +531,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
+                className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer shadow-xs ${
                   isProfileMenuOpen
                     ? isNightShiftMode
                       ? 'bg-[#182840] border-[#005684]'
@@ -550,7 +550,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   {isVerified && (
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0E1A2E] flex items-center justify-center shadow-2xs"
+                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border border-white dark:border-[#0E1A2E] flex items-center justify-center shadow-2xs"
                       title="Verified Identity & Clinical Credentials"
                     >
                       <span className="material-symbols-outlined text-[9px] text-white font-bold">check</span>
@@ -578,7 +578,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* Profile & Perspective Switcher Popover */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3">
+                <div className="absolute right-0 mt-2 w-80 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-4 z-50 text-xs space-y-3">
                   {/* Account Card */}
                   <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
@@ -636,10 +636,10 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={onToggleScreenCodes}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all duration-200 ease-in-out cursor-pointer ${
                           showScreenCodes
                             ? 'bg-purple-600 text-white shadow-xs'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-300 dark:hover:bg-gray-600 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-600'
                         }`}
                         title="Toggle Developer Screen Codes in navigation and UI"
                       >
@@ -657,7 +657,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('nurse-dashboard');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#13493c] transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[18px]">clinical_notes</span>
@@ -674,7 +674,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('host-dashboard');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[18px]">real_estate_agent</span>
@@ -691,7 +691,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('admin-portal');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-amber-700 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
@@ -708,7 +708,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('phase1-inventory');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 transition-colors cursor-pointer"
+                        className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-800 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[18px]">terminal</span>
@@ -734,7 +734,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
                           currentUser.role === 'nurse'
                             ? 'bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] font-bold'
-                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -755,7 +755,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
                           currentUser.role === 'host'
                             ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] font-bold'
-                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -776,7 +776,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
                           currentUser.role === 'super_admin'
                             ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
-                            : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -798,7 +798,7 @@ export const Header: React.FC<HeaderProps> = ({
                           className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
                             currentUser.role === 'developer'
                               ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
-                              : 'hover:bg-gray-100 dark:hover:bg-[#182840]'
+                              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -849,7 +849,7 @@ export const Header: React.FC<HeaderProps> = ({
                           onLogout();
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center justify-between hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer"
+                        className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center justify-between hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-100 dark:hover:bg-rose-900 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-900/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[17px]">logout</span>
@@ -870,8 +870,8 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             className={`lg:hidden p-2.5 rounded-xl cursor-pointer ${
               isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white hover:bg-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                ? 'text-[#9CB3D3] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
             }`}
             aria-label="Open mobile navigation menu"
           >
@@ -893,7 +893,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}
         >
           <div
-            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-2xl p-5 space-y-5 max-w-lg mx-auto cursor-default"
+            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-lg p-5 space-y-5 max-w-lg mx-auto cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Active User Card & Perspective Selector */}
@@ -990,7 +990,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => onSwitchRole('nurse')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
                       currentUser.role === 'nurse'
                         ? 'bg-white dark:bg-[#195b4c] text-[#195b4c] dark:text-white shadow-xs'
                         : 'text-gray-600 dark:text-gray-400'
@@ -1001,7 +1001,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => onSwitchRole('host')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
                       currentUser.role === 'host'
                         ? 'bg-white dark:bg-[#005684] text-[#005684] dark:text-white shadow-xs'
                         : 'text-gray-600 dark:text-gray-400'
@@ -1012,7 +1012,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => onSwitchRole('super_admin')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
                       currentUser.role === 'super_admin'
                         ? 'bg-white dark:bg-amber-600 text-amber-800 dark:text-white shadow-xs'
                         : 'text-gray-600 dark:text-gray-400'
@@ -1024,7 +1024,7 @@ export const Header: React.FC<HeaderProps> = ({
                     <button
                       type="button"
                       onClick={() => onSwitchRole('developer')}
-                      className={`flex-1 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                      className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
                         currentUser.role === 'developer'
                           ? 'bg-white dark:bg-purple-700 text-purple-800 dark:text-white shadow-xs'
                           : 'text-gray-600 dark:text-gray-400'
@@ -1056,7 +1056,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onToggleScreenCodes}
-                  className={`px-3 py-1 rounded-full text-[10px] font-bold font-mono transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold font-mono transition-all duration-200 ease-in-out cursor-pointer ${
                     showScreenCodes
                       ? 'bg-purple-600 text-white shadow-xs'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -1077,7 +1077,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
                   currentTab === 'find-housing'
                     ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 }`}
               >
                 Explore Stays
@@ -1091,7 +1091,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
                   currentTab === 'search-listings'
                     ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 }`}
               >
                 Search Stays &amp; Map
@@ -1109,7 +1109,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between ${
                   currentTab === 'for-hosts' || currentTab === 'host-dashboard'
                     ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 }`}
               >
                 <span>For Property Hosts</span>
@@ -1126,7 +1126,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
                   currentTab === 'how-it-works'
                     ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 }`}
               >
                 How It Works &amp; Quiet Guarantee
@@ -1140,7 +1140,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectTab('verified-hospitals');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
               >
                 <span className="material-symbols-outlined text-[17px] text-[#005684]">
                   local_hospital
@@ -1153,7 +1153,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectTab('verification');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
               >
                 <span className="material-symbols-outlined text-[17px] text-[#195b4c]">
                   verified_user
@@ -1166,7 +1166,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectTab('legal-policies');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
               >
                 <span className="material-symbols-outlined text-[17px] text-gray-500">
                   policy
@@ -1179,7 +1179,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectTab('system-status');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
               >
                 <span className="material-symbols-outlined text-[17px] text-emerald-600 dark:text-emerald-400">
                   dns
@@ -1203,7 +1203,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('mobile-preview');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[17px] text-purple-600">
@@ -1221,7 +1221,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('phase1-inventory');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
                 >
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[17px] text-purple-600">

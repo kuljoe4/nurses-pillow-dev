@@ -39,7 +39,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
       }}
     >
       <div
-        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
+        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-lg transition-all duration-200 ease-in-out relative ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
@@ -52,8 +52,8 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
           type="button"
           className={`absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
             isNightShiftMode
-              ? 'text-[#8ea5c8] hover:bg-[#15233a]'
-              : 'text-[#404850] hover:bg-[#eaedff]'
+              ? 'text-[#8ea5c8] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
+              : 'text-[#404850] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
           }`}
           aria-label="Close modal"
         >
@@ -62,7 +62,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
 
         {/* Hero badge */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#195b4c] text-[#aff0db] mx-auto flex items-center justify-center mb-4 shadow-lg ring-4 ring-[#aff0db]/40">
+          <div className="w-16 h-16 rounded-full bg-[#195b4c] text-[#aff0db] mx-auto flex items-center justify-center mb-4 shadow-lg ring-2 ring-[#aff0db]/40">
             <span className="material-symbols-outlined text-3xl">verified</span>
           </div>
           <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db] mb-2">
@@ -139,7 +139,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
               onClose();
               onGoToHousing();
             }}
-            className="w-full sm:flex-1 px-6 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
+            className="w-full sm:flex-1 px-6 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
           >
             <span>Browse Verified Sanctuaries</span>
             <span className="material-symbols-outlined text-lg">arrow_forward</span>
@@ -148,7 +148,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
           <button
             type="button"
             onClick={onClose}
-            className={`w-full sm:w-auto px-5 py-3 rounded-full text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer`}
+            className={`w-full sm:w-auto px-5 py-3 rounded-full text-xs font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors cursor-pointer`}
           >
             Done
           </button>

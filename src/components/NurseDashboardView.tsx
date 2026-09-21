@@ -72,7 +72,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 className="w-16 h-16 rounded-2xl object-cover shadow-sm ring-2 ring-[#005684]"
               />
               <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-4 w-4 bg-[#195b4c]"></span>
               </span>
             </div>
@@ -105,7 +105,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             <button
               type="button"
               onClick={onGoToHousing}
-              className="px-4 py-2.5 rounded-full bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2.5 rounded-full bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">search</span>
               <span>Find New Sanctuary</span>
@@ -155,10 +155,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('current')}
-          className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'current'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">hotel</span>
@@ -168,10 +168,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'profile'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">account_circle</span>
@@ -187,10 +187,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('saved')}
-          className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'saved'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">favorite</span>
@@ -203,10 +203,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('verification')}
-          className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'verification'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">verified_user</span>
@@ -217,15 +217,15 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('messages')}
-          className={`flex-1 min-w-[130px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[130px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'messages'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
           <span>Messages</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold animate-pulse">
+          <span className="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold">
             1
           </span>
         </button>
@@ -233,10 +233,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('receipts')}
-          className={`flex-1 min-w-[160px] py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 min-w-[160px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'receipts'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
-              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">receipt_long</span>
@@ -252,7 +252,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-6 border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
               <div className="flex items-center gap-3">
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-[#195b4c]"></span>
                 </span>
                 <span className="text-sm font-bold">Currently Checked In</span>
@@ -314,7 +314,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setActiveTab('messages')}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer"
                     >
                       Message Sarah
                     </button>
@@ -342,7 +342,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy('4821', 'pin')}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
                         title="Copy PIN"
                       >
                         <span className="material-symbols-outlined text-[18px]">
@@ -359,7 +359,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy('RestWellHealBetter2024!', 'wifi')}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
                         title="Copy Wi-Fi Password"
                       >
                         <span className="material-symbols-outlined text-[18px]">
@@ -376,7 +376,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setExtendedNotice(true)}
-                      className="px-5 py-2.5 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] shadow-sm flex items-center gap-1.5 cursor-pointer"
+                      className="px-5 py-2.5 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] shadow-sm flex items-center gap-1.5 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[18px]">add_circle</span>
                       <span>Extend My Stay</span>
@@ -385,7 +385,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setActiveTab('messages')}
-                      className="px-4 py-2.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] text-xs font-bold hover:bg-[#dae2ff] cursor-pointer"
+                      className="px-4 py-2.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] text-xs font-bold hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff] cursor-pointer"
                     >
                       Host Chat
                     </button>
@@ -566,7 +566,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                   <div>
                     <label className="text-gray-400 block mb-1">Primary Emergency Contact</label>
                     <div className="font-semibold text-[#001848] dark:text-white">
-                      David Jenkins (Spouse) • +1 (919) 555-0144
+                      David Jenkins (Spouse) •+1 (919) 555-0144
                     </div>
                   </div>
                   <div>
@@ -656,7 +656,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                         onGoToHousing();
                       }
                     }}
-                    className="px-3.5 py-1.5 rounded-full bg-[#001848] text-white text-xs font-bold cursor-pointer hover:bg-[#162e62]"
+                    className="px-3.5 py-1.5 rounded-full bg-[#001848] text-white text-xs font-bold cursor-pointer hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62]"
                   >
                     Check Space
                   </button>
@@ -829,7 +829,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             />
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer"
             >
               Send
             </button>

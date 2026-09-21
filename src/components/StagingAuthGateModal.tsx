@@ -64,7 +64,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-[#001848]/80 backdrop-blur-md flex justify-center items-start animate-fade-in">
       <div
-        className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all ${
+        className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-8 shadow-lg border transition-all duration-200 ease-in-out ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-black/5 text-[#001848]'
@@ -104,7 +104,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all outline-none ${
+              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
                 isNightShiftMode
                   ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
                   : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
@@ -122,7 +122,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all outline-none ${
+              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
                 isNightShiftMode
                   ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
                   : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
@@ -135,7 +135,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-sm font-semibold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
             >
               <span className="material-symbols-outlined text-base">vpn_key</span>
               <span>{isSubmitting ? 'Verifying...' : 'Unlock Preview'}</span>
@@ -146,8 +146,8 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
               onClick={handleQuickClientUnlock}
               className={`w-full py-2.5 rounded-full text-xs font-semibold border transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
                 isNightShiftMode
-                  ? 'border-[#233550] text-[#aff0db] hover:bg-[#15233a]'
-                  : 'border-[#dae2ff] text-[#005684] hover:bg-[#f2f3ff]'
+                  ? 'border-[#233550] text-[#aff0db] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
+                  : 'border-[#dae2ff] text-[#005684] hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff]'
               }`}
             >
               <span className="material-symbols-outlined text-sm text-[#10b981]">verified_user</span>
@@ -157,7 +157,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
             <button
               type="button"
               onClick={handleQuickDeveloperUnlock}
-              className="w-full text-center text-[11px] text-gray-400 hover:text-purple-400 dark:hover:text-purple-300 transition-colors py-1 cursor-pointer font-mono"
+              className="w-full text-center text-[11px] text-gray-400 hover:text-purple-400 focus-visible:text-purple-400 dark:hover:text-purple-300 focus-visible:text-purple-300 transition-colors py-1 cursor-pointer font-mono"
             >
               Developer Access (Joshua • Milestone 2 Scaffold)
             </button>

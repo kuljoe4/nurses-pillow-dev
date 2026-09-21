@@ -127,7 +127,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full max-w-3xl rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 border ${
+        className={`relative w-full max-w-3xl rounded-3xl shadow-lg flex flex-col max-h-[92vh] overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 border ${
           isNightShiftMode
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'
@@ -178,7 +178,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               type="button"
               onClick={onClose}
               aria-label="Close modal window"
-              className="w-9 h-9 rounded-full bg-[#f2f3ff] dark:bg-[#152438] text-[#001848] dark:text-white hover:bg-[#eaedff] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-full bg-[#f2f3ff] dark:bg-[#152438] text-[#001848] dark:text-white hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] flex items-center justify-center transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
@@ -219,8 +219,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               <label
                 className={`flex items-start justify-between p-3.5 rounded-xl transition-colors cursor-pointer group ${
                   isNightShiftMode
-                    ? 'bg-[#182840] hover:bg-[#1e3250]'
-                    : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                    ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                    : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -255,8 +255,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               <label
                 className={`flex items-start justify-between p-3.5 rounded-xl transition-colors cursor-pointer group ${
                   isNightShiftMode
-                    ? 'bg-[#182840] hover:bg-[#1e3250]'
-                    : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                    ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                    : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -291,8 +291,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               <label
                 className={`flex items-start justify-between p-3.5 rounded-xl transition-colors cursor-pointer group ${
                   isNightShiftMode
-                    ? 'bg-[#182840] hover:bg-[#1e3250]'
-                    : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                    ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                    : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -346,12 +346,12 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
                       key={tier.val}
                       type="button"
                       onClick={() => setDecibelCeiling(tier.val as any)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-0.5 transition-all cursor-pointer ${
+                      className={`py-2.5 px-3 rounded-xl text-xs font-semibold flex flex-col items-center gap-0.5 transition-all duration-200 ease-in-out cursor-pointer ${
                         decibelCeiling === tier.val
                           ? 'bg-[#005684] text-white shadow-sm'
                           : isNightShiftMode
-                          ? 'bg-[#182840] text-[#93ccff] hover:bg-[#1e3250]'
-                          : 'bg-[#eaedff] text-[#404850] hover:bg-[#dae2ff]'
+                          ? 'bg-[#182840] text-[#93ccff] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                          : 'bg-[#eaedff] text-[#404850] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff]'
                       }`}
                     >
                       <span>{tier.label}</span>
@@ -423,12 +423,12 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
                       key={rad.val}
                       type="button"
                       onClick={() => setCommuteRadius(rad.val as any)}
-                      className={`py-2.5 px-3 rounded-xl text-xs transition-all text-center cursor-pointer ${
+                      className={`py-2.5 px-3 rounded-xl text-xs transition-all duration-200 ease-in-out text-center cursor-pointer ${
                         commuteRadius === rad.val
                           ? 'bg-[#005684] text-white font-semibold shadow-sm'
                           : isNightShiftMode
-                          ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250]'
-                          : 'bg-[#eaedff] text-[#001848] hover:bg-[#e2e7ff]'
+                          ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                          : 'bg-[#eaedff] text-[#001848] hover:bg-[#e2e7ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2e7ff]'
                       }`}
                     >
                       <span className="block font-bold">{rad.label}</span>
@@ -442,8 +442,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               <label
                 className={`flex items-center justify-between p-3.5 rounded-xl transition-colors cursor-pointer ${
                   isNightShiftMode
-                    ? 'bg-[#182840] hover:bg-[#1e3250]'
-                    : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                    ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                    : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -489,7 +489,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Option A: Entire Property */}
               <div
                 onClick={() => setRentalType('entire')}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                className={`p-4 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer relative flex flex-col justify-between ${
                   rentalType === 'entire'
                     ? 'border-[#005684] bg-gradient-to-br from-[#cde5ff]/20 to-transparent shadow-xs'
                     : isNightShiftMode
@@ -526,7 +526,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Option B: Private Clinician Room */}
               <div
                 onClick={() => setRentalType('suite')}
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                className={`p-4 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer relative flex flex-col justify-between ${
                   rentalType === 'suite'
                     ? 'border-[#005684] bg-gradient-to-br from-[#cde5ff]/20 to-transparent shadow-xs'
                     : isNightShiftMode
@@ -580,8 +580,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
                       bedrooms === b.val
                         ? 'bg-[#005684] text-white shadow-xs'
                         : isNightShiftMode
-                        ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250]'
-                        : 'bg-[#eaedff] text-[#001848] hover:bg-[#dae2ff]'
+                        ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                        : 'bg-[#eaedff] text-[#001848] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff]'
                     }`}
                   >
                     {b.label}
@@ -613,7 +613,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Scrub Washer */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -635,7 +635,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Keyless Digital Lock */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -657,7 +657,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Charting Workspace */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -679,7 +679,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Gated Secure Parking */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -701,7 +701,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Pet Friendly */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -723,7 +723,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* Full Meal-Prep Kitchen */}
               <label
                 className={`flex items-start gap-3 p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <input
@@ -762,7 +762,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               </div>
               <span
                 className="text-[#745b0d] dark:text-[#ffdc84] text-[18px] hidden sm:inline"
-                style={{ fontFamily: "'Kaushan Script', cursive" }}
+                style={{ fontFamily:"'Kaushan Script', cursive" }}
               >
                 No Locked Leases
               </span>
@@ -781,12 +781,12 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
                     key={dur.val}
                     type="button"
                     onClick={() => setDurationWeeks(dur.val as any)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                       durationWeeks === dur.val
                         ? 'bg-[#005684] text-white shadow-xs flex items-center gap-1.5'
                         : isNightShiftMode
-                        ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250]'
-                        : 'bg-[#eaedff] text-[#001848] hover:bg-[#dae2ff]'
+                        ? 'bg-[#182840] text-[#E6ECF7] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
+                        : 'bg-[#eaedff] text-[#001848] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff]'
                     }`}
                   >
                     <span>{dur.label}</span>
@@ -864,7 +864,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
               {/* All Utilities Included Mandatory Toggle */}
               <label
                 className={`flex items-center justify-between p-3.5 rounded-xl transition-colors cursor-pointer ${
-                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff]'
+                  isNightShiftMode ? 'bg-[#182840] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]' : 'bg-[#f2f3ff] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -899,7 +899,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
         >
           <div className="flex items-center gap-2 text-xs sm:text-sm">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
+              <span className="absolute inline-flex h-full w-full rounded-full bg-[#195b4c] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#195b4c]"></span>
             </span>
             <span>
@@ -910,14 +910,14 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleApply}
-              className="w-full sm:w-auto px-7 py-3 rounded-full bg-[#005684] hover:bg-[#0a6fa8] text-white text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-7 py-3 rounded-full bg-[#005684] hover:bg-[#0a6fa8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] text-white text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all duration-200 ease-in-out transform active:scale-95 cursor-pointer"
             >
               <span>Apply Filters • 42 Sanctuaries</span>
               <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

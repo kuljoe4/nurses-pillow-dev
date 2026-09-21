@@ -56,7 +56,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
 
         <button
           onClick={onNavigateHome}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black/5 dark:hover:bg-white/5 transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out self-start sm:self-auto"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Return to Marketplace
@@ -92,7 +92,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
               <button
                 key={s.id}
                 onClick={() => setActiveScreen(s.id)}
-                className={`w-full text-left p-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all ${
+                className={`w-full text-left p-3 rounded-xl border text-xs font-semibold flex items-center justify-between transition-all duration-200 ease-in-out ${
                   activeScreen === s.id
                     ? 'bg-[#005684] text-white border-[#005684] shadow-sm'
                     : 'bg-white dark:bg-[#0B1626] border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/40'
@@ -114,7 +114,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
 
         {/* Right Phone Mockup Frame */}
         <div className="lg:col-span-7 flex justify-center">
-          <div className="w-[340px] sm:w-[380px] h-[680px] rounded-[48px] bg-[#1a1a1a] p-3 shadow-2xl border-4 border-[#333] relative flex flex-col">
+          <div className="w-[340px] sm:w-[380px] h-[680px] rounded-[48px] bg-[#1a1a1a] p-3 shadow-lg border-4 border-[#333] relative flex flex-col">
             {/* Phone Speaker & Dynamic Island */}
             <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-between px-3">
               <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-[#222]" />

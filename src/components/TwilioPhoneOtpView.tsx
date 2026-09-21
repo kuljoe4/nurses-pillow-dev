@@ -37,8 +37,8 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
     setOtp(newOtp);
 
     if (cleanVal && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-      inputRefs.current[index + 1]?.select();
+      inputRefs.current[index+ 1]?.focus();
+      inputRefs.current[index+ 1]?.select();
     }
   };
 
@@ -160,7 +160,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
               </div>
               <div
                 className="text-[#745b0d] dark:text-[#E4C36D] text-[24px] mb-1"
-                style={{ fontFamily: "'Kaushan Script', cursive" }}
+                style={{ fontFamily:"'Kaushan Script', cursive" }}
               >
                 Rest Well. Heal Better.
               </div>
@@ -255,8 +255,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                 </div>
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <p className="text-xs sm:text-sm text-[#001848] dark:text-white italic leading-snug mb-2">
-                  "Getting my keyless door code via SMS before landing in Durham for my night shift took all the anxiety away. Pure peaceful arrival."
+                <p className="text-xs sm:text-sm text-[#001848] dark:text-white italic leading-snug mb-2">"Getting my keyless door code via SMS before landing in Durham for my night shift took all the anxiety away. Pure peaceful arrival."
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="text-xs font-bold text-[#001848] dark:text-white">Sarah Jenkins, BSN, RN</span>
@@ -311,14 +310,14 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
           {/* RIGHT COLUMN: Interactive Twilio SMS OTP Card */}
           <div className="lg:col-span-6">
             <div
-              className={`p-8 lg:p-10 rounded-3xl shadow-xl relative border ${
+              className={`p-8 lg:p-10 rounded-3xl shadow-md relative border ${
                 isNightShiftMode ? 'bg-[#111e33] border-[#233550]' : 'bg-white border-[rgba(11,37,89,0.08)]'
               }`}
             >
               {/* Top Tag & Security Status */}
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div className="inline-flex items-center gap-1.5 bg-[#cde5ff] text-[#001d32] dark:bg-[#005684]/40 dark:text-[#93ccff] px-3 py-1 rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-[#005684] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#005684]" />
                   <span className="text-xs font-bold">Step 2 of 4 • SMS Delivery</span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-[#404850] dark:text-[#c0c7d1]">
@@ -376,7 +375,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                         value={val}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className={`w-12 sm:w-16 h-14 sm:h-16 text-center text-2xl font-bold rounded-2xl shadow-xs focus:outline-none transition-all ${
+                        className={`w-12 sm:w-16 h-14 sm:h-16 text-center text-2xl font-bold rounded-2xl shadow-xs focus:outline-none transition-all duration-200 ease-in-out ${
                           isNightShiftMode
                             ? 'bg-[#182840] text-white focus:bg-[#1f3350] focus:ring-2 focus:ring-[#3E9AD1]'
                             : 'bg-[#f2f3ff] text-[#001848] focus:bg-white focus:ring-2 focus:ring-[#005684]'
@@ -434,9 +433,9 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                       type="button"
                       onClick={handleResend}
                       disabled={timeLeft > 0}
-                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                         timeLeft === 0
-                          ? 'bg-[#005684] text-white hover:bg-[#0a6fa8]'
+                          ? 'bg-[#005684] text-white hover:bg-[#0a6fa8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8]'
                           : 'bg-[#dae2ff] dark:bg-[#152438] text-[#404850] dark:text-[#c0c7d1] cursor-not-allowed opacity-60'
                       }`}
                     >
@@ -444,7 +443,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                     </button>
                     <button
                       type="button"
-                      className="px-3 py-2 text-[#005684] dark:text-[#93ccff] text-xs font-semibold hover:bg-[#eaedff] dark:hover:bg-[#1f3350] rounded-full transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-2 text-[#005684] dark:text-[#93ccff] text-xs font-semibold hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] rounded-full transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[18px]">call</span>
                       <span>Call me instead</span>
@@ -462,7 +461,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                     info
                   </span>
                   <p className="text-xs text-[#404850] dark:text-[#c0c7d1] leading-snug">
-                    Didn't receive a message? Check that shortcode SMS messages are not muted by your cellular carrier or in "Do Not Disturb" focus during daytime sleep.
+                    Didn't receive a message? Check that shortcode SMS messages are not muted by your cellular carrier or in"Do Not Disturb" focus during daytime sleep.
                   </p>
                 </div>
 
@@ -471,10 +470,10 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                   <button
                     type="submit"
                     disabled={isVerifying}
-                    className={`w-full py-4 px-8 rounded-full text-base font-bold shadow-lg flex items-center justify-center gap-2 group transition-all cursor-pointer ${
+                    className={`w-full py-4 px-8 rounded-full text-base font-bold shadow-lg flex items-center justify-center gap-2 group transition-all duration-200 ease-in-out cursor-pointer ${
                       isVerified
                         ? 'bg-[#195b4c] text-white'
-                        : 'bg-[#005684] hover:bg-[#0a6fa8] text-white'
+                        : 'bg-[#005684] hover:bg-[#0a6fa8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] text-white'
                     }`}
                   >
                     {isVerifying ? (
@@ -501,7 +500,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                     <button
                       type="button"
                       onClick={onBackToEmailVerification}
-                      className="text-xs text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] transition-colors flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] focus-visible:text-[#005684] transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px]">lock_reset</span>
                       <span>Use alternate verification method</span>
@@ -509,7 +508,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                     <span className="w-1 h-1 rounded-full bg-[#c0c7d1]" />
                     <button
                       type="button"
-                      className="text-xs text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] transition-colors flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] focus-visible:text-[#005684] transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px]">help</span>
                       <span>Shift Support Desk</span>
@@ -556,7 +555,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             <span
               className="text-[#745b0d] dark:text-[#E4C36D] text-[22px]"
-              style={{ fontFamily: "'Kaushan Script', cursive" }}
+              style={{ fontFamily:"'Kaushan Script', cursive" }}
             >
               Rest Well. Heal Better.
             </span>

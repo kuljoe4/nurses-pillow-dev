@@ -205,10 +205,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
       <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-[#0B1626] p-1.5 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
         <button
           onClick={() => setActiveMainTab('screens')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'screens'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">grid_view</span>
@@ -218,10 +218,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('flows')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'flows'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">route</span>
@@ -231,10 +231,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('notifications')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'notifications'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">mark_email_read</span>
@@ -243,10 +243,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('states')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'states'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">layers</span>
@@ -255,10 +255,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('summary')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'summary'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">analytics</span>
@@ -268,10 +268,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('blocked')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'blocked'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">pending_actions</span>
@@ -281,10 +281,10 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
 
         <button
           onClick={() => setActiveMainTab('out-of-scope')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeMainTab === 'out-of-scope'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">block</span>
@@ -339,7 +339,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   <button
                     key={m}
                     onClick={() => setMilestoneFilter(m)}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 ease-in-out ${
                       milestoneFilter === m
                         ? 'bg-[#005684] text-white'
                         : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100'
@@ -356,7 +356,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   <button
                     key={p}
                     onClick={() => setPriorityFilter(p)}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 ease-in-out ${
                       priorityFilter === p
                         ? 'bg-[#005684] text-white'
                         : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100'
@@ -384,7 +384,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                         ? 'T4: Mobile & infrastructure'
                         : 'All Tiers'
                     }
-                    className={`px-2 py-1 rounded-lg font-bold transition-all ${
+                    className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 ease-in-out ${
                       buildTierFilter === t
                         ? 'bg-[#005684] text-white'
                         : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100'
@@ -419,7 +419,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
               return (
               <div
                 key={screen.id}
-                className="bg-white dark:bg-[#0B1626] rounded-2xl p-5 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm flex flex-col justify-between hover:border-[#005684]/40 transition-all group"
+                className="bg-white dark:bg-[#0B1626] rounded-2xl p-5 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm flex flex-col justify-between hover:border-[#005684]/40 transition-all duration-200 ease-in-out group"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5">
@@ -462,7 +462,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                     </div>
                   </div>
 
-                  <h3 className="text-sm font-bold mb-1 group-hover:text-[#005684] dark:group-hover:text-[#93ccff] transition-colors">
+                  <h3 className="text-sm font-bold mb-1 group-hover:text-[#005684] focus-visible:text-[#005684] dark:group-hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors">
                     {screen.name}
                   </h3>
                   <div className="text-[11px] opacity-60 mb-2 font-semibold">
@@ -485,7 +485,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   </span>
                   <button
                     onClick={() => handleJumpToScreen(screen)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] transition-all shadow-sm"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-all duration-200 ease-in-out shadow-sm"
                   >
                     <span>Open Screen</span>
                     <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -513,7 +513,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   setSelectedFlow(flow);
                   setFlowCurrentStepIndex(0);
                 }}
-                className={`w-full text-left p-3.5 rounded-2xl border text-xs font-bold transition-all flex flex-col gap-1 ${
+                className={`w-full text-left p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ease-in-out flex flex-col gap-1 ${
                   selectedFlow.id === flow.id
                     ? 'bg-[#005684] text-white border-[#005684] shadow-md'
                     : 'bg-white dark:bg-[#0B1626] border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/40'
@@ -579,7 +579,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   Step-by-Step Screen Sequence ({selectedFlow.steps.length} Steps)
                 </span>
                 <span className="text-xs font-mono opacity-80">
-                  Active Step: {flowCurrentStepIndex + 1} of {selectedFlow.steps.length}
+                  Active Step: {flowCurrentStepIndex+ 1} of {selectedFlow.steps.length}
                 </span>
               </div>
 
@@ -588,7 +588,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   <button
                     key={idx}
                     onClick={() => setFlowCurrentStepIndex(idx)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all duration-200 ease-in-out flex items-center gap-1 ${
                       flowCurrentStepIndex === idx
                         ? 'bg-[#005684] text-white shadow-sm'
                         : 'bg-white dark:bg-[#0B1626] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] opacity-80 hover:opacity-100'
@@ -604,11 +604,11 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
             </div>
 
             {/* Current Active Step Interactive Card */}
-            <div className="p-6 rounded-2xl border-2 border-[#005684]/30 bg-[#EFF6FB]/50 dark:bg-[#08101C] space-y-4">
+            <div className="p-6 rounded-2xl border border-[#005684]/30 bg-[#EFF6FB]/50 dark:bg-[#08101C] space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider font-bold text-[#005684] dark:text-[#93ccff]">
-                    Step {flowCurrentStepIndex + 1} Details
+                    Step {flowCurrentStepIndex+ 1} Details
                   </span>
                   <h4 className="text-lg font-black font-mono">
                     Screen ID: {selectedFlow.steps[flowCurrentStepIndex]}
@@ -622,7 +622,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                       handleJumpToScreen(matchedScreen);
                     }
                   }}
-                  className="px-4 py-2 bg-[#005684] text-white rounded-xl text-xs font-bold shadow-sm hover:bg-[#00476d] transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-[#005684] text-white rounded-xl text-xs font-bold shadow-sm hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-all duration-200 ease-in-out flex items-center gap-1.5"
                 >
                   <span>Launch Screen Live</span>
                   <span className="material-symbols-outlined text-[16px]">open_in_new</span>
@@ -644,7 +644,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                 </button>
                 <button
                   disabled={flowCurrentStepIndex === selectedFlow.steps.length - 1}
-                  onClick={() => setFlowCurrentStepIndex((prev) => Math.min(selectedFlow.steps.length - 1, prev + 1))}
+                  onClick={() => setFlowCurrentStepIndex((prev) => Math.min(selectedFlow.steps.length - 1, prev+ 1))}
                   className="px-4 py-2 rounded-xl text-xs font-bold bg-[#005684] text-white disabled:opacity-30"
                 >
                   Next Step in Flow →
@@ -671,7 +671,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   setCustomNotificationCopy(notif.sampleBody);
                   setNotificationChannelPreview(notif.channels[0] as any);
                 }}
-                className={`w-full text-left p-3.5 rounded-2xl border text-xs transition-all flex flex-col gap-1 ${
+                className={`w-full text-left p-3.5 rounded-2xl border text-xs transition-all duration-200 ease-in-out flex flex-col gap-1 ${
                   selectedNotification?.id === notif.id
                     ? 'bg-[#005684] text-white border-[#005684] shadow-md'
                     : 'bg-white dark:bg-[#0B1626] border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/40'
@@ -718,7 +718,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                       <button
                         key={ch}
                         onClick={() => setNotificationChannelPreview(ch as any)}
-                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all duration-200 ease-in-out ${
                           notificationChannelPreview === ch
                             ? 'bg-[#005684] text-white'
                             : 'opacity-70 hover:opacity-100'
@@ -773,7 +773,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   )}
 
                   {(notificationChannelPreview === 'Push' || notificationChannelPreview === 'In-App') && (
-                    <div className="p-4 rounded-2xl bg-white dark:bg-[#08101C] border-2 border-[#005684]/30 shadow-lg flex items-start gap-3">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-[#08101C] border border-[#005684]/30 shadow-lg flex items-start gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[#005684] text-white flex items-center justify-center shrink-0">
                         <span className="material-symbols-outlined text-[22px]">notifications</span>
                       </div>
@@ -829,7 +829,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
               <button
                 key={st.id}
                 onClick={() => setActiveStateDemo(st.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out ${
                   activeStateDemo === st.id
                     ? 'bg-[#005684] text-white shadow-sm'
                     : 'bg-black/5 dark:bg-white/5 opacity-80 hover:opacity-100'
@@ -869,13 +869,13 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
               {/* STATE-01: Skeleton */}
               {activeStateDemo === 'STATE-01' && (
                 <div className="w-full max-w-lg space-y-3">
-                  <div className="h-6 w-1/3 bg-gray-300 dark:bg-gray-700 rounded-lg animate-pulse" />
+                  <div className="h-6 w-1/3 bg-gray-300 dark:bg-gray-700 rounded-lg" />
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl animate-pulse" />
-                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl animate-pulse" />
-                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl animate-pulse" />
+                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl" />
+                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl" />
+                    <div className="h-28 bg-gray-300 dark:bg-gray-700 rounded-xl" />
                   </div>
-                  <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-700 rounded-lg animate-pulse" />
+                  <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-700 rounded-lg" />
                 </div>
               )}
 
@@ -887,11 +887,11 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                       setDemoButtonLoading(true);
                       setTimeout(() => setDemoButtonLoading(false), 2000);
                     }}
-                    className="w-48 py-3 px-6 rounded-xl bg-[#005684] text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 mx-auto transition-all"
+                    className="w-48 py-3 px-6 rounded-xl bg-[#005684] text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 mx-auto transition-all duration-200 ease-in-out"
                   >
                     {demoButtonLoading ? (
                       <>
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
                         <span>Authorizing...</span>
                       </>
                     ) : (
@@ -945,7 +945,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   <input
                     type="text"
                     defaultValue="RN-INV-99"
-                    className="w-full p-2.5 rounded-xl border-2 border-rose-500 bg-rose-500/5 text-xs font-semibold focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-rose-500 bg-rose-500/5 text-xs font-semibold focus:outline-none"
                   />
                   <div className="text-[11px] text-rose-600 dark:text-rose-400 flex items-center gap-1 font-semibold">
                     <span className="material-symbols-outlined text-[14px]">error</span>
@@ -983,7 +983,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                       <div className="text-[10px] opacity-75">Displaying cached door code (*4821#)</div>
                     </div>
                   </div>
-                  <button className="px-2.5 py-1 rounded-lg bg-white/20 text-xs font-bold hover:bg-white/30">
+                  <button className="px-2.5 py-1 rounded-lg bg-white/20 text-xs font-bold hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/30">
                     Retry Connection
                   </button>
                 </div>
@@ -1035,13 +1035,13 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
               Nurses Pillow — Phase 1 Screen, Page &amp; Flow Inventory
             </h2>
             <p className="text-xs opacity-70 font-semibold mb-4">
-              Prepared by Joe • Companion to the Design System • Signed $2,500 Scope (M1 + M2 + M3)
+              Prepared by Joe • Companion to the Design System • Signed $2,500 Scope (M1+ M2+ M3)
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-4 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
               <div className="space-y-1">
                 <strong className="text-[#005684] dark:text-[#93ccff]">Purpose:</strong>
                 <p className="opacity-80 leading-relaxed">
-                  Complete inventory of every screen, page, flow, and message template needed to deliver Phase 1 — the signed $2,500 scope (M1 + M2 + M3). Use it to plan design generation, sequence the build, and track progress.
+                  Complete inventory of every screen, page, flow, and message template needed to deliver Phase 1 — the signed $2,500 scope (M1+ M2+ M3). Use it to plan design generation, sequence the build, and track progress.
                 </p>
               </div>
               <div className="space-y-1">
@@ -1349,7 +1349,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   <span className="text-[11px] opacity-60">{item.scopeNote}</span>
                   <button
                     onClick={() => onNavigateTab('legal-policies')}
-                    className="px-3 py-1.5 rounded-lg bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d]"
+                    className="px-3 py-1.5 rounded-lg bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d]"
                   >
                     View Pending Legal Screen
                   </button>
@@ -1424,7 +1424,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                 </thead>
                 <tbody className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
                   {OUT_OF_PHASE_1_ITEMS.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    <tr key={idx} className="hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors">
                       <td className="p-4 font-bold text-sm text-[#001848] dark:text-[#E6ECF7]">
                         {item.item}
                       </td>
@@ -1460,7 +1460,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           }}
         >
           <div
-            className="bg-white dark:bg-[#0B1626] rounded-3xl max-w-lg w-full my-auto p-6 shadow-2xl border border-black/10 dark:border-white/10 space-y-4"
+            className="bg-white dark:bg-[#0B1626] rounded-3xl max-w-lg w-full my-auto p-6 shadow-lg border border-black/10 dark:border-white/10 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">

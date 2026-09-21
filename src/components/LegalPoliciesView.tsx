@@ -131,7 +131,7 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={onNavigateHome}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black/5 dark:hover:bg-white/5 transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out self-start sm:self-auto"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Return to Marketplace
@@ -142,10 +142,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
       <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-[#0B1626] p-1.5 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
         <button
           onClick={() => setActiveTab('cancellation')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeTab === 'cancellation'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="text-[10px] font-mono opacity-80">P-07</span>
@@ -155,10 +155,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('terms')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeTab === 'terms'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="text-[10px] font-mono opacity-80">P-05</span>
@@ -168,10 +168,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('privacy')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeTab === 'privacy'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="text-[10px] font-mono opacity-80">P-06</span>
@@ -181,10 +181,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('host-agreement')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeTab === 'host-agreement'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="text-[10px] font-mono opacity-80">P-08</span>
@@ -194,10 +194,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('nc-disclosures')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
             activeTab === 'nc-disclosures'
               ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 dark:hover:bg-white/5 opacity-80'
+              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
           <span className="text-[10px] font-mono opacity-80">P-09</span>
@@ -387,7 +387,7 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setCalcHospitalCancelled(!calcHospitalCancelled)}
-                  className={`w-full py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                  className={`w-full py-2 px-3 rounded-xl text-xs font-bold border transition-all duration-200 ease-in-out ${
                     calcHospitalCancelled
                       ? 'bg-amber-500 text-white border-amber-600'
                       : 'bg-black/5 dark:bg-white/5 border-transparent opacity-80'

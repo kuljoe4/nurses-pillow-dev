@@ -48,7 +48,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <button
               onClick={() => onSelectStep(1)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -76,7 +76,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <button
               onClick={() => onSelectStep(3)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
               }`}
             >
@@ -92,7 +92,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <button
               onClick={() => onSelectStep(4)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
               }`}
             >
@@ -110,7 +110,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
 
       {/* Main Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-xl transition-all ${
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
           isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]' : 'bg-white text-[#001848]'
         }`}
       >
@@ -210,7 +210,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <button
               type="button"
               onClick={onOpenPostmarkEmail}
-              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all group cursor-pointer"
+              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all duration-200 ease-in-out group cursor-pointer"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
@@ -229,7 +229,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             <button
               type="button"
               onClick={onOpenTwilioOtp}
-              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all group cursor-pointer"
+              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all duration-200 ease-in-out group cursor-pointer"
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
@@ -249,7 +249,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
           <div className="pt-4 flex items-center justify-between gap-3">
             <button
               type="submit"
-              className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white font-semibold flex items-center gap-2"
+              className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center gap-2"
             >
               <span>Continue to Step 3: Clinical License</span>
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
