@@ -44,7 +44,7 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
           {MOCK_HOSPITALS.map((hosp) => (
             <div
               key={hosp.id}
-              className={`p-6 rounded-3xl border shadow-md transition-all flex flex-col justify-between ${
+              className={`p-6 rounded-3xl border shadow-md transition-all duration-200 ease-in-out flex flex-col justify-between ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
                   : 'bg-white border-[rgba(11,37,89,0.08)] text-[#001848]'
@@ -90,7 +90,7 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectHospital(hosp.name)}
-                  className="px-4 py-2 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer"
                 >
                   <span>Find Homes</span>
                   <span className="material-symbols-outlined text-sm">arrow_forward</span>

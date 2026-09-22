@@ -21,7 +21,7 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl p-4 sm:p-5 border transition-all ${
+      className={`rounded-2xl p-4 sm:p-5 border transition-all duration-200 ease-in-out ${
         isNightShiftMode
           ? 'bg-[#101E33] border-[#223854] text-[#E6ECF7]'
           : 'bg-white border-[#d8e2ee] text-[#001848] shadow-sm'

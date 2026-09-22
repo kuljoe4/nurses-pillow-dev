@@ -48,7 +48,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative ${
+        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-lg transition-all duration-200 ease-in-out relative ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
@@ -58,7 +58,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/10 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 transition-colors"
           aria-label="Close"
         >
           <span className="material-symbols-outlined text-xl">close</span>
@@ -151,7 +151,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>Connect with On-Duty Nurse Specialist</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>

@@ -71,7 +71,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           {commitments.map((c, i) => (
             <div
               key={i}
-              className={`p-6 sm:p-8 rounded-3xl border shadow-md transition-all ${
+              className={`p-6 sm:p-8 rounded-3xl border shadow-md transition-all duration-200 ease-in-out ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
                   : 'bg-white border-[rgba(11,37,89,0.08)] text-[#001848]'
@@ -94,7 +94,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
 
         {/* Action card */}
         <div
-          className={`rounded-3xl p-8 sm:p-10 border text-center shadow-xl ${
+          className={`rounded-3xl p-8 sm:p-10 border text-center shadow-md ${
             isNightShiftMode
               ? 'bg-[#15233a] border-[#233550] text-white'
               : 'bg-white border-[rgba(11,37,89,0.12)] text-[#001848]'
@@ -111,14 +111,14 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={onGoToVerification}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white font-semibold text-sm shadow-md cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold text-sm shadow-md cursor-pointer flex items-center justify-center gap-2"
             >
               <span>Verify Nursing License (Step 3)</span>
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </button>
             <button
               onClick={onGoToHousing}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-current text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-current text-sm font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors cursor-pointer"
             >
               Browse Housing Sanctuaries
             </button>

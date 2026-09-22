@@ -98,7 +98,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl relative border transition-all ${
+        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg relative border transition-all duration-200 ease-in-out ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
@@ -110,7 +110,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
           onClick={onClose}
           type="button"
           aria-label="Close checkout modal"
-          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-black/10 cursor-pointer"
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/10 cursor-pointer"
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
@@ -330,7 +330,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !agreedToPolicy}
-                className="w-full py-4 rounded-full bg-[#001848] hover:bg-[#162e62] disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -375,7 +375,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                className="px-6 py-3 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer"
               >
                 Done / View My Stays
               </button>

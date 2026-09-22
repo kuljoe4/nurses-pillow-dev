@@ -74,7 +74,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               <button
                 type="button"
                 onClick={onGoToHostPortal}
-                className="px-7 py-3.5 rounded-full bg-[#001848] hover:bg-[#005684] text-white text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-2"
+                className="px-7 py-3.5 rounded-full bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs sm:text-sm font-bold shadow-md transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">add_home</span>
                 <span>Enter Host Portal &amp; List Property</span>
@@ -83,7 +83,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             <button
               type="button"
               onClick={onGoToHousing}
-              className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black/5 dark:hover:bg-white/5 text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+              className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 text-xs sm:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
             >
               Explore Existing Sanctuary Listings
             </button>
@@ -237,7 +237,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
                 <button
                   type="button"
                   onClick={onGoToHostPortal}
-                  className="w-full mt-4 py-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] transition-all cursor-pointer shadow-xs"
+                  className="w-full mt-4 py-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-all duration-200 ease-in-out cursor-pointer shadow-xs"
                 >
                   List This Sanctuary
                 </button>
@@ -320,7 +320,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             {faqs.map((faq, idx) => (
               <div
                 key={idx}
-                className={`rounded-2xl border transition-all ${
+                className={`rounded-2xl border transition-all duration-200 ease-in-out ${
                   isNightShiftMode
                     ? 'bg-[#0E1A2E] border-[#233550]'
                     : 'bg-white border-[rgba(11,37,89,0.08)]'
@@ -353,7 +353,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               <button
                 type="button"
                 onClick={onGoToHostPortal}
-                className="px-8 py-4 rounded-full bg-[#001848] hover:bg-[#005684] text-white text-sm font-bold shadow-lg transition-all cursor-pointer flex items-center gap-2"
+                className="px-8 py-4 rounded-full bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-sm font-bold shadow-lg transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">add_business</span>
                 <span>Open Host Workspace &amp; Add Listing</span>
@@ -362,7 +362,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             <button
               type="button"
               onClick={onGoToHousing}
-              className="px-6 py-4 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black/5 dark:hover:bg-white/5 text-sm font-semibold transition-all cursor-pointer"
+              className="px-6 py-4 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
             >
               Back to Main Marketplace
             </button>

@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({
             <button
               onClick={onOpenSupport}
               type="button"
-              className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-left transition-all ${
+              className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] shadow-md hover:border-[#3E9AD1]'
                   : 'bg-white border-[rgba(11,37,89,0.08)] shadow-[0_4px_20px_rgba(11,37,89,0.06)] hover:border-[#0a6fa8]'
@@ -81,7 +81,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('find-housing')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Hospital Proximity Search
                 </button>
@@ -89,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Stipend &amp; Per Diem Guides
                 </button>
@@ -97,7 +97,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('find-housing')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Shift-Friendly Housing
                 </button>
@@ -105,7 +105,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Blackout Curtains Guarantee
                 </button>
@@ -113,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Quiet Hours Certification
                 </button>
@@ -134,7 +134,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Host a Nurse
                 </button>
@@ -142,7 +142,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Furnishing Standards Guide
                 </button>
@@ -150,7 +150,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('verification')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Safety &amp; ID Verification
                 </button>
@@ -158,7 +158,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Contract Flex Protection
                 </button>
@@ -166,7 +166,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Host Resource Center
                 </button>
@@ -187,7 +187,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Safety Protocols
                 </button>
@@ -195,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('verified-hospitals')}
-                  className="hover:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
                 >
                   Hospital Safe Badges
                 </button>
@@ -203,7 +203,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('legal-policies')}
-                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
                 >
                   Cancellation &amp; Refund Policy
                 </button>
@@ -211,7 +211,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('legal-policies')}
-                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
                 >
                   Privacy Policy &amp; Terms
                 </button>
@@ -221,7 +221,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <li>
                     <button
                       onClick={() => onSelectTab('phase1-inventory')}
-                      className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                      className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
                     >
                       Product Scope &amp; Specifications
                     </button>
@@ -229,7 +229,7 @@ export const Footer: React.FC<FooterProps> = ({
                   <li>
                     <button
                       onClick={() => onSelectTab('mobile-preview')}
-                      className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                      className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
                     >
                       Mobile App Experience (M2)
                     </button>
@@ -239,7 +239,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('system-status')}
-                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
                 >
                   Platform Reliability &amp; Status
                 </button>
@@ -247,7 +247,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={onOpenSupport}
-                  className="hover:text-[#005684] dark:hover:text-[#93ccff] transition-colors text-left cursor-pointer"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left cursor-pointer"
                 >
                   Help &amp; Clinical Support
                 </button>

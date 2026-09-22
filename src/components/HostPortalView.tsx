@@ -77,10 +77,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveHostTab('dashboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
               activeHostTab === 'dashboard'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             Host Dashboard
@@ -88,10 +88,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveHostTab('editor')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
               activeHostTab === 'editor'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             Listing &amp; Rooms
@@ -99,10 +99,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveHostTab('onboarding')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
               activeHostTab === 'onboarding'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             Host Verification
@@ -164,7 +164,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 </div>
               </div>
               <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                <span className="w-2 h-2 rounded-full bg-rose-600"></span>
                 <span>{bookingRequests.filter(b => b.status === 'pending_host_approval').length} Pending Approval</span>
               </span>
             </div>
@@ -227,14 +227,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                             <button
                               type="button"
                               onClick={() => onDeclineBooking(req.id)}
-                              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-100 cursor-pointer"
+                              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 cursor-pointer"
                             >
                               Decline
                             </button>
                             <button
                               type="button"
                               onClick={() => onApproveBooking(req.id)}
-                              className="px-5 py-2 rounded-full bg-[#195b4c] hover:bg-[#14483d] text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                              className="px-5 py-2 rounded-full bg-[#195b4c] hover:bg-[#14483d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14483d] text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
                             >
                               <span>Accept Booking</span>
                             </button>
@@ -289,7 +289,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 <div key={d} className="font-bold text-gray-400 py-1">{d}</div>
               ))}
               {Array.from({ length: 31 }).map((_, idx) => {
-                const day = idx + 1;
+                const day = idx+ 1;
                 const isBlocked = blockedDays.includes(day);
                 const isOccupied = day >= 1 && day <= 28;
 
@@ -298,12 +298,12 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     key={day}
                     type="button"
                     onClick={() => toggleBlockDay(day)}
-                    className={`h-12 rounded-xl font-bold flex flex-col items-center justify-center transition-all cursor-pointer ${
+                    className={`h-12 rounded-xl font-bold flex flex-col items-center justify-center transition-all duration-200 ease-in-out cursor-pointer ${
                       isBlocked
                         ? 'bg-rose-500 text-white'
                         : isOccupied
                         ? 'bg-[#005684] text-white'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] hover:bg-[#eaedff]'
+                        : 'bg-[#f2f3ff] dark:bg-[#182840] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                     }`}
                   >
                     <span>{day}</span>
@@ -330,7 +330,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             </div>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-full bg-[#001848] hover:bg-[#162e62] text-white text-xs font-bold shadow-xs cursor-pointer"
+              className="px-6 py-2.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white text-xs font-bold shadow-xs cursor-pointer"
             >
               Save Configuration
             </button>
@@ -352,7 +352,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               <button
                 type="button"
                 onClick={() => setPropertyType('entire_property')}
-                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   propertyType === 'entire_property'
                     ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
                     : 'border-gray-200 dark:border-gray-700'
@@ -365,7 +365,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               <button
                 type="button"
                 onClick={() => setPropertyType('individual_rooms')}
-                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   propertyType === 'individual_rooms'
                     ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
                     : 'border-gray-200 dark:border-gray-700'
@@ -434,7 +434,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     onChange={(e) => setRequiresSecurityDeposit(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#005684]"></div>
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all duration-200 ease-in-out dark:border-gray-600 peer-checked:bg-[#005684]"></div>
                 </label>
                 <span className="text-xs font-semibold">
                   {requiresSecurityDeposit ? 'Host Deposit Enabled' : 'No Deposit ($0 Free Hold)'}
@@ -469,7 +469,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             ) : (
               <div className="p-3 rounded-xl bg-[#aff0db]/20 text-[11px] text-[#195b4c] dark:text-[#aff0db] flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">verified</span>
-                <span><strong>Clinician Attraction Perk:</strong> Offering a $0 deposit requirement displays a verified "Zero Deposit Hold" badge on search cards to boost occupancy.</span>
+                <span><strong>Clinician Attraction Perk:</strong> Offering a $0 deposit requirement displays a verified"Zero Deposit Hold" badge on search cards to boost occupancy.</span>
               </div>
             )}
           </div>
@@ -539,7 +539,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   key={tier}
                   type="button"
                   onClick={() => setCancellationTier(tier)}
-                  className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                     cancellationTier === tier
                       ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
                       : 'border-gray-200 dark:border-gray-700'

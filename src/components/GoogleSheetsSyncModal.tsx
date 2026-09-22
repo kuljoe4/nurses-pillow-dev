@@ -290,7 +290,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-4xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all max-h-[92vh] overflow-y-auto ${
+        className={`relative w-full max-w-4xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg border transition-all duration-200 ease-in-out max-h-[92vh] overflow-y-auto ${
           isNightShiftMode
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'
@@ -336,7 +336,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer transition-colors"
             type="button"
             aria-label="Close dialog"
           >
@@ -350,7 +350,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
                     Step 1 • Google Workspace Administrator Sign-In
                   </span>
@@ -370,7 +370,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isSigningIn}
-                className="gsi-material-button inline-flex items-center justify-center gap-2.5 px-4 py-2.5 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-xl shadow-xs text-xs font-semibold cursor-pointer shrink-0 transition-all disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#005684]"
+                className="gsi-material-button inline-flex items-center justify-center gap-2.5 px-4 py-2.5 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-xl shadow-xs text-xs font-semibold cursor-pointer shrink-0 transition-all duration-200 ease-in-out disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[#005684]"
               >
                 <div className="gsi-material-button-icon flex items-center justify-center">
                   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-4 h-4 block">
@@ -415,7 +415,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
               <button
                 type="button"
                 onClick={handleDisconnect}
-                className="text-xs text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 font-medium underline cursor-pointer"
+                className="text-xs text-gray-500 hover:text-rose-500 focus-visible:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 focus-visible:text-rose-400 font-medium underline cursor-pointer"
               >
                 Disconnect
               </button>
@@ -440,7 +440,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                     Google Spreadsheet Created &amp; Populated!
                   </h4>
                   <p className="text-xs text-emerald-800 dark:text-emerald-200 mt-0.5 font-medium">
-                    Successfully wrote {syncSuccessResult.rowsCount} rows to "{syncSuccessResult.title}".
+                    Successfully wrote {syncSuccessResult.rowsCount} rows to"{syncSuccessResult.title}".
                   </p>
                 </div>
               </div>
@@ -448,7 +448,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyUrl}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-600/30 text-xs font-bold hover:bg-emerald-500/10 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-600/30 text-xs font-bold hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-emerald-500/10 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[14px]">
                     {copiedUrl ? 'check' : 'content_copy'}
@@ -459,7 +459,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   href={syncSuccessResult.spreadsheetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0c8047] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   <span>Open in Google Sheets</span>
                   <span className="material-symbols-outlined text-[14px]">open_in_new</span>
@@ -483,7 +483,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   setActivePreset('admin-demand');
                   setSyncSuccessResult(null);
                 }}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   activePreset === 'admin-demand'
                     ? 'border-[#005684] bg-[#005684]/10 dark:bg-[#005684]/20 shadow-xs'
                     : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
@@ -511,7 +511,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   setActivePreset('admin-licenses');
                   setSyncSuccessResult(null);
                 }}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   activePreset === 'admin-licenses'
                     ? 'border-[#005684] bg-[#005684]/10 dark:bg-[#005684]/20 shadow-xs'
                     : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
@@ -539,7 +539,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   setActivePreset('host-revenue');
                   setSyncSuccessResult(null);
                 }}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   activePreset === 'host-revenue'
                     ? 'border-[#005684] bg-[#005684]/10 dark:bg-[#005684]/20 shadow-xs'
                     : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
@@ -567,7 +567,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   setActivePreset('housing-comparison');
                   setSyncSuccessResult(null);
                 }}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   activePreset === 'housing-comparison'
                     ? 'border-[#005684] bg-[#005684]/10 dark:bg-[#005684]/20 shadow-xs'
                     : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
@@ -595,7 +595,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   setActivePreset('nurse-tax');
                   setSyncSuccessResult(null);
                 }}
-                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
                   activePreset === 'nurse-tax'
                     ? 'border-[#005684] bg-[#005684]/10 dark:bg-[#005684]/20 shadow-xs'
                     : 'border-gray-200 dark:border-gray-800 hover:border-gray-300'
@@ -739,7 +739,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                       </tr>
                     ) : (
                       currentPayload.rows.slice(0, 5).map((row, rIdx) => (
-                        <tr key={rIdx} className="hover:bg-gray-50 dark:hover:bg-[#162744]">
+                        <tr key={rIdx} className="hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#162744] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162744]">
                           {row.map((cell, cIdx) => (
                             <td
                               key={cIdx}
@@ -774,7 +774,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer"
             >
               Cancel
             </button>
@@ -783,7 +783,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
               type="button"
               disabled={!hasToken || isSyncing}
               onClick={() => setShowConfirmModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-[#005684]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] disabled:opacity-50 text-white text-xs font-bold shadow-md cursor-pointer transition-all duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-[#005684]"
             >
               <span className="material-symbols-outlined text-[16px]">sync</span>
               <span>
@@ -812,7 +812,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
             }}
           >
             <div
-              className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-2xl border ${
+              className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-lg border ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] text-[#E6ECF7] border-[#233550]'
                   : 'bg-white text-[#001848] border-gray-200'
@@ -843,14 +843,14 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleExecuteSync}
-                  className="px-5 py-2.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] text-white text-xs font-bold shadow-md cursor-pointer transition-all"
+                  className="px-5 py-2.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0c8047] text-white text-xs font-bold shadow-md cursor-pointer transition-all duration-200 ease-in-out"
                 >
                   Yes, Proceed &amp; Sync
                 </button>
