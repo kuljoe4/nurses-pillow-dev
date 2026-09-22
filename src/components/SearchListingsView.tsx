@@ -151,7 +151,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsGsaModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db] text-xs font-semibold hover:bg-[#195b4c]/20 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db] text-xs font-semibold hover:bg-[#195b4c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#195b4c]/20 transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[15px]">calculate</span>
                 <span>GSA Stipend Audit</span>
@@ -189,7 +189,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 </span>
 
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-xl z-50 py-1 border border-[#c0c7d1]/30 dark:border-[#2b4162] max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-md z-50 py-1 border border-[#c0c7d1]/30 dark:border-[#2b4162] max-h-60 overflow-y-auto">
                     {popularHubs.map((hosp) => (
                       <div
                         key={hosp}
@@ -197,7 +197,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                           setSelectedHospital(hosp);
                           setIsDropdownOpen(false);
                         }}
-                        className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between ${
+                        className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between ${
                           selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
                         }`}
                       >
@@ -260,10 +260,10 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     key={opt.miles}
                     type="button"
                     onClick={() => setCommuteBuffer(opt.miles)}
-                    className={`flex-1 h-11 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex-1 h-11 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
                       commuteBuffer === opt.miles
                         ? 'bg-[#005684] text-white shadow-xs'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                     }`}
                   >
                     {opt.label}
@@ -294,7 +294,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     className={`px-3 py-1.5 rounded-full whitespace-nowrap font-semibold transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-[#001848] text-white'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                     }`}
                   >
                     {chip.label}
@@ -305,7 +305,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsFilterModalOpen(true)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#1f3350] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] font-bold cursor-pointer whitespace-nowrap ml-1"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#1f3350] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff] font-bold cursor-pointer whitespace-nowrap ml-1"
               >
                 <span className="material-symbols-outlined text-[15px]">tune</span>
                 <span>Filters ({activeAmenityCount})</span>
@@ -317,7 +317,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode('split-map')}
-                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
                   viewMode === 'split-map'
                     ? 'bg-[#005684] text-white shadow-xs'
                     : 'text-[#404850] dark:text-[#c0c7d1]'
@@ -329,7 +329,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
                   viewMode === 'grid'
                     ? 'bg-[#005684] text-white shadow-xs'
                     : 'text-[#404850] dark:text-[#c0c7d1]'
@@ -388,7 +388,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     <div
                       key={listing.id}
                       onClick={() => setSelectedMapListingId(listing.id)}
-                      className={`rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all cursor-pointer flex flex-col justify-between group ${
+                      className={`rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-200 ease-in-out cursor-pointer flex flex-col justify-between group ${
                         isSelectedOnMap
                           ? 'border-[#005684] ring-2 ring-[#005684]/30 shadow-lg'
                           : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/50 shadow-sm hover:shadow-md'
@@ -433,7 +433,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                             </div>
                           </div>
 
-                          <h3 className="text-sm font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] transition-colors">
+                          <h3 className="text-sm font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
                             {listing.title}
                           </h3>
 
@@ -480,7 +480,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                                 e.stopPropagation();
                                 onRequestToBookListing(listing);
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-[#001848] dark:bg-[#005684] hover:bg-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg bg-[#001848] dark:bg-[#005684] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
                             >
                               Book Stay
                             </button>
@@ -553,7 +553,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   />
 
                   {/* Hospital Hub (Center) */}
-                  <circle cx="300" cy="250" r="44" fill="rgba(0,86,132,0.15)" className="animate-pulse" />
+                  <circle cx="300" cy="250" r="44" fill="rgba(0,86,132,0.15)" className="" />
                   <circle cx="300" cy="250" r="22" fill="#005684" stroke="white" strokeWidth="3" />
                   <text x="300" y="255" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">H</text>
 
@@ -583,9 +583,9 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                         type="button"
                         onClick={() => setSelectedMapListingId(listing.id)}
                         style={{ top: pos.top, left: pos.left }}
-                        className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full text-xs font-extrabold shadow-md transition-all cursor-pointer flex items-center gap-1 ${
+                        className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full text-xs font-extrabold shadow-md transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1 ${
                           isSelected
-                            ? 'bg-[#001848] text-white scale-125 z-20 ring-2 ring-white ring-offset-2'
+                            ? 'bg-[#001848] text-white scale-125 z-20 ring-2 ring-white ring-offset-1'
                             : 'bg-white dark:bg-[#111e33] text-[#001848] dark:text-white hover:scale-110 z-10 border border-[rgba(11,37,89,0.15)]'
                         }`}
                       >
@@ -600,15 +600,15 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-20 bg-white dark:bg-[#111e33] rounded-xl p-1 shadow-md border border-[rgba(11,37,89,0.1)]">
                   <button
                     type="button"
-                    onClick={() => setMapZoom(Math.min(mapZoom + 0.2, 2))}
-                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840] rounded"
+                    onClick={() => setMapZoom(Math.min(mapZoom+ 0.2, 2))}
+                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] rounded"
                   >
-                    +
+                   +
                   </button>
                   <button
                     type="button"
                     onClick={() => setMapZoom(Math.max(mapZoom - 0.2, 0.6))}
-                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840] rounded"
+                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] rounded"
                   >
                     −
                   </button>
@@ -641,7 +641,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveDetailListing(selectedMapListing)}
-                    className="px-3 py-2 rounded-xl bg-[#005684] hover:bg-[#004266] text-white text-xs font-bold transition-colors cursor-pointer shrink-0"
+                    className="px-3 py-2 rounded-xl bg-[#005684] hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] text-white text-xs font-bold transition-colors cursor-pointer shrink-0"
                   >
                     View Stay
                   </button>
@@ -660,7 +660,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 return (
                   <div
                     key={listing.id}
-                    className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
+                    className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 ease-in-out border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
                   >
                     <div className="relative h-56 w-full overflow-hidden bg-gray-100">
                       <img
@@ -734,7 +734,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                           <button
                             type="button"
                             onClick={() => onRequestToBookListing(listing)}
-                            className="px-4 py-2 rounded-xl bg-[#001848] hover:bg-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                            className="px-4 py-2 rounded-xl bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
                           >
                             Book Sanctuary
                           </button>
@@ -786,7 +786,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
           }}
         >
           <div
-            className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-2xl border border-[rgba(11,37,89,0.1)] text-[#001848] dark:text-white"
+            className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-lg border border-[rgba(11,37,89,0.1)] text-[#001848] dark:text-white"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
@@ -797,7 +797,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsGsaModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200"
               >
                 ✕
               </button>

@@ -220,10 +220,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             aria-controls="admin-panel-queue"
             tabIndex={activeAdminTab === 'queue' ? 0 : -1}
             onClick={() => setActiveAdminTab('queue')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
               activeAdminTab === 'queue'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             License Queue
@@ -236,10 +236,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             aria-controls="admin-panel-fees"
             tabIndex={activeAdminTab === 'fees' ? 0 : -1}
             onClick={() => setActiveAdminTab('fees')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
               activeAdminTab === 'fees'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             Platform Fees &amp; Escrow
@@ -253,10 +253,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               aria-controls="admin-panel-analytics"
               tabIndex={activeAdminTab === 'analytics' ? 0 : -1}
               onClick={() => setActiveAdminTab('analytics')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684] ${
                 activeAdminTab === 'analytics'
                   ? 'bg-[#001848] text-white shadow-xs'
-                  : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
               }`}
             >
               Marketplace Analytics
@@ -270,10 +270,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             aria-controls="admin-panel-sheets"
             tabIndex={activeAdminTab === 'sheets' ? 0 : -1}
             onClick={() => setActiveAdminTab('sheets')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#005684] ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#005684] ${
               activeAdminTab === 'sheets'
                 ? 'bg-[#0F9D58] text-white shadow-xs'
-                : 'text-[#0F9D58] dark:text-[#5bd395] hover:bg-[#0F9D58]/10'
+                : 'text-[#0F9D58] dark:text-[#5bd395] hover:bg-[#0F9D58] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0F9D58]/10'
             }`}
           >
             <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -344,7 +344,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {reviews.map((r) => (
-                    <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-[#14233a] transition-colors">
+                    <tr key={r.id} className="hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#14233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14233a] transition-colors">
                       <td className="py-3.5 px-3 font-bold text-[#001848] dark:text-white">
                         {r.clinicianLegalName}
                         <div className="text-[10px] text-gray-400 font-normal">{r.submittedAt}</div>
@@ -396,14 +396,14 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             <button
                               type="button"
                               onClick={() => handleApprove(r.id)}
-                              className="px-3 py-1 rounded-lg bg-[#001848] text-white text-[11px] font-bold hover:bg-[#162e62] cursor-pointer"
+                              className="px-3 py-1 rounded-lg bg-[#001848] text-white text-[11px] font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer"
                             >
                               Approve
                             </button>
                             <button
                               type="button"
                               onClick={() => handleReject(r.id)}
-                              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-bold hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-bold hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-50 hover:text-rose-600 focus-visible:text-rose-600 cursor-pointer"
                             >
                               Reject
                             </button>
@@ -500,7 +500,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={handleTriggerFeeNotice}
-                  className="px-4 py-2 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer shrink-0 transition-colors"
+                  className="px-4 py-2 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer shrink-0 transition-colors"
                 >
                   {feeNoticeSent ? 'Dispatched 30-Day Notice ✓' : 'Publish Fee Adjustment'}
                 </button>
@@ -597,7 +597,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {demandReports.map((d, i) => (
-                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-[#14233a]">
+                    <tr key={i} className="hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#14233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14233a]">
                       <td className="py-3.5 px-3 font-bold text-[#001848] dark:text-white">
                         {d.hospitalName}
                         <div className="text-[10px] text-gray-400 font-normal">{d.healthSystem}</div>
@@ -670,7 +670,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
 
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer"
               >
                 Generate Code
               </button>
@@ -727,7 +727,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenGoogleSheets?.('admin-demand')}
-              className="px-5 py-2.5 rounded-2xl bg-[#0F9D58] hover:bg-[#0c8047] text-white text-xs font-bold shadow-md cursor-pointer transition-all flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-[#005684]"
+              className="px-5 py-2.5 rounded-2xl bg-[#0F9D58] hover:bg-[#0c8047] text-white text-xs font-bold shadow-md cursor-pointer transition-all duration-200 ease-in-out flex items-center gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-[#005684]"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2zm0 8H7v-2h10v2z" />
@@ -764,7 +764,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenGoogleSheets?.('admin-demand')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
                 >
                   <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                   <span>Export Demand Report to Google Sheets</span>
@@ -798,7 +798,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenGoogleSheets?.('admin-licenses')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
                 >
                   <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                   <span>Export License Verification Trail to Sheets</span>
@@ -832,7 +832,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenGoogleSheets?.('host-revenue')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
                 >
                   <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                   <span>Export Payouts &amp; Revenue Ledger to Sheets</span>
@@ -866,7 +866,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenGoogleSheets?.('housing-comparison')}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-[#182840] hover:bg-[#0F9D58] hover:text-white text-[#001848] dark:text-[#93ccff] text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#005684]"
                 >
                   <span className="material-symbols-outlined text-[16px]">open_in_new</span>
                   <span>Export Sanctuary Database to Sheets</span>

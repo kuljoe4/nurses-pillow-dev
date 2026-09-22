@@ -56,7 +56,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-5xl my-auto rounded-3xl p-6 sm:p-8 shadow-2xl transition-all relative border ${
+        className={`w-full max-w-5xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg transition-all duration-200 ease-in-out relative border ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
@@ -67,7 +67,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 right-5 z-20 w-9 h-9 rounded-full bg-white/90 dark:bg-[#15233a] shadow-md flex items-center justify-center text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#1f3454] cursor-pointer"
+          className="absolute top-5 right-5 z-20 w-9 h-9 rounded-full bg-white/90 dark:bg-[#15233a] shadow-md flex items-center justify-center text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#1f3454] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3454] cursor-pointer"
           aria-label="Close details modal"
         >
           <span className="material-symbols-outlined text-lg">close</span>
@@ -172,7 +172,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => alert('Opening in-app chat thread with Host Sarah M.')}
-                className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 cursor-pointer shrink-0"
+                className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer shrink-0"
               >
                 Contact Sarah
               </button>
@@ -340,7 +340,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
           {/* Sticky Booking Widget (Right 4 cols) */}
           <div className="lg:col-span-4 sticky top-6">
-            <div className="rounded-3xl p-5 sm:p-6 bg-white dark:bg-[#0B1626] shadow-xl border border-[rgba(11,37,89,0.1)] dark:border-[#233550] space-y-4">
+            <div className="rounded-3xl p-5 sm:p-6 bg-white dark:bg-[#0B1626] shadow-md border border-[rgba(11,37,89,0.1)] dark:border-[#233550] space-y-4">
               <div className="flex items-baseline justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
                 <div>
                   <span className="text-2xl font-black">${(listing.monthlyRate || 1950).toLocaleString()}</span>
@@ -395,7 +395,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                       onRequestToBook(listing);
                     }
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">shield</span>
                   <span>Request to Book (Shift-Protected)</span>
@@ -407,7 +407,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                     isSaved
                       ? 'bg-[#eaedff] text-[#005684] border-[#005684]'
-                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50'
+                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">

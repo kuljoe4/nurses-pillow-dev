@@ -48,7 +48,7 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             <button
               onClick={() => onSelectStep(1)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -62,7 +62,7 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             <button
               onClick={() => onSelectStep(2)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -76,7 +76,7 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             <button
               onClick={() => onSelectStep(3)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -106,7 +106,7 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
 
       {/* Main Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-xl transition-all ${
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
           isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]' : 'bg-white text-[#001848]'
         }`}
       >
@@ -158,8 +158,11 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-1.5">Contract Duration</label>
-              <select
+              <label className="block text-sm font-semibold mb-1.5">Contract Duration (Weeks)</label>
+              <input
+                type="number"
+                min="1"
+                step="1"
                 value={data.contractDurationWeeks}
                 onChange={(e) => onChange({ contractDurationWeeks: Number(e.target.value) })}
                 className={`w-full rounded-xl px-4 py-3 text-sm font-medium focus:outline-none ${
@@ -167,12 +170,8 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
                     ? 'bg-[#15233a] text-white border border-[#233550]'
                     : 'bg-[#f2f3ff] text-[#001848]'
                 }`}
-              >
-                <option value={4}>4 Weeks (Short Assignment)</option>
-                <option value={8}>8 Weeks (Mid Assignment)</option>
-                <option value={13}>13 Weeks (Standard Clinical Assignment)</option>
-                <option value={26}>26 Weeks (Extended Contract)</option>
-              </select>
+                placeholder="e.g., 13"
+              />
             </div>
           </div>
 
@@ -235,7 +234,7 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             <button
               type="submit"
               disabled={isFinishing}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white font-semibold flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center justify-center gap-2 shadow-md cursor-pointer"
             >
               <span>{isFinishing ? 'Activating Credentials...' : 'Complete All Verification'}</span>
               <span className="material-symbols-outlined text-lg">check</span>

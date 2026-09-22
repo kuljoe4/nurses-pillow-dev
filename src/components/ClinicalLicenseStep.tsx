@@ -36,7 +36,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           fileType: file.type || 'application/pdf',
         },
       });
-      showTemporaryNotice(`Attached "${file.name}"`);
+      showTemporaryNotice(`Attached"${file.name}"`);
     }
   };
 
@@ -54,7 +54,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           fileType: file.type || 'application/pdf',
         },
       });
-      showTemporaryNotice(`Attached "${file.name}"`);
+      showTemporaryNotice(`Attached"${file.name}"`);
     }
   };
 
@@ -106,7 +106,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               onClick={() => onSelectStep(1)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out cursor-pointer"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0 shadow-xs">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -121,7 +121,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               onClick={() => onSelectStep(2)}
               type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db]/50 transition-all cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out cursor-pointer"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0 shadow-xs">
                 <span className="material-symbols-outlined text-base font-bold">check</span>
@@ -151,10 +151,10 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               onClick={() => onSelectStep(4)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all cursor-pointer ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out cursor-pointer ${
                 isNightShiftMode
-                  ? 'bg-[#15233a] text-[#8ea5c8] hover:bg-[#1a2d4b]'
-                  : 'bg-[#eaedff] text-[#707881] hover:bg-[#dfe4fc]'
+                  ? 'bg-[#15233a] text-[#8ea5c8] hover:bg-[#1a2d4b] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1a2d4b]'
+                  : 'bg-[#eaedff] text-[#707881] hover:bg-[#dfe4fc] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dfe4fc]'
               }`}
             >
               <span
@@ -175,7 +175,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
 
       {/* Floating Notification Toast */}
       {savedNotification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#001848] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/20 animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#001848] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3 border border-white/20 animate-fade-in">
           <span className="material-symbols-outlined text-[#aff0db] text-xl">info</span>
           <span className="text-sm font-medium">{savedNotification}</span>
         </div>
@@ -183,7 +183,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
 
       {/* Main Form Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-xl transition-all ${
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
             : 'bg-white text-[#001848]'
@@ -237,7 +237,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
         >
           <div className="flex items-start gap-3">
             <span className="relative flex h-2.5 w-2.5 mt-1.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#745b0d] opacity-75"></span>
+              <span className="absolute inline-flex h-full w-full rounded-full bg-[#745b0d] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#745b0d]"></span>
             </span>
             <div>
@@ -274,7 +274,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
               <select
                 value={data.professionSpecialty}
                 onChange={(e) => onChange({ professionSpecialty: e.target.value })}
-                className={`w-full appearance-none rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all focus:outline-none shadow-xs cursor-pointer ${
+                className={`w-full appearance-none rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs cursor-pointer ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                     : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
@@ -312,7 +312,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                   value={data.licenseNumber}
                   onChange={(e) => onChange({ licenseNumber: e.target.value })}
                   placeholder="e.g. RN-9482015-CA"
-                  className={`w-full rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all focus:outline-none shadow-xs ${
+                  className={`w-full rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs ${
                     isNightShiftMode
                       ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                       : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
@@ -336,7 +336,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 <select
                   value={data.issuingStateBoard}
                   onChange={(e) => onChange({ issuingStateBoard: e.target.value })}
-                  className={`w-full appearance-none rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all focus:outline-none shadow-xs cursor-pointer ${
+                  className={`w-full appearance-none rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs cursor-pointer ${
                     isNightShiftMode
                       ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                       : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
@@ -374,7 +374,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 value={data.licenseExpirationDate}
                 onChange={(e) => onChange({ licenseExpirationDate: e.target.value })}
                 placeholder="MM/YYYY"
-                className={`w-full rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all focus:outline-none shadow-xs ${
+                className={`w-full rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                     : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
@@ -409,12 +409,12 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`group relative rounded-2xl p-7 text-center transition-all cursor-pointer shadow-xs border-2 border-dashed ${
+              className={`group relative rounded-2xl p-7 text-center transition-all duration-200 ease-in-out cursor-pointer shadow-xs border border-dashed ${
                 isDragging
                   ? 'border-[#0a6fa8] bg-[#0a6fa8]/10'
                   : isNightShiftMode
-                  ? 'bg-[#15233a] border-[#233550] hover:bg-[#192a47] hover:border-[#3E9AD1]'
-                  : 'bg-[#f2f3ff] border-transparent hover:bg-[#eaedff] hover:border-[#0a6fa8]/40'
+                  ? 'bg-[#15233a] border-[#233550] hover:bg-[#192a47] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#192a47] hover:border-[#3E9AD1]'
+                  : 'bg-[#f2f3ff] border-transparent hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] hover:border-[#0a6fa8]/40'
               }`}
             >
               <input
@@ -459,7 +459,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             {/* Uploaded Document Row */}
             {data.uploadedDocument && (
               <div
-                className={`mt-3 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs border transition-all ${
+                className={`mt-3 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs border transition-all duration-200 ease-in-out ${
                   isNightShiftMode
                     ? 'bg-[#15233a] border-[#233550]'
                     : 'bg-[#eaedff] border-[#dae2ff]'
@@ -495,7 +495,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 <button
                   type="button"
                   onClick={handleRemoveFile}
-                  className="shrink-0 text-xs font-semibold text-[#ba1a1a] hover:underline px-2.5 py-1.5 rounded-lg hover:bg-[#ba1a1a]/10 transition-colors"
+                  className="shrink-0 text-xs font-semibold text-[#ba1a1a] hover:underline px-2.5 py-1.5 rounded-lg hover:bg-[#ba1a1a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#ba1a1a]/10 transition-colors"
                 >
                   Remove
                 </button>
@@ -528,7 +528,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] active:bg-[#085885] text-white text-base font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-75"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] active:bg-[#085885] text-white text-base font-semibold transition-all duration-200 ease-in-out shadow-md hover:shadow-lg flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-75"
             >
               <span>{isSubmitting ? 'Verifying with BRN...' : 'Submit for review'}</span>
               <span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">
@@ -541,8 +541,8 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
               onClick={handleSaveLater}
               className={`w-full sm:w-auto px-6 py-3 rounded-full text-sm font-semibold transition-colors text-center cursor-pointer ${
                 isNightShiftMode
-                  ? 'text-[#E6ECF7] hover:bg-[#15233a]'
-                  : 'text-[#001848] hover:bg-[#eaedff]'
+                  ? 'text-[#E6ECF7] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
+                  : 'text-[#001848] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
               }`}
             >
               Save and continue later

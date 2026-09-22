@@ -78,50 +78,50 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setActiveView('status')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'status'
                   ? 'bg-purple-600 text-white shadow-xs'
-                  : 'hover:bg-purple-500/20'
+                  : 'hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20'
               }`}
             >
               Live Health Status
             </button>
             <button
               onClick={() => setActiveView('404')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === '404'
                   ? 'bg-purple-600 text-white shadow-xs'
-                  : 'hover:bg-purple-500/20'
+                  : 'hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20'
               }`}
             >
               404 Page
             </button>
             <button
               onClick={() => setActiveView('500')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === '500'
                   ? 'bg-purple-600 text-white shadow-xs'
-                  : 'hover:bg-purple-500/20'
+                  : 'hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20'
               }`}
             >
               500 Error
             </button>
             <button
               onClick={() => setActiveView('maintenance')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'maintenance'
                   ? 'bg-purple-600 text-white shadow-xs'
-                  : 'hover:bg-purple-500/20'
+                  : 'hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20'
               }`}
             >
               Maintenance
             </button>
             <button
               onClick={() => setActiveView('suspended')}
-              className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'suspended'
                   ? 'bg-purple-600 text-white shadow-xs'
-                  : 'hover:bg-purple-500/20'
+                  : 'hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20'
               }`}
             >
               Compliance Notice
@@ -137,7 +137,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-black/5 dark:border-white/10">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db] mb-2">
-                <span className="w-2 h-2 rounded-full bg-[#195b4c] dark:bg-[#aff0db] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#195b4c] dark:bg-[#aff0db]" />
                 Live Status
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
@@ -151,7 +151,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               <button
                 type="button"
                 onClick={onNavigateHome}
-                className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
               >
                 Back to Marketplace
               </button>
@@ -209,7 +209,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               {services.map((svc, idx) => (
                 <div
                   key={idx}
-                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs sm:text-sm hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs sm:text-sm hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/[0.02] dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/[0.02] transition-colors"
                 >
                   <div className="space-y-1 max-w-lg">
                     <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
                       <div className="text-[10px] opacity-60">Uptime SLA</div>
                     </div>
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       <span>{svc.status}</span>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
             <button
               type="button"
               onClick={onOpenSupport}
-              className="px-4 py-2 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] transition-all shrink-0 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-all duration-200 ease-in-out shrink-0 cursor-pointer"
             >
               Contact 24/7 Clinical Support
             </button>
@@ -292,13 +292,13 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={onNavigateHome}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] transition-all shadow-md cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-all duration-200 ease-in-out shadow-md cursor-pointer"
             >
               Search Stays Near My Hospital
             </button>
             <button
               onClick={onOpenSupport}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
             >
               Contact Support Desk
             </button>
@@ -327,13 +327,13 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={() => window.location.reload()}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] transition-all shadow-md cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-all duration-200 ease-in-out shadow-md cursor-pointer"
             >
               Reload Application
             </button>
             <button
               onClick={onNavigateHome}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
             >
               Back to Home
             </button>
@@ -363,7 +363,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="pt-2">
             <button
               onClick={onOpenSupport}
-              className="px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] transition-all shadow-md cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-all duration-200 ease-in-out shadow-md cursor-pointer"
             >
               Contact 24/7 Clinical Hotline
             </button>
@@ -403,13 +403,13 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={onOpenSupport}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-all shadow-md cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-700 transition-all duration-200 ease-in-out shadow-md cursor-pointer"
             >
               Submit Compliance Appeal
             </button>
             <button
               onClick={onNavigateHome}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
             >
               Return to Public Site
             </button>

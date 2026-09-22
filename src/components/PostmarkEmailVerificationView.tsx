@@ -41,8 +41,8 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
 
     // Auto-advance
     if (cleanVal && index < 5) {
-      pinInputRefs.current[index + 1]?.focus();
-      pinInputRefs.current[index + 1]?.select();
+      pinInputRefs.current[index+ 1]?.focus();
+      pinInputRefs.current[index+ 1]?.select();
     }
   };
 
@@ -202,7 +202,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               <div className="space-y-2">
                 <span
                   className="text-[#745b0d] dark:text-[#E4C36D] text-[28px] block"
-                  style={{ fontFamily: "'Kaushan Script', cursive" }}
+                  style={{ fontFamily:"'Kaushan Script', cursive" }}
                 >
                   Rest Well. Heal Better.
                 </span>
@@ -217,7 +217,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               {/* Feature Cards */}
               <div className="space-y-3.5 pt-2">
                 <div
-                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all hover:translate-y-[-2px] border ${
+                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all duration-200 ease-in-out hover:translate-y-[-2px] border ${
                     isNightShiftMode
                       ? 'bg-[#111e33] border-[#233550]'
                       : 'bg-white border-[rgba(11,37,89,0.06)]'
@@ -237,7 +237,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 </div>
 
                 <div
-                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all hover:translate-y-[-2px] border ${
+                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all duration-200 ease-in-out hover:translate-y-[-2px] border ${
                     isNightShiftMode
                       ? 'bg-[#111e33] border-[#233550]'
                       : 'bg-white border-[rgba(11,37,89,0.06)]'
@@ -257,7 +257,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 </div>
 
                 <div
-                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all hover:translate-y-[-2px] border ${
+                  className={`p-4 rounded-2xl shadow-xs flex items-start gap-4 transition-all duration-200 ease-in-out hover:translate-y-[-2px] border ${
                     isNightShiftMode
                       ? 'bg-[#111e33] border-[#233550]'
                       : 'bg-white border-[rgba(11,37,89,0.06)]'
@@ -325,7 +325,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
             {/* RIGHT COLUMN: Verification Interactive Console */}
             <div className="lg:col-span-7">
               <div
-                className={`rounded-3xl p-8 sm:p-10 shadow-xl space-y-8 border ${
+                className={`rounded-3xl p-8 sm:p-10 shadow-md space-y-8 border ${
                   isNightShiftMode
                     ? 'bg-[#111e33] border-[#233550]'
                     : 'bg-white border-[rgba(11,37,89,0.08)]'
@@ -346,7 +346,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 <div className="flex flex-col items-center justify-center py-2 text-center">
                   <div className="relative flex items-center justify-center mb-4">
                     {/* Glowing ambient pulse ring */}
-                    <div className="absolute w-28 h-28 rounded-full bg-[#cde5ff] dark:bg-[#005684]/30 opacity-50 animate-pulse" />
+                    <div className="absolute w-28 h-28 rounded-full bg-[#cde5ff] dark:bg-[#005684]/30 opacity-50" />
                     <div className="relative w-20 h-20 rounded-2xl bg-[#0a6fa8] text-white flex items-center justify-center shadow-lg">
                       <span className="material-symbols-outlined text-[40px]">mail</span>
                       <div className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-[#195b4c] text-white flex items-center justify-center shadow-md">
@@ -412,13 +412,13 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       <input
                         key={idx}
                         ref={(el) => { pinInputRefs.current[idx] = el; }}
-                        aria-label={`Digit ${idx + 1}`}
+                        aria-label={`Digit ${idx+ 1}`}
                         type="text"
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handlePinChange(idx, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className={`h-14 sm:h-16 text-center text-2xl font-bold rounded-xl focus:outline-none transition-all shadow-xs ${
+                        className={`h-14 sm:h-16 text-center text-2xl font-bold rounded-xl focus:outline-none transition-all duration-200 ease-in-out shadow-xs ${
                           isNightShiftMode
                             ? 'bg-[#182840] text-white focus:bg-[#1f3350] focus:ring-2 focus:ring-[#3E9AD1]'
                             : 'bg-[#f2f3ff] text-[#001848] focus:bg-white focus:ring-2 focus:ring-[#005684]'
@@ -432,10 +432,10 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                     type="button"
                     onClick={handleVerify}
                     disabled={isVerifying}
-                    className={`w-full py-4 px-8 rounded-full text-base font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-200 cursor-pointer ${
+                    className={`w-full py-4 px-8 rounded-full text-base font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-200 ease-in-out duration-200 cursor-pointer ${
                       isVerified
                         ? 'bg-[#195b4c] text-white'
-                        : 'bg-[#0a6fa8] hover:bg-[#005684] text-white active:scale-[0.99]'
+                        : 'bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white active:scale-[0.99]'
                     }`}
                   >
                     {isVerifying ? (
@@ -486,7 +486,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       disabled={!canResend}
                       className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                         canResend
-                          ? 'bg-[#0a6fa8] text-white hover:bg-[#005684]'
+                          ? 'bg-[#0a6fa8] text-white hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684]'
                           : 'bg-[#dae2ff] dark:bg-[#152438] text-[#404850] dark:text-[#c0c7d1] opacity-60 cursor-not-allowed'
                       }`}
                     >
@@ -501,7 +501,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       href="https://mail.google.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <span className="material-symbols-outlined text-[16px] text-red-500">mail</span>
                       <span>Open Gmail</span>
@@ -510,7 +510,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       href="https://outlook.office.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <span className="material-symbols-outlined text-[16px] text-[#005684]">markunread</span>
                       <span>Open Outlook</span>
@@ -519,7 +519,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       href="https://mail.yahoo.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#111e33] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] text-[#001848] dark:text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <span className="material-symbols-outlined text-[16px] text-[#745b0d]">mail_outline</span>
                       <span>Open Yahoo</span>
@@ -588,7 +588,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
           <div className="shrink-0">
             <span
               className="text-[#745b0d] dark:text-[#ffdc84] text-[26px]"
-              style={{ fontFamily: "'Kaushan Script', cursive" }}
+              style={{ fontFamily:"'Kaushan Script', cursive" }}
             >
               Rest Well. Heal Better.
             </span>

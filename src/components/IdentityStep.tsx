@@ -58,7 +58,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
             <button
               onClick={() => onSelectStep(2)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
               }`}
             >
@@ -74,7 +74,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
             <button
               onClick={() => onSelectStep(3)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
               }`}
             >
@@ -90,7 +90,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
             <button
               onClick={() => onSelectStep(4)}
               type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
                 isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
               }`}
             >
@@ -108,7 +108,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 
       {/* Main Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-xl transition-all ${
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
           isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]' : 'bg-white text-[#001848]'
         }`}
       >
@@ -229,7 +229,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
           <div className="pt-4 flex items-center justify-between gap-3">
             <button
               type="submit"
-              className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] text-white font-semibold flex items-center gap-2"
+              className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center gap-2"
             >
               <span>Save &amp; Continue to Contact</span>
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
