@@ -1,4 +1,4 @@
-name: Sync to Client Repository
+name: CI Checks
 
 on:
   push:
@@ -6,17 +6,10 @@ on:
       - main
 
 jobs:
-  sync:
+  ci-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Push to Client Repo
-        env:
-          CLIENT_TOKEN: ${{ secrets.CLIENT_REPO_TOKEN }}
-        run: |
-          git remote add client https://x-access-token:${CLIENT_TOKEN}@github.com/NursesPillow/nurses-pillow-dev.git
-          git push client main --force
