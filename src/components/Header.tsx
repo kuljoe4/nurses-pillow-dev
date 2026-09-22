@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${
+      className={`sticky top-0 z-[100] w-full transition-colors duration-200 ${
         isNightShiftMode
           ? 'bg-[#0B1626]/95 backdrop-blur-md border-b border-[#233550] shadow-[0_4px_24px_rgba(0,0,0,0.5)] text-[#E6ECF7]'
           : 'bg-white/95 backdrop-blur-md border-b border-[rgba(11,37,89,0.08)] shadow-[0_4px_24px_rgba(11,37,89,0.04)] text-[#001848]'
@@ -1055,6 +1055,7 @@ export const Header: React.FC<HeaderProps> = ({
       >
         {/* Backdrop Overlay with smooth fade */}
         <div
+<<<<<<< HEAD
           className={`absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
             isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
           }`}
@@ -1071,6 +1072,13 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
           style={{
             maxHeight: `calc(100dvh - ${headerHeight+ 8}px)`,
+=======
+          className="lg:hidden fixed inset-x-0 top-20 h-[calc(100vh-80px)] bg-black/40 backdrop-blur-xs z-[90] overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsMobileMenuOpen(false);
+            }
+>>>>>>> b5ed8df (fix: resolve logo, custom contract duration, and mobile menu visibility)
           }}
           onClick={(e) => e.stopPropagation()}
         >
