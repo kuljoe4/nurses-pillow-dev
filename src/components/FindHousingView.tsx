@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
+import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 
 interface FindHousingViewProps {
@@ -32,6 +32,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 }) => {
   const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital - Durham, NC');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [customDuration, setCustomDuration] = useState<number>(1);
@@ -80,15 +81,13 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     { miles: 15, label: '15 miles', desc: 'Max value radius' },
   ];
 
-  const popularHubs = [
-    'Duke University Hospital - Durham, NC',
-    'UNC Medical Center - Chapel Hill, NC',
-    'WakeMed Raleigh Campus - Raleigh, NC',
-    'Atrium Health Carolinas Medical Center - Charlotte, NC',
-    'Stanford Health Care - Main Hospital (Stanford, CA)',
-    'UCSF Medical Center - Mission Bay (San Francisco, CA)',
-    'Cedars-Sinai Medical Center - Los Angeles, CA',
-  ];
+  const popularHubs = VERIFIED_HOSPITAL_HUBS;
+
+  const filteredHospitals = useMemo(() => {
+    if (!hospitalSearchQuery.trim()) return popularHubs;
+    const q = hospitalSearchQuery.toLowerCase();
+    return popularHubs.filter((h) => h.toLowerCase().includes(q));
+  }, [hospitalSearchQuery, popularHubs]);
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
@@ -210,27 +209,71 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-xl shadow-2xl z-50 py-2 border border-[#c0c7d1]/30 dark:border-[#2b4162] max-h-72 overflow-y-auto overscroll-contain">
-                    {popularHubs.map((hosp) => (
-                      <div
-                        key={hosp}
-                        onClick={() => {
-                          setSelectedHospital(hosp);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`px-4 py-3 hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
-                          selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350]' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="material-symbols-outlined text-[#005684] dark:text-[#3E9AD1] text-[18px]">
-                            local_hospital
-                          </span>
-                          <span className="text-sm font-semibold text-[#001848] dark:text-white">{hosp}</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[#195b4c] text-[16px]">check_circle</span>
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-2xl shadow-2xl z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col">
+                    {/* Quick filter input */}
+                    <div className="p-2.5 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">
+                          search
+                        </span>
+                        <input
+                          type="text"
+                          value={hospitalSearchQuery}
+                          onChange={(e) => setHospitalSearchQuery(e.target.value)}
+                          placeholder="Search or scroll through campuses..."
+                          className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-[#182840] border border-gray-200 dark:border-[#233550] text-[#001848] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Scrollable list container */}
+                    <div
+                      className="max-h-64 sm:max-h-72 overflow-y-auto overscroll-contain custom-scrollbar py-1"
+                      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+                    >
+                      {filteredHospitals.length === 0 ? (
+                        <div className="px-4 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+                          No hospital matches "{hospitalSearchQuery}".
+                        </div>
+                      ) : (
+                        filteredHospitals.map((hosp) => (
+                          <div
+                            key={hosp}
+                            onClick={() => {
+                              setSelectedHospital(hosp);
+                              setIsDropdownOpen(false);
+                              setHospitalSearchQuery('');
+                            }}
+                            className={`px-4 py-2.5 hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
+                              selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350]' : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 pr-2">
+                              <span className="material-symbols-outlined text-[#005684] dark:text-[#3E9AD1] text-[18px] shrink-0">
+                                local_hospital
+                              </span>
+                              <span className="text-xs sm:text-sm font-semibold text-[#001848] dark:text-white line-clamp-1">{hosp}</span>
+                            </div>
+                            {selectedHospital === hosp ? (
+                              <span className="material-symbols-outlined text-[#195b4c] dark:text-[#aff0db] text-[16px] shrink-0">check_circle</span>
+                            ) : (
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Scroll indicator footer */}
+                    <div className="px-3 py-1.5 bg-[#f8faff] dark:bg-[#111e33] border-t border-[#c0c7d1]/20 dark:border-[#2b4162] flex items-center justify-between text-[11px] text-[#404850] dark:text-[#9CB3D3]">
+                      <span>{filteredHospitals.length} verified campuses</span>
+                      <span className="flex items-center gap-1 font-medium">
+                        <span className="material-symbols-outlined text-[14px]">swap_vert</span>
+                        Scroll to explore
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

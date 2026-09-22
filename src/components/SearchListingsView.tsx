@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
+import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
+import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -14,6 +16,7 @@ interface SearchListingsViewProps {
   initialHospital?: string;
   initialDuration?: string;
   initialRadius?: number;
+  isLoading?: boolean;
 }
 
 export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
@@ -26,9 +29,11 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   initialHospital = 'UCSF Medical Center - Mission Bay (San Francisco, CA)',
   initialDuration = '13',
   initialRadius = 5,
+  isLoading,
 }) => {
   const [selectedHospital, setSelectedHospital] = useState(initialHospital);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
   const [commuteBuffer, setCommuteBuffer] = useState<number>(initialRadius);
   const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
   const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
@@ -45,6 +50,95 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [mapNotification, setMapNotification] = useState<string | null>(null);
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
   const [activeAmenityCount, setActiveAmenityCount] = useState(4);
+  const [internalLoading, setInternalLoading] = useState(true);
+
+  // Filter Panel Expansion & Criteria (Smooth Height Transitions)
+  const [isFilterPanelExpanded, setIsFilterPanelExpanded] = useState(false);
+  const [maxPrice, setMaxPrice] = useState<number>(3500);
+  const [minRating, setMinRating] = useState<number>(0);
+  const [filterBlackout, setFilterBlackout] = useState(false);
+  const [filterScrubWasher, setFilterScrubWasher] = useState(false);
+  const [filterQuietDay, setFilterQuietDay] = useState(false);
+  const [filterSoundMachine, setFilterSoundMachine] = useState(false);
+  const [filterDedicatedParking, setFilterDedicatedParking] = useState(false);
+  const [filterPetFriendly, setFilterPetFriendly] = useState(false);
+  const [filterContractFlex, setFilterContractFlex] = useState(false);
+
+  // Reset all filters to default baseline
+  const handleResetAllFilters = () => {
+    setActiveFilterChip('all');
+    setMaxPrice(3500);
+    setMinRating(0);
+    setFilterBlackout(false);
+    setFilterScrubWasher(false);
+    setFilterQuietDay(false);
+    setFilterSoundMachine(false);
+    setFilterDedicatedParking(false);
+    setFilterPetFriendly(false);
+    setFilterContractFlex(false);
+    setCommuteBuffer(initialRadius);
+  };
+
+  // Active filter count for badge indicator
+  const activePanelFilterCount = useMemo(() => {
+    let count = 0;
+    if (activeFilterChip !== 'all') count++;
+    if (maxPrice < 3500) count++;
+    if (minRating > 0) count++;
+    if (filterBlackout) count++;
+    if (filterScrubWasher) count++;
+    if (filterQuietDay) count++;
+    if (filterSoundMachine) count++;
+    if (filterDedicatedParking) count++;
+    if (filterPetFriendly) count++;
+    if (filterContractFlex) count++;
+    return count;
+  }, [
+    activeFilterChip,
+    maxPrice,
+    minRating,
+    filterBlackout,
+    filterScrubWasher,
+    filterQuietDay,
+    filterSoundMachine,
+    filterDedicatedParking,
+    filterPetFriendly,
+    filterContractFlex,
+  ]);
+
+  // Initial simulated load for realistic clinical data fetching feedback
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInternalLoading(false);
+    }, 550);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Re-trigger brief skeleton transition when hospital or key search criteria change
+  const prevFilterRef = useRef({ selectedHospital, commuteBuffer, selectedDuration });
+  useEffect(() => {
+    if (
+      prevFilterRef.current.selectedHospital !== selectedHospital ||
+      prevFilterRef.current.commuteBuffer !== commuteBuffer ||
+      prevFilterRef.current.selectedDuration !== selectedDuration
+    ) {
+      prevFilterRef.current = { selectedHospital, commuteBuffer, selectedDuration };
+      setInternalLoading(true);
+      const timer = setTimeout(() => {
+        setInternalLoading(false);
+      }, 450);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedHospital, commuteBuffer, selectedDuration]);
+
+  const isDataLoading = isLoading !== undefined ? isLoading : internalLoading;
+
+  const triggerLiveQueryRefresh = () => {
+    setInternalLoading(true);
+    setTimeout(() => {
+      setInternalLoading(false);
+    }, 600);
+  };
 
   const hospitalDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -86,31 +180,58 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
     { miles: 15, label: '15 mi', desc: 'Max value radius' },
   ];
 
-  const popularHubs = [
-    'UCSF Medical Center - Mission Bay (San Francisco, CA)',
-    'Stanford Health Care - Main Hospital (Stanford, CA)',
-    'Johns Hopkins Hospital - Baltimore, MD',
-    'Mayo Clinic Campus - Rochester, MN',
-    'Cedars-Sinai Medical Center - Los Angeles, CA',
-    'Duke University Hospital - Durham, NC',
-    'Texas Medical Center - Houston, TX',
-  ];
+  const popularHubs = VERIFIED_HOSPITAL_HUBS;
+
+  const filteredHospitals = useMemo(() => {
+    if (!hospitalSearchQuery.trim()) return popularHubs;
+    const q = hospitalSearchQuery.toLowerCase();
+    return popularHubs.filter((h) => h.toLowerCase().includes(q));
+  }, [hospitalSearchQuery, popularHubs]);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
     let list = [...MOCK_LISTINGS];
 
-    // Filter by chip
+    // Filter by quick chip
     if (activeFilterChip === 'entire') {
       list = list.filter((l) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
     } else if (activeFilterChip === 'private') {
       list = list.filter((l) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
     } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')));
+      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
     } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
+      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
     } else if (activeFilterChip === 'parking') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')));
+      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
+    }
+
+    // Extended filter criteria from panel
+    if (maxPrice < 3500) {
+      list = list.filter((l) => l.monthlyRate <= maxPrice);
+    }
+    if (minRating > 0) {
+      list = list.filter((l) => l.nurseRating >= minRating);
+    }
+    if (filterBlackout) {
+      list = list.filter((l) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')));
+    }
+    if (filterScrubWasher) {
+      list = list.filter((l) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
+    }
+    if (filterQuietDay) {
+      list = list.filter((l) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b) => b.toLowerCase().includes('quiet')));
+    }
+    if (filterSoundMachine) {
+      list = list.filter((l) => l.amenities?.whiteNoiseMachine);
+    }
+    if (filterDedicatedParking) {
+      list = list.filter((l) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')));
+    }
+    if (filterPetFriendly) {
+      list = list.filter((l) => l.amenities?.petFriendly);
+    }
+    if (filterContractFlex) {
+      list = list.filter((l) => l.contractFlexProtection);
     }
 
     // Sort listings
@@ -123,7 +244,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
     }
 
     return list;
-  }, [activeFilterChip, sortOption]);
+  }, [
+    activeFilterChip,
+    sortOption,
+    maxPrice,
+    minRating,
+    filterBlackout,
+    filterScrubWasher,
+    filterQuietDay,
+    filterSoundMachine,
+    filterDedicatedParking,
+    filterPetFriendly,
+    filterContractFlex,
+  ]);
 
   const selectedMapListing = useMemo(() => {
     return MOCK_LISTINGS.find((l) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
@@ -191,27 +324,78 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   arrow_drop_down
                 </span>
 
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-md z-50 py-1 border border-[#c0c7d1]/30 dark:border-[#2b4162] max-h-60 overflow-y-auto">
-                    {popularHubs.map((hosp) => (
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-xl z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col"
+                    >
+                      {/* Quick filter input */}
+                      <div className="p-2 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
+                        <div className="relative">
+                          <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">
+                            search
+                          </span>
+                          <input
+                            type="text"
+                            value={hospitalSearchQuery}
+                            onChange={(e) => setHospitalSearchQuery(e.target.value)}
+                            placeholder="Search or scroll campuses..."
+                            className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182840] border border-gray-200 dark:border-[#233550] text-[#001848] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Scrollable list container */}
                       <div
-                        key={hosp}
-                        onClick={() => {
-                          setSelectedHospital(hosp);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between ${
-                          selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
-                        }`}
+                        className="max-h-60 overflow-y-auto custom-scrollbar py-1"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
+                        onWheel={(e) => e.stopPropagation()}
                       >
-                        <span>{hosp}</span>
-                        {selectedHospital === hosp && (
-                          <span className="material-symbols-outlined text-[14px] text-[#195b4c]">check</span>
+                        {filteredHospitals.length === 0 ? (
+                          <div className="px-3 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                            No hospital matches "{hospitalSearchQuery}".
+                          </div>
+                        ) : (
+                          filteredHospitals.map((hosp) => (
+                            <div
+                              key={hosp}
+                              onClick={() => {
+                                setSelectedHospital(hosp);
+                                setIsDropdownOpen(false);
+                                setHospitalSearchQuery('');
+                              }}
+                              className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
+                                selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
+                              }`}
+                            >
+                              <span className="truncate pr-2">{hosp}</span>
+                              {selectedHospital === hosp ? (
+                                <span className="material-symbols-outlined text-[14px] text-[#195b4c] shrink-0">check</span>
+                              ) : (
+                                <span className="text-[9px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
+                              )}
+                            </div>
+                          ))
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {/* Scroll indicator footer */}
+                      <div className="px-2.5 py-1 bg-[#f8faff] dark:bg-[#111e33] border-t border-[#c0c7d1]/20 dark:border-[#2b4162] flex items-center justify-between text-[10px] text-[#404850] dark:text-[#9CB3D3]">
+                        <span>{filteredHospitals.length} campuses</span>
+                        <span className="flex items-center gap-0.5">
+                          <span className="material-symbols-outlined text-[13px]">swap_vert</span>
+                          Scroll to explore
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
@@ -249,21 +433,29 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     </option>
                   ))}
                 </select>
-                {selectedDuration === 'custom' && (
-                  <div className="mt-2">
-                    <input
-                      type="number"
-                      min="1"
-                      value={customDuration || ''}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        setCustomDuration(isNaN(val) ? 0 : val);
-                      }}
-                      placeholder="Custom (weeks)"
-                      className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
-                    />
-                  </div>
-                )}
+                <AnimatePresence>
+                  {selectedDuration === 'custom' && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="overflow-hidden mt-2"
+                    >
+                      <input
+                        type="number"
+                        min="1"
+                        value={customDuration || ''}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setCustomDuration(isNaN(val) ? 0 : val);
+                        }}
+                        placeholder="Custom (weeks)"
+                        className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
@@ -322,49 +514,379 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
               <button
                 type="button"
-                onClick={() => setIsFilterModalOpen(true)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#1f3350] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff] font-bold cursor-pointer whitespace-nowrap ml-1"
+                id="toggle-filter-panel-button"
+                onClick={() => setIsFilterPanelExpanded((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ml-1 ${
+                  isFilterPanelExpanded || activePanelFilterCount > 0
+                    ? 'bg-[#005684] text-white shadow-xs'
+                    : 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff]'
+                }`}
+                title="Toggle clinical criteria filter panel"
               >
                 <span className="material-symbols-outlined text-[15px]">tune</span>
-                <span>Filters ({activeAmenityCount})</span>
+                <span>Filters</span>
+                {activePanelFilterCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-white text-[#005684] text-[10px] flex items-center justify-center font-extrabold shadow-2xs">
+                    {activePanelFilterCount}
+                  </span>
+                )}
+                <span
+                  className={`material-symbols-outlined text-[16px] transition-transform duration-250 ${
+                    isFilterPanelExpanded ? 'rotate-180' : ''
+                  }`}
+                >
+                  expand_more
+                </span>
+              </button>
+
+              <button
+                type="button"
+                id="open-full-filter-modal-button"
+                onClick={() => setIsFilterModalOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] dark:hover:text-[#93ccff] hover:bg-[#f2f3ff] dark:hover:bg-[#182840] transition-colors cursor-pointer"
+                title="Open comprehensive 25-point clinical amenities checklist"
+              >
+                <span className="material-symbols-outlined text-[14px]">checklist</span>
+                <span>Full Checklist</span>
               </button>
             </div>
 
             {/* Layout Toggle (Split-Map vs Grid) */}
-            <div className="inline-flex items-center p-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setViewMode('split-map')}
-                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
-                  viewMode === 'split-map'
-                    ? 'bg-[#005684] text-white shadow-xs'
-                    : 'text-[#404850] dark:text-[#c0c7d1]'
-                }`}
+                onClick={triggerLiveQueryRefresh}
+                disabled={isDataLoading}
+                title="Fetch live verified hospital inventory"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] hover:bg-[#eaedff] dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-xs font-bold text-[#005684] dark:text-[#93ccff] cursor-pointer transition-colors shadow-2xs"
               >
-                <span className="material-symbols-outlined text-[15px]">map</span>
-                <span>Split Map</span>
+                <span className={`material-symbols-outlined text-[15px] ${isDataLoading ? 'animate-spin' : ''}`}>
+                  sync
+                </span>
+                <span>{isDataLoading ? 'Querying...' : 'Live Query'}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
-                  viewMode === 'grid'
-                    ? 'bg-[#005684] text-white shadow-xs'
-                    : 'text-[#404850] dark:text-[#c0c7d1]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px]">grid_view</span>
-                <span>Grid View</span>
-              </button>
+
+              <div className="inline-flex items-center p-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('split-map')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
+                    viewMode === 'split-map'
+                      ? 'bg-[#005684] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[15px]">map</span>
+                  <span>Split Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
+                    viewMode === 'grid'
+                      ? 'bg-[#005684] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[15px]">grid_view</span>
+                  <span>Grid View</span>
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* EXPANDABLE FILTER PANEL WITH SMOOTH HEIGHT & FADE-IN TRANSITIONS */}
+          <AnimatePresence initial={false}>
+            {isFilterPanelExpanded && (
+              <motion.div
+                id="search-filter-panel"
+                key="search-filter-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{
+                  height: 'auto',
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.25, delay: 0.05 },
+                  },
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  transition: {
+                    height: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.16 },
+                  },
+                }}
+                className="overflow-hidden border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-gradient-to-b from-[#f8faff] to-white dark:from-[#0c182c] dark:to-[#111e33] mt-3 -mx-4 sm:-mx-6 lg:-mx-12 px-4 sm:px-6 lg:px-12 py-5"
+              >
+                <div className="max-w-7xl mx-auto flex flex-col gap-5">
+                  {/* Panel Header */}
+                  <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg bg-[#005684]/10 dark:bg-[#93ccff]/15 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                        <span className="material-symbols-outlined text-[17px]">tune</span>
+                      </span>
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#001848] dark:text-white">
+                          Clinical Sanctuary Filter Criteria
+                        </h3>
+                        <p className="text-[11px] text-[#404850] dark:text-[#93ccff]">
+                          Adjust stipend limits, daytime acoustic ratings, and shift logistics in real time
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {activePanelFilterCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleResetAllFilters}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">refresh</span>
+                          <span>Reset All Filters ({activePanelFilterCount})</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterModalOpen(true)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                        <span>25-Point Checklist Modal</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3 Modular Columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {/* 1. Monthly Per-Diem / Budget Limit */}
+                    <div className="p-4 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-2xs flex flex-col justify-between gap-3">
+                      <div>
+                        <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
+                          <span className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              payments
+                            </span>
+                            Monthly Rent Ceiling
+                          </span>
+                          <span className="text-sm font-black text-[#005684] dark:text-[#93ccff]">
+                            {maxPrice >= 3500 ? 'Any ($3,500+)' : `$${maxPrice.toLocaleString()} / mo`}
+                          </span>
+                        </div>
+
+                        <input
+                          type="range"
+                          min="1500"
+                          max="3500"
+                          step="100"
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(Number(e.target.value))}
+                          className="w-full accent-[#005684] h-2 bg-[#eaedff] dark:bg-[#182840] rounded-lg cursor-pointer"
+                        />
+
+                        {/* Quick Presets */}
+                        <div className="flex items-center gap-1.5 mt-3">
+                          {[2000, 2500, 3000, 3500].map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => setMaxPrice(preset)}
+                              className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                                maxPrice === preset
+                                  ? 'bg-[#005684] text-white shadow-2xs'
+                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                              }`}
+                            >
+                              {preset === 3500 ? 'Any' : `$${preset / 1000}k`}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-[#195b4c] dark:text-[#aff0db] bg-[#195b4c]/10 dark:bg-[#aff0db]/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold">
+                        <span className="material-symbols-outlined text-[14px]">verified</span>
+                        <span>$0 Traveler Booking Fee on all contracts</span>
+                      </div>
+                    </div>
+
+                    {/* 2. Clinical Sleep & Acoustic Quality */}
+                    <div className="p-4 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-2xs flex flex-col justify-between gap-3">
+                      <div>
+                        <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
+                          <span className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              bedtime
+                            </span>
+                            Sleep Acoustic Standards
+                          </span>
+                        </div>
+
+                        {/* Rating threshold pills */}
+                        <div className="flex items-center gap-1.5 mb-3">
+                          {[
+                            { val: 0, label: 'Any Rating' },
+                            { val: 4.8, label: '4.8+ ★' },
+                            { val: 4.9, label: '4.9+ ★' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.val}
+                              type="button"
+                              onClick={() => setMinRating(opt.val)}
+                              className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
+                                minRating === opt.val
+                                  ? 'bg-[#005684] text-white shadow-2xs'
+                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Toggles */}
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterBlackout}
+                              onChange={(e) => setFilterBlackout(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>Blackout Curtains (100% light block)</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterQuietDay}
+                              onChange={(e) => setFilterQuietDay(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>Day-Sleeper Quiet Hours (≤35dB)</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterSoundMachine}
+                              onChange={(e) => setFilterSoundMachine(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>White Noise Sound Machine</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-[#404850] dark:text-[#93ccff]">
+                        Acoustically inspected for night shift day-sleepers.
+                      </div>
+                    </div>
+
+                    {/* 3. Shift Logistics & Clinician Protections */}
+                    <div className="p-4 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-2xs flex flex-col justify-between gap-3">
+                      <div>
+                        <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
+                          <span className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              local_laundry_service
+                            </span>
+                            Shift Logistics & Protection
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 mt-2">
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterScrubWasher}
+                              onChange={(e) => setFilterScrubWasher(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>In-Unit Scrub Washer & Dryer</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterDedicatedParking}
+                              onChange={(e) => setFilterDedicatedParking(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>Dedicated Reserved Parking Spot</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterContractFlex}
+                              onChange={(e) => setFilterContractFlex(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>Contract Flex Protection ($0 Cancellation)</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                            <input
+                              type="checkbox"
+                              checked={filterPetFriendly}
+                              onChange={(e) => setFilterPetFriendly(e.target.checked)}
+                              className="w-4 h-4 rounded text-[#005684] accent-[#005684] cursor-pointer"
+                            />
+                            <span>Pet-Friendly Sanctuary</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-[#404850] dark:text-[#93ccff]">
+                        All homes include verified high-speed Wi-Fi for charting.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Panel Footer */}
+                  <div className="flex items-center justify-between pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#001848] dark:text-white">
+                        {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'} Found
+                      </span>
+                      {activePanelFilterCount > 0 && (
+                        <span className="text-[10px] font-semibold text-[#005684] dark:text-[#93ccff] bg-[#005684]/10 dark:bg-[#93ccff]/15 px-2 py-0.5 rounded-full">
+                          {activePanelFilterCount} active criteria applied
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterPanelExpanded(false)}
+                      className="px-4 py-2 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] cursor-pointer transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <span>Done Filtering</span>
+                      <span className="material-symbols-outlined text-[15px]">keyboard_arrow_up</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
       {/* 2. RESULTS CONTENT AREA */}
       <section className="w-full">
-        {/* Split Map View Mode */}
-        {viewMode === 'split-map' && (
+        {isDataLoading ? (
+          <SearchListingsSkeleton
+            viewMode={viewMode}
+            isNightShiftMode={isNightShiftMode}
+            hospitalName={selectedHospital}
+            count={4}
+          />
+        ) : (
+          <>
+            {/* Split Map View Mode */}
+            {viewMode === 'split-map' && (
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[820px]">
             {/* LEFT 7 COLS: Listings Feed */}
             <div className="lg:col-span-7 px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 overflow-y-auto max-h-[900px]">
@@ -397,118 +919,153 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               </div>
 
               {/* Listings Cards Feed */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {filteredListings.map((listing) => {
-                  const isSaved = savedListingIds.includes(listing.id);
-                  const isSelectedOnMap = selectedMapListingId === listing.id;
+              {filteredListings.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="py-16 px-6 text-center rounded-2xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
+                >
+                  <span className="w-12 h-12 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                    <span className="material-symbols-outlined text-[24px]">filter_alt_off</span>
+                  </span>
+                  <h3 className="text-sm font-bold text-[#001848] dark:text-white">
+                    No sanctuaries match the current filters
+                  </h3>
+                  <p className="text-xs text-[#404850] dark:text-[#93ccff] max-w-sm">
+                    Try raising your rent ceiling or unchecking specialized day-sleeper amenities.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResetAllFilters}
+                    className="mt-2 px-4 py-2 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] transition-colors shadow-xs cursor-pointer"
+                  >
+                    Reset All Filters
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <AnimatePresence mode="popLayout">
+                    {filteredListings.map((listing) => {
+                      const isSaved = savedListingIds.includes(listing.id);
+                      const isSelectedOnMap = selectedMapListingId === listing.id;
 
-                  return (
-                    <div
-                      key={listing.id}
-                      onClick={() => setSelectedMapListingId(listing.id)}
-                      className={`rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-200 ease-in-out cursor-pointer flex flex-col justify-between group ${
-                        isSelectedOnMap
-                          ? 'border-[#005684] ring-2 ring-[#005684]/30 shadow-lg'
-                          : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/50 shadow-sm hover:shadow-md'
-                      }`}
-                    >
-                      {/* Image Header */}
-                      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-                        <img
-                          src={listing.images[0]}
-                          alt={listing.title}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold">
-                          <span className="material-symbols-outlined text-[13px]">near_me</span>
-                          <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min commute`}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleSave(listing.id);
+                      return (
+                        <motion.div
+                          layout
+                          key={listing.id}
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          transition={{
+                            layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                            opacity: { duration: 0.22 },
                           }}
-                          aria-label="Save listing"
-                          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
+                          onClick={() => setSelectedMapListingId(listing.id)}
+                          className={`rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-shadow duration-200 cursor-pointer flex flex-col justify-between group ${
+                            isSelectedOnMap
+                              ? 'border-[#005684] ring-2 ring-[#005684]/30 shadow-lg'
+                              : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/50 shadow-sm hover:shadow-md'
+                          }`}
                         >
-                          <span className={`material-symbols-outlined text-[18px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
-                            favorite
-                          </span>
-                        </button>
-                      </div>
-
-                      {/* Listing Info */}
-                      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                        <div>
-                          <div className="flex items-center justify-between text-[11px] text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
-                            <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
-                            <div className="flex items-center gap-1 text-amber-500">
-                              <span className="material-symbols-outlined text-[15px]">star</span>
-                              <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
-                              <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
+                          {/* Image Header */}
+                          <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                            <img
+                              src={listing.images[0]}
+                              alt={listing.title}
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold">
+                              <span className="material-symbols-outlined text-[13px]">near_me</span>
+                              <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min commute`}</span>
                             </div>
-                          </div>
-
-                          <h3 className="text-sm font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
-                            {listing.title}
-                          </h3>
-
-                          <div className="mt-2 flex items-baseline gap-1">
-                            <span className="text-xl font-extrabold text-[#001848] dark:text-white">
-                              ${listing.monthlyRate.toLocaleString()}
-                            </span>
-                            <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
-                            <span className="text-[10px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-1.5 py-0.5 rounded ml-auto">
-                              $0 Traveler Fee
-                            </span>
-                          </div>
-
-                          {/* Amenity Badges */}
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet', 'Scrub Washer']).slice(0, 3).map((badge, idx) => (
-                              <span
-                                key={idx}
-                                className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
-                              >
-                                {badge}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDetailListing(listing);
-                            }}
-                            className="text-xs font-bold text-[#005684] dark:text-[#93ccff] hover:underline"
-                          >
-                            View Details
-                          </button>
-
-                          {onRequestToBookListing && (
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onRequestToBookListing(listing);
+                                onToggleSave(listing.id);
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-[#001848] dark:bg-[#005684] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                              aria-label="Save listing"
+                              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
                             >
-                              Book Stay
+                              <span className={`material-symbols-outlined text-[18px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
+                                favorite
+                              </span>
                             </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                          </div>
+
+                          {/* Listing Info */}
+                          <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                            <div>
+                              <div className="flex items-center justify-between text-[11px] text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
+                                <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
+                                <div className="flex items-center gap-1 text-amber-500">
+                                  <span className="material-symbols-outlined text-[15px]">star</span>
+                                  <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
+                                  <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
+                                </div>
+                              </div>
+
+                              <h3 className="text-sm font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
+                                {listing.title}
+                              </h3>
+
+                              <div className="mt-2 flex items-baseline gap-1">
+                                <span className="text-xl font-extrabold text-[#001848] dark:text-white">
+                                  ${listing.monthlyRate.toLocaleString()}
+                                </span>
+                                <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
+                                <span className="text-[10px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-1.5 py-0.5 rounded ml-auto">
+                                  $0 Traveler Fee
+                                </span>
+                              </div>
+
+                              {/* Amenity Badges */}
+                              <div className="flex flex-wrap gap-1 mt-3">
+                                {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet', 'Scrub Washer']).slice(0, 3).map((badge, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
+                                  >
+                                    {badge}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between gap-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveDetailListing(listing);
+                                }}
+                                className="text-xs font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+                              >
+                                View Details
+                              </button>
+
+                              {onRequestToBookListing && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRequestToBookListing(listing);
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-[#001848] dark:bg-[#005684] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  Book Stay
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </motion.div>
+              )}
             </div>
 
             {/* RIGHT 5 COLS: Interactive SVG Map */}
@@ -672,98 +1229,135 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
         {/* 3-Column Grid View Mode */}
         {viewMode === 'grid' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings.map((listing) => {
-                const isSaved = savedListingIds.includes(listing.id);
-                return (
-                  <div
-                    key={listing.id}
-                    className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 ease-in-out border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
-                  >
-                    <div className="relative h-56 w-full overflow-hidden bg-gray-100">
-                      <img
-                        src={listing.images[0]}
-                        alt={listing.title}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
-                        <span className="material-symbols-outlined text-[14px]">near_me</span>
-                        <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min to hospital`}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => onToggleSave(listing.id)}
-                        aria-label="Save listing"
-                        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
+            {filteredListings.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="py-20 px-6 text-center rounded-3xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
+              >
+                <span className="w-14 h-14 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                  <span className="material-symbols-outlined text-[28px]">filter_alt_off</span>
+                </span>
+                <h3 className="text-base font-bold text-[#001848] dark:text-white">
+                  No sanctuaries match the current filters
+                </h3>
+                <p className="text-xs text-[#404850] dark:text-[#93ccff] max-w-sm">
+                  Try raising your rent ceiling or unchecking specialized day-sleeper amenities.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResetAllFilters}
+                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] transition-colors shadow-xs cursor-pointer"
+                >
+                  Reset All Filters
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {filteredListings.map((listing) => {
+                    const isSaved = savedListingIds.includes(listing.id);
+                    return (
+                      <motion.div
+                        layout
+                        key={listing.id}
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{
+                          layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                          opacity: { duration: 0.22 },
+                        }}
+                        className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
                       >
-                        <span className={`material-symbols-outlined text-[20px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
-                          favorite
-                        </span>
-                      </button>
-                    </div>
-
-                    <div className="p-6 flex-1 flex flex-col justify-between gap-4">
-                      <div>
-                        <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
-                          <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
-                          <div className="flex items-center gap-1 text-amber-500">
-                            <span className="material-symbols-outlined text-[16px]">star</span>
-                            <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
-                            <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
+                        <div className="relative h-56 w-full overflow-hidden bg-gray-100">
+                          <img
+                            src={listing.images[0]}
+                            alt={listing.title}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
+                            <span className="material-symbols-outlined text-[14px]">near_me</span>
+                            <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min to hospital`}</span>
                           </div>
-                        </div>
-
-                        <h3 className="text-base font-bold text-[#001848] dark:text-white line-clamp-1 mb-2">
-                          {listing.title}
-                        </h3>
-
-                        <div className="flex items-baseline gap-1 mb-3">
-                          <span className="text-2xl font-black text-[#001848] dark:text-white">
-                            ${listing.monthlyRate.toLocaleString()}
-                          </span>
-                          <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
-                          <span className="text-[11px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-2 py-0.5 rounded-full ml-auto">
-                            $0 Traveler Fee
-                          </span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet Daytime', 'In-unit Scrub Washer']).map((badge, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
-                            >
-                              {badge}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setActiveDetailListing(listing)}
-                          className="font-bold text-xs sm:text-sm text-[#005684] dark:text-[#93ccff] hover:underline"
-                        >
-                          View Stay Details
-                        </button>
-                        {onRequestToBookListing && (
                           <button
                             type="button"
-                            onClick={() => onRequestToBookListing(listing)}
-                            className="px-4 py-2 rounded-xl bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                            onClick={() => onToggleSave(listing.id)}
+                            aria-label="Save listing"
+                            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
                           >
-                            Book Sanctuary
+                            <span className={`material-symbols-outlined text-[20px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
+                              favorite
+                            </span>
                           </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                        </div>
+
+                        <div className="p-6 flex-1 flex flex-col justify-between gap-4">
+                          <div>
+                            <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
+                              <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
+                              <div className="flex items-center gap-1 text-amber-500">
+                                <span className="material-symbols-outlined text-[16px]">star</span>
+                                <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
+                                <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
+                              </div>
+                            </div>
+
+                            <h3 className="text-base font-bold text-[#001848] dark:text-white line-clamp-1 mb-2">
+                              {listing.title}
+                            </h3>
+
+                            <div className="flex items-baseline gap-1 mb-3">
+                              <span className="text-2xl font-black text-[#001848] dark:text-white">
+                                ${listing.monthlyRate.toLocaleString()}
+                              </span>
+                              <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
+                              <span className="text-[11px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-2 py-0.5 rounded-full ml-auto">
+                                $0 Traveler Fee
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1.5">
+                              {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet Daytime', 'In-unit Scrub Washer']).map((badge, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
+                                >
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="pt-4 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setActiveDetailListing(listing)}
+                              className="font-bold text-xs sm:text-sm text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+                            >
+                              View Stay Details
+                            </button>
+                            {onRequestToBookListing && (
+                              <button
+                                type="button"
+                                onClick={() => onRequestToBookListing(listing)}
+                                className="px-4 py-2 rounded-xl bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                              >
+                                Book Sanctuary
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+            )}
           </div>
+        )}
+          </>
         )}
       </section>
 

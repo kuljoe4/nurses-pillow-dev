@@ -485,6 +485,9 @@ export default function App() {
             onToggleSave={handleToggleSaveListing}
             allListings={MOCK_LISTINGS}
             activeBookings={bookingRequests}
+            m2BypassMode={m2BypassMode}
+            onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
+            isDeveloper={isDeveloper}
           />
         )}
 

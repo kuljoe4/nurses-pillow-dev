@@ -188,7 +188,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
 
         {/* Modal Scrollable Content Body */}
         <div
-          className={`px-6 sm:px-8 py-5 overflow-y-auto space-y-6 flex-1 ${
+          className={`px-6 sm:px-8 py-5 overflow-y-auto overscroll-contain custom-scrollbar space-y-6 flex-1 ${
             isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#faf8ff]'
           }`}
         >

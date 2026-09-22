@@ -139,11 +139,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   onGoBack,
   canGoBack = false,
 }) => {
-  // If at root homepage (find-housing), hide the breadcrumbs to avoid empty single-item clutter and maintain flush hero spacing
-  if (currentTab === 'find-housing') {
-    return null;
-  }
-
   const [isEllipsisOpen, setIsEllipsisOpen] = useState(false);
   const ellipsisMenuRef = useRef<HTMLDivElement>(null);
 
@@ -175,6 +170,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   useEffect(() => {
     setIsEllipsisOpen(false);
   }, [currentTab, verificationStep]);
+
+  // If at root homepage (find-housing), hide the breadcrumbs to avoid empty single-item clutter and maintain flush hero spacing
+  if (currentTab === 'find-housing') {
+    return null;
+  }
 
   const navigateTo = (tab: NavigationTab) => {
     onSelectTab(tab);
@@ -707,7 +707,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     <div
                       ref={ellipsisMenuRef}
                       role="menu"
-                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs rounded-xl shadow-2xl border p-1.5 z-50 text-xs space-y-1 ${
+                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs max-h-60 overflow-y-auto overscroll-contain custom-scrollbar rounded-xl shadow-2xl border p-1.5 z-50 text-xs space-y-1 ${
                         isNightShiftMode
                           ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
                           : 'bg-white border-gray-200 text-gray-800'

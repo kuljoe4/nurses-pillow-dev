@@ -332,7 +332,14 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {isMoreMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-2 z-50 text-xs max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain">
+              <div
+                className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-2 z-50 text-xs overflow-y-auto custom-scrollbar"
+                style={{
+                  maxHeight: 'min(480px, calc(100vh - 5.5rem))',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+                onWheel={(e) => e.stopPropagation()}
+              >
                 {/* Section 1: Healthcare & Verification */}
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Healthcare Directory &amp; Licenses
@@ -637,8 +644,13 @@ export const Header: React.FC<HeaderProps> = ({
                   />
 
                   <div
-                    className="fixed left-3 right-3 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain"
-                    style={{ top: typeof window !== 'undefined' && window.innerWidth < 640 ? `${headerHeight + 8}px` : undefined }}
+                    className="fixed left-3 right-3 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3 overflow-y-auto custom-scrollbar"
+                    style={{
+                      maxHeight: 'min(500px, calc(100vh - 5.5rem))',
+                      top: typeof window !== 'undefined' && window.innerWidth < 640 ? `${headerHeight + 8}px` : undefined,
+                      WebkitOverflowScrolling: 'touch',
+                    }}
+                    onWheel={(e) => e.stopPropagation()}
                   >
                   {/* Account Card */}
                   <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
@@ -970,7 +982,7 @@ export const Header: React.FC<HeaderProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Mobile Navigation Menu"
-        className={`lg:hidden fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-x-0 bottom-0 z-50 flex flex-col justify-start transition-all duration-300 ease-in-out ${
           isMobileMenuOpen
             ? 'opacity-100 pointer-events-auto visible'
             : 'opacity-0 pointer-events-none invisible'
@@ -988,15 +1000,24 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Sliding / Expanding Container */}
         <div
-          className={`relative w-full max-w-lg mx-auto bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-2xl transition-all duration-300 ease-out transform max-h-[calc(100dvh-${headerHeight + 16}px)] flex flex-col rounded-b-2xl overflow-hidden ${
+          className={`relative w-full max-w-lg mx-auto bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-2xl transition-all duration-300 ease-out transform flex flex-col rounded-b-2xl overflow-hidden z-10 ${
             isMobileMenuOpen
               ? 'translate-y-0 opacity-100 scale-100'
               : '-translate-y-4 opacity-0 scale-[0.98]'
           }`}
+          style={{
+            maxHeight: `calc(100dvh - ${headerHeight + 8}px)`,
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Scrollable Content inside Drawer */}
-          <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+          <div
+            className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+            }}
+            onWheel={(e) => e.stopPropagation()}
+          >
             {/* 1. Quick Auth / Profile Strip for Mobile */}
             {currentUser.role === 'guest' ? (
               <div className="p-3.5 rounded-2xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-[#13233a] dark:to-[#172b47] border border-blue-100 dark:border-[#233550] flex flex-col sm:flex-row sm:items-center justify-between gap-3">

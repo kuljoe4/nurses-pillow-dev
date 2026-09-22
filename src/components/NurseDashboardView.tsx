@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HousingListing, BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
+import { NurseDashboardSkeleton } from './skeletons/NurseDashboardSkeleton';
 
 interface NurseDashboardViewProps {
   isNightShiftMode: boolean;
@@ -13,6 +14,10 @@ interface NurseDashboardViewProps {
   isVerified?: boolean;
   onGoToVerification?: () => void;
   onOpenSupport?: () => void;
+  isLoading?: boolean;
+  m2BypassMode?: boolean;
+  onToggleM2Bypass?: () => void;
+  isDeveloper?: boolean;
 }
 
 export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
@@ -26,10 +31,46 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   isVerified = true,
   onGoToVerification,
   onOpenSupport,
+  isLoading,
+  m2BypassMode = false,
+  onToggleM2Bypass,
+  isDeveloper = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'current' | 'profile' | 'saved' | 'verification' | 'messages' | 'receipts'>('current');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [extendedNotice, setExtendedNotice] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
+
+  // Keyless Smartlock & Active Door Token Scope Gating (Milestone 2 Deliverables NB-07 & ND-01)
+  const [smartlockUnlockedLocally, setSmartlockUnlockedLocally] = useState(false);
+  const isSmartlockGated = !(m2BypassMode || smartlockUnlockedLocally);
+
+  // Initial simulated load for realistic clinical registry and booking fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInternalLoading(false);
+    }, 550);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isDataLoading = isLoading !== undefined ? isLoading : internalLoading;
+
+  const handleTabChange = (tab: 'current' | 'profile' | 'saved' | 'verification' | 'messages' | 'receipts') => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    setTabLoading(true);
+    setTimeout(() => {
+      setTabLoading(false);
+    }, 350);
+  };
+
+  const handleSyncRecords = () => {
+    setInternalLoading(true);
+    setTimeout(() => {
+      setInternalLoading(false);
+    }, 600);
+  };
 
   // Chat state
   const [messages, setMessages] = useState([
@@ -56,6 +97,16 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   };
 
   const savedListings = allListings.filter((l) => savedListingIds.includes(l.id));
+
+  if (isDataLoading) {
+    return (
+      <div className={`w-full py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-colors ${
+        isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#001848]'
+      }`}>
+        <NurseDashboardSkeleton activeTab={activeTab} isNightShiftMode={isNightShiftMode} />
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-colors ${
@@ -88,7 +139,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('profile')}
+                  onClick={() => handleTabChange('profile')}
                   className="text-xs font-semibold text-[#0a6fa8] dark:text-[#93ccff] hover:underline flex items-center gap-0.5 cursor-pointer ml-1"
                 >
                   <span>Profile &amp; Trust Credentials</span>
@@ -102,6 +153,18 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSyncRecords}
+              disabled={isDataLoading}
+              title="Sync clinician credentials, calendar and active bookings"
+              className="px-3.5 py-2.5 rounded-full border border-[rgba(11,37,89,0.12)] dark:border-[#233550] bg-white dark:bg-[#111e33] text-[#001848] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#182840] font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <span className={`material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff] ${isDataLoading ? 'animate-spin' : ''}`}>
+                sync
+              </span>
+              <span>{isDataLoading ? 'Syncing...' : 'Sync Records'}</span>
+            </button>
             <button
               type="button"
               onClick={onGoToHousing}
@@ -154,7 +217,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-1.5 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] mb-8 flex flex-wrap gap-1">
         <button
           type="button"
-          onClick={() => setActiveTab('current')}
+          onClick={() => handleTabChange('current')}
           className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'current'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -167,7 +230,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
         <button
           type="button"
-          onClick={() => setActiveTab('profile')}
+          onClick={() => handleTabChange('profile')}
           className={`flex-1 min-w-[170px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'profile'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -186,7 +249,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
         <button
           type="button"
-          onClick={() => setActiveTab('saved')}
+          onClick={() => handleTabChange('saved')}
           className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'saved'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -202,7 +265,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
         <button
           type="button"
-          onClick={() => setActiveTab('verification')}
+          onClick={() => handleTabChange('verification')}
           className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'verification'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -216,7 +279,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
         <button
           type="button"
-          onClick={() => setActiveTab('messages')}
+          onClick={() => handleTabChange('messages')}
           className={`flex-1 min-w-[130px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'messages'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -232,7 +295,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
         <button
           type="button"
-          onClick={() => setActiveTab('receipts')}
+          onClick={() => handleTabChange('receipts')}
           className={`flex-1 min-w-[160px] py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === 'receipts'
               ? 'bg-[#001848] dark:bg-[#005684] text-white shadow-sm'
@@ -243,6 +306,11 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           <span>Receipts &amp; History</span>
         </button>
       </div>
+
+      {tabLoading ? (
+        <NurseDashboardSkeleton activeTab={activeTab} isNightShiftMode={isNightShiftMode} onlyContent />
+      ) : (
+        <>
 
       {/* TAB 1: Current & Upcoming Stays */}
       {activeTab === 'current' && (
@@ -321,54 +389,143 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                   </div>
                 </div>
 
-                {/* Keyless Credentials Vault */}
-                <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <div className="flex items-center gap-1.5 text-[#001848] dark:text-white">
-                      <span className="material-symbols-outlined text-[18px] text-[#005684]">key</span>
-                      <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
-                    </div>
-                    <span className="text-[11px] text-[#195b4c] dark:text-[#aff0db] font-semibold bg-[#195b4c]/10 px-2 py-0.5 rounded-full">
-                      Active Door Lock Token
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
-                      <div>
-                        <div className="text-[10px] text-gray-500 uppercase">Front Gate &amp; Suite Door PIN</div>
-                        <div className="font-mono text-base font-bold tracking-wider">•••• 4821</div>
+                {/* Keyless Credentials Vault: Milestone 2 Scope Gating (Deliverables NB-07 & ND-01) */}
+                {isSmartlockGated ? (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/5 dark:bg-[#1c1912] border border-amber-500/30 dark:border-amber-400/25 space-y-3.5 transition-all">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-[19px]">lock_clock</span>
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-[#001848] dark:text-white flex items-center gap-2 flex-wrap">
+                            <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
+                            <span className="font-mono text-[10px] text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-full font-bold">
+                              [NB-07 • Milestone 2]
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                            Active IoT Door Code Token &amp; Sanctuary Wi-Fi Vault
+                          </div>
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy('4821', 'pin')}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
-                        title="Copy PIN"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">
-                          {copiedKey === 'pin' ? 'check' : 'content_copy'}
-                        </span>
-                      </button>
+
+                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full shrink-0 self-start sm:self-auto">
+                        <span className="material-symbols-outlined text-[13px]">lock</span>
+                        <span>Milestone 2 Scope Gated</span>
+                      </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
-                      <div>
-                        <div className="text-[10px] text-gray-500 uppercase">High-Speed Wi-Fi (500 Mbps)</div>
-                        <div className="font-bold text-sm truncate">SunsetSanctuary-5G</div>
+                    {/* Confirmation explanation box */}
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-[#0E1A2E] border border-amber-500/20 dark:border-amber-500/20 text-xs space-y-2">
+                      <div className="flex items-start gap-2.5 text-[#001848] dark:text-[#E6ECF7]">
+                        <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[18px] shrink-0 mt-0.5">
+                          verified
+                        </span>
+                        <div className="space-y-1">
+                          <div className="font-bold text-xs text-[#001848] dark:text-white">
+                            Contract Scope Confirmation: Active Door Lock Token is Milestone 2 (NB-07) — Not Phase 1 / Milestone 1
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+                            Per the project roadmap, the <strong className="text-[#001848] dark:text-white">Active Door Lock Token, IoT Keyless Smartlock &amp; Wi-Fi Credentials Vault</strong> are scheduled for <strong className="text-amber-700 dark:text-amber-300 font-semibold">Milestone 2 (Deliverables NB-07 &amp; ND-01)</strong>. 
+                            <strong className="text-emerald-700 dark:text-emerald-400 font-semibold"> Phase 1 / Milestone 1</strong> provides confirmed reservation acceptance, shift dates, arrival countdown instructions, and daytime quiet environment guarantees (<strong className="text-emerald-700 dark:text-emerald-400 font-semibold">NB-06</strong>).
+                          </p>
+                        </div>
                       </div>
+
+                      {/* Comparison tags */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px]">
+                        <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                          <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                          <span className="font-semibold">Phase 1 / M1 Scope:</span>
+                          <span className="text-gray-600 dark:text-gray-300">Confirmed Stay &amp; Quiet Guarantee (Active)</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                          <span className="material-symbols-outlined text-[14px]">lock</span>
+                          <span className="font-semibold">Milestone 2 Scope:</span>
+                          <span className="text-gray-600 dark:text-gray-300">IoT Keyless Door Lock Token &amp; Wi-Fi Vault (Gated)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Inspection action */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+                        Door lock token securely withheld until Milestone 2 in-flight activation.
+                      </span>
                       <button
                         type="button"
-                        onClick={() => handleCopy('RestWellHealBetter2024!', 'wifi')}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
-                        title="Copy Wi-Fi Password"
+                        onClick={() => setSmartlockUnlockedLocally(true)}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+                        title="Preview Milestone 2 smartlock credentials vault scaffold"
                       >
-                        <span className="material-symbols-outlined text-[18px]">
-                          {copiedKey === 'wifi' ? 'check' : 'wifi_password'}
-                        </span>
+                        <span className="material-symbols-outlined text-[15px]">visibility</span>
+                        <span>Preview M2 Door Code Vault</span>
                       </button>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3 transition-all animate-fadeIn">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                      <div className="flex items-center gap-1.5 text-[#001848] dark:text-white">
+                        <span className="material-symbols-outlined text-[18px] text-[#005684]">key</span>
+                        <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono">
+                          [M2 Preview Active]
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-[#195b4c] dark:text-[#aff0db] font-semibold bg-[#195b4c]/10 px-2 py-0.5 rounded-full">
+                          Active Door Lock Token
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSmartlockUnlockedLocally(false)}
+                          className="text-[11px] text-gray-500 hover:text-amber-700 dark:text-gray-400 dark:hover:text-amber-300 font-semibold underline cursor-pointer"
+                          title="Re-lock to Milestone 1 scope boundary"
+                        >
+                          Re-gate to M1 Scope
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
+                        <div>
+                          <div className="text-[10px] text-gray-500 uppercase">Front Gate &amp; Suite Door PIN</div>
+                          <div className="font-mono text-base font-bold tracking-wider">•••• 4821</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy('4821', 'pin')}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                          title="Copy PIN"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {copiedKey === 'pin' ? 'check' : 'content_copy'}
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
+                        <div>
+                          <div className="text-[10px] text-gray-500 uppercase">High-Speed Wi-Fi (500 Mbps)</div>
+                          <div className="font-bold text-sm truncate">SunsetSanctuary-5G</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy('RestWellHealBetter2024!', 'wifi')}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                          title="Copy Wi-Fi Password"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">
+                            {copiedKey === 'wifi' ? 'check' : 'wifi_password'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Primary Actions */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -896,6 +1053,8 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
