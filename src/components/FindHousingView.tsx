@@ -34,6 +34,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
   const [selectedDuration, setSelectedDuration] = useState('13');
+  const [customDuration, setCustomDuration] = useState<number>(1);
   const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
     userRole === 'host' ? 'hosts' : 'clinicians'
@@ -69,6 +70,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     { label: '8 wks', value: '8' },
     { label: '13 wks', value: '13' },
     { label: '26 wks', value: '26' },
+    { label: 'Custom', value: 'custom' },
   ];
 
   const commuteOptions = [
@@ -96,7 +98,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const handleExecuteSearch = () => {
     onGoToSearchListings({
       hospital: selectedHospital,
-      duration: selectedDuration,
+      duration: selectedDuration === 'custom' ? customDuration.toString() : selectedDuration,
       radius: commuteBuffer,
     });
   };
@@ -260,7 +262,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 <label className="block text-xs font-bold text-[#001848] dark:text-white uppercase tracking-wider mb-2">
                   Assignment Duration
                 </label>
-                <div className="grid grid-cols-4 gap-2 h-13">
+                <div className="grid grid-cols-5 gap-2 h-13">
                   {durationOptions.map((opt) => (
                     <button
                       key={opt.value}
@@ -276,6 +278,21 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                     </button>
                   ))}
                 </div>
+                {selectedDuration === 'custom' && (
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={customDuration || ''}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setCustomDuration(isNaN(val) ? 0 : val);
+                      }}
+                      placeholder="Custom duration (weeks)"
+                      className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
