@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavigationTab, VerificationStepId, UserRole } from '../types';
 
 export interface BreadcrumbsProps {
@@ -25,6 +25,108 @@ interface CrumbItem {
   badge?: string;
 }
 
+interface CrumbTooltipProps {
+  label: string;
+  fullPath?: string;
+  hint?: string;
+  screenCode?: string;
+  badge?: string;
+  align?: 'left' | 'center' | 'right';
+  disabled?: boolean;
+  children: React.ReactNode;
+  isNightShiftMode: boolean;
+}
+
+const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
+  label,
+  fullPath,
+  hint,
+  screenCode,
+  badge,
+  align = 'center',
+  disabled = false,
+  children,
+  isNightShiftMode,
+}) => {
+  if (disabled) {
+    return <>{children}</>;
+  }
+
+  const alignClasses =
+    align === 'left'
+      ? 'left-0'
+      : align === 'right'
+      ? 'right-0'
+      : 'left-1/2 -translate-x-1/2';
+
+  const caretClasses =
+    align === 'left'
+      ? 'left-3'
+      : align === 'right'
+      ? 'right-3'
+      : 'left-1/2 -translate-x-1/2';
+
+  return (
+    <div className="relative group/crumb inline-flex items-center">
+      {children}
+      {/* Tooltip Card with rich path and clarity metadata */}
+      <div
+        role="tooltip"
+        className={`pointer-events-none absolute top-full mt-2 ${alignClasses} hidden group-hover/crumb:flex group-focus-within/crumb:flex flex-col z-50 w-max max-w-[280px] sm:max-w-xs p-2.5 rounded-xl shadow-2xl border text-left transition-all duration-150 animate-in fade-in-0 zoom-in-95 ${
+          isNightShiftMode
+            ? 'bg-[#0E1A2E]/95 backdrop-blur-md border-[#233550] text-[#E6ECF7] shadow-black/60'
+            : 'bg-[#001848]/95 backdrop-blur-md border-[rgba(255,255,255,0.15)] text-white shadow-xl shadow-blue-950/20'
+        }`}
+      >
+        {/* Upward Caret */}
+        <div
+          className={`absolute -top-1 ${caretClasses} w-2 h-2 rotate-45 border-t border-l ${
+            isNightShiftMode
+              ? 'bg-[#0E1A2E] border-[#233550]'
+              : 'bg-[#001848] border-[rgba(255,255,255,0.15)]'
+          }`}
+          aria-hidden="true"
+        />
+
+        {/* Header: Segment Title & Badges */}
+        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+          <span className="font-bold text-xs leading-snug">{label}</span>
+          {screenCode && (
+            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/25 text-purple-300 font-bold shrink-0">
+              {screenCode}
+            </span>
+          )}
+          {badge && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 font-semibold shrink-0">
+              {badge}
+            </span>
+          )}
+        </div>
+
+        {/* Full Hierarchical Path Trace */}
+        {fullPath && (
+          <div className="text-[10px] text-gray-300 dark:text-gray-400 font-normal leading-relaxed break-words border-t border-white/10 dark:border-white/5 pt-1 mt-0.5">
+            <span className="text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold text-[9px] block mb-0.5">
+              Full Navigation Path
+            </span>
+            <span className="text-gray-200 dark:text-gray-300 font-medium">{fullPath}</span>
+          </div>
+        )}
+
+        {/* Action / Context Hint */}
+        {hint && (
+          <div className="text-[10px] text-blue-200 dark:text-[#93ccff] font-medium mt-1 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[12px] leading-none" aria-hidden="true">
+              info
+            </span>
+            <span>{hint}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   currentTab,
   onSelectTab,
@@ -41,6 +143,38 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   if (currentTab === 'find-housing') {
     return null;
   }
+
+  const [isEllipsisOpen, setIsEllipsisOpen] = useState(false);
+  const ellipsisMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close ellipsis menu on outside click or Escape key
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (ellipsisMenuRef.current && !ellipsisMenuRef.current.contains(event.target as Node)) {
+        setIsEllipsisOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsEllipsisOpen(false);
+      }
+    }
+    if (isEllipsisOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isEllipsisOpen]);
+
+  // Reset ellipsis menu on tab or step change
+  useEffect(() => {
+    setIsEllipsisOpen(false);
+  }, [currentTab, verificationStep]);
 
   const navigateTo = (tab: NavigationTab) => {
     onSelectTab(tab);
@@ -428,6 +562,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   };
 
   const trail = buildTrail();
+  const firstCrumb = trail[0];
+  const lastCrumb = trail[trail.length - 1];
+  const middleCrumbs = trail.slice(1, -1);
+  const fullPathString = trail.map((c) => c.label).join(' › ');
 
   return (
     <div
@@ -471,8 +609,217 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           )}
 
           {/* Breadcrumb Navigation Trail */}
-          <nav aria-label="Breadcrumb" className="min-w-0 flex-1 overflow-x-auto no-scrollbar">
-            <ol className="flex items-center flex-nowrap sm:flex-wrap gap-1 sm:gap-1.5 whitespace-nowrap text-xs">
+          <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
+            {/* Mobile View (< sm): Truncates middle segments into an interactive ellipsis if trail has > 2 segments */}
+            <ol className="flex sm:hidden items-center flex-nowrap gap-1 whitespace-nowrap text-xs">
+              {/* Root / Home Crumb */}
+              {firstCrumb && (
+                <li className="flex items-center gap-1 shrink-0">
+                  <CrumbTooltip
+                    label={firstCrumb.label}
+                    fullPath={fullPathString}
+                    hint={firstCrumb.onClick ? 'Click to return to Marketplace Home' : undefined}
+                    align="left"
+                    isNightShiftMode={isNightShiftMode}
+                  >
+                    {firstCrumb.onClick ? (
+                      <button
+                        type="button"
+                        onClick={firstCrumb.onClick}
+                        title={`Home: Return to ${firstCrumb.label} • Path: ${fullPathString}`}
+                        className={`flex items-center gap-1 font-medium transition-colors hover:underline underline-offset-2 cursor-pointer ${
+                          isNightShiftMode
+                            ? 'text-[#a1b5d8] hover:text-[#93ccff]'
+                            : 'text-gray-600 hover:text-[#005684]'
+                        }`}
+                      >
+                        {firstCrumb.icon && (
+                          <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
+                            {firstCrumb.icon}
+                          </span>
+                        )}
+                        <span>{firstCrumb.shortLabel || firstCrumb.label}</span>
+                      </button>
+                    ) : (
+                      <span
+                        className={`flex items-center gap-1 font-medium ${
+                          isNightShiftMode ? 'text-[#6e85a6]' : 'text-gray-400'
+                        }`}
+                        title={`${firstCrumb.label} • Path: ${fullPathString}`}
+                      >
+                        {firstCrumb.icon && (
+                          <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
+                            {firstCrumb.icon}
+                          </span>
+                        )}
+                        <span>{firstCrumb.shortLabel || firstCrumb.label}</span>
+                      </span>
+                    )}
+                  </CrumbTooltip>
+                </li>
+              )}
+
+              {/* Separator after root */}
+              {trail.length > 1 && (
+                <li aria-hidden="true" className="shrink-0 flex items-center">
+                  <span
+                    className={`material-symbols-outlined text-[14px] select-none ${
+                      isNightShiftMode ? 'text-[#385175]' : 'text-gray-300'
+                    }`}
+                  >
+                    chevron_right
+                  </span>
+                </li>
+              )}
+
+              {/* Middle Segments Collapsed into Ellipsis on Mobile */}
+              {middleCrumbs.length > 0 && (
+                <li className="relative shrink-0 flex items-center gap-1">
+                  <CrumbTooltip
+                    label={`Collapsed Steps (${middleCrumbs.length})`}
+                    fullPath={middleCrumbs.map((c) => c.label).join(' › ')}
+                    hint="Tap to expand all intermediate views"
+                    align="center"
+                    disabled={isEllipsisOpen}
+                    isNightShiftMode={isNightShiftMode}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setIsEllipsisOpen(!isEllipsisOpen)}
+                      className={`px-1.5 py-0.5 rounded-md font-bold text-xs flex items-center justify-center transition-colors cursor-pointer border ${
+                        isNightShiftMode
+                          ? 'bg-[#182840] hover:bg-[#203656] text-[#93ccff] border-[#233550]'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200'
+                      }`}
+                      aria-expanded={isEllipsisOpen}
+                      aria-haspopup="menu"
+                      aria-label={`Show ${middleCrumbs.length} collapsed breadcrumb segments: ${middleCrumbs.map((c) => c.label).join(' › ')}`}
+                      title={`Show ${middleCrumbs.length} collapsed segments: ${middleCrumbs.map((c) => c.label).join(' › ')}`}
+                    >
+                      <span className="material-symbols-outlined text-[15px] leading-none" aria-hidden="true">
+                        more_horiz
+                      </span>
+                    </button>
+                  </CrumbTooltip>
+
+                  {/* Dropdown Popover for Collapsed Intermediate Segments */}
+                  {isEllipsisOpen && (
+                    <div
+                      ref={ellipsisMenuRef}
+                      role="menu"
+                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs rounded-xl shadow-2xl border p-1.5 z-50 text-xs space-y-1 ${
+                        isNightShiftMode
+                          ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
+                          : 'bg-white border-gray-200 text-gray-800'
+                      }`}
+                    >
+                      <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Intermediate Path Segments
+                      </div>
+                      {middleCrumbs.map((crumb) => (
+                        <button
+                          key={crumb.id}
+                          role="menuitem"
+                          type="button"
+                          onClick={() => {
+                            setIsEllipsisOpen(false);
+                            crumb.onClick?.();
+                          }}
+                          disabled={!crumb.onClick}
+                          title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center gap-2 transition-colors ${
+                            crumb.onClick
+                              ? isNightShiftMode
+                                ? 'hover:bg-[#182840] text-[#93ccff] cursor-pointer'
+                                : 'hover:bg-[#eaedff] text-[#005684] cursor-pointer'
+                              : 'text-gray-400 cursor-default'
+                          }`}
+                        >
+                          {crumb.icon && (
+                            <span className="material-symbols-outlined text-[15px] shrink-0" aria-hidden="true">
+                              {crumb.icon}
+                            </span>
+                          )}
+                          <span className="truncate flex-1 font-medium">{crumb.label}</span>
+                          {crumb.screenCode && showScreenCodes && (
+                            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold shrink-0">
+                              {crumb.screenCode}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Separator after Ellipsis */}
+                  <span
+                    className={`material-symbols-outlined text-[14px] select-none ${
+                      isNightShiftMode ? 'text-[#385175]' : 'text-gray-300'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    chevron_right
+                  </span>
+                </li>
+              )}
+
+              {/* Active / Current Page Crumb on Mobile */}
+              {lastCrumb && trail.length > 1 && (
+                <li className="flex items-center gap-1 shrink-0 min-w-0 font-bold" aria-current="page">
+                  <CrumbTooltip
+                    label={lastCrumb.label}
+                    fullPath={fullPathString}
+                    hint="Current Active View"
+                    screenCode={showScreenCodes ? lastCrumb.screenCode : undefined}
+                    badge={lastCrumb.badge}
+                    align="right"
+                    isNightShiftMode={isNightShiftMode}
+                  >
+                    <div
+                      className={`flex items-center gap-1 font-bold truncate cursor-default ${
+                        isNightShiftMode ? 'text-white' : 'text-[#001848]'
+                      }`}
+                      title={`${lastCrumb.label} (Current View) • Path: ${fullPathString}`}
+                    >
+                      {lastCrumb.icon && (
+                        <span
+                          className={`material-symbols-outlined text-[15px] shrink-0 ${
+                            isNightShiftMode ? 'text-[#93ccff]' : 'text-[#005684]'
+                          }`}
+                          aria-hidden="true"
+                        >
+                          {lastCrumb.icon}
+                        </span>
+                      )}
+                      <span className="truncate max-w-[130px] xs:max-w-[190px]">
+                        {lastCrumb.shortLabel || lastCrumb.label}
+                      </span>
+
+                      {lastCrumb.badge && (
+                        <span
+                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0 ${
+                            isNightShiftMode
+                              ? 'bg-[#182840] text-[#93ccff] border border-[#233550]'
+                              : 'bg-[#eaedff] text-[#005684]'
+                          }`}
+                        >
+                          {lastCrumb.badge}
+                        </span>
+                      )}
+
+                      {showScreenCodes && lastCrumb.screenCode && (
+                        <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold shrink-0 ml-0.5">
+                          {lastCrumb.screenCode}
+                        </span>
+                      )}
+                    </div>
+                  </CrumbTooltip>
+                </li>
+              )}
+            </ol>
+
+            {/* Desktop View (sm:flex): Full Expanded Breadcrumb Trail */}
+            <ol className="hidden sm:flex items-center flex-wrap gap-1 sm:gap-1.5 whitespace-nowrap text-xs">
               {trail.map((crumb, index) => {
                 const isLast = index === trail.length - 1;
 
@@ -489,76 +836,89 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                       </span>
                     )}
 
-                    {isLast ? (
-                      <div
-                        className={`flex items-center gap-1 sm:gap-1.5 font-bold ${
-                          isNightShiftMode ? 'text-white' : 'text-[#001848]'
-                        }`}
-                        aria-current="page"
-                      >
-                        {crumb.icon && (
-                          <span
-                            className={`material-symbols-outlined text-[15px] ${
-                              isNightShiftMode ? 'text-[#93ccff]' : 'text-[#005684]'
-                            }`}
-                            aria-hidden="true"
-                          >
-                            {crumb.icon}
+                    <CrumbTooltip
+                      label={crumb.label}
+                      fullPath={fullPathString}
+                      hint={isLast ? 'Current Active View' : crumb.onClick ? 'Click to navigate to this view' : undefined}
+                      screenCode={showScreenCodes ? crumb.screenCode : undefined}
+                      badge={crumb.badge}
+                      align={index === 0 ? 'left' : isLast ? 'right' : 'center'}
+                      isNightShiftMode={isNightShiftMode}
+                    >
+                      {isLast ? (
+                        <div
+                          className={`flex items-center gap-1 sm:gap-1.5 font-bold cursor-default ${
+                            isNightShiftMode ? 'text-white' : 'text-[#001848]'
+                          }`}
+                          aria-current="page"
+                          title={`${crumb.label} (Current View) • Path: ${fullPathString}`}
+                        >
+                          {crumb.icon && (
+                            <span
+                              className={`material-symbols-outlined text-[15px] ${
+                                isNightShiftMode ? 'text-[#93ccff]' : 'text-[#005684]'
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {crumb.icon}
+                            </span>
+                          )}
+                          <span className="truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+                            {crumb.label}
                           </span>
-                        )}
-                        <span className="truncate max-w-[200px] sm:max-w-xs md:max-w-md">
-                          {crumb.label}
+
+                          {crumb.badge && (
+                            <span
+                              className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                                isNightShiftMode
+                                  ? 'bg-[#182840] text-[#93ccff] border border-[#233550]'
+                                  : 'bg-[#eaedff] text-[#005684]'
+                              }`}
+                            >
+                              {crumb.badge}
+                            </span>
+                          )}
+
+                          {showScreenCodes && crumb.screenCode && (
+                            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold ml-0.5">
+                              {crumb.screenCode}
+                            </span>
+                          )}
+                        </div>
+                      ) : crumb.onClick ? (
+                        <button
+                          type="button"
+                          onClick={crumb.onClick}
+                          title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
+                          className={`flex items-center gap-1 font-medium transition-colors hover:underline underline-offset-2 cursor-pointer ${
+                            isNightShiftMode
+                              ? 'text-[#a1b5d8] hover:text-[#93ccff]'
+                              : 'text-gray-600 hover:text-[#005684]'
+                          }`}
+                        >
+                          {crumb.icon && (
+                            <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
+                              {crumb.icon}
+                            </span>
+                          )}
+                          <span>{crumb.label}</span>
+                        </button>
+                      ) : (
+                        <span
+                          className={`flex items-center gap-1 font-medium ${
+                            isNightShiftMode ? 'text-[#6e85a6]' : 'text-gray-400'
+                          }`}
+                          title={`${crumb.label} • Path: ${fullPathString}`}
+                        >
+                          {crumb.icon && (
+                            <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
+                              {crumb.icon}
+                            </span>
+                          )}
+                          <span>{crumb.label}</span>
                         </span>
-
-                        {crumb.badge && (
-                          <span
-                            className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                              isNightShiftMode
-                                ? 'bg-[#182840] text-[#93ccff] border border-[#233550]'
-                                : 'bg-[#eaedff] text-[#005684]'
-                            }`}
-                          >
-                            {crumb.badge}
-                          </span>
-                        )}
-
-                        {showScreenCodes && crumb.screenCode && (
-                          <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold ml-0.5">
-                            {crumb.screenCode}
-                          </span>
-                        )}
-                      </div>
-                    ) : crumb.onClick ? (
-                      <button
-                        type="button"
-                        onClick={crumb.onClick}
-                        className={`flex items-center gap-1 font-medium transition-colors hover:underline underline-offset-2 cursor-pointer ${
-                          isNightShiftMode
-                            ? 'text-[#a1b5d8] hover:text-[#93ccff]'
-                            : 'text-gray-600 hover:text-[#005684]'
-                        }`}
-                      >
-                        {crumb.icon && (
-                          <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
-                            {crumb.icon}
-                          </span>
-                        )}
-                        <span>{crumb.label}</span>
-                      </button>
-                    ) : (
-                      <span
-                        className={`flex items-center gap-1 font-medium ${
-                          isNightShiftMode ? 'text-[#6e85a6]' : 'text-gray-400'
-                        }`}
-                      >
-                        {crumb.icon && (
-                          <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
-                            {crumb.icon}
-                          </span>
-                        )}
-                        <span>{crumb.label}</span>
-                      </span>
-                    )}
+                      )}
+                    </CrumbTooltip>
                   </li>
                 );
               })}
