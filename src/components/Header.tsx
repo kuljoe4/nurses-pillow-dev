@@ -885,7 +885,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-40 overflow-y-auto"
+          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-50 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsMobileMenuOpen(false);
@@ -893,7 +893,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}
         >
           <div
-            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-lg p-5 space-y-5 max-w-lg mx-auto cursor-default"
+            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-lg p-5 space-y-5 max-w-lg mx-auto cursor-default overflow-y-auto max-h-full"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Active User Card & Perspective Selector */}

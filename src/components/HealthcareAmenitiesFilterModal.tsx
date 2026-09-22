@@ -50,6 +50,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
 
   // Section 5: Assignment Duration & Flexibility
   const [durationWeeks, setDurationWeeks] = useState<'4' | '8' | '13' | '26' | 'custom'>('13');
+  const [customDuration, setCustomDuration] = useState<number>(1);
 
   // Section 6: Monthly Rent & Per Diem Range
   const [rentMax, setRentMax] = useState(2600);
@@ -106,7 +107,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
       gatedParking,
       petFriendly,
       fullKitchen,
-      durationWeeks,
+      durationWeeks: durationWeeks === 'custom' ? customDuration.toString() : durationWeeks,
       rentMax,
       utilitiesIncluded,
     });
@@ -796,6 +797,26 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
                   </button>
                 ))}
               </div>
+
+              {durationWeeks === 'custom' && (
+                <div className="mt-4 max-w-[200px]">
+                  <input
+                    type="number"
+                    min="1"
+                    value={customDuration || ''}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setCustomDuration(isNaN(val) ? 0 : val);
+                    }}
+                    placeholder="Custom duration (weeks)"
+                    className={`w-full h-11 px-4 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684] ${
+                      isNightShiftMode
+                        ? 'bg-[#182840] text-white'
+                        : 'bg-[#f2f3ff] text-[#001848]'
+                    }`}
+                  />
+                </div>
+              )}
 
               {/* Cancellation Guarantee Banner */}
               <div className="p-4 rounded-xl bg-[#367464]/15 flex items-start gap-3">

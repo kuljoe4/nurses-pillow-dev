@@ -30,7 +30,9 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [selectedHospital, setSelectedHospital] = useState(initialHospital);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [commuteBuffer, setCommuteBuffer] = useState<number>(initialRadius);
-  const [selectedDuration, setSelectedDuration] = useState(initialDuration);
+  const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
+  const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
+  const [customDuration, setCustomDuration] = useState<number>(isInitialCustom ? parseInt(initialDuration) : 1);
   const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -74,6 +76,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
     { label: '8 wks', value: '8' },
     { label: '13 wks', value: '13' },
     { label: '26 wks', value: '26' },
+    { label: 'Custom', value: 'custom' },
   ];
 
   const commuteOptions = [
@@ -242,10 +245,25 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 >
                   {durationOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label} rotation
+                      {opt.value === 'custom' ? opt.label : `${opt.label} rotation`}
                     </option>
                   ))}
                 </select>
+                {selectedDuration === 'custom' && (
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={customDuration || ''}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setCustomDuration(isNaN(val) ? 0 : val);
+                      }}
+                      placeholder="Custom (weeks)"
+                      className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
