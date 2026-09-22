@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const LOCAL_LOGO_URL = '/nurses-pillow-logo.svg';
+export const LOCAL_LOGO_URL = '/nurses-pillow-logo.png';
 
 interface NursesPillowLogoProps {
   className?: string;

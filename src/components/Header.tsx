@@ -22,7 +22,7 @@ interface HeaderProps {
   onToggleScreenCodes?: () => void;
 }
 
-export const LOGO_URL = '/nurses-pillow-logo.svg';
+export const LOGO_URL = '/nurses-pillow-logo.png';
 
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
