@@ -106,7 +106,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   return (
     <div className={`w-full transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
       {/* 1. HERO SECTION & ASSIGNMENT CARD */}
-      <section className="relative overflow-hidden px-4 sm:px-6 lg:px-12 py-10 sm:py-16 lg:py-20">
+      <section className="relative overflow-hidden px-4 sm:px-6 lg:px-12 pt-6 sm:pt-10 lg:pt-12 pb-12 sm:pb-16 lg:pb-20">
         {/* Soft Ambient Glows */}
         <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-[#005684]/10 dark:bg-[#0a6fa8]/20 blur-3xl pointer-events-none" />
         <div className="absolute top-1/2 -right-32 w-[520px] h-[520px] rounded-full bg-[#195b4c]/10 dark:bg-[#195b4c]/20 blur-3xl pointer-events-none" />
@@ -210,7 +210,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-xl shadow-md z-30 py-2 border border-[#c0c7d1]/30 dark:border-[#2b4162] overflow-hidden">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-xl shadow-2xl z-50 py-2 border border-[#c0c7d1]/30 dark:border-[#2b4162] max-h-72 overflow-y-auto overscroll-contain">
                     {popularHubs.map((hosp) => (
                       <div
                         key={hosp}

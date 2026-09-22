@@ -36,6 +36,8 @@ import { SystemStatusView } from './components/SystemStatusView';
 import { MobileParityView } from './components/MobileParityView';
 import { StagingAuthGateModal } from './components/StagingAuthGateModal';
 import { Milestone2ScopeGate } from './components/Milestone2ScopeGate';
+import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
+import { Breadcrumbs } from './components/Breadcrumbs';
 
 export default function App() {
   // Staging Preview Authentication Gate (lawrence / np-preview-2026 or developer / np-dev-2026)
@@ -52,10 +54,39 @@ export default function App() {
 
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>('find-housing');
+  const [tabHistory, setTabHistory] = useState<NavigationTab[]>([]);
   const [verificationStep, setVerificationStep] = useState<VerificationStepId>(3);
   const [verificationData, setVerificationData] = useState<VerificationFormData>(
     INITIAL_VERIFICATION_DATA
   );
+
+  const handleNavigateTab = (tab: NavigationTab) => {
+    if (tab === currentTab) return;
+    setTabHistory((prev) => [...prev, currentTab]);
+    setCurrentTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGoBack = () => {
+    if (currentTab === 'verification' && verificationStep > 1) {
+      setVerificationStep((prev) => (prev - 1) as VerificationStepId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (currentTab === 'email-verification' || currentTab === 'phone-verification') {
+      handleNavigateTab('verification');
+      setVerificationStep(2);
+      return;
+    }
+    if (tabHistory.length > 0) {
+      const prevTab = tabHistory[tabHistory.length - 1];
+      setTabHistory((prev) => prev.slice(0, -1));
+      setCurrentTab(prevTab);
+    } else {
+      setCurrentTab('find-housing');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Saved listings state (initialized with 1 saved sanctuary)
   const [savedListingIds, setSavedListingIds] = useState<string[]>(['nc-duke-condo']);
@@ -67,6 +98,7 @@ export default function App() {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isSavedOpen, setIsSavedOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   // Google Sheets integration state (Administrative Feature)
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
@@ -138,15 +170,36 @@ export default function App() {
     });
   };
 
-  // Standard Logout handler (switches to Guest role and lands on Explore Stays)
-  const handleLogout = () => {
+  // Initiate Logout confirmation dialog
+  const handleInitiateLogout = () => {
+    setIsLogoutDialogOpen(true);
+  };
+
+  // Confirmed Logout handler: clears all active user sessions and resets state to Guest role
+  const handleConfirmLogout = () => {
+    // 1. Clear session storage items related to user and developer sessions
+    sessionStorage.removeItem('np_staging_user');
+    sessionStorage.removeItem('np_user_session');
+    sessionStorage.removeItem('np_user_token');
+    sessionStorage.removeItem('np_active_role');
+    sessionStorage.removeItem('np_active_user');
+    localStorage.removeItem('np_remembered_user');
+
+    // 2. Reset currentUser state to Guest
     setCurrentUser({ role: 'guest', name: 'Guest Explorer' });
+
+    // 3. Reset developer staging perspective if active
     if (stagingUser === 'developer') {
       setStagingUser('client');
       sessionStorage.setItem('np_staging_user', 'client');
       setM2BypassMode(false);
     }
+
+    // 4. Return to default guest explore tab
     setCurrentTab('find-housing');
+
+    // 5. Close confirmation dialog
+    setIsLogoutDialogOpen(false);
   };
 
   // Checkout modal state (Screen A4)
@@ -278,108 +331,107 @@ export default function App() {
         isNightShiftMode={isNightShiftMode}
       />
 
-      {/* Staging Status Banner */}
-      {isDeveloper ? (
-        <div className="w-full bg-[#130b2e] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 z-40 relative">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-            <span className="font-semibold tracking-wide">
-              Developer Workspace: <span className="text-purple-300 font-mono">Joshua (Lead Dev)</span>
-            </span>
-            <span className="hidden sm:inline opacity-40">•</span>
-            <span className="hidden sm:inline opacity-80 text-purple-200">
-              Milestone 2 In-Flight Tools &amp; System Specs Unlocked
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-[11px]">
-            <span className={`px-2 py-0.5 rounded-full font-medium ${
-              m2BypassMode
-                ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                : 'bg-gray-700 text-gray-300 border border-gray-600'
-            }`}>
-              M2 Scope: {m2BypassMode ? 'UNLOCKED' : 'GATED'}
-            </span>
-            <button
-              type="button"
-              onClick={() => setM2BypassMode(!m2BypassMode)}
-              className="hover:underline opacity-80 hover:opacity-100 cursor-pointer font-mono"
-            >
-              {m2BypassMode ? 'Lock M2' : 'Unlock M2'}
-            </button>
-            <span className="opacity-40">|</span>
-            <button
-              type="button"
-              onClick={handleDeveloperSignOut}
-              className="hover:underline text-amber-300 cursor-pointer flex items-center gap-1 font-semibold"
-              title="Switch to Client Review perspective to see what Lawrence sees"
-            >
-              <span className="material-symbols-outlined text-[14px]">visibility</span>
-              View as Client
-            </button>
-            <span className="opacity-40">|</span>
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.removeItem('np_staging_auth_lawrence');
-                sessionStorage.removeItem('np_staging_user');
-                setIsStagingAuthenticated(false);
-              }}
-              className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              Lock Preview
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="w-full bg-[#001848] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-white/10 z-40 relative">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-            <span className="font-semibold tracking-wide">
-              Staging Review Link: <span className="text-[#aff0db]">lawrence</span> (HajjMalik)
-            </span>
-            <span className="hidden sm:inline opacity-40">•</span>
-            <span className="hidden sm:inline opacity-80">
-              Milestone 1 Core Acceptance Build (NC Focus)
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-[11px]">
-            <span className="text-[#aff0db] font-medium hidden sm:inline">
-              Verified Client Review Access
-            </span>
-            <span className="opacity-40 hidden sm:inline">|</span>
-            <button
-              type="button"
-              onClick={handleDeveloperSignIn}
-              className="hover:underline text-gray-400 hover:text-purple-300 text-[10px] font-mono cursor-pointer"
-              title="Switch to Developer Mode"
-            >
-              Developer Mode
-            </button>
-            <span className="opacity-40">|</span>
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.removeItem('np_staging_auth_lawrence');
-                sessionStorage.removeItem('np_staging_user');
-                setIsStagingAuthenticated(false);
-              }}
-              className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              Lock Preview
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Fixed Navigation Header */}
+      {/* Sticky Navigation Header with Integrated Staging Status Banner */}
       <Header
+        topBanner={
+          isStagingAuthenticated ? (
+            isDeveloper ? (
+              <div className="w-full bg-[#130b2e] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
+                  <span className="font-semibold tracking-wide">
+                    Developer Workspace: <span className="text-purple-300 font-mono">Joshua (Lead Dev)</span>
+                  </span>
+                  <span className="hidden sm:inline opacity-40">•</span>
+                  <span className="hidden sm:inline opacity-80 text-purple-200">
+                    Milestone 2 In-Flight Tools &amp; System Specs Unlocked
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className={`px-2 py-0.5 rounded-full font-medium ${
+                    m2BypassMode
+                      ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
+                      : 'bg-gray-700 text-gray-300 border border-gray-600'
+                  }`}>
+                    M2 Scope: {m2BypassMode ? 'UNLOCKED' : 'GATED'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setM2BypassMode(!m2BypassMode)}
+                    className="hover:underline opacity-80 hover:opacity-100 cursor-pointer font-mono"
+                  >
+                    {m2BypassMode ? 'Lock M2' : 'Unlock M2'}
+                  </button>
+                  <span className="opacity-40">|</span>
+                  <button
+                    type="button"
+                    onClick={handleDeveloperSignOut}
+                    className="hover:underline text-amber-300 cursor-pointer flex items-center gap-1 font-semibold"
+                    title="Switch to Client Review perspective to see what Lawrence sees"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">visibility</span>
+                    View as Client
+                  </button>
+                  <span className="opacity-40">|</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sessionStorage.removeItem('np_staging_auth_lawrence');
+                      sessionStorage.removeItem('np_staging_user');
+                      setIsStagingAuthenticated(false);
+                    }}
+                    className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Lock Preview
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full bg-[#001848] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+                  <span className="font-semibold tracking-wide">
+                    Staging Review Link: <span className="text-[#aff0db]">lawrence</span> (HajjMalik)
+                  </span>
+                  <span className="hidden sm:inline opacity-40">•</span>
+                  <span className="hidden sm:inline opacity-80">
+                    Milestone 1 Core Acceptance Build (NC Focus)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="text-[#aff0db] font-medium hidden sm:inline">
+                    Verified Client Review Access
+                  </span>
+                  <span className="opacity-40 hidden sm:inline">|</span>
+                  <button
+                    type="button"
+                    onClick={handleDeveloperSignIn}
+                    className="hover:underline text-gray-400 hover:text-purple-300 focus-visible:text-purple-300 text-[10px] font-mono cursor-pointer"
+                    title="Switch to Developer Mode"
+                  >
+                    Developer Mode
+                  </button>
+                  <span className="opacity-40">|</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sessionStorage.removeItem('np_staging_auth_lawrence');
+                      sessionStorage.removeItem('np_staging_user');
+                      setIsStagingAuthenticated(false);
+                    }}
+                    className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Lock Preview
+                  </button>
+                </div>
+              </div>
+            )
+          ) : null
+        }
         currentTab={currentTab}
-        onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectTab={handleNavigateTab}
         savedCount={savedListingIds.length}
         onOpenSaved={() => setIsSavedOpen(true)}
         isNightShiftMode={isNightShiftMode}
@@ -395,13 +447,29 @@ export default function App() {
         m2BypassMode={m2BypassMode}
         onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
         isDeveloper={isDeveloper}
-        onLogout={handleLogout}
+        onLogout={handleInitiateLogout}
         showScreenCodes={showScreenCodes}
         onToggleScreenCodes={handleToggleScreenCodes}
       />
 
-      {/* Main Content Area */}
-      <main className="w-full pt-20 flex-1 flex flex-col">
+      {/* Main Content Area - Seamlessly flush against sticky header */}
+      <main className="w-full flex-1 flex flex-col">
+        {/* Breadcrumb Navigation Trail */}
+        <Breadcrumbs
+          currentTab={currentTab}
+          onSelectTab={handleNavigateTab}
+          isNightShiftMode={isNightShiftMode}
+          verificationStep={verificationStep}
+          onSelectVerificationStep={(step) => {
+            setVerificationStep(step);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          searchHospital={currentTab === 'search-listings' ? searchParamsState.hospital : undefined}
+          currentUserRole={currentUser.role}
+          showScreenCodes={showScreenCodes}
+          onGoBack={handleGoBack}
+          canGoBack={tabHistory.length > 0 || currentTab !== 'find-housing'}
+        />
         {/* Clinician Dashboard & Trust Profile (Exempt from M2 gate per user directive) */}
         {currentTab === 'nurse-dashboard' && (
           <NurseDashboardView
@@ -434,7 +502,7 @@ export default function App() {
         {/* Super-Admin Portal: Meaningful Access Role Gating */}
         {currentTab === 'admin-portal' && currentUser.role !== 'super_admin' && (
           <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
-            <div className="max-w-lg w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-xl text-center space-y-5">
+            <div className="max-w-lg w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-5">
               <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
                 <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>
               </div>
@@ -454,7 +522,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => handleSwitchRole('super_admin')}
-                  className="px-6 py-3 rounded-full bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-6 py-3 rounded-full bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">verified_user</span>
                   <span>Switch to Super-Admin Role</span>
@@ -462,7 +530,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setCurrentTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
-                  className="px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  className="px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-800 transition-colors cursor-pointer"
                 >
                   Return to My Workspace
                 </button>
@@ -743,10 +811,7 @@ export default function App() {
       <Footer
         isNightShiftMode={isNightShiftMode}
         onOpenSupport={() => setIsSupportOpen(true)}
-        onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectTab={handleNavigateTab}
         isDeveloper={isDeveloper}
       />
 
@@ -818,6 +883,15 @@ export default function App() {
         demandReports={MOCK_DEMAND_REPORTS}
         licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
         userRole={currentUser.role}
+      />
+
+      {/* Logout Confirmation Dialog (Clears user sessions & resets to Guest) */}
+      <LogoutConfirmationModal
+        isOpen={isLogoutDialogOpen}
+        onClose={() => setIsLogoutDialogOpen(false)}
+        onConfirmLogout={handleConfirmLogout}
+        currentUser={currentUser}
+        isNightShiftMode={isNightShiftMode}
       />
     </div>
   );

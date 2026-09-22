@@ -3,6 +3,7 @@ import { NavigationTab, UserRole } from '../types';
 import { NursesPillowLogo } from './NursesPillowLogo';
 
 interface HeaderProps {
+  topBanner?: React.ReactNode;
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   savedCount: number;
@@ -25,6 +26,7 @@ interface HeaderProps {
 export const LOGO_URL = '/nurses-pillow-logo.png';
 
 export const Header: React.FC<HeaderProps> = ({
+  topBanner,
   currentTab,
   onSelectTab,
   savedCount,
@@ -47,8 +49,28 @@ export const Header: React.FC<HeaderProps> = ({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = useState<number>(72);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Track dynamic header height to prevent any clipping of dropdowns or mobile drawers
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const updateHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(headerRef.current);
+    window.addEventListener('resize', updateHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateHeight);
+    };
+  }, []);
 
   // Close menus on outside click or Escape key
   useEffect(() => {
@@ -76,6 +98,29 @@ export const Header: React.FC<HeaderProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  // Lock body scroll when mobile menu is open to prevent background scrolling
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
+  // Close mobile navigation drawer if viewport expands to desktop size
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileMenuOpen]);
 
   const getRoleLabel = (role: UserRole) => {
     switch (role) {
@@ -141,31 +186,33 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ${
+      ref={headerRef}
+      className={`sticky top-0 z-50 w-full transition-colors duration-200 ${
         isNightShiftMode
           ? 'bg-[#0B1626]/95 backdrop-blur-md border-b border-[#233550] shadow-[0_4px_24px_rgba(0,0,0,0.5)] text-[#E6ECF7]'
           : 'bg-white/95 backdrop-blur-md border-b border-[rgba(11,37,89,0.08)] shadow-[0_4px_24px_rgba(11,37,89,0.04)] text-[#001848]'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      {topBanner}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Lockup */}
         <button
           onClick={() => onSelectTab('find-housing')}
-          className="flex items-center gap-3 shrink-0 text-left focus:outline-none group cursor-pointer"
+          className="flex items-center gap-2 sm:gap-3 min-w-0 shrink text-left focus:outline-none group cursor-pointer"
           type="button"
           aria-label="Go to Nurses Pillow homepage"
         >
-          <NursesPillowLogo size={36} className="h-9 w-9 transition-transform group-hover:scale-105" />
-          <div className="flex flex-col">
+          <NursesPillowLogo size={32} className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 transition-transform group-hover:scale-105" />
+          <div className="flex flex-col min-w-0">
             <span
-              className={`text-[19px] sm:text-[20px] font-bold tracking-tight leading-tight transition-colors ${
+              className={`text-[17px] sm:text-[20px] font-bold tracking-tight leading-tight transition-colors truncate ${
                 isNightShiftMode ? 'text-white' : 'text-[#001848]'
               }`}
             >
               Nurses Pillow
             </span>
             <span
-              className="text-[#745b0d] dark:text-[#ffdf91] text-[13px] sm:text-[14px] leading-none"
+              className="hidden sm:block text-[#745b0d] dark:text-[#ffdf91] text-[13px] sm:text-[14px] leading-none"
               style={{ fontFamily: "'Kaushan Script', cursive" }}
             >
               Rest Well. Heal Better.
@@ -285,7 +332,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {isMoreMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-2 z-50 text-xs">
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-2 z-50 text-xs max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain">
                 {/* Section 1: Healthcare & Verification */}
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Healthcare Directory &amp; Licenses
@@ -465,14 +512,14 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </nav>
 
-        {/* Right Action Cluster - Refined & Unified UX */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Saved Listings Counter */}
+        {/* Right Action Cluster - Desktop Utilities & Mobile/Tablet Unified Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Saved Listings Counter (Desktop only; on mobile/tablet accessible via unified menu with badge counter) */}
           <button
             onClick={onOpenSaved}
             type="button"
             aria-label="View saved listings"
-            className={`relative p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
+            className={`hidden lg:flex relative p-2 sm:p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
               isNightShiftMode
                 ? 'text-[#9CB3D3] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
@@ -487,33 +534,33 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Night Shift Mode Toggle */}
+          {/* Night Shift Mode Toggle (Desktop only; on mobile/tablet accessible via unified menu) */}
           <button
             onClick={onToggleNightShift}
             type="button"
             aria-label="Toggle Night Shift Mode"
-            className={`p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
+            className={`hidden lg:flex p-1.5 sm:p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer shrink-0 ${
               isNightShiftMode
                 ? 'text-[#ffdf91] hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
                 : 'text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
             }`}
             title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode (Day-Sleeper Dark)'}
           >
-            <span className="material-symbols-outlined text-[20px]">
+            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
               {isNightShiftMode ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
 
-          {/* Guest Sign In & Register Buttons or User Profile Capsule */}
+          {/* Guest Sign In & Register Buttons or User Profile Capsule (Desktop only; on mobile/tablet unified in drawer menu) */}
           {currentUser.role === 'guest' ? (
-            <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('signin')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ease-in-out cursor-pointer ${
                   isNightShiftMode
-                    ? 'border-[#233550] text-[#93ccff] hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                    : 'border-gray-200 text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
+                    ? 'border-[#233550] text-[#93ccff] hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
+                    : 'border-gray-200 text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
                 }`}
               >
                 Sign In
@@ -521,17 +568,20 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenAuth?.('signup')}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#001848] dark:bg-[#005684] text-white hover:opacity-90 transition-all duration-200 ease-in-out cursor-pointer shadow-xs"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#001848] dark:bg-[#005684] text-white hover:opacity-90 transition-all duration-200 ease-in-out cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
               >
                 Get Started
               </button>
             </div>
           ) : (
-            <div className="relative" ref={profileMenuRef}>
+            <div className="hidden lg:flex relative shrink-0" ref={profileMenuRef}>
               <button
                 type="button"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer shadow-xs ${
+                onClick={() => {
+                  setIsProfileMenuOpen(!isProfileMenuOpen);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`flex items-center gap-1.5 sm:gap-2 p-1 sm:pl-2 sm:pr-3 sm:py-1.5 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer shadow-xs ${
                   isProfileMenuOpen
                     ? isNightShiftMode
                       ? 'bg-[#182840] border-[#005684]'
@@ -578,7 +628,18 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* Profile & Perspective Switcher Popover */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-4 z-50 text-xs space-y-3">
+                <>
+                  {/* Mobile Backdrop for Profile Popover */}
+                  <div
+                    className="sm:hidden fixed inset-0 bg-black/40 backdrop-blur-2xs z-40"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    aria-hidden="true"
+                  />
+
+                  <div
+                    className="fixed left-3 right-3 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-2xl p-4 z-50 text-xs space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain"
+                    style={{ top: typeof window !== 'undefined' && window.innerWidth < 640 ? `${headerHeight + 8}px` : undefined }}
+                  >
                   {/* Account Card */}
                   <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
@@ -860,66 +921,106 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          )}
+              </>
+            )}
+          </div>
+        )}
 
-          {/* Mobile Menu Hamburger Button */}
+          {/* Mobile & Tablet Unified Menu Toggle Button - Pinned with Saved Counter Badge */}
           <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            id="mobile-menu-toggle-button"
+            onClick={() => {
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+            }}
             type="button"
-            className={`lg:hidden p-2.5 rounded-xl cursor-pointer ${
-              isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
-            }`}
-            aria-label="Open mobile navigation menu"
+            className={`lg:hidden shrink-0 relative flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl transition-all duration-200 ease-in-out cursor-pointer border ${
+              isMobileMenuOpen
+                ? isNightShiftMode
+                  ? 'bg-[#182840] border-[#005684] text-[#93ccff]'
+                  : 'bg-[#eaedff] border-[#005684] text-[#005684]'
+                : isNightShiftMode
+                ? 'bg-[#15233a] border-[#233550] text-[#E6ECF7] hover:bg-[#1e3250]'
+                : 'bg-gray-100 border-gray-200 text-[#001848] hover:bg-gray-200'
+            } focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]`}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-nav-menu"
           >
-            <span className="material-symbols-outlined text-[22px]">
+            <span className="material-symbols-outlined text-[20px] sm:text-[22px] leading-none transition-transform duration-200">
               {isMobileMenuOpen ? 'close' : 'menu'}
             </span>
+            <span className="text-xs font-bold">
+              {isMobileMenuOpen ? 'Close' : 'Menu'}
+            </span>
+            {savedCount > 0 && (
+              <span
+                className="px-1.5 py-0.2 rounded-full bg-[#005684] text-white text-[10px] font-bold leading-tight flex items-center justify-center shadow-xs"
+                title={`${savedCount} saved shift sanctuaries`}
+              >
+                {savedCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {isMobileMenuOpen && (
+      {/* Mobile Responsive Navigation Drawer / Dropdown Panel */}
+      <div
+        id="mobile-nav-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation Menu"
+        className={`lg:hidden fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen
+            ? 'opacity-100 pointer-events-auto visible'
+            : 'opacity-0 pointer-events-none invisible'
+        }`}
+        style={{ top: `${headerHeight}px` }}
+      >
+        {/* Backdrop Overlay with smooth fade */}
         <div
-          className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-black/40 backdrop-blur-xs z-50 overflow-y-auto"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setIsMobileMenuOpen(false);
-            }
-          }}
+          className={`absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+            isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+
+        {/* Sliding / Expanding Container */}
+        <div
+          className={`relative w-full max-w-lg mx-auto bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-2xl transition-all duration-300 ease-out transform max-h-[calc(100dvh-${headerHeight + 16}px)] flex flex-col rounded-b-2xl overflow-hidden ${
+            isMobileMenuOpen
+              ? 'translate-y-0 opacity-100 scale-100'
+              : '-translate-y-4 opacity-0 scale-[0.98]'
+          }`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            className="bg-white dark:bg-[#0E1A2E] border-b border-gray-200 dark:border-[#233550] shadow-lg p-5 space-y-5 max-w-lg mx-auto cursor-default overflow-y-auto max-h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Active User Card & Perspective Selector */}
+          {/* Scrollable Content inside Drawer */}
+          <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+            {/* 1. Quick Auth / Profile Strip for Mobile */}
             {currentUser.role === 'guest' ? (
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 dark:text-gray-300">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-[#13233a] dark:to-[#172b47] border border-blue-100 dark:border-[#233550] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#001848] dark:bg-[#005684] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <span className="material-symbols-outlined text-[20px]">person</span>
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-[#001848] dark:text-white">
-                      Welcome, Guest
+                    <div className="text-xs font-bold text-[#001848] dark:text-white">
+                      Clinician &amp; Host Access
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                      Sign in to access verified hospital booking
+                      Sign in for verified booking &amp; listings
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       onOpenAuth?.('signin');
                       setIsMobileMenuOpen(false);
                     }}
-                    className="py-2 px-3 rounded-xl border border-gray-300 dark:border-[#233550] text-xs font-bold text-[#001848] dark:text-white text-center cursor-pointer"
+                    className="flex-1 sm:flex-none py-1.5 px-3.5 rounded-xl border border-gray-300 dark:border-[#233550] text-xs font-bold text-[#001848] dark:text-white bg-white dark:bg-[#0E1A2E] text-center hover:bg-gray-50 dark:hover:bg-[#182840] cursor-pointer"
                   >
                     Sign In
                   </button>
@@ -929,175 +1030,122 @@ export const Header: React.FC<HeaderProps> = ({
                       onOpenAuth?.('signup');
                       setIsMobileMenuOpen(false);
                     }}
-                    className="py-2 px-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold text-center cursor-pointer shadow-xs"
+                    className="flex-1 sm:flex-none py-1.5 px-3.5 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold text-center hover:opacity-90 cursor-pointer shadow-xs"
                   >
                     Get Started
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs ${roleStyles.avatar}`}>
-                      {getRoleInitials(currentUser.role)}
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-[#001848] dark:text-white leading-tight flex items-center gap-1.5">
-                        <span>{currentUser.name}</span>
-                        {isVerified && (
-                          <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px] font-bold">
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                        <span>{getRoleLabel(currentUser.role)}</span>
-                        {isVerified && (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Verified</span>
-                        )}
-                      </div>
-                    </div>
+              <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200 dark:border-[#233550] flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${roleStyles.avatar}`}>
+                    {getRoleInitials(currentUser.role)}
                   </div>
-                  {isVerified ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (currentUser.role === 'nurse') onSelectTab('verification');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center gap-1 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[12px]">verified</span>
-                      Status
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('verification');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center gap-1 cursor-pointer"
-                    >
-                      Verify
-                    </button>
-                  )}
-                </div>
-
-                {/* Role Toggle Tabs */}
-                <div className="flex rounded-xl bg-gray-200/70 dark:bg-gray-800 p-1 gap-1 text-[11px] font-bold">
-                  <button
-                    type="button"
-                    onClick={() => onSwitchRole('nurse')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
-                      currentUser.role === 'nurse'
-                        ? 'bg-white dark:bg-[#195b4c] text-[#195b4c] dark:text-white shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                  >
-                    Clinician
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onSwitchRole('host')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
-                      currentUser.role === 'host'
-                        ? 'bg-white dark:bg-[#005684] text-[#005684] dark:text-white shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                  >
-                    Host
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onSwitchRole('super_admin')}
-                    className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
-                      currentUser.role === 'super_admin'
-                        ? 'bg-white dark:bg-amber-600 text-amber-800 dark:text-white shadow-xs'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                  >
-                    Admin
-                  </button>
-                  {isDeveloper && (
-                    <button
-                      type="button"
-                      onClick={() => onSwitchRole('developer')}
-                      className={`flex-1 py-1 rounded-lg text-center transition-all duration-200 ease-in-out cursor-pointer ${
-                        currentUser.role === 'developer'
-                          ? 'bg-white dark:bg-purple-700 text-purple-800 dark:text-white shadow-xs'
-                          : 'text-gray-600 dark:text-gray-400'
-                      }`}
-                    >
-                      Dev
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Developer Screen Codes Toggle (Mobile) */}
-            {onToggleScreenCodes && (
-              <div className="p-3 rounded-2xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[17px] text-purple-600 dark:text-purple-400">
-                    code
-                  </span>
-                  <div>
-                    <div className="text-xs font-bold text-purple-900 dark:text-purple-200">
-                      Screen Codes [XX-00]
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-[#001848] dark:text-white truncate flex items-center gap-1">
+                      <span className="truncate">{currentUser.name}</span>
+                      {isVerified && (
+                        <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px] font-bold shrink-0">
+                          ✓
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {showScreenCodes ? 'Visible for developer reference' : 'Hidden for client review'}
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <span className={`px-1.5 py-0.2 rounded font-bold ${roleStyles.badge}`}>
+                        {getRoleLabel(currentUser.role)}
+                      </span>
+                      {isVerified && (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Verified</span>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* Dashboard Shortcut */}
                 <button
                   type="button"
-                  onClick={onToggleScreenCodes}
-                  className={`px-3 py-1 rounded-full text-[10px] font-bold font-mono transition-all duration-200 ease-in-out cursor-pointer ${
-                    showScreenCodes
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
+                  onClick={() => {
+                    if (currentUser.role === 'nurse') onSelectTab('nurse-dashboard');
+                    else if (currentUser.role === 'host') onSelectTab('host-dashboard');
+                    else if (currentUser.role === 'super_admin') onSelectTab('admin-portal');
+                    else if (currentUser.role === 'developer') onSelectTab('phase1-inventory');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-[#005684] text-white text-xs font-bold shrink-0 flex items-center gap-1 hover:bg-[#00476d] cursor-pointer shadow-2xs"
                 >
-                  {showScreenCodes ? 'ON' : 'OFF'}
+                  <span>Dashboard</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </button>
               </div>
             )}
 
-            {/* Main Links */}
+            {/* 2. PRIMARY NAVIGATION LINKS (Clear, prominent, visible without scrolling) */}
             <div className="space-y-1">
+              <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1 flex items-center justify-between">
+                <span>Main Navigation</span>
+                <span className="text-[9px] text-[#005684] dark:text-[#93ccff] font-semibold">Phase 1 Marketplace</span>
+              </div>
+
+              {/* Explore Stays */}
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('find-housing');
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-150 cursor-pointer ${
                   currentTab === 'find-housing'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
-                Explore Stays
+                <div className="flex items-center gap-3">
+                  <span className={`material-symbols-outlined text-[20px] ${
+                    currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    bed
+                  </span>
+                  <span>Explore Stays</span>
+                </div>
+                {showScreenCodes && (
+                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                    [HL-01]
+                  </span>
+                )}
               </button>
 
+              {/* Search & Map */}
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('search-listings');
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-150 cursor-pointer ${
                   currentTab === 'search-listings'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
-                Search Stays &amp; Map
+                <div className="flex items-center gap-3">
+                  <span className={`material-symbols-outlined text-[20px] ${
+                    currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    travel_explore
+                  </span>
+                  <span>Search Stays &amp; Map</span>
+                </div>
+                {showScreenCodes && (
+                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                    [HL-02]
+                  </span>
+                )}
               </button>
 
+              {/* For Property Hosts */}
               <button
+                type="button"
                 onClick={() => {
                   if (currentUser.role === 'host') {
                     onSelectTab('host-dashboard');
@@ -1106,147 +1154,369 @@ export const Header: React.FC<HeaderProps> = ({
                   }
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between ${
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-150 cursor-pointer ${
                   currentTab === 'for-hosts' || currentTab === 'host-dashboard'
-                    ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                    ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
-                <span>For Property Hosts</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold">
-                  {currentUser.role === 'host' ? 'My Portal' : 'Learn More'}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className={`material-symbols-outlined text-[20px] ${
+                    currentTab === 'for-hosts' || currentTab === 'host-dashboard'
+                      ? 'text-[#005684] dark:text-[#93ccff]'
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    home
+                  </span>
+                  <span>For Property Hosts</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {showScreenCodes && (
+                    <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                      [H-01]
+                    </span>
+                  )}
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold">
+                    {currentUser.role === 'host' ? 'My Portal' : 'Host Info'}
+                  </span>
+                </div>
               </button>
 
+              {/* How It Works & Quiet Guarantee */}
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('how-it-works');
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm ${
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-150 cursor-pointer ${
                   currentTab === 'how-it-works'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
+                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                    : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
-                How It Works &amp; Quiet Guarantee
+                <div className="flex items-center gap-3">
+                  <span className={`material-symbols-outlined text-[20px] ${
+                    currentTab === 'how-it-works' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    verified
+                  </span>
+                  <span>How It Works &amp; Quiet Guarantee</span>
+                </div>
+                {showScreenCodes && (
+                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+                    [P-01]
+                  </span>
+                )}
               </button>
             </div>
 
-            {/* Additional Links */}
+            {/* 3. DIRECTORY & CLINICAL RESOURCES */}
             <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1">
+              <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
+                Directory &amp; Clinical Verification
+              </div>
+
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('verified-hospitals');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  currentTab === 'verified-hospitals'
+                    ? 'bg-blue-50 dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                }`}
               >
-                <span className="material-symbols-outlined text-[17px] text-[#005684]">
-                  local_hospital
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#005684]">
+                    local_hospital
+                  </span>
+                  <span>Verified Hospitals Directory</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium">
+                  NC Focus
                 </span>
-                <span>Verified Hospitals Directory</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('verification');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  currentTab === 'verification'
+                    ? 'bg-emerald-50 dark:bg-[#182840] text-[#195b4c] dark:text-[#aff0db] font-bold'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                }`}
               >
-                <span className="material-symbols-outlined text-[17px] text-[#195b4c]">
-                  verified_user
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
+                    verified_user
+                  </span>
+                  <span>Clinician Credentialing (Nursys)</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
+                  Step 4
                 </span>
-                <span>Clinician Credentialing (Nursys)</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('legal-policies');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                  currentTab === 'legal-policies'
+                    ? 'bg-gray-100 dark:bg-[#182840] text-[#001848] dark:text-white font-bold'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                }`}
               >
-                <span className="material-symbols-outlined text-[17px] text-gray-500">
+                <span className="material-symbols-outlined text-[18px] text-gray-500">
                   policy
                 </span>
                 <span>Sanctuary Standards &amp; Policies</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   onSelectTab('system-status');
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  currentTab === 'system-status'
+                    ? 'bg-emerald-50 dark:bg-[#182840] text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                }`}
               >
-                <span className="material-symbols-outlined text-[17px] text-emerald-600 dark:text-emerald-400">
-                  dns
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
+                    dns
+                  </span>
+                  <span>Platform Reliability &amp; Status</span>
+                </div>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Operational
                 </span>
-                <span>Platform Reliability &amp; Status</span>
               </button>
             </div>
 
-            {/* Developer Section (Mobile) */}
+            {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
+            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenSaved();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] bg-gray-50 dark:bg-[#15233a] flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#1c2e4c] cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">bed</span>
+                  <span>Saved Stays</span>
+                </div>
+                {savedCount > 0 ? (
+                  <span className="px-1.5 py-0.5 rounded-full bg-[#005684] text-white text-[10px] font-bold">
+                    {savedCount}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-gray-400">0</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onToggleNightShift}
+                className="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] bg-gray-50 dark:bg-[#15233a] flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#1c2e4c] cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-[#ffdf91]">
+                    {isNightShiftMode ? 'light_mode' : 'dark_mode'}
+                  </span>
+                  <span>{isNightShiftMode ? 'Day Mode' : 'Night Mode'}</span>
+                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                  {isNightShiftMode ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
+
+            {/* 5. ROLE & PERSPECTIVE SWITCHER */}
+            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
+              <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                Switch Perspective
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSwitchRole('nurse');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                    currentUser.role === 'nurse'
+                      ? 'border-[#195b4c] bg-[#195b4c]/10 text-[#195b4c] dark:text-[#aff0db] font-bold'
+                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="material-symbols-outlined text-[16px] text-[#195b4c]">stethoscope</span>
+                    <span className="truncate">Clinician</span>
+                  </div>
+                  {currentUser.role === 'nurse' && <span className="text-xs">✓</span>}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSwitchRole('host');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                    currentUser.role === 'host'
+                      ? 'border-[#005684] bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold'
+                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="material-symbols-outlined text-[16px] text-[#005684]">home</span>
+                    <span className="truncate">Host</span>
+                  </div>
+                  {currentUser.role === 'host' && <span className="text-xs">✓</span>}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSwitchRole('super_admin');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                    currentUser.role === 'super_admin'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-800 dark:text-amber-300 font-bold'
+                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="material-symbols-outlined text-[16px] text-amber-600">shield_person</span>
+                    <span className="truncate">Admin</span>
+                  </div>
+                  {currentUser.role === 'super_admin' && <span className="text-xs">✓</span>}
+                </button>
+
+                {isDeveloper ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('developer');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                      currentUser.role === 'developer'
+                        ? 'border-purple-600 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold'
+                        : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="material-symbols-outlined text-[16px] text-purple-600">terminal</span>
+                      <span className="truncate">Dev</span>
+                    </div>
+                    {currentUser.role === 'developer' && <span className="text-xs">✓</span>}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('guest');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                      currentUser.role === 'guest'
+                        ? 'border-gray-500 bg-gray-500/10 text-gray-800 dark:text-gray-200 font-bold'
+                        : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="material-symbols-outlined text-[16px] text-gray-500">person</span>
+                      <span className="truncate">Guest</span>
+                    </div>
+                    {currentUser.role === 'guest' && <span className="text-xs">✓</span>}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 6. DEVELOPER HUD CONTROLS (If Developer) */}
             {isDeveloper && (
-              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1">
-                <div className="px-3 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1">
-                  <span>Developer &amp; Milestone 2</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
-                    Dev Access
+              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
+                <div className="px-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  <span>Developer Diagnostics</span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
+                    Dev Mode
                   </span>
                 </div>
 
-                <button
-                  onClick={() => {
-                    onSelectTab('mobile-preview');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[17px] text-purple-600">
-                      smartphone
-                    </span>
-                    <span>Mobile App Simulator</span>
+                {onToggleScreenCodes && (
+                  <div className="p-2.5 rounded-xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px] text-purple-600">code</span>
+                      <span className="text-xs font-bold text-purple-900 dark:text-purple-200">Screen Codes [XX-00]</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onToggleScreenCodes}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono cursor-pointer ${
+                        showScreenCodes ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {showScreenCodes ? 'ON' : 'OFF'}
+                    </button>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
-                    M2
-                  </span>
-                </button>
+                )}
 
-                <button
-                  onClick={() => {
-                    onSelectTab('phase1-inventory');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[17px] text-purple-600">
-                      inventory_2
-                    </span>
-                    <span>Product Scope &amp; Screens</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
-                    Dev
-                  </span>
-                </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('mobile-preview');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-1.5 px-2.5 rounded-xl border border-purple-200 dark:border-purple-900/30 text-[11px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 hover:bg-purple-50 dark:hover:bg-purple-950/20 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">smartphone</span>
+                    <span>App Simulator</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('phase1-inventory');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-1.5 px-2.5 rounded-xl border border-purple-200 dark:border-purple-900/30 text-[11px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 hover:bg-purple-50 dark:hover:bg-purple-950/20 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">inventory_2</span>
+                    <span>Spec Inventory</span>
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Support and Sign In / Log Out Actions */}
-            <div className="pt-2 flex flex-col gap-2">
+            {/* 7. SUPPORT & AUTH ACTIONS */}
+            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] flex flex-col gap-2">
               <button
                 type="button"
                 onClick={() => {
                   onOpenSupport();
                   setIsMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-[#233550] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] text-xs font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#182840] cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[17px]">support_agent</span>
+                <span className="material-symbols-outlined text-[18px] text-[#005684]">support_agent</span>
                 <span>24/7 Clinical Support</span>
               </button>
 
@@ -1254,30 +1524,42 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    onLogout();
                     setIsMobileMenuOpen(false);
+                    onLogout();
                   }}
-                  className="w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50"
                 >
-                  <span className="material-symbols-outlined text-[17px]">logout</span>
+                  <span className="material-symbols-outlined text-[18px]">logout</span>
                   <span>Log Out (Switch to Guest)</span>
                 </button>
               ) : onOpenAuth ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenAuth('signin');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold shadow-xs cursor-pointer"
-                >
-                  Sign In / Access Account
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAuth('signin');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex-1 py-2.5 px-3 rounded-xl border border-gray-300 dark:border-[#233550] text-xs font-bold text-center text-[#001848] dark:text-white hover:bg-gray-50 dark:hover:bg-[#182840]"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAuth('signup');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold text-center hover:opacity-90 shadow-xs"
+                  >
+                    Get Started
+                  </button>
+                </div>
               ) : null}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };

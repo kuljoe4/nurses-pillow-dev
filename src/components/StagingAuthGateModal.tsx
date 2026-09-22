@@ -62,14 +62,15 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-[#001848]/80 backdrop-blur-md flex justify-center items-start animate-fade-in">
-      <div
-        className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-8 shadow-lg border transition-all duration-200 ease-in-out ${
-          isNightShiftMode
-            ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
-            : 'bg-white border-black/5 text-[#001848]'
-        }`}
-      >
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#001848]/85 backdrop-blur-md animate-fade-in">
+      <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
+        <div
+          className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all duration-200 ease-in-out ${
+            isNightShiftMode
+              ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
+              : 'bg-white border-black/5 text-[#001848]'
+          }`}
+        >
         {/* Header Icon & Branding */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-[#0a6fa8]/10 dark:bg-[#0a6fa8]/20 flex items-center justify-center text-[#0a6fa8] mb-3">
@@ -172,5 +173,6 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };
