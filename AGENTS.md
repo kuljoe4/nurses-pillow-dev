@@ -1,0 +1,36 @@
+# Nurses Pillow - Agent Guidelines
+
+## UI/UX and Interaction Design Principles
+*   **Managing Cognitive Load:** To prevent users from feeling overwhelmed, interfaces should prioritize visual hierarchy, chunk information into digestible steps, reduce unnecessary visual noise, and rely on predictable patterns [1-5].
+*   **Norman’s Principles of Interaction:** Intuitive design relies on clear *affordances* (what actions are possible), *signifiers* (clues showing where/how to act), *constraints* (preventing errors), *mappings* (logical controls), *feedback* (confirming actions), and a clear *conceptual model* [6-10].
+*   **Affordances and Well-Being:** Affordance theory separates the actual *usefulness* of an object (action possibilities) from its *usability* (the perceptual information specifying those actions) [11-13]. Designers can systematically apply affordance mechanisms—like *Encourage*, *Demand*, *Allow*, *Discourage*, or *Refuse*—to promote positive physical, mental, and social well-being outcomes while mitigating negative ones [14-17].
+*   **Hero Sections & Microinteractions:** Hero sections should have a purposeful single-sentence headline, clear CTA, and can utilize patterns like "Input-Capture" to accelerate user onboarding [18, 19]. Microinteractions provide sensory feedback that guides users and improves engagement, provided they are applied with purposeful restraint so as not to overwhelm [20-22].
+
+## Animation and Motion Design Architecture
+*   **Performance Constraints:** To guarantee a 60fps experience, animations must exclusively target GPU-composited properties like `transform` and `opacity` [23]. Animating layout properties like `height`, `width`, or `margin` triggers expensive CPU repaints and layout thrashing [23].
+*   **Timing and Easing Best Practices:** Target a duration under 300ms for UI responses, utilizing custom `cubic-bezier` curves rather than generic browser defaults to inject brand personality [24, 25]. Animations must also be interruptible and strictly respect accessibility fallbacks via the `prefers-reduced-motion` media query [26, 27].
+*   **Rive vs. Lottie for UI:** While Lottie exports After Effects compositions into JSON for static, timeline-based playback, Rive compiles into a lightweight binary format designed for real-time interactive state machines [28, 29]. Rive is architecturally superior for complex SaaS interfaces because it natively binds logic and inputs directly to animations without requiring developers to hack playback frames [30-32].
+*   **GSAP vs. Framer Motion:** In Next.js environments, GSAP is an imperative timeline engine unmatched for complex scroll orchestration, scrubbing, and pinning [33, 34]. Framer Motion is a declarative, React-first library that excels at component-level states, shared layout transitions, and microinteractions [35, 36]. Many top-tier teams use a dual-architecture: GSAP for scroll storytelling and Framer Motion for application UI [37].
+*   **View Transitions API:** This new browser-native API dramatically simplifies creating seamless animations between DOM states and page route changes using `document.startViewTransition()` and the `::view-transition` CSS pseudo-class, circumventing the need for heavy JavaScript libraries [38-41].
+*   **Optimizing SVGs:** Optimize SVG vector animations by simplifying paths (removing unnecessary decimal points) and leveraging the `<use>` element to recycle shapes, vastly reducing file size [42, 43].
+
+## Frontend Technologies and Performance
+*   **2026 Framework Landscape:** The modern frontend is led by Next.js 16 (optimized for SEO and Partial Prerendering) and React 19 (which moves manual optimization to the compiler) [44, 45]. Svelte 5 and Astro 5 are heavily favored for "Green Coding" (meeting ESG compliance by radically lowering device energy consumption via zero-JS and compiler-first architectures) [46-48].
+*   **DOM Lean Execution:** Bloated Document Object Models (DOM) lead to sluggish load times, heavy memory usage, and poor extractability by AI discovery systems [49, 50]. Maintain lean code by using CSS for decorative elements, avoiding unnecessary wrapper `div`s, and leveraging lazy loading [51].
+
+## Artificial Intelligence & Human-Agent Collaboration
+*   **Human-Centric AI Integration:** In business intelligence, AI should augment human context and domain expertise rather than attempt to replace it entirely [52, 53]. Features like interactive visual explanations, bi-directional feedback, and multimodal interactions (like voice alongside visual UIs) radically improve decision confidence and system adoption [54-56].
+*   **Agentic Social Affordance Framework (ASAF):** As multi-agent AI systems scale beyond human working memory, giving agents distinct "social identities" (e.g., an "Ideator" vs. an "Auditor") functions as a critical cognitive scaffold [57-59]. This identity signaling automatically activates human role schemata, dictating user input quality and structuring collaborative oversight at runtime [60-62].
+*   **Autonomous Coding Agents:** Tools like Google's Jules are shifting development from copilot-style autocomplete to asynchronous agentic workflows, securely cloning a codebase into a VM to autonomously plan, fix bugs, and write tests [63, 64].
+
+## Core Personas & Roles
+*   **UI/UX Designer:** Prioritize aesthetic elegance, intuitive flows, and strict adherence to accessibility (WCAG 2.1) standards. Every change should feel intentional, modern, and delightful to the user.
+*   **Performance Engineer:** Eliminate latency and minimize resource footprints. Optimize critical paths, prevent unnecessary re-renders, and ensure the application remains butter-smooth even under load.
+*   **Senior Debugging Specialist:** Approach with extreme scrutiny. Hunt for edge cases, race conditions, and subtle state bugs. Add robust error handling and logging to ensure visibility into any failure.
+*   **Lead Security Architect:** Identify potential attack vectors, sanitize all inputs, and ensure data integrity. Follow OWASP best practices to make the implementation production-hardened and secure.
+*   **Senior Frontend Engineer:** Focus on modern React patterns, CSS-in-JS best practices, and responsive excellence. Ensure the component architecture is modular, type-safe, and highly reusable.
+*   **Backend Systems Architect:** Prioritize scalability and API robustness. Design efficient data schemas, optimize database interactions, and ensure server-side logic is resilient and high-performing.
+*   **QA Automation Expert:** Ensure every feature is thoroughly testable. Focus on validation logic, boundary conditions, and end-to-end reliability. If it can break, find out how first.
+*   **Accessibility Specialist:** Make this app inclusive for everyone. Verify semantic HTML, ARIA attributes, keyboard navigation, and screen reader compatibility. No user should be left behind.
+*   **Site Reliability Engineer:** Focus on observability, graceful degradation, and system stability. Ensure there are clear health checks, logs, and a plan for when things go wrong.
+*   **Lead Research Scientist:** Do not rush to implement. Deeply investigate the problem space, explore multiple libraries/patterns, and utilize search capabilities to find the absolute best-in-class solution before writing a single line of code.

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
@@ -65,7 +65,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [filterContractFlex, setFilterContractFlex] = useState(false);
 
   // Reset all filters to default baseline
-  const handleResetAllFilters = () => {
+  const handleResetAllFilters = useCallback(() => {
     setActiveFilterChip('all');
     setMaxPrice(3500);
     setMinRating(0);
@@ -77,7 +77,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
     setFilterPetFriendly(false);
     setFilterContractFlex(false);
     setCommuteBuffer(initialRadius);
-  };
+  }, [initialRadius]);
 
   // Active filter count for badge indicator
   const activePanelFilterCount = useMemo(() => {
@@ -847,7 +847,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
                   {/* Panel Footer */}
                   <div className="flex items-center justify-between pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" aria-live="polite">
                       <span className="text-xs font-bold text-[#001848] dark:text-white">
                         {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'} Found
                       </span>
@@ -892,7 +892,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
             <div className="lg:col-span-7 px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 overflow-y-auto max-h-[900px]">
               {/* Feed Header & Sort Controls */}
               <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
-                <div>
+                <div aria-live="polite">
                   <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider">
                     Verified Sanctuary Stays
                   </span>
@@ -957,7 +957,8 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.96 }}
                           transition={{
-                            layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                            height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+                            layout: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
                             opacity: { duration: 0.22 },
                           }}
                           onClick={() => setSelectedMapListingId(listing.id)}
@@ -1265,7 +1266,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{
-                          layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                          layout: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
                           opacity: { duration: 0.22 },
                         }}
                         className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
