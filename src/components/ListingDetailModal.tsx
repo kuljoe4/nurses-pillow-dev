@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 
 interface ListingDetailModalProps {
@@ -47,7 +48,11 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   ];
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
       className="fixed inset-0 z-50 overflow-y-auto custom-scrollbar overscroll-contain p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-start"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -55,8 +60,11 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
         }
       }}
     >
-      <div
-        className={`w-full max-w-5xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg transition-all duration-200 ease-in-out relative border ${
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className={`w-full max-w-5xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg transition-colors relative border ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
@@ -366,23 +374,27 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
               <div className="space-y-1.5 text-xs text-[#404850] dark:text-[#c0c7d1]">
                 <div className="flex justify-between">
                   <span>Monthly Lodging Rate</span>
-                  <span className="font-bold text-[#001848] dark:text-white">${(listing.monthlyRate || 1950).toLocaleString()}.00</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${(listing.monthlyRate || 1950).toLocaleString()}.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Clinical Sanitization</span>
-                  <span className="font-bold text-[#001848] dark:text-white">$150.00</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">$150.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Refundable Security Hold</span>
-                  <span className="font-bold text-[#001848] dark:text-white">$250.00</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">$250.00</span>
                 </div>
                 <div className="flex justify-between text-[#195b4c] font-semibold">
-                  <span>Traveler Service Fee</span>
-                  <span className="font-bold">Free ($0.00)</span>
+                  <span>$0 Traveler Fee (Guarantee)</span>
+                  <span className="font-bold tabular-nums">Free ($0.00)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Taxes &amp; Local Lodging</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">$0.00 (Exempt)</span>
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between font-bold text-sm text-[#001848] dark:text-white">
                   <span>Initial Due at Hold</span>
-                  <span className="text-[#005684] dark:text-[#93ccff] font-black">${((listing.monthlyRate || 1950) + 400).toLocaleString()}.00</span>
+                  <span className="text-[#0A6FA8] dark:text-[#93ccff] font-black tabular-nums">${((listing.monthlyRate || 1950) + 400).toLocaleString()}.00</span>
                 </div>
               </div>
 
@@ -395,10 +407,10 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                       onRequestToBook(listing);
                     }
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">shield</span>
-                  <span>Request to Book (Shift-Protected)</span>
+                  <span>Request to book (Shift-protected)</span>
                 </button>
 
                 <button
@@ -423,7 +435,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

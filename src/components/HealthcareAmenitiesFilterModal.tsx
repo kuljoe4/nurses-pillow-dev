@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 interface HealthcareAmenitiesFilterModalProps {
   isOpen: boolean;
@@ -115,26 +116,36 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-[#162e62]/60 backdrop-blur-xs transition-opacity flex justify-center items-start"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
+      className="fixed inset-0 z-50 overflow-y-auto p-0 sm:p-6 bg-[#162e62]/60 backdrop-blur-xs flex justify-center items-end sm:items-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      {/* Modal Container */}
-      <div
+      {/* Modal / Mobile Bottom Sheet Container */}
+      <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full max-w-3xl rounded-3xl shadow-lg flex flex-col max-h-[92vh] overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200 border ${
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className={`relative w-full max-w-3xl sm:rounded-3xl rounded-t-[24px] rounded-b-none sm:rounded-b-3xl shadow-xl flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden border ${
           isNightShiftMode
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Pull Handle */}
+        <div className="sm:hidden w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto my-2 shrink-0" />
+
         {/* Top Decorative Clinical Hue Accent Line */}
         <div className="w-full h-1.5 bg-gradient-to-r from-[#005684] via-[#0a6fa8] to-[#195b4c]" />
 
@@ -945,7 +956,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
@@ -475,11 +476,19 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
         {/* 3-Column Grid of Featured Listings */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {featuredListings.map((listing) => {
+          {featuredListings.map((listing, index) => {
             const isSaved = savedListingIds.includes(listing.id);
             return (
-              <div
+              <motion.div
                 key={listing.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{
+                  duration: 0.35,
+                  delay: (index % 3) * 0.08,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
                 className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ease-in-out border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
               >
                 {/* Image Header */}
@@ -564,7 +573,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

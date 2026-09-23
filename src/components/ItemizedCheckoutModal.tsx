@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { HousingListing, BookingRequest } from '../types';
 
 interface ItemizedCheckoutModalProps {
@@ -89,7 +90,11 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
       className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-start"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -97,8 +102,11 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         }
       }}
     >
-      <div
-        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg relative border transition-all duration-200 ease-in-out ${
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 14 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className={`w-full max-w-2xl my-auto rounded-3xl p-6 sm:p-8 shadow-lg relative border transition-colors ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'
@@ -110,7 +118,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
           onClick={onClose}
           type="button"
           aria-label="Close checkout modal"
-          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/10 cursor-pointer"
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] cursor-pointer transition-colors"
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
@@ -178,38 +186,47 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                 Itemized Cost Breakdown
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                <span>First Month Lodging Rate</span>
-                <span className="font-bold text-[#001848] dark:text-white">${monthlyRent.toLocaleString()}.00</span>
+                <span>Monthly Rent (First Month Lodging)</span>
+                <span className="font-bold tabular-nums text-[#001848] dark:text-white">${monthlyRent.toLocaleString()}.00</span>
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                 <span className="flex items-center gap-1.5">
-                  <span>Host Security Deposit</span>
+                  <span>Security Deposit Hold</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
                     securityDeposit > 0
                       ? 'bg-[#005684]/10 text-[#005684] dark:bg-[#93ccff]/15 dark:text-[#93ccff]'
                       : 'bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db]'
                   }`}>
-                    {securityDeposit > 0 ? 'Stripe Auth Hold (Not Billed Today)' : '$0 Deposit Required'}
+                    {securityDeposit > 0 ? 'Stripe Auth Hold (Not Charged Today)' : '$0 Deposit Required'}
                   </span>
                 </span>
-                <span className="font-bold text-[#001848] dark:text-white">
+                <span className="font-bold tabular-nums text-[#001848] dark:text-white">
                   {securityDeposit > 0 ? `$${securityDeposit.toFixed(2)} Hold` : '$0.00'}
                 </span>
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                <span>One-Time Scrub Sanitization &amp; Cleaning Fee</span>
-                <span className="font-bold text-[#001848] dark:text-white">${cleaningFee.toFixed(2)}</span>
+                <span>Cleaning Fee (Scrub Sanitization)</span>
+                <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                 <span>Pet Fee (No Pets Declared)</span>
-                <span className="font-bold text-[#001848] dark:text-white">$0.00</span>
+                <span className="font-bold tabular-nums text-[#001848] dark:text-white">$0.00</span>
               </div>
               <div className="flex justify-between items-center text-[#195b4c] dark:text-[#aff0db] font-semibold">
                 <span className="flex items-center gap-1">
-                  Traveler Service Fee (Nurses Pillow Guarantee)
+                  $0 Traveler Fee (Nurses Pillow Guarantee)
                   <span className="px-1.5 py-0.2 rounded bg-[#195b4c]/10 text-[10px] uppercase font-bold">Free</span>
                 </span>
-                <span>$0.00</span>
+                <span className="tabular-nums">$0.00</span>
+              </div>
+              <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                <span className="flex items-center gap-1.5">
+                  <span>Taxes &amp; Local Lodging Tax</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db]">
+                    30+ Day Healthcare Exempt
+                  </span>
+                </span>
+                <span className="font-bold tabular-nums text-[#001848] dark:text-white">$0.00</span>
               </div>
 
               {/* Total Due Now vs Auth Hold */}
@@ -219,14 +236,14 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     <div className="font-bold text-sm text-[#001848] dark:text-white">Due Today at Confirmation</div>
                     <div className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">First month lodging + cleaning fee (held in escrow)</div>
                   </div>
-                  <div className="text-xl font-black text-[#005684] dark:text-[#93ccff]">
+                  <div className="text-xl font-black tabular-nums text-[#005684] dark:text-[#93ccff]">
                     ${totalInitialCharge.toLocaleString()}.00
                   </div>
                 </div>
                 {securityDeposit > 0 && (
                   <div className="flex justify-between items-center text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-dashed border-gray-200 dark:border-gray-700">
                     <span>Stripe Authorization Hold (48h prior to check-in):</span>
-                    <span className="font-semibold text-gray-700 dark:text-gray-200">${securityDeposit.toFixed(2)}</span>
+                    <span className="font-semibold tabular-nums text-gray-700 dark:text-gray-200">${securityDeposit.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -330,7 +347,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !agreedToPolicy}
-                className="w-full py-4 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -340,7 +357,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                 ) : (
                   <>
                     <span className="material-symbols-outlined text-[20px]">verified</span>
-                    <span>Submit Booking Request (${totalInitialCharge.toLocaleString()})</span>
+                    <span>Request to book (${totalInitialCharge.toLocaleString()})</span>
                   </>
                 )}
               </button>
@@ -382,7 +399,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
