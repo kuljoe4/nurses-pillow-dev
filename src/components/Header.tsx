@@ -982,7 +982,7 @@ export const Header: React.FC<HeaderProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Mobile Navigation Menu"
-        className={`lg:hidden fixed inset-x-0 bottom-0 z-50 flex flex-col justify-start transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-x-0 bottom-auto z-50 flex flex-col justify-start transition-all duration-300 ease-in-out ${
           isMobileMenuOpen
             ? 'opacity-100 pointer-events-auto visible'
             : 'opacity-0 pointer-events-none invisible'
