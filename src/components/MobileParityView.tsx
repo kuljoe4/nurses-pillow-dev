@@ -13,6 +13,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
 }) => {
   const [activeScreen, setActiveScreen] = useState<string>('M-04');
   const [deviceTheme, setDeviceTheme] = useState<'light' | 'dark'>('light');
+  const [showPasswordMock, setShowPasswordMock] = useState(false);
 
   const screens = [
     { id: 'M-01', name: 'Splash & First Run' },
@@ -196,11 +197,24 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
                       </div>
                       <div>
                         <label className="text-[11px] font-semibold opacity-70">Password</label>
-                        <input
-                          type="password"
-                          defaultValue="••••••••••••"
-                          className="w-full p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-transparent text-xs font-semibold mt-1"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showPasswordMock ? "text" : "password"}
+                            defaultValue="••••••••••••"
+                            className="w-full py-2.5 pl-2.5 pr-8 rounded-xl border border-black/10 dark:border-white/10 bg-transparent text-xs font-semibold mt-1"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswordMock(!showPasswordMock)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-2.5 pt-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] rounded-full"
+                            aria-label={showPasswordMock ? "Hide password" : "Show password"}
+                            aria-pressed={showPasswordMock}
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              {showPasswordMock ? 'visibility_off' : 'visibility'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
                       <button className="w-full py-3 bg-[#005684] text-white rounded-xl text-xs font-bold shadow-md">
                         Sign In

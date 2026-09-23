@@ -13,6 +13,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
 }) => {
   const [username, setUsername] = useState('lawrence');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -118,18 +119,31 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
             <label className="block text-xs font-semibold mb-1 text-[#001848] dark:text-[#E6ECF7]">
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
-                isNightShiftMode
-                  ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
-                  : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
-              }`}
-              placeholder="np-preview-2026"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={`w-full pl-4 pr-10 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
+                  isNightShiftMode
+                    ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
+                    : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
+                }`}
+                placeholder="np-preview-2026"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] rounded-full"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="pt-2 space-y-2">

@@ -17,6 +17,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
   isNightShiftMode,
 }) => {
   const [isSaved, setIsSaved] = useState(false);
+  const [showSSN, setShowSSN] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,17 +186,30 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1.5">SSN (Last 4 Digits)</label>
-              <input
-                type="password"
-                maxLength={4}
-                value={data.lastFourSSN}
-                onChange={(e) => onChange({ lastFourSSN: e.target.value })}
-                className={`w-full rounded-xl px-4 py-3 text-sm font-medium focus:outline-none ${
-                  isNightShiftMode
-                    ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showSSN ? "text" : "password"}
+                  maxLength={4}
+                  value={data.lastFourSSN}
+                  onChange={(e) => onChange({ lastFourSSN: e.target.value })}
+                  className={`w-full rounded-xl pl-4 pr-10 py-3 text-sm font-medium focus:outline-none ${
+                    isNightShiftMode
+                      ? 'bg-[#15233a] text-white border border-[#233550]'
+                      : 'bg-[#f2f3ff] text-[#001848]'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSSN(!showSSN)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] rounded-full"
+                  aria-label={showSSN ? "Hide SSN" : "Show SSN"}
+                  aria-pressed={showSSN}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showSSN ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
