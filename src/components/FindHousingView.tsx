@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
@@ -94,13 +94,13 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     return MOCK_LISTINGS.slice(0, 6);
   }, []);
 
-  const handleExecuteSearch = () => {
+  const handleExecuteSearch = useCallback(() => {
     onGoToSearchListings({
       hospital: selectedHospital,
       duration: selectedDuration === 'custom' ? customDuration.toString() : selectedDuration,
       radius: commuteBuffer,
     });
-  };
+  }, [selectedHospital, selectedDuration, customDuration, commuteBuffer, onGoToSearchListings]);
 
   return (
     <div className={`w-full transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
