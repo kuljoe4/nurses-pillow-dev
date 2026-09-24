@@ -55,6 +55,15 @@ const ViewLoadingFallback = () => (
   </div>
 );
 
+const ModalLoadingFallback = () => (
+  <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-center">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 rounded-full border-2 border-[#0A6FA8]/20 border-t-[#0A6FA8] animate-spin" />
+      <span className="text-xs text-white/80 font-medium">Loading...</span>
+    </div>
+  </div>
+);
+
 export default function App() {
   // Staging Preview Authentication Gate (lawrence / np-preview-2026 or developer / np-dev-2026)
   const [isStagingAuthenticated, setIsStagingAuthenticated] = useState<boolean>(() => {
@@ -885,7 +894,7 @@ export default function App() {
 
       {/* Itemized Checkout Modal (Screen A4) - Lazy loaded only when requested */}
       {isCheckoutOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <ItemizedCheckoutModal
             isOpen={isCheckoutOpen}
             onClose={() => setIsCheckoutOpen(false)}
@@ -898,7 +907,7 @@ export default function App() {
 
       {/* Safe Clinical Onboarding & Sign-In Modal (Screens AU-01 & AU-03) */}
       {isAuthModalOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <AuthModal
             isOpen={isAuthModalOpen}
             initialMode={authModalMode}
@@ -916,7 +925,7 @@ export default function App() {
 
       {/* Celebration / Success Modal */}
       {isSuccessModalOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <VerificationSuccessModal
             isOpen={isSuccessModalOpen}
             onClose={() => setIsSuccessModalOpen(false)}
@@ -932,7 +941,7 @@ export default function App() {
 
       {/* 24/7 Support Modal */}
       {isSupportOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <NurseSupportModal
             isOpen={isSupportOpen}
             onClose={() => setIsSupportOpen(false)}
@@ -943,7 +952,7 @@ export default function App() {
 
       {/* Saved Housing Sanctuaries Modal */}
       {isSavedOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <SavedListingsModal
             isOpen={isSavedOpen}
             onClose={() => setIsSavedOpen(false)}
@@ -962,7 +971,7 @@ export default function App() {
 
       {/* Google Sheets Live Integration & Tax/Payout Sync Modal (Admin Tool) */}
       {isSheetsModalOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <GoogleSheetsSyncModal
             isOpen={isSheetsModalOpen}
             onClose={() => setIsSheetsModalOpen(false)}
@@ -979,7 +988,7 @@ export default function App() {
 
       {/* Logout Confirmation Dialog (Clears user sessions & resets to Guest) */}
       {isLogoutDialogOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ModalLoadingFallback />}>
           <LogoutConfirmationModal
             isOpen={isLogoutDialogOpen}
             onClose={() => setIsLogoutDialogOpen(false)}
