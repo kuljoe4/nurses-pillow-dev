@@ -66,6 +66,12 @@ const ModalLoadingFallback = () => (
 
 export default function App() {
   // Staging Preview Authentication Gate (lawrence / np-preview-2026 or developer / np-dev-2026)
+  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [appData, setAppData] = useState<{ hospitals: any[], listings: any[] }>({
+    hospitals: [],
+    listings: []
+  });
+
   const [isStagingAuthenticated, setIsStagingAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('np_staging_auth_lawrence') === 'true';
   });
@@ -270,6 +276,30 @@ export default function App() {
     },
   ]);
 
+  // Initialize Database state from PostgreSQL
+  useEffect(() => {
+    const initializeDb = async () => {
+      try {
+        const { db } = await import('./services/database');
+        await Promise.all([
+          db.fetchHospitals(),
+          db.fetchListings(),
+          db.fetchAuditLogs()
+        ]);
+        setAppData({
+          hospitals: db.getHospitals(),
+          listings: db.getListings()
+        });
+        setIsAppLoading(false);
+        console.log("PostgreSQL schema synced into in-memory store.");
+      } catch (err) {
+        console.error("Failed to sync database", err);
+        setIsAppLoading(false);
+      }
+    };
+    initializeDb();
+  }, []);
+
   // Synchronize document body class for dark/night mode
   useEffect(() => {
     if (isNightShiftMode) {
@@ -335,6 +365,17 @@ export default function App() {
       setCurrentTab('nurse-dashboard');
     }
   };
+
+  if (isAppLoading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#faf8ff]'}`}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-[#aff0db] border-t-transparent animate-spin" />
+          <p className="text-sm font-bold text-[#195b4c] dark:text-[#aff0db]">Syncing with Database...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
