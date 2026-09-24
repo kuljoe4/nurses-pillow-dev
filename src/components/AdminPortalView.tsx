@@ -28,10 +28,6 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const [isAnalyticsUnlocked, setIsAnalyticsUnlocked] = useState(false);
 
   // Screen C1 State
-  const [founderCohort, setFounderCohort] = useState<any[]>([]);
-  const [showAddFounderForm, setShowAddFounderForm] = useState(false);
-  const [newHostName, setNewHostName] = useState("");
-  const [newHostProperty, setNewHostProperty] = useState("");
 
   const [reviews, setReviews] = useState<AdminLicenseReview[]>([
     {
