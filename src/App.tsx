@@ -270,6 +270,25 @@ export default function App() {
     },
   ]);
 
+  // Initialize Database state from PostgreSQL
+  useEffect(() => {
+    // Only load if db is loaded via an async function
+    const initializeDb = async () => {
+      try {
+        const { db } = await import('./services/database');
+        await Promise.all([
+          db.fetchHospitals(),
+          db.fetchListings(),
+          db.fetchAuditLogs()
+        ]);
+        console.log("PostgreSQL schema synced into in-memory store.");
+      } catch (err) {
+        console.error("Failed to sync database", err);
+      }
+    };
+    initializeDb();
+  }, []);
+
   // Synchronize document body class for dark/night mode
   useEffect(() => {
     if (isNightShiftMode) {

@@ -418,7 +418,45 @@ class DatabaseService {
     },
   ];
 
+  async fetchHospitals(): Promise<DbHospital[]> {
+    try {
+      const response = await fetch('/api/hospitals');
+      if (response.ok) {
+        this.hospitals = await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to fetch hospitals from API, falling back to mock data', error);
+    }
+    return this.hospitals;
+  }
+
+  async fetchListings(): Promise<DbListing[]> {
+    try {
+      const response = await fetch('/api/listings');
+      if (response.ok) {
+        this.listings = await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to fetch listings from API, falling back to mock data', error);
+    }
+    return this.listings;
+  }
+
+  async fetchAuditLogs(): Promise<DbAuditLog[]> {
+    try {
+      const response = await fetch('/api/audit-logs');
+      if (response.ok) {
+        this.auditLogs = await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to fetch audit logs from API, falling back to mock data', error);
+    }
+    return this.auditLogs;
+  }
+
   getHospitals(): DbHospital[] {
+    // This is synchronous for UI components that haven't been updated to async yet.
+    // Call fetchHospitals() beforehand to populate data.
     return this.hospitals;
   }
 
