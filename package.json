@@ -10,7 +10,8 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "migrate": "tsx server/migrate.ts",
-    "start": "tsx server/server.ts"
+    "start": "tsx server/server.ts",
+    "seed": "tsx server/seed.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

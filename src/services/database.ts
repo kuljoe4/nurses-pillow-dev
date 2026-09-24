@@ -481,16 +481,34 @@ class DatabaseService {
     return { miles, minutes };
   }
 
-  createBooking(booking: Omit<DbBooking, 'id' | 'created_at'>): DbBooking {
+  async createBookingAsync(booking: Omit<DbBooking, 'id' | 'created_at'>): Promise<DbBooking> {
     const newBooking: DbBooking = {
       ...booking,
       id: `bk_${Date.now()}`,
       created_at: new Date().toISOString(),
     };
+
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBooking),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create booking on the server');
+      }
+    } catch (error) {
+      console.warn('Failed to post booking to API, falling back to local simulation', error);
+    }
+
+    // Fallback/sync to local memory array
     this.bookings.unshift(newBooking);
 
     // Database Trigger Simulation: Log Audit Trail
-    this.logAudit({
+    await this.logAuditAsync({
       event_type: 'fee_split',
       record_id: newBooking.id,
       details: `Stripe Connect Split: Total $${newBooking.total_traveler_charged.toFixed(2)} -> 5% Platform Fee $${newBooking.platform_fee_amount.toFixed(2)} to Nurses Pillow, ~95% Net Payout $${newBooking.host_net_payout.toFixed(2)} to host account.`,
@@ -498,7 +516,7 @@ class DatabaseService {
     });
 
     if (newBooking.security_deposit_hold > 0) {
-      this.logAudit({
+      await this.logAuditAsync({
         event_type: 'deposit_hold',
         record_id: newBooking.id,
         details: `Stripe Auth Hold created: $${newBooking.security_deposit_hold.toFixed(2)} manual capture hold authorized (pre-auth hold, not charged today).`,
@@ -509,18 +527,55 @@ class DatabaseService {
     return newBooking;
   }
 
+  createBooking(booking: Omit<DbBooking, 'id' | 'created_at'>): DbBooking {
+    // Synchronous wrapper for existing UI
+    this.createBookingAsync(booking).catch(console.error);
+    return {
+      ...booking,
+      id: `bk_${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+  }
+
   getBookings(): DbBooking[] {
     return this.bookings;
   }
 
-  logAudit(log: Omit<DbAuditLog, 'id' | 'timestamp'>): DbAuditLog {
+  async logAuditAsync(log: Omit<DbAuditLog, 'id' | 'timestamp'>): Promise<DbAuditLog> {
     const entry: DbAuditLog = {
       ...log,
       id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       timestamp: new Date().toISOString(),
     };
+
+    try {
+      const response = await fetch('/api/audit-logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create audit log on the server');
+      }
+    } catch (error) {
+      console.warn('Failed to post audit log to API, falling back to local simulation', error);
+    }
+
+    // Fallback/sync to local memory array
     this.auditLogs.unshift(entry);
     return entry;
+  }
+
+  logAudit(log: Omit<DbAuditLog, 'id' | 'timestamp'>): DbAuditLog {
+    this.logAuditAsync(log).catch(console.error);
+    return {
+      ...log,
+      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   getAuditLogs(): DbAuditLog[] {

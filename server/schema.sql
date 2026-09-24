@@ -1,11 +1,11 @@
 -- Nurses Pillow Relational Database Schema (Railway PostgreSQL)
 
--- Enable UUID extension
+-- Enable VARCHAR(255) extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- USERS TABLE
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id VARCHAR(255) PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
   role VARCHAR(50) NOT NULL CHECK (role IN ('nurse', 'host', 'admin')),
   legal_name VARCHAR(255) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- HOSPITALS TABLE
 CREATE TABLE IF NOT EXISTS hospitals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   health_system VARCHAR(255),
   address VARCHAR(255) NOT NULL,
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS hospitals (
 
 -- LISTINGS TABLE
 CREATE TABLE IF NOT EXISTS listings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  host_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id VARCHAR(255) PRIMARY KEY,
+  host_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
   property_type VARCHAR(100) NOT NULL,
   cancellation_tier VARCHAR(50) NOT NULL CHECK (cancellation_tier IN ('flexible_30d', 'moderate_60d', 'strict_90d')),
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS listings (
   zip VARCHAR(20) NOT NULL,
   latitude DECIMAL(10, 8) NOT NULL,
   longitude DECIMAL(11, 8) NOT NULL,
-  nearest_hospital_id UUID REFERENCES hospitals(id) ON DELETE SET NULL,
+  nearest_hospital_id VARCHAR(255) REFERENCES hospitals(id) ON DELETE SET NULL,
   monthly_rate DECIMAL(10, 2) NOT NULL,
   security_deposit DECIMAL(10, 2) NOT NULL,
   cleaning_fee DECIMAL(10, 2) NOT NULL,
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS listings (
 
 -- ROOMS TABLE (For multi-room configs within a listing)
 CREATE TABLE IF NOT EXISTS rooms (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+  id VARCHAR(255) PRIMARY KEY,
+  listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   room_name VARCHAR(255) NOT NULL,
   bed_type VARCHAR(50) NOT NULL,
   private_bath BOOLEAN DEFAULT FALSE,
@@ -78,8 +78,8 @@ CREATE TABLE IF NOT EXISTS rooms (
 
 -- PRICING_CALENDAR TABLE
 CREATE TABLE IF NOT EXISTS pricing_calendar (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+  id VARCHAR(255) PRIMARY KEY,
+  listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   monthly_rate DECIMAL(10, 2) NOT NULL,
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS pricing_calendar (
 
 -- BOOKINGS TABLE
 CREATE TABLE IF NOT EXISTS bookings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  listing_id UUID NOT NULL REFERENCES listings(id) ON DELETE RESTRICT,
-  traveler_id UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  id VARCHAR(255) PRIMARY KEY,
+  listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE RESTRICT,
+  traveler_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
   status VARCHAR(50) NOT NULL CHECK (status IN ('requested', 'accepted', 'declined', 'paid', 'upcoming', 'active', 'completed', 'cancelled')),
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 -- AUDIT_LOGS TABLE
 CREATE TABLE IF NOT EXISTS audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id VARCHAR(255) PRIMARY KEY,
   event_type VARCHAR(100) NOT NULL,
   record_id VARCHAR(255) NOT NULL,
   details TEXT NOT NULL,
