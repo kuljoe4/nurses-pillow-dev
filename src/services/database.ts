@@ -430,7 +430,7 @@ class DatabaseService {
     return this.hospitals;
   }
 
-  async fetchListings(): Promise<DbListing[]> {
+  async fetchListings(): Promise<any[]> {
     try {
       const response = await fetch('/api/listings');
       if (response.ok) {
@@ -460,7 +460,7 @@ class DatabaseService {
     return this.hospitals;
   }
 
-  getListings(): DbListing[] {
+  getListings(): any[] {
     return this.listings;
   }
 

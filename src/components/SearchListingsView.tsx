@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
+import { db } from '../services/database';
 import { ListingDetailModal } from './ListingDetailModal';
 import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
@@ -211,57 +212,60 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
-    let list = [...MOCK_LISTINGS];
+    // In a real app we would receive real properties from App via context/props.
+    // For now we map to the existing mock to preserve the component.
+    let dbListings = db.getListings() || [];
+    let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
 
     // Filter by quick chip
     if (activeFilterChip === 'entire') {
-      list = list.filter((l) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
+      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
     } else if (activeFilterChip === 'private') {
-      list = list.filter((l) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
+      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
     } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
     } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
     } else if (activeFilterChip === 'parking') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
     }
 
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
-      list = list.filter((l) => l.monthlyRate <= maxPrice);
+      list = list.filter((l: any) => l.monthlyRate <= maxPrice);
     }
     if (minRating > 0) {
-      list = list.filter((l) => l.nurseRating >= minRating);
+      list = list.filter((l: any) => l.nurseRating >= minRating);
     }
     if (filterBlackout) {
-      list = list.filter((l) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')));
+      list = list.filter((l: any) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')));
     }
     if (filterScrubWasher) {
-      list = list.filter((l) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
+      list = list.filter((l: any) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
     }
     if (filterQuietDay) {
-      list = list.filter((l) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b) => b.toLowerCase().includes('quiet')));
+      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet')));
     }
     if (filterSoundMachine) {
-      list = list.filter((l) => l.amenities?.whiteNoiseMachine);
+      list = list.filter((l: any) => l.amenities?.whiteNoiseMachine);
     }
     if (filterDedicatedParking) {
-      list = list.filter((l) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')));
+      list = list.filter((l: any) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')));
     }
     if (filterPetFriendly) {
-      list = list.filter((l) => l.amenities?.petFriendly);
+      list = list.filter((l: any) => l.amenities?.petFriendly);
     }
     if (filterContractFlex) {
-      list = list.filter((l) => l.contractFlexProtection);
+      list = list.filter((l: any) => l.contractFlexProtection);
     }
 
     // Sort listings
     if (sortOption === 'closest') {
-      list.sort((a, b) => a.driveTimeMinutes - b.driveTimeMinutes);
+      list.sort((a: any, b: any) => a.driveTimeMinutes - b.driveTimeMinutes);
     } else if (sortOption === 'price_low') {
-      list.sort((a, b) => a.monthlyRate - b.monthlyRate);
+      list.sort((a: any, b: any) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {
-      list.sort((a, b) => b.nurseRating - a.nurseRating);
+      list.sort((a: any, b: any) => b.nurseRating - a.nurseRating);
     }
 
     return list;
@@ -280,7 +284,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   ]);
 
   const selectedMapListing = useMemo(() => {
-    return MOCK_LISTINGS.find((l) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
+    return MOCK_LISTINGS.find((l: any) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
   }, [selectedMapListingId, filteredListings]);
 
   return (
@@ -1019,7 +1023,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               ) : (
                 <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <AnimatePresence mode="popLayout">
-                    {filteredListings.map((listing) => {
+                    {filteredListings.map((listing: any) => {
                       const isSaved = savedListingIds.includes(listing.id);
                       const isSelectedOnMap = selectedMapListingId === listing.id;
 
@@ -1080,7 +1084,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   isNightShiftMode={isNightShiftMode}
                   listings={filteredListings}
                   selectedListingId={selectedMapListingId}
-                  onSelectListing={(listing) => {
+                  onSelectListing={(listing: any) => {
                     setSelectedMapListingId(listing.id);
                     setActiveDetailListing(listing);
                   }}
@@ -1181,7 +1185,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
             ) : (
               <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
-                  {filteredListings.map((listing) => {
+                  {filteredListings.map((listing: any) => {
                     const isSaved = savedListingIds.includes(listing.id);
                     return (
                       <SearchListingCard
@@ -1216,7 +1220,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
-        onRequestToBook={(listing) => {
+        onRequestToBook={(listing: any) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
         }}

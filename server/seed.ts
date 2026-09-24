@@ -5,33 +5,32 @@ import { NC_HOSPITAL_SEEDS, NC_LISTING_SEEDS } from '../src/services/database.js
 dotenv.config();
 
 async function seed() {
-  console.log('Seeding Database...');
+  console.log('Seeding Database with Enterprise Schema...');
 
   try {
     for (const h of NC_HOSPITAL_SEEDS) {
         await db.query(`
-          INSERT INTO hospitals (id, name, health_system, address, city, state, zip, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
+          INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
           ON CONFLICT (id) DO NOTHING;
         `, [h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score]);
     }
 
-    // We would need a user for host_id if listings require it. For simplicity, we could create a dummy user.
     await db.query(`
-      INSERT INTO users (id, email, role, legal_name, verification_status)
+      INSERT INTO users (id, email, password_hash, role, full_name, is_host_verified)
       VALUES
-      ('host-sarah-m', 'host-sarah@example.com', 'host', 'Sarah M', 'verified'),
-      ('host-karen-b', 'host-karen@example.com', 'host', 'Karen B', 'verified'),
-      ('host-james-l', 'host-james@example.com', 'host', 'James L', 'verified')
+      ('host-sarah-m', 'host-sarah@example.com', 'dummy_hash', 'host', 'Sarah M', true),
+      ('host-karen-b', 'host-karen@example.com', 'dummy_hash', 'host', 'Karen B', true),
+      ('host-james-l', 'host-james@example.com', 'dummy_hash', 'host', 'James L', true)
       ON CONFLICT (id) DO NOTHING;
     `);
 
     for (const l of NC_LISTING_SEEDS) {
       await db.query(`
-        INSERT INTO listings (id, host_id, title, property_type, cancellation_tier, address, city, state, zip, latitude, longitude, nearest_hospital_id, monthly_rate, security_deposit, cleaning_fee, is_active)
+        INSERT INTO listings (id, host_id, title, description, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published, is_verified_by_admin)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         ON CONFLICT (id) DO NOTHING;
-      `, [l.id, l.host_id, l.title, l.property_type, l.cancellation_tier, l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active]);
+      `, [l.id, l.host_id, l.title, 'A beautiful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true]);
     }
 
     console.log('Seeding Complete');
