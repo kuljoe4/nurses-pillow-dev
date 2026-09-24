@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
   NavigationTab,
   VerificationStepId,
@@ -15,29 +15,44 @@ import { IdentityStep } from './components/IdentityStep';
 import { ContactStep } from './components/ContactStep';
 import { WorkContractStep } from './components/WorkContractStep';
 import { FindHousingView } from './components/FindHousingView';
-import { SearchListingsView } from './components/SearchListingsView';
-import { HowItWorksView } from './components/HowItWorksView';
-import { ForHostsView } from './components/ForHostsView';
-import { VerifiedHospitalsView } from './components/VerifiedHospitalsView';
-import { VerificationSuccessModal } from './components/VerificationSuccessModal';
-import { NurseSupportModal } from './components/NurseSupportModal';
-import { SavedListingsModal } from './components/SavedListingsModal';
-import { PostmarkEmailVerificationView } from './components/PostmarkEmailVerificationView';
-import { TwilioPhoneOtpView } from './components/TwilioPhoneOtpView';
-import { ItemizedCheckoutModal } from './components/ItemizedCheckoutModal';
-import { NurseDashboardView } from './components/NurseDashboardView';
-import { HostPortalView } from './components/HostPortalView';
-import { AdminPortalView } from './components/AdminPortalView';
-import { AuthModal } from './components/AuthModal';
-import { GoogleSheetsSyncModal, AdminSheetsPreset } from './components/GoogleSheetsSyncModal';
-import { Phase1InventoryView } from './components/Phase1InventoryView';
-import { LegalPoliciesView } from './components/LegalPoliciesView';
-import { SystemStatusView } from './components/SystemStatusView';
-import { MobileParityView } from './components/MobileParityView';
 import { StagingAuthGateModal } from './components/StagingAuthGateModal';
 import { Milestone2ScopeGate } from './components/Milestone2ScopeGate';
-import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 import { Breadcrumbs } from './components/Breadcrumbs';
+import { ScrollProgressIndicator } from './components/ScrollProgressIndicator';
+import type { AdminSheetsPreset } from './components/GoogleSheetsSyncModal';
+
+// Code-split secondary views & heavy feature modules to eliminate initial bundle bloat
+const SearchListingsView = React.lazy(() => import('./components/SearchListingsView').then(m => ({ default: m.SearchListingsView })));
+const HowItWorksView = React.lazy(() => import('./components/HowItWorksView').then(m => ({ default: m.HowItWorksView })));
+const ForHostsView = React.lazy(() => import('./components/ForHostsView').then(m => ({ default: m.ForHostsView })));
+const VerifiedHospitalsView = React.lazy(() => import('./components/VerifiedHospitalsView').then(m => ({ default: m.VerifiedHospitalsView })));
+const NurseDashboardView = React.lazy(() => import('./components/NurseDashboardView').then(m => ({ default: m.NurseDashboardView })));
+const HostPortalView = React.lazy(() => import('./components/HostPortalView').then(m => ({ default: m.HostPortalView })));
+const AdminPortalView = React.lazy(() => import('./components/AdminPortalView').then(m => ({ default: m.AdminPortalView })));
+const PostmarkEmailVerificationView = React.lazy(() => import('./components/PostmarkEmailVerificationView').then(m => ({ default: m.PostmarkEmailVerificationView })));
+const TwilioPhoneOtpView = React.lazy(() => import('./components/TwilioPhoneOtpView').then(m => ({ default: m.TwilioPhoneOtpView })));
+const Phase1InventoryView = React.lazy(() => import('./components/Phase1InventoryView').then(m => ({ default: m.Phase1InventoryView })));
+const LegalPoliciesView = React.lazy(() => import('./components/LegalPoliciesView').then(m => ({ default: m.LegalPoliciesView })));
+const SystemStatusView = React.lazy(() => import('./components/SystemStatusView').then(m => ({ default: m.SystemStatusView })));
+const MobileParityView = React.lazy(() => import('./components/MobileParityView').then(m => ({ default: m.MobileParityView })));
+
+// Modals lazy-loaded on demand (prevents heavy modules like Firebase from loading during initial page render)
+const GoogleSheetsSyncModal = React.lazy(() => import('./components/GoogleSheetsSyncModal').then(m => ({ default: m.GoogleSheetsSyncModal })));
+const ItemizedCheckoutModal = React.lazy(() => import('./components/ItemizedCheckoutModal').then(m => ({ default: m.ItemizedCheckoutModal })));
+const VerificationSuccessModal = React.lazy(() => import('./components/VerificationSuccessModal').then(m => ({ default: m.VerificationSuccessModal })));
+const NurseSupportModal = React.lazy(() => import('./components/NurseSupportModal').then(m => ({ default: m.NurseSupportModal })));
+const SavedListingsModal = React.lazy(() => import('./components/SavedListingsModal').then(m => ({ default: m.SavedListingsModal })));
+const AuthModal = React.lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
+const LogoutConfirmationModal = React.lazy(() => import('./components/LogoutConfirmationModal').then(m => ({ default: m.LogoutConfirmationModal })));
+
+const ViewLoadingFallback = () => (
+  <div className="flex-1 flex items-center justify-center min-h-[50vh] p-8">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 rounded-full border-2 border-[#0A6FA8]/20 border-t-[#0A6FA8] animate-spin" />
+      <span className="text-xs text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">Loading clinical workspace...</span>
+    </div>
+  </div>
+);
 
 export default function App() {
   // Staging Preview Authentication Gate (lawrence / np-preview-2026 or developer / np-dev-2026)
@@ -51,6 +66,9 @@ export default function App() {
 
   // Milestone 2 Scope Bypass Mode (Allows developer review of M2 scaffold)
   const [m2BypassMode, setM2BypassMode] = useState<boolean>(false);
+
+  // Staging Review Bar Visibility: autohidden by default to maximize vertical screen space
+  const [isStagingBannerVisible, setIsStagingBannerVisible] = useState<boolean>(false);
 
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>('find-housing');
@@ -334,7 +352,7 @@ export default function App() {
       {/* Sticky Navigation Header with Integrated Staging Status Banner */}
       <Header
         topBanner={
-          isStagingAuthenticated ? (
+          isStagingAuthenticated && isStagingBannerVisible ? (
             isDeveloper ? (
               <div className="w-full bg-[#130b2e] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20">
                 <div className="flex items-center gap-2">
@@ -366,11 +384,11 @@ export default function App() {
                   <button
                     type="button"
                     onClick={handleDeveloperSignOut}
-                    className="hover:underline text-amber-300 cursor-pointer flex items-center gap-1 font-semibold"
+                    className="text-amber-300 cursor-pointer flex items-center gap-1 font-semibold group"
                     title="Switch to Client Review perspective to see what Lawrence sees"
                   >
                     <span className="material-symbols-outlined text-[14px]">visibility</span>
-                    View as Client
+                    <span className="group-hover:underline">View as Client</span>
                   </button>
                   <span className="opacity-40">|</span>
                   <button
@@ -380,10 +398,19 @@ export default function App() {
                       sessionStorage.removeItem('np_staging_user');
                       setIsStagingAuthenticated(false);
                     }}
-                    className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
+                    className="text-[#ffb4ab] cursor-pointer flex items-center gap-1 group"
                   >
                     <span className="material-symbols-outlined text-[14px]">lock</span>
-                    Lock Preview
+                    <span className="group-hover:underline">Lock Preview</span>
+                  </button>
+                  <span className="opacity-40">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsStagingBannerVisible(false)}
+                    className="p-1 rounded-md hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
+                    title="Autohide staging review bar"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">close</span>
                   </button>
                 </div>
               </div>
@@ -392,7 +419,7 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#10b981]" />
                   <span className="font-semibold tracking-wide">
-                    Staging Review Link: <span className="text-[#aff0db]">lawrence</span> (HajjMalik)
+                    Staging Review: <span className="text-[#aff0db] font-mono">lawrence</span>
                   </span>
                   <span className="hidden sm:inline opacity-40">•</span>
                   <span className="hidden sm:inline opacity-80">
@@ -420,10 +447,19 @@ export default function App() {
                       sessionStorage.removeItem('np_staging_user');
                       setIsStagingAuthenticated(false);
                     }}
-                    className="hover:underline text-[#ffb4ab] cursor-pointer flex items-center gap-1"
+                    className="text-[#ffb4ab] cursor-pointer flex items-center gap-1 group"
                   >
                     <span className="material-symbols-outlined text-[14px]">lock</span>
-                    Lock Preview
+                    <span className="group-hover:underline">Lock Preview</span>
+                  </button>
+                  <span className="opacity-40">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsStagingBannerVisible(false)}
+                    className="p-1 rounded-md hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
+                    title="Autohide staging review bar"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">close</span>
                   </button>
                 </div>
               </div>
@@ -449,7 +485,17 @@ export default function App() {
         isDeveloper={isDeveloper}
         onLogout={handleInitiateLogout}
         showScreenCodes={showScreenCodes}
-        onToggleScreenCodes={handleToggleScreenCodes}
+        onToggleScreenCodes={() => setShowScreenCodes(!showScreenCodes)}
+        isStagingAuthenticated={isStagingAuthenticated}
+        stagingClientName="lawrence"
+        onToggleDeveloperMode={isDeveloper ? handleDeveloperSignOut : handleDeveloperSignIn}
+        onLockPreview={() => {
+          sessionStorage.removeItem('np_staging_auth_lawrence');
+          sessionStorage.removeItem('np_staging_user');
+          setIsStagingAuthenticated(false);
+        }}
+        isStagingBannerVisible={isStagingBannerVisible}
+        onToggleStagingBanner={() => setIsStagingBannerVisible(!isStagingBannerVisible)}
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
@@ -470,9 +516,10 @@ export default function App() {
           onGoBack={handleGoBack}
           canGoBack={tabHistory.length > 0 || currentTab !== 'find-housing'}
         />
-        {/* Clinician Dashboard & Trust Profile (Exempt from M2 gate per user directive) */}
-        {currentTab === 'nurse-dashboard' && (
-          <NurseDashboardView
+        <Suspense fallback={<ViewLoadingFallback />}>
+          {/* Clinician Dashboard & Trust Profile (Exempt from M2 gate per user directive) */}
+          {currentTab === 'nurse-dashboard' && (
+            <NurseDashboardView
             isNightShiftMode={isNightShiftMode}
             isVerified={verificationData.licenseStatus === 'verified'}
             onGoToVerification={() => {
@@ -648,6 +695,9 @@ export default function App() {
             initialHospital={searchParamsState.hospital}
             initialDuration={searchParamsState.duration}
             initialRadius={searchParamsState.radius}
+            m2BypassMode={m2BypassMode}
+            onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
+            isDeveloper={isDeveloper}
           />
         )}
 
@@ -808,6 +858,13 @@ export default function App() {
             }}
           />
         )}
+        </Suspense>
+
+        {/* Subtle, vanishing scroll-progress indicator for long-form views */}
+        <ScrollProgressIndicator
+          isNightShiftMode={isNightShiftMode}
+          currentTab={currentTab}
+        />
       </main>
 
       {/* Global Footer */}
@@ -818,84 +875,129 @@ export default function App() {
         isDeveloper={isDeveloper}
       />
 
-      {/* Itemized Checkout Modal (Screen A4) */}
-      <ItemizedCheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        listing={checkoutListing}
-        isNightShiftMode={isNightShiftMode}
-        onBookingSubmitted={handleConfirmCheckout}
-      />
+      {/* Itemized Checkout Modal (Screen A4) - Lazy loaded only when requested */}
+      {isCheckoutOpen && (
+        <Suspense fallback={null}>
+          <ItemizedCheckoutModal
+            isOpen={isCheckoutOpen}
+            onClose={() => setIsCheckoutOpen(false)}
+            listing={checkoutListing}
+            isNightShiftMode={isNightShiftMode}
+            onBookingSubmitted={handleConfirmCheckout}
+          />
+        </Suspense>
+      )}
 
       {/* Safe Clinical Onboarding & Sign-In Modal (Screens AU-01 & AU-03) */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        initialMode={authModalMode}
-        onClose={() => setIsAuthModalOpen(false)}
-        isNightShiftMode={isNightShiftMode}
-        onAuthenticated={handleAuthenticated}
-        onOpenEmailVerification={() => setCurrentTab('email-verification')}
-        showScreenCodes={showScreenCodes}
-        onToggleScreenCodes={handleToggleScreenCodes}
-        isDeveloper={isDeveloper}
-        onDeveloperSignIn={handleDeveloperSignIn}
-      />
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            initialMode={authModalMode}
+            onClose={() => setIsAuthModalOpen(false)}
+            isNightShiftMode={isNightShiftMode}
+            onAuthenticated={handleAuthenticated}
+            onOpenEmailVerification={() => setCurrentTab('email-verification')}
+            showScreenCodes={showScreenCodes}
+            onToggleScreenCodes={handleToggleScreenCodes}
+            isDeveloper={isDeveloper}
+            onDeveloperSignIn={handleDeveloperSignIn}
+          />
+        </Suspense>
+      )}
 
       {/* Celebration / Success Modal */}
-      <VerificationSuccessModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        data={verificationData}
-        onGoToHousing={() => {
-          setIsSuccessModalOpen(false);
-          setCurrentTab('find-housing');
-        }}
-        isNightShiftMode={isNightShiftMode}
-      />
+      {isSuccessModalOpen && (
+        <Suspense fallback={null}>
+          <VerificationSuccessModal
+            isOpen={isSuccessModalOpen}
+            onClose={() => setIsSuccessModalOpen(false)}
+            data={verificationData}
+            onGoToHousing={() => {
+              setIsSuccessModalOpen(false);
+              setCurrentTab('find-housing');
+            }}
+            isNightShiftMode={isNightShiftMode}
+          />
+        </Suspense>
+      )}
 
       {/* 24/7 Nurse Concierge Support Modal */}
-      <NurseSupportModal
-        isOpen={isSupportOpen}
-        onClose={() => setIsSupportOpen(false)}
-        isNightShiftMode={isNightShiftMode}
-      />
+      {isSupportOpen && (
+        <Suspense fallback={null}>
+          <NurseSupportModal
+            isOpen={isSupportOpen}
+            onClose={() => setIsSupportOpen(false)}
+            isNightShiftMode={isNightShiftMode}
+          />
+        </Suspense>
+      )}
 
       {/* Saved Housing Sanctuaries Modal */}
-      <SavedListingsModal
-        isOpen={isSavedOpen}
-        onClose={() => setIsSavedOpen(false)}
-        savedListingIds={savedListingIds}
-        onToggleSave={handleToggleSaveListing}
-        onSelectListing={() => {
-          setCurrentTab('find-housing');
-        }}
-        isNightShiftMode={isNightShiftMode}
-        onGoToHousing={() => {
-          setCurrentTab('find-housing');
-        }}
-      />
+      {isSavedOpen && (
+        <Suspense fallback={null}>
+          <SavedListingsModal
+            isOpen={isSavedOpen}
+            onClose={() => setIsSavedOpen(false)}
+            savedListingIds={savedListingIds}
+            onToggleSave={handleToggleSaveListing}
+            onSelectListing={() => {
+              setCurrentTab('find-housing');
+            }}
+            isNightShiftMode={isNightShiftMode}
+            onGoToHousing={() => {
+              setCurrentTab('find-housing');
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Google Sheets Live Integration & Tax/Payout Sync Modal (Admin Tool) */}
-      <GoogleSheetsSyncModal
-        isOpen={isSheetsModalOpen}
-        onClose={() => setIsSheetsModalOpen(false)}
-        isNightShiftMode={isNightShiftMode}
-        initialPreset={sheetsPreset}
-        bookingRequests={bookingRequests}
-        listings={MOCK_LISTINGS}
-        demandReports={MOCK_DEMAND_REPORTS}
-        licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
-        userRole={currentUser.role}
-      />
+      {isSheetsModalOpen && (
+        <Suspense fallback={null}>
+          <GoogleSheetsSyncModal
+            isOpen={isSheetsModalOpen}
+            onClose={() => setIsSheetsModalOpen(false)}
+            isNightShiftMode={isNightShiftMode}
+            initialPreset={sheetsPreset}
+            bookingRequests={bookingRequests}
+            listings={MOCK_LISTINGS}
+            demandReports={MOCK_DEMAND_REPORTS}
+            licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
+            userRole={currentUser.role}
+          />
+        </Suspense>
+      )}
 
       {/* Logout Confirmation Dialog (Clears user sessions & resets to Guest) */}
-      <LogoutConfirmationModal
-        isOpen={isLogoutDialogOpen}
-        onClose={() => setIsLogoutDialogOpen(false)}
-        onConfirmLogout={handleConfirmLogout}
-        currentUser={currentUser}
-        isNightShiftMode={isNightShiftMode}
-      />
+      {isLogoutDialogOpen && (
+        <Suspense fallback={null}>
+          <LogoutConfirmationModal
+            isOpen={isLogoutDialogOpen}
+            onClose={() => setIsLogoutDialogOpen(false)}
+            onConfirmLogout={handleConfirmLogout}
+            currentUser={currentUser}
+            isNightShiftMode={isNightShiftMode}
+          />
+        </Suspense>
+      )}
+
+      {/* Floating Discreet Staging Indicator when Top Bar is Autohidden */}
+      {isStagingAuthenticated && !isStagingBannerVisible && (
+        <aside aria-label="Staging Environment Indicator" className="fixed bottom-4 right-4 z-40">
+          <button
+            type="button"
+            onClick={() => setIsStagingBannerVisible(true)}
+            className="px-3 py-1.5 rounded-full bg-[#001848]/90 dark:bg-[#111e33]/90 backdrop-blur-md text-white border border-[#0A6FA8]/40 shadow-lg text-[11px] font-medium flex items-center gap-1.5 hover:border-[#0A6FA8] transition-all cursor-pointer group"
+            title="Expand staging review bar"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 group-hover:scale-125 transition-transform" />
+            <span className="font-mono text-[11px]">lawrence</span>
+            <span className="text-[10px] text-gray-300">({isDeveloper ? 'dev' : 'review'})</span>
+            <span className="material-symbols-outlined text-[13px] text-gray-400 group-hover:text-white">expand_less</span>
+          </button>
+        </aside>
+      )}
     </div>
   );
 }

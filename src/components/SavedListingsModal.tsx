@@ -79,12 +79,15 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
           {/* List of saved items */}
           {savedListings.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-14 h-14 rounded-full bg-[#f2f3ff] dark:bg-[#15233a] flex items-center justify-center mx-auto mb-3 text-[#707881]">
-                <span className="material-symbols-outlined text-2xl">bed</span>
+              <div className="w-14 h-14 rounded-full bg-[#EFF6FB] dark:bg-[#15233a] flex items-center justify-center mx-auto mb-3 text-[#0A6FA8] dark:text-[#3E9AD1]">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M4 6.5C4 5.12 5.12 4 6.5 4C9 4.8 15 4.8 17.5 4C18.88 4 20 5.12 20 6.5C19.2 9 19.2 15 20 17.5C20 18.88 18.88 20 17.5 20C15 19.2 9 19.2 6.5 20C5.12 20 4 18.88 4 17.5C4.8 15 4.8 9 4 6.5Z" />
+                  <circle cx="12" cy="12" r="1.5" fill="#F1CF78" />
+                </svg>
               </div>
-              <p className="text-sm font-semibold mb-1">No saved housing yet</p>
+              <p className="text-sm font-semibold mb-1">No saved pillows yet</p>
               <p className="text-xs opacity-70 max-w-xs mx-auto mb-5">
-                Click the bed icon on any sanctuary card to bookmark properties for your next clinical assignment.
+                Click the pillow icon on any sanctuary card to save properties for your next clinical assignment.
               </p>
               <button
                 type="button"

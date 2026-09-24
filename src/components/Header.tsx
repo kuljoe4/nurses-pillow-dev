@@ -21,6 +21,12 @@ interface HeaderProps {
   onLogout?: () => void;
   showScreenCodes?: boolean;
   onToggleScreenCodes?: () => void;
+  isStagingAuthenticated?: boolean;
+  stagingClientName?: string;
+  onToggleDeveloperMode?: () => void;
+  onLockPreview?: () => void;
+  isStagingBannerVisible?: boolean;
+  onToggleStagingBanner?: () => void;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.png';
@@ -44,6 +50,12 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   showScreenCodes = false,
   onToggleScreenCodes,
+  isStagingAuthenticated = false,
+  stagingClientName = 'lawrence',
+  onToggleDeveloperMode,
+  onLockPreview,
+  isStagingBannerVisible = false,
+  onToggleStagingBanner,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -514,6 +526,55 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </>
                 )}
+
+                {/* Staging Access & Review Perspective (lawrence) */}
+                {isStagingAuthenticated && (
+                  <div className="mt-2 pt-2 border-t border-gray-100 dark:border-[#1e3048]">
+                    <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <span>Staging Review Access</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold lowercase">
+                        {stagingClientName}
+                      </span>
+                    </div>
+
+                    {onToggleDeveloperMode && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onToggleDeveloperMode();
+                          setIsMoreMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center justify-between transition-colors cursor-pointer text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[17px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                            {isDeveloper ? 'visibility' : 'code'}
+                          </span>
+                          <span className="font-semibold text-[#001848] dark:text-white">
+                            {isDeveloper ? 'Switch to Client View (lawrence)' : 'Switch to Developer Mode'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] font-mono font-bold">
+                          {isDeveloper ? 'Dev' : 'Client'}
+                        </span>
+                      </button>
+                    )}
+
+                    {onLockPreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onLockPreview();
+                          setIsMoreMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-colors cursor-pointer text-xs"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">lock</span>
+                        <span>Lock Preview Session</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -680,10 +741,10 @@ export const Header: React.FC<HeaderProps> = ({
                               if (currentUser.role === 'nurse') onSelectTab('verification');
                               setIsProfileMenuOpen(false);
                             }}
-                            className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 hover:underline cursor-pointer"
+                            className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 cursor-pointer group"
                           >
                             <span className="material-symbols-outlined text-[12px]">verified</span>
-                            <span>Verified Status</span>
+                            <span className="group-hover:underline">Verified Status</span>
                           </button>
                         )}
                       </div>
@@ -718,6 +779,91 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         {showScreenCodes ? 'ON' : 'OFF'}
                       </button>
+                    </div>
+                  )}
+
+                  {/* Staging Access & Review Control Capsule (lawrence) */}
+                  {isStagingAuthenticated && (
+                    <div className="p-3 rounded-2xl bg-[#001848]/5 dark:bg-[#182840]/60 border border-[#0A6FA8]/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[11px] font-bold text-[#001848] dark:text-white">
+                            Staging Review: <span className="text-[#0A6FA8] dark:text-[#3E9AD1] font-mono">{stagingClientName}</span>
+                          </span>
+                        </div>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
+                          isDeveloper
+                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300'
+                            : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        }`}>
+                          {isDeveloper ? 'Developer Mode' : 'Client Review'}
+                        </span>
+                      </div>
+
+                      {/* Access Toggle Actions */}
+                      <div className="flex flex-col gap-1.5 pt-1 text-xs">
+                        {onToggleDeveloperMode && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onToggleDeveloperMode();
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="w-full py-1.5 px-2.5 rounded-xl border border-gray-200 dark:border-[#233550] bg-white dark:bg-[#111e33] hover:border-[#0A6FA8] text-left flex items-center justify-between font-semibold text-[11px] text-[#001848] dark:text-white transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-[15px] text-[#0A6FA8]">
+                                {isDeveloper ? 'visibility' : 'code'}
+                              </span>
+                              <span>{isDeveloper ? 'Switch to Client View (lawrence)' : 'Switch to Developer Mode'}</span>
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-mono">Toggle</span>
+                          </button>
+                        )}
+
+                        <div className="flex items-center justify-between gap-1.5 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={onToggleM2Bypass}
+                            className={`flex-1 py-1 px-2 rounded-lg font-mono font-bold text-[10px] flex items-center justify-center gap-1 transition-colors cursor-pointer ${
+                              m2BypassMode
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                            }`}
+                            title="Toggle Milestone 2 Scope Gating"
+                          >
+                            <span>M2 Scope:</span>
+                            <span>{m2BypassMode ? 'UNLOCKED' : 'GATED'}</span>
+                          </button>
+
+                          {onToggleStagingBanner && (
+                            <button
+                              type="button"
+                              onClick={onToggleStagingBanner}
+                              className="py-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-medium transition-colors cursor-pointer"
+                              title="Toggle the top staging review banner visibility"
+                            >
+                              {isStagingBannerVisible ? 'Hide Top Bar' : 'Show Top Bar'}
+                            </button>
+                          )}
+
+                          {onLockPreview && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onLockPreview();
+                                setIsProfileMenuOpen(false);
+                              }}
+                              className="py-1 px-2 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-[10px] font-bold flex items-center gap-0.5 cursor-pointer"
+                              title="Lock staging preview session"
+                            >
+                              <span className="material-symbols-outlined text-[12px]">lock</span>
+                              <span>Lock</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -894,10 +1040,10 @@ export const Header: React.FC<HeaderProps> = ({
                         onOpenSupport();
                         setIsProfileMenuOpen(false);
                       }}
-                      className="text-xs opacity-75 hover:opacity-100 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs opacity-75 hover:opacity-100 flex items-center gap-1 cursor-pointer group"
                     >
                       <span className="material-symbols-outlined text-[15px]">help_outline</span>
-                      <span>Support</span>
+                      <span className="group-hover:underline">Support</span>
                     </button>
                     {onOpenAuth && (
                       <button
@@ -1471,6 +1617,50 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Staging Access & Review Perspective for Mobile (lawrence) */}
+            {isStagingAuthenticated && (
+              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
+                <div className="px-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  <span>Staging Review Access</span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold lowercase">
+                    {stagingClientName}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5">
+                  {onToggleDeveloperMode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onToggleDeveloperMode();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="py-2 px-2.5 rounded-xl border border-[#0A6FA8]/30 bg-[#EFF6FB] dark:bg-[#182840] text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">
+                        {isDeveloper ? 'visibility' : 'code'}
+                      </span>
+                      <span>{isDeveloper ? 'Client View' : 'Dev Mode'}</span>
+                    </button>
+                  )}
+
+                  {onLockPreview && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onLockPreview();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="py-2 px-2.5 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 text-[11px] font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">lock</span>
+                      <span>Lock Session</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* 6. DEVELOPER HUD CONTROLS (If Developer) */}
             {isDeveloper && (

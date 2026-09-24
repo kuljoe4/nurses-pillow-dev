@@ -366,9 +366,9 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                           href={r.nursysLookupUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[#005684] dark:text-[#93ccff] font-bold hover:underline"
+                          className="inline-flex items-center gap-1 text-[#005684] dark:text-[#93ccff] font-bold group"
                         >
-                          <span>Nursys Lookup</span>
+                          <span className="group-hover:underline">Nursys Lookup</span>
                           <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                         </a>
                       </td>

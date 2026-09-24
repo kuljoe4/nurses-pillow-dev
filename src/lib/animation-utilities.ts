@@ -111,6 +111,71 @@ export const staggerItemVariant: Variants = {
   }
 };
 
+// Hero Section Staggered Entrance Variants (Headline, Visual, Search Card)
+// GPU Hardware-accelerated transforms exclusively (translateY & scale) to prevent opacity/layout repaints
+export const heroContainerVariant: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+export const heroItemVariant: Variants = {
+  hidden: { y: 24, scale: 0.985 },
+  visible: {
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: motionTokens.duration.slow,
+      ease: motionTokens.easing.smoothOut,
+    },
+  },
+};
+
+export const heroVisualVariant: Variants = {
+  hidden: { y: 28, scale: 0.975 },
+  visible: {
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.48,
+      ease: motionTokens.easing.smoothOut,
+    },
+  },
+};
+
+export const heroSearchCardVariant: Variants = {
+  hidden: { y: 32, scale: 0.975 },
+  visible: {
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.52,
+      ease: motionTokens.easing.smoothOut,
+    },
+  },
+};
+
+// Listing Card Scroll Reveal Variant (Triggered via Intersection Observer)
+// Relies exclusively on GPU-accelerated transforms (translateY + scale) without opacity to guarantee high FPS performance
+export const listingCardRevealVariant: Variants = {
+  hidden: {
+    y: 24,
+    scale: 0.98,
+  },
+  visible: {
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.38,
+      ease: motionTokens.easing.smoothOut,
+    },
+  },
+};
+
 /**
  * TAILWIND INJECTION STRING
  * Usage: Add to global CSS to ensure custom properties map cleanly

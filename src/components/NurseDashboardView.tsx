@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HousingListing, BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { NurseDashboardSkeleton } from './skeletons/NurseDashboardSkeleton';
+import { Milestone2ScopeGate } from './Milestone2ScopeGate';
 
 interface NurseDashboardViewProps {
   isNightShiftMode: boolean;
@@ -140,9 +141,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 <button
                   type="button"
                   onClick={() => handleTabChange('profile')}
-                  className="text-xs font-semibold text-[#0a6fa8] dark:text-[#93ccff] hover:underline flex items-center gap-0.5 cursor-pointer ml-1"
+                  className="text-xs font-semibold text-[#0a6fa8] dark:text-[#93ccff] flex items-center gap-0.5 cursor-pointer ml-1 group"
                 >
-                  <span>Profile &amp; Trust Credentials</span>
+                  <span className="group-hover:underline">Profile &amp; Trust Credentials</span>
                   <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </button>
               </div>
@@ -554,10 +555,12 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       e.preventDefault();
                       setActiveTab('receipts');
                     }}
-                    className="text-xs font-bold text-[#005684] dark:text-[#93ccff] underline cursor-pointer flex items-center gap-1"
+                    className="text-xs font-bold text-[#005684] dark:text-[#93ccff] cursor-pointer flex items-center gap-1.5 group"
+                    title="GSA Per Diem & Tax Home Ledger (Phase 2 Gated Scope)"
                   >
-                    <span className="material-symbols-outlined text-[16px]">download</span>
-                    <span>GSA Stipend Receipt</span>
+                    <span className="material-symbols-outlined text-[15px]">lock_clock</span>
+                    <span className="underline">GSA Stipend Receipt</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-900 dark:text-amber-200 font-mono font-bold">M2</span>
                   </a>
                 </div>
 
@@ -994,65 +997,78 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       )}
 
-      {/* TAB 5: Receipts & History */}
+      {/* TAB 5: Receipts & History (Gated Phase 2 / Milestone 2 Deliverable) */}
       {activeTab === 'receipts' && (
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-              <div>
-                <h2 className="text-xl font-bold">GSA Per Diem &amp; Tax Home Ledger</h2>
-                <p className="text-xs text-gray-500">IRS-compliant duplicate lodging expense records</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => alert('Exporting full IRS travel tax packet (PDF)...')}
-                className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[16px]">file_download</span>
-                <span>Export Tax Packet</span>
-              </button>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-2 text-xs mb-6">
-              <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                <span>UCSF Contract Lodging Per Diem Cap:</span>
-                <span className="font-bold text-black dark:text-white">$2,850.00 / mo</span>
-              </div>
-              <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                <span>Sunset Suite Actual Contract Rate:</span>
-                <span className="font-bold text-[#195b4c] dark:text-[#aff0db]">$2,100.00 / mo</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] font-bold text-sm text-[#005684] dark:text-[#93ccff]">
-                <span>Untaxed Surplus Retained:</span>
-                <span>+$750.00 / mo in Pocket</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between text-xs">
+        !m2BypassMode ? (
+          <Milestone2ScopeGate
+            isNightShiftMode={isNightShiftMode}
+            featureTitle="GSA Per Diem & Tax Home Ledger (Phase 2)"
+            featureDescription="In accordance with Lawrence Roberts' confirmed Phase 1 core marketplace scope, federal GSA lodging per diem audit ledgers, IRS travel tax packets, and duplicate living expense receipts are scheduled for Milestone 2 deliverables. This ledger is strictly gated during Milestone 1 core acceptance."
+            onReturnToMarketplace={() => setActiveTab('current')}
+            onBypassGate={onToggleM2Bypass}
+          />
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                  <div className="font-bold">UCSF Mission Bay PICU (Current)</div>
-                  <div className="text-gray-500">Oct 1 – Dec 31, 2024 • Invoice #NP-SF-9042</div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold mb-1">
+                    <span>M2 SCOPE UNLOCKED</span>
+                  </div>
+                  <h2 className="text-xl font-bold">GSA Per Diem &amp; Tax Home Ledger</h2>
+                  <p className="text-xs text-gray-500">IRS-compliant duplicate lodging expense records</p>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold">$1,950.00 / mo</div>
-                  <span className="text-[11px] text-[#195b4c] font-semibold">Paid via Stripe Escrow</span>
+                <button
+                  type="button"
+                  onClick={() => alert('Exporting full IRS travel tax packet (PDF)...')}
+                  className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">file_download</span>
+                  <span>Export Tax Packet</span>
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-2 text-xs mb-6">
+                <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>UCSF Contract Lodging Per Diem Cap:</span>
+                  <span className="font-bold text-black dark:text-white">$2,850.00 / mo</span>
+                </div>
+                <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                  <span>Sunset Suite Actual Contract Rate:</span>
+                  <span className="font-bold text-[#195b4c] dark:text-[#aff0db]">$2,100.00 / mo</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] font-bold text-sm text-[#005684] dark:text-[#93ccff]">
+                  <span>Untaxed Surplus Retained:</span>
+                  <span>+$750.00 / mo in Pocket</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between text-xs">
-                <div>
-                  <div className="font-bold">Duke University Hospital (Completed)</div>
-                  <div className="text-gray-500">Jun 1 – Aug 31, 2024 • Invoice #NP-NC-4819</div>
+              <div className="space-y-3">
+                <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-bold">UCSF Mission Bay PICU (Current)</div>
+                    <div className="text-gray-500">Oct 1 – Dec 31, 2024 • Invoice #NP-SF-9042</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">$1,950.00 / mo</div>
+                    <span className="text-[11px] text-[#195b4c] font-semibold">Paid via Stripe Escrow</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold">$1,850.00 / mo</div>
-                  <span className="text-[11px] text-[#195b4c] font-semibold">Completed &amp; Discharged</span>
+
+                <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between text-xs">
+                  <div>
+                    <div className="font-bold">Duke University Hospital (Completed)</div>
+                    <div className="text-gray-500">Jun 1 – Aug 31, 2024 • Invoice #NP-NC-4819</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">$1,850.00 / mo</div>
+                    <span className="text-[11px] text-[#195b4c] font-semibold">Completed &amp; Discharged</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
         </>
       )}

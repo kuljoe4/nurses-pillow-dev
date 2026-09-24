@@ -390,10 +390,10 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                   <button
                     type="button"
                     onClick={handleEditEmail}
-                    className="inline-flex items-center gap-1.5 text-[#005684] dark:text-[#93ccff] hover:underline text-xs font-bold shrink-0 self-start sm:self-center transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-[#005684] dark:text-[#93ccff] text-xs font-bold shrink-0 self-start sm:self-center transition-colors cursor-pointer group"
                   >
                     <span className="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Edit email</span>
+                    <span className="group-hover:underline">Edit email</span>
                   </button>
                 </div>
 

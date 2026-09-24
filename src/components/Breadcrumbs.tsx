@@ -171,8 +171,16 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     setIsEllipsisOpen(false);
   }, [currentTab, verificationStep]);
 
-  // If at root homepage (find-housing), hide the breadcrumbs to avoid empty single-item clutter and maintain flush hero spacing
-  if (currentTab === 'find-housing') {
+  // If at top-level navigation pages already directly in the primary menu,
+  // hide the breadcrumbs to avoid redundancy and reclaim prime vertical space for listings
+  const isTopLevelPage =
+    currentTab === 'find-housing' ||
+    currentTab === 'search-listings' ||
+    currentTab === 'how-it-works' ||
+    currentTab === 'for-hosts' ||
+    currentTab === 'nurse-dashboard';
+
+  if (isTopLevelPage) {
     return null;
   }
 
@@ -215,7 +223,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       onClick: () => navigateTo('find-housing'),
     };
 
-    switch (currentTab) {
+    switch (currentTab as NavigationTab) {
       case 'search-listings': {
         const items: CrumbItem[] = [
           homeCrumb,
@@ -627,7 +635,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         type="button"
                         onClick={firstCrumb.onClick}
                         title={`Home: Return to ${firstCrumb.label} • Path: ${fullPathString}`}
-                        className={`flex items-center gap-1 font-medium transition-colors hover:underline underline-offset-2 cursor-pointer ${
+                        className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                           isNightShiftMode
                             ? 'text-[#a1b5d8] hover:text-[#93ccff]'
                             : 'text-gray-600 hover:text-[#005684]'
@@ -638,7 +646,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             {firstCrumb.icon}
                           </span>
                         )}
-                        <span>{firstCrumb.shortLabel || firstCrumb.label}</span>
+                        <span className="group-hover:underline underline-offset-2">{firstCrumb.shortLabel || firstCrumb.label}</span>
                       </button>
                     ) : (
                       <span
@@ -890,7 +898,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                           type="button"
                           onClick={crumb.onClick}
                           title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
-                          className={`flex items-center gap-1 font-medium transition-colors hover:underline underline-offset-2 cursor-pointer ${
+                          className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                             isNightShiftMode
                               ? 'text-[#a1b5d8] hover:text-[#93ccff]'
                               : 'text-gray-600 hover:text-[#005684]'
@@ -901,7 +909,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                               {crumb.icon}
                             </span>
                           )}
-                          <span>{crumb.label}</span>
+                          <span className="group-hover:underline underline-offset-2">{crumb.label}</span>
                         </button>
                       ) : (
                         <span

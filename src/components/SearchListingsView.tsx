@@ -5,6 +5,8 @@ import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
+import { PillowSaveButton } from './PillowSaveButton';
+import { SearchListingCard } from './SearchListingCard';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -17,6 +19,9 @@ interface SearchListingsViewProps {
   initialDuration?: string;
   initialRadius?: number;
   isLoading?: boolean;
+  m2BypassMode?: boolean;
+  onToggleM2Bypass?: () => void;
+  isDeveloper?: boolean;
 }
 
 export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
@@ -30,6 +35,9 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   initialDuration = '13',
   initialRadius = 5,
   isLoading,
+  m2BypassMode = false,
+  onToggleM2Bypass,
+  isDeveloper = false,
 }) => {
   const [selectedHospital, setSelectedHospital] = useState(initialHospital);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -51,6 +59,9 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
   const [activeAmenityCount, setActiveAmenityCount] = useState(4);
   const [internalLoading, setInternalLoading] = useState(true);
+
+  // Progressive disclosure for assignment details (dates, duration, radius buffer)
+  const [isAssignmentDrawerExpanded, setIsAssignmentDrawerExpanded] = useState(false);
 
   // Filter Panel Expansion & Criteria (Smooth Height Transitions)
   const [isFilterPanelExpanded, setIsFilterPanelExpanded] = useState(false);
@@ -264,184 +275,294 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
   return (
     <div className={`w-full min-h-screen transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
-      {/* 1. TOP DEDICATED SEARCH BAR & ASSIGNMENT CONTROLS */}
-      <section className="w-full bg-white dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-xs px-4 sm:px-6 lg:px-12 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-[#005684]/10 dark:bg-[#93ccff]/15 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                <span className="material-symbols-outlined text-[18px]">travel_explore</span>
-              </span>
-              <div>
-                <h1 className="text-base sm:text-lg font-bold text-[#001848] dark:text-white leading-tight">
-                  Search Healthcare Sanctuaries
-                </h1>
-                <p className="text-xs text-[#404850] dark:text-[#93ccff]">
-                  Strictly verified for day-sleepers, shift rotations, and clinical proximity
-                </p>
+      {/* 1. COMPACT CLINICAL SEARCH & ASSIGNMENT HUB */}
+      <section className="w-full bg-white dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-xs px-3 sm:px-6 lg:px-8 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-col gap-2">
+          {/* Main Controls Row: Single Compact Responsive Bar */}
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 sm:gap-2.5">
+            {/* Hospital Selector (Primary Clinical Anchor) */}
+            <div ref={hospitalDropdownRef} className="relative flex-1 min-w-[220px] sm:min-w-[260px]">
+              <div
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full h-10 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-transparent hover:border-[#0A6FA8]/30 dark:hover:border-[#3E9AD1]/40 transition-colors flex items-center justify-between cursor-pointer group"
+                role="button"
+                tabIndex={0}
+                aria-expanded={isDropdownOpen}
+                aria-label="Select assigned hospital campus"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsDropdownOpen(!isDropdownOpen);
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[18px] shrink-0">
+                    local_hospital
+                  </span>
+                  <span className="text-xs sm:text-sm font-semibold text-[#0B2559] dark:text-white truncate">
+                    {selectedHospital}
+                  </span>
+                </div>
+                <span className="material-symbols-outlined text-[#404850] dark:text-[#93ccff] text-[18px] shrink-0 transition-transform duration-200 group-hover:text-[#0A6FA8]">
+                  {isDropdownOpen ? 'expand_less' : 'expand_more'}
+                </span>
               </div>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.16, ease: 'easeOut' }}
+                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-xl z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col max-w-lg"
+                  >
+                    {/* Quick search input */}
+                    <div className="p-2 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">
+                          search
+                        </span>
+                        <input
+                          type="text"
+                          value={hospitalSearchQuery}
+                          onChange={(e) => setHospitalSearchQuery(e.target.value)}
+                          placeholder="Search or scroll campuses..."
+                          className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182840] border border-gray-200 dark:border-[#233550] text-[#001848] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Scrollable list container */}
+                    <div
+                      className="max-h-60 overflow-y-auto custom-scrollbar py-1"
+                      style={{ WebkitOverflowScrolling: 'touch' }}
+                      onWheel={(e) => e.stopPropagation()}
+                    >
+                      {filteredHospitals.length === 0 ? (
+                        <div className="px-3 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+                          No hospital matches "{hospitalSearchQuery}".
+                        </div>
+                      ) : (
+                        filteredHospitals.map((hosp) => (
+                          <div
+                            key={hosp}
+                            onClick={() => {
+                              setSelectedHospital(hosp);
+                              setIsDropdownOpen(false);
+                              setHospitalSearchQuery('');
+                            }}
+                            className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
+                              selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
+                            }`}
+                          >
+                            <span className="truncate pr-2">{hosp}</span>
+                            {selectedHospital === hosp ? (
+                              <span className="material-symbols-outlined text-[14px] text-[#195b4c] shrink-0">check</span>
+                            ) : (
+                              <span className="text-[9px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Scroll indicator footer */}
+                    <div className="px-2.5 py-1 bg-[#f8faff] dark:bg-[#111e33] border-t border-[#c0c7d1]/20 dark:border-[#2b4162] flex items-center justify-between text-[10px] text-[#404850] dark:text-[#9CB3D3]">
+                      <span>{filteredHospitals.length} campuses</span>
+                      <span className="flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-[13px]">swap_vert</span>
+                        Scroll to explore
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Quick Stipend & Fee Transparency Pill */}
-            <div className="flex items-center gap-2">
+            {/* Assignment Details Trigger (Progressive Disclosure) */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsAssignmentDrawerExpanded((prev) => !prev);
+                if (isFilterPanelExpanded) setIsFilterPanelExpanded(false);
+              }}
+              className={`h-10 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+                isAssignmentDrawerExpanded
+                  ? 'bg-[#0A6FA8] text-white shadow-xs'
+                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
+              }`}
+              title="Edit move-in date, contract rotation length, or commute radius"
+            >
+              <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                calendar_today
+              </span>
+              <span>
+                {earliestCheckIn} · {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} wks`} · {commuteBuffer} mi
+              </span>
+              <span
+                className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
+                  isAssignmentDrawerExpanded ? 'rotate-180' : ''
+                }`}
+              >
+                expand_more
+              </span>
+            </button>
+
+            {/* Clinical Filters Trigger (Progressive Disclosure) */}
+            <button
+              type="button"
+              id="toggle-filter-panel-button"
+              onClick={() => {
+                setIsFilterPanelExpanded((prev) => !prev);
+                if (isAssignmentDrawerExpanded) setIsAssignmentDrawerExpanded(false);
+              }}
+              className={`h-10 px-3.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+                isFilterPanelExpanded || activePanelFilterCount > 0
+                  ? 'bg-[#001848] text-white shadow-xs'
+                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
+              }`}
+              title="Filter by rent ceiling, day-sleeper quiet score, and shift logistics"
+            >
+              <span className="material-symbols-outlined text-[16px]">tune</span>
+              <span>Filters</span>
+              {activePanelFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-white text-[#001848] text-[10px] flex items-center justify-center font-extrabold shadow-2xs">
+                  {activePanelFilterCount}
+                </span>
+              )}
+              <span
+                className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
+                  isFilterPanelExpanded ? 'rotate-180' : ''
+                }`}
+              >
+                expand_more
+              </span>
+            </button>
+
+            {/* Quick Actions & Layout Toggle (Right-aligned) */}
+            <div className="flex items-center gap-1.5 ml-auto shrink-0">
               <button
                 type="button"
                 onClick={() => setIsGsaModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db] text-xs font-semibold hover:bg-[#195b4c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#195b4c]/20 transition-colors cursor-pointer"
+                className="hidden xl:inline-flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-amber-500/10 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors cursor-pointer border border-amber-500/20"
+                title="Calculate allowable federal GSA lodging per-diem (Phase 2 Contract Scope)"
               >
-                <span className="material-symbols-outlined text-[15px]">calculate</span>
-                <span>GSA Stipend Audit</span>
+                <span className="material-symbols-outlined text-[14px]">lock_clock</span>
+                <span>GSA Stipend</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-900 dark:text-amber-200 font-mono font-bold">Phase 2</span>
               </button>
-              <div className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] text-xs font-bold">
-                <span className="material-symbols-outlined text-[14px]">verified</span>
-                <span>$0 Traveler Booking Fee</span>
+
+              <button
+                type="button"
+                onClick={triggerLiveQueryRefresh}
+                disabled={isDataLoading}
+                title="Refresh listings for assigned campus"
+                className="h-9 w-9 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] dark:hover:bg-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <span className={`material-symbols-outlined text-[16px] ${isDataLoading ? 'animate-spin' : ''}`}>
+                  sync
+                </span>
+              </button>
+
+              <div className="inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('split-map')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    viewMode === 'split-map'
+                      ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                  title="View split map and listings"
+                >
+                  <span className="material-symbols-outlined text-[15px]">map</span>
+                  <span className="hidden sm:inline">Split Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    viewMode === 'grid'
+                      ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                  title="View full grid layout"
+                >
+                  <span className="material-symbols-outlined text-[15px]">grid_view</span>
+                  <span className="hidden sm:inline">Grid</span>
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Search Inputs Row */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-            {/* Hospital Selector (5 cols) */}
-            <div className="md:col-span-5 relative">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
-                Assigned Hospital Campus
-              </label>
-              <div ref={hospitalDropdownRef} className="relative">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#005684] dark:text-[#93ccff] pointer-events-none text-[18px]">
-                  local_hospital
-                </span>
-                <input
-                  type="text"
-                  readOnly
-                  value={selectedHospital}
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full h-11 pl-10 pr-8 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs sm:text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#005684]"
-                />
-                <span
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[#404850] dark:text-[#93ccff] cursor-pointer text-[18px]"
-                >
-                  arrow_drop_down
-                </span>
+          {/* PROGRESSIVE DISCLOSURE 1: ASSIGNMENT DATES & RADIUS DRAWER */}
+          <AnimatePresence initial={false}>
+            {isAssignmentDrawerExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{
+                  height: 'auto',
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.2, delay: 0.04 },
+                  },
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  transition: {
+                    height: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+                    opacity: { duration: 0.12 },
+                  },
+                }}
+                className="overflow-hidden border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] pt-3 pb-1"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-[#EFF6FB]/60 dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                  {/* Move-in Date */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
+                      Earliest Move-In
+                    </label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[15px]">
+                        calendar_today
+                      </span>
+                      <input
+                        type="text"
+                        value={earliestCheckIn}
+                        onChange={(e) => setEarliestCheckIn(e.target.value)}
+                        className="w-full h-9 pl-8 pr-2 rounded-xl bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
+                      />
+                    </div>
+                  </div>
 
-                <AnimatePresence>
-                  {isDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                      transition={{ duration: 0.18, ease: 'easeOut' }}
-                      className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-xl z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col"
-                    >
-                      {/* Quick filter input */}
-                      <div className="p-2 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
-                        <div className="relative">
-                          <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">
-                            search
-                          </span>
-                          <input
-                            type="text"
-                            value={hospitalSearchQuery}
-                            onChange={(e) => setHospitalSearchQuery(e.target.value)}
-                            placeholder="Search or scroll campuses..."
-                            className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-white dark:bg-[#182840] border border-gray-200 dark:border-[#233550] text-[#001848] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#005684]"
-                            autoFocus
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Scrollable list container */}
-                      <div
-                        className="max-h-60 overflow-y-auto custom-scrollbar py-1"
-                        style={{ WebkitOverflowScrolling: 'touch' }}
-                        onWheel={(e) => e.stopPropagation()}
-                      >
-                        {filteredHospitals.length === 0 ? (
-                          <div className="px-3 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
-                            No hospital matches "{hospitalSearchQuery}".
-                          </div>
-                        ) : (
-                          filteredHospitals.map((hosp) => (
-                            <div
-                              key={hosp}
-                              onClick={() => {
-                                setSelectedHospital(hosp);
-                                setIsDropdownOpen(false);
-                                setHospitalSearchQuery('');
-                              }}
-                              className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
-                                selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
-                              }`}
-                            >
-                              <span className="truncate pr-2">{hosp}</span>
-                              {selectedHospital === hosp ? (
-                                <span className="material-symbols-outlined text-[14px] text-[#195b4c] shrink-0">check</span>
-                              ) : (
-                                <span className="text-[9px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
-                              )}
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* Scroll indicator footer */}
-                      <div className="px-2.5 py-1 bg-[#f8faff] dark:bg-[#111e33] border-t border-[#c0c7d1]/20 dark:border-[#2b4162] flex items-center justify-between text-[10px] text-[#404850] dark:text-[#9CB3D3]">
-                        <span>{filteredHospitals.length} campuses</span>
-                        <span className="flex items-center gap-0.5">
-                          <span className="material-symbols-outlined text-[13px]">swap_vert</span>
-                          Scroll to explore
-                        </span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Check-In & Duration (4 cols) */}
-            <div className="md:col-span-4 grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
-                  Earliest Check-In
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#005684] dark:text-[#93ccff] pointer-events-none text-[16px]">
-                    calendar_today
-                  </span>
-                  <input
-                    type="text"
-                    value={earliestCheckIn}
-                    onChange={(e) => setEarliestCheckIn(e.target.value)}
-                    className="w-full h-11 pl-8 pr-2 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
-                  Duration
-                </label>
-                <select
-                  value={selectedDuration}
-                  onChange={(e) => setSelectedDuration(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684] cursor-pointer"
-                >
-                  {durationOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.value === 'custom' ? opt.label : `${opt.label} rotation`}
-                    </option>
-                  ))}
-                </select>
-                <AnimatePresence>
-                  {selectedDuration === 'custom' && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                      className="overflow-hidden mt-2"
-                    >
+                  {/* Rotation Duration */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
+                      Rotation Length
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {durationOptions.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setSelectedDuration(opt.value)}
+                          className={`flex-1 h-9 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+                            selectedDuration === opt.value
+                              ? 'bg-[#0A6FA8] text-white shadow-2xs'
+                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)]'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedDuration === 'custom' && (
                       <input
                         type="number"
                         min="1"
@@ -450,50 +571,58 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                           const val = parseInt(e.target.value);
                           setCustomDuration(isNaN(val) ? 0 : val);
                         }}
-                        placeholder="Custom (weeks)"
-                        className="w-full h-11 px-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#005684]"
+                        placeholder="Weeks count"
+                        className="w-full h-8 px-2.5 mt-1.5 rounded-lg bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
                       />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+                    )}
+                  </div>
 
-            {/* Radius Buffer (3 cols) */}
-            <div className="md:col-span-3">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
-                Max Commute Buffer: {commuteBuffer} miles
-              </label>
-              <div className="flex items-center gap-1.5">
-                {commuteOptions.map((opt) => (
-                  <button
-                    key={opt.miles}
-                    type="button"
-                    onClick={() => setCommuteBuffer(opt.miles)}
-                    className={`flex-1 h-11 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
-                      commuteBuffer === opt.miles
-                        ? 'bg-[#005684] text-white shadow-xs'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+                  {/* Commute Radius */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff]">
+                        Max Commute Buffer
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsAssignmentDrawerExpanded(false)}
+                        className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
+                      >
+                        Done
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {commuteOptions.map((opt) => (
+                        <button
+                          key={opt.miles}
+                          type="button"
+                          onClick={() => setCommuteBuffer(opt.miles)}
+                          className={`flex-1 h-9 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
+                            commuteBuffer === opt.miles
+                              ? 'bg-[#001848] text-white shadow-2xs'
+                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)]'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Quick Filter Chips & View Mode Sub-Bar */}
-          <div className="flex flex-wrap items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800 gap-3">
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
+          {/* Quick Filter Chips Row */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pt-1 pb-0.5 custom-scrollbar text-xs">
+            <div className="flex items-center gap-1.5 shrink-0">
               {[
-                { id: 'all', label: 'All Stays' },
-                { id: 'entire', label: 'Entire Home' },
-                { id: 'private', label: 'Private Suite / Room' },
-                { id: 'blackout', label: 'Blackout Guaranteed' },
-                { id: 'laundry', label: 'In-Unit Scrub Washer' },
-                { id: 'parking', label: 'Dedicated Parking' },
+                { id: 'all', label: 'All' },
+                { id: 'entire', label: 'Entire home' },
+                { id: 'private', label: 'Private suite' },
+                { id: 'blackout', label: 'Blackout curtains' },
+                { id: 'laundry', label: 'In-unit washer' },
+                { id: 'parking', label: 'Reserved parking' },
               ].map((chip) => {
                 const isSelected = activeFilterChip === chip.id;
                 return (
@@ -501,10 +630,10 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     key={chip.id}
                     type="button"
                     onClick={() => setActiveFilterChip(chip.id as any)}
-                    className={`px-3 py-1.5 rounded-full whitespace-nowrap font-semibold transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
                       isSelected
-                        ? 'bg-[#001848] text-white'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
+                        ? 'bg-[#0B2559] text-white shadow-2xs'
+                        : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
                     }`}
                   >
                     {chip.label}
@@ -514,84 +643,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
               <button
                 type="button"
-                id="toggle-filter-panel-button"
-                onClick={() => setIsFilterPanelExpanded((prev) => !prev)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ml-1 ${
-                  isFilterPanelExpanded || activePanelFilterCount > 0
-                    ? 'bg-[#005684] text-white shadow-xs'
-                    : 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684] dark:text-[#93ccff] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff]'
-                }`}
-                title="Toggle clinical criteria filter panel"
-              >
-                <span className="material-symbols-outlined text-[15px]">tune</span>
-                <span>Filters</span>
-                {activePanelFilterCount > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-white text-[#005684] text-[10px] flex items-center justify-center font-extrabold shadow-2xs">
-                    {activePanelFilterCount}
-                  </span>
-                )}
-                <span
-                  className={`material-symbols-outlined text-[16px] transition-transform duration-250 ${
-                    isFilterPanelExpanded ? 'rotate-180' : ''
-                  }`}
-                >
-                  expand_more
-                </span>
-              </button>
-
-              <button
-                type="button"
                 id="open-full-filter-modal-button"
                 onClick={() => setIsFilterModalOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-[#404850] dark:text-[#c0c7d1] hover:text-[#005684] dark:hover:text-[#93ccff] hover:bg-[#f2f3ff] dark:hover:bg-[#182840] transition-colors cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors cursor-pointer ml-1"
                 title="Open comprehensive 25-point clinical amenities checklist"
               >
                 <span className="material-symbols-outlined text-[14px]">checklist</span>
-                <span>Full Checklist</span>
+                <span>25-Pt Checklist</span>
               </button>
             </div>
 
-            {/* Layout Toggle (Split-Map vs Grid) */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={triggerLiveQueryRefresh}
-                disabled={isDataLoading}
-                title="Fetch live verified hospital inventory"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] hover:bg-[#eaedff] dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-xs font-bold text-[#005684] dark:text-[#93ccff] cursor-pointer transition-colors shadow-2xs"
-              >
-                <span className={`material-symbols-outlined text-[15px] ${isDataLoading ? 'animate-spin' : ''}`}>
-                  sync
-                </span>
-                <span>{isDataLoading ? 'Querying...' : 'Live Query'}</span>
-              </button>
-
-              <div className="inline-flex items-center p-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('split-map')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
-                    viewMode === 'split-map'
-                      ? 'bg-[#005684] text-white shadow-xs'
-                      : 'text-[#404850] dark:text-[#c0c7d1]'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[15px]">map</span>
-                  <span>Split Map</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all duration-200 ease-in-out ${
-                    viewMode === 'grid'
-                      ? 'bg-[#005684] text-white shadow-xs'
-                      : 'text-[#404850] dark:text-[#c0c7d1]'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[15px]">grid_view</span>
-                  <span>Grid View</span>
-                </button>
-              </div>
+            <div className="hidden lg:flex items-center gap-1 text-[11px] font-bold text-[#195b4c] dark:text-[#aff0db] shrink-0 bg-[#195b4c]/10 dark:bg-[#aff0db]/10 px-2.5 py-1 rounded-full">
+              <span className="material-symbols-outlined text-[13px]">verified</span>
+              <span>$0 Traveler Booking Fee</span>
             </div>
           </div>
 
@@ -622,17 +686,17 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               >
                 <div className="max-w-7xl mx-auto flex flex-col gap-5">
                   {/* Panel Header */}
-                  <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-3">
+                  <div className="flex flex-wrap items-center justify-between pb-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-[#005684]/10 dark:bg-[#93ccff]/15 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                        <span className="material-symbols-outlined text-[17px]">tune</span>
+                      <span className="w-6 h-6 rounded-lg bg-[#005684]/10 dark:bg-[#93ccff]/15 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                        <span className="material-symbols-outlined text-[15px]">tune</span>
                       </span>
                       <div>
                         <h3 className="text-xs font-bold uppercase tracking-wider text-[#001848] dark:text-white">
-                          Clinical Sanctuary Filter Criteria
+                          Clinical Criteria & Stipends
                         </h3>
                         <p className="text-[11px] text-[#404850] dark:text-[#93ccff]">
-                          Adjust stipend limits, daytime acoustic ratings, and shift logistics in real time
+                          Adjust stipend limits, quiet scores, and shift amenities
                         </p>
                       </div>
                     </div>
@@ -642,19 +706,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                         <button
                           type="button"
                           onClick={handleResetAllFilters}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 cursor-pointer group"
                         >
                           <span className="material-symbols-outlined text-[14px]">refresh</span>
-                          <span>Reset All Filters ({activePanelFilterCount})</span>
+                          <span className="group-hover:underline">Reset ({activePanelFilterCount})</span>
                         </button>
                       )}
                       <button
                         type="button"
                         onClick={() => setIsFilterModalOpen(true)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#005684] dark:text-[#93ccff] cursor-pointer group"
                       >
-                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                        <span>25-Point Checklist Modal</span>
+                        <span className="material-symbols-outlined text-[14px]">checklist</span>
+                        <span className="group-hover:underline">25-Point Checklist</span>
                       </button>
                     </div>
                   </div>
@@ -889,19 +953,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
             {viewMode === 'split-map' && (
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[820px]">
             {/* LEFT 7 COLS: Listings Feed */}
-            <div className="lg:col-span-7 px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 overflow-y-auto max-h-[900px]">
+            <div className="lg:col-span-7 px-3 sm:px-6 lg:px-8 py-3.5 flex flex-col gap-4">
               {/* Feed Header & Sort Controls */}
-              <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
-                <div aria-live="polite">
-                  <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider">
-                    Verified Sanctuary Stays
-                  </span>
-                  <h2 className="text-lg font-bold text-[#001848] dark:text-white">
-                    {filteredListings.length} Spaces Found within {commuteBuffer} miles of {selectedHospital.split(' - ')[0]}
+              <div className="flex flex-wrap items-center justify-between pb-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
+                <div className="flex items-baseline gap-2" aria-live="polite">
+                  <h2 className="text-base sm:text-lg font-bold text-[#001848] dark:text-white tabular-nums">
+                    {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'}
                   </h2>
+                  <span className="text-xs text-[#404850] dark:text-[#93ccff] truncate max-w-[280px]">
+                    near {selectedHospital.split(' - ')[0]} (≤{commuteBuffer} mi)
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <label htmlFor="search-sort-select" className="text-xs font-semibold text-[#404850] dark:text-[#93ccff]">
                     Sort:
                   </label>
@@ -909,11 +973,11 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                     id="search-sort-select"
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value as any)}
-                    className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1.5 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                    className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
                   >
-                    <option value="closest">Closest to Hospital</option>
+                    <option value="closest">Closest</option>
                     <option value="price_low">Price: Low to High</option>
-                    <option value="quiet_score">Highest Quiet Rating</option>
+                    <option value="quiet_score">Quiet Rating</option>
                   </select>
                 </div>
               </div>
@@ -950,118 +1014,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                       const isSelectedOnMap = selectedMapListingId === listing.id;
 
                       return (
-                        <motion.div
-                          layout
+                        <SearchListingCard
                           key={listing.id}
-                          initial={{ opacity: 0, scale: 0.96 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.96 }}
-                          transition={{
-                            height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-                            layout: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-                            opacity: { duration: 0.22 },
-                          }}
-                          onClick={() => setSelectedMapListingId(listing.id)}
-                          className={`rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-shadow duration-200 cursor-pointer flex flex-col justify-between group ${
-                            isSelectedOnMap
-                              ? 'border-[#005684] ring-2 ring-[#005684]/30 shadow-lg'
-                              : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#005684]/50 shadow-sm hover:shadow-md'
-                          }`}
-                        >
-                          {/* Image Header */}
-                          <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-                            <img
-                              src={listing.images[0]}
-                              alt={listing.title}
-                              referrerPolicy="no-referrer"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold">
-                              <span className="material-symbols-outlined text-[13px]">near_me</span>
-                              <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min commute`}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleSave(listing.id);
-                              }}
-                              aria-label="Save listing"
-                              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
-                            >
-                              <span className={`material-symbols-outlined text-[18px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
-                                favorite
-                              </span>
-                            </button>
-                          </div>
-
-                          {/* Listing Info */}
-                          <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                            <div>
-                              <div className="flex items-center justify-between text-[11px] text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
-                                <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
-                                <div className="flex items-center gap-1 text-amber-500">
-                                  <span className="material-symbols-outlined text-[15px]">star</span>
-                                  <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
-                                  <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
-                                </div>
-                              </div>
-
-                              <h3 className="text-sm font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
-                                {listing.title}
-                              </h3>
-
-                              <div className="mt-2 flex items-baseline gap-1">
-                                <span className="text-xl font-extrabold text-[#001848] dark:text-white">
-                                  ${listing.monthlyRate.toLocaleString()}
-                                </span>
-                                <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
-                                <span className="text-[10px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-1.5 py-0.5 rounded ml-auto">
-                                  $0 Traveler Fee
-                                </span>
-                              </div>
-
-                              {/* Amenity Badges */}
-                              <div className="flex flex-wrap gap-1 mt-3">
-                                {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet', 'Scrub Washer']).slice(0, 3).map((badge, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
-                                  >
-                                    {badge}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between gap-2">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveDetailListing(listing);
-                                }}
-                                className="text-xs font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
-                              >
-                                View Details
-                              </button>
-
-                              {onRequestToBookListing && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRequestToBookListing(listing);
-                                  }}
-                                  className="px-3 py-1.5 rounded-lg bg-[#001848] dark:bg-[#005684] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
-                                >
-                                  Book Stay
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
+                          listing={listing}
+                          isSaved={isSaved}
+                          isSelectedOnMap={isSelectedOnMap}
+                          onToggleSave={onToggleSave}
+                          onSelectOnMap={setSelectedMapListingId}
+                          onViewDetails={setActiveDetailListing}
+                          onRequestToBook={onRequestToBookListing}
+                          selectedHospital={selectedHospital}
+                          viewMode="split-map"
+                          isNightShiftMode={isNightShiftMode}
+                        />
                       );
                     })}
                   </AnimatePresence>
@@ -1070,13 +1035,13 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
             </div>
 
             {/* RIGHT 5 COLS: Interactive SVG Map */}
-            <div className="lg:col-span-5 relative bg-[#eef3f9] dark:bg-[#0a1424] border-l border-[rgba(11,37,89,0.08)] dark:border-[#233550] p-4 flex flex-col justify-between overflow-hidden">
+            <div className="lg:col-span-5 relative lg:sticky lg:top-14 lg:h-[calc(100vh-56px)] bg-[#eef3f9] dark:bg-[#0a1424] border-l border-[rgba(11,37,89,0.08)] dark:border-[#233550] p-3 sm:p-4 flex flex-col justify-between overflow-hidden">
               {/* Map Canvas Header Overlay */}
-              <div className="relative z-10 flex items-center justify-between bg-white/90 dark:bg-[#111e33]/90 backdrop-blur-xs p-3 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
+              <div className="relative z-10 flex items-center justify-between bg-white/90 dark:bg-[#111e33]/90 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#005684] text-[20px]">map</span>
+                  <span className="material-symbols-outlined text-[#005684] text-[18px]">map</span>
                   <div className="text-xs font-bold text-[#001848] dark:text-white">
-                    <span>Active Medical Zone: </span>
+                    <span>Medical Zone: </span>
                     <span className="text-[#005684] dark:text-[#93ccff]">{selectedHospital.split(' - ')[0]}</span>
                   </div>
                 </div>
@@ -1100,7 +1065,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
               </div>
 
               {/* Stylized SVG Map Graphics */}
-              <div className="relative my-4 flex-1 min-h-[480px] w-full rounded-2xl overflow-hidden bg-[#e5ecf5] dark:bg-[#0c1a2d] border border-[rgba(11,37,89,0.08)] flex items-center justify-center">
+              <div className="relative my-2 sm:my-3 flex-1 min-h-[340px] lg:min-h-0 w-full rounded-2xl overflow-hidden bg-[#e5ecf5] dark:bg-[#0c1a2d] border border-[rgba(11,37,89,0.08)] flex items-center justify-center">
                 {/* SVG Visual Map */}
                 <svg className="w-full h-full absolute inset-0" viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* Grid Lines */}
@@ -1229,7 +1194,34 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
 
         {/* 3-Column Grid View Mode */}
         {viewMode === 'grid' && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-wrap items-center justify-between pb-2.5 mb-4 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
+              <div className="flex items-baseline gap-2" aria-live="polite">
+                <h2 className="text-base sm:text-lg font-bold text-[#001848] dark:text-white tabular-nums">
+                  {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'}
+                </h2>
+                <span className="text-xs text-[#404850] dark:text-[#93ccff]">
+                  near {selectedHospital.split(' - ')[0]} (≤{commuteBuffer} mi)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <label htmlFor="grid-sort-select" className="text-xs font-semibold text-[#404850] dark:text-[#93ccff]">
+                  Sort:
+                </label>
+                <select
+                  id="grid-sort-select"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value as any)}
+                  className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                >
+                  <option value="closest">Closest</option>
+                  <option value="price_low">Price: Low to High</option>
+                  <option value="quiet_score">Quiet Rating</option>
+                </select>
+              </div>
+            </div>
+
             {filteredListings.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -1259,98 +1251,17 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   {filteredListings.map((listing) => {
                     const isSaved = savedListingIds.includes(listing.id);
                     return (
-                      <motion.div
-                        layout
+                      <SearchListingCard
                         key={listing.id}
-                        initial={{ opacity: 0, scale: 0.96 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.96 }}
-                        transition={{
-                          layout: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-                          opacity: { duration: 0.22 },
-                        }}
-                        className="bg-white dark:bg-[#111e33] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between group"
-                      >
-                        <div className="relative h-56 w-full overflow-hidden bg-gray-100">
-                          <img
-                            src={listing.images[0]}
-                            alt={listing.title}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
-                            <span className="material-symbols-outlined text-[14px]">near_me</span>
-                            <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min to hospital`}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => onToggleSave(listing.id)}
-                            aria-label="Save listing"
-                            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/90 dark:bg-black/70 backdrop-blur-xs flex items-center justify-center text-[#001848] dark:text-white hover:scale-110 transition-transform shadow-xs"
-                          >
-                            <span className={`material-symbols-outlined text-[20px] ${isSaved ? 'text-rose-500 fill-1' : 'text-gray-600 dark:text-gray-300'}`}>
-                              favorite
-                            </span>
-                          </button>
-                        </div>
-
-                        <div className="p-6 flex-1 flex flex-col justify-between gap-4">
-                          <div>
-                            <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
-                              <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
-                              <div className="flex items-center gap-1 text-amber-500">
-                                <span className="material-symbols-outlined text-[16px]">star</span>
-                                <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
-                                <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
-                              </div>
-                            </div>
-
-                            <h3 className="text-base font-bold text-[#001848] dark:text-white line-clamp-1 mb-2">
-                              {listing.title}
-                            </h3>
-
-                            <div className="flex items-baseline gap-1 mb-3">
-                              <span className="text-2xl font-black text-[#001848] dark:text-white">
-                                ${listing.monthlyRate.toLocaleString()}
-                              </span>
-                              <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
-                              <span className="text-[11px] text-[#195b4c] font-bold bg-[#195b4c]/10 px-2 py-0.5 rounded-full ml-auto">
-                                $0 Traveler Fee
-                              </span>
-                            </div>
-
-                            <div className="flex flex-wrap gap-1.5">
-                              {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet Daytime', 'In-unit Scrub Washer']).map((badge, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#f2f3ff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff]"
-                                >
-                                  {badge}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="pt-4 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center justify-between gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setActiveDetailListing(listing)}
-                              className="font-bold text-xs sm:text-sm text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
-                            >
-                              View Stay Details
-                            </button>
-                            {onRequestToBookListing && (
-                              <button
-                                type="button"
-                                onClick={() => onRequestToBookListing(listing)}
-                                className="px-4 py-2 rounded-xl bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
-                              >
-                                Book Sanctuary
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
+                        listing={listing}
+                        isSaved={isSaved}
+                        onToggleSave={onToggleSave}
+                        onViewDetails={setActiveDetailListing}
+                        onRequestToBook={onRequestToBookListing}
+                        selectedHospital={selectedHospital}
+                        viewMode="grid"
+                        isNightShiftMode={isNightShiftMode}
+                      />
                     );
                   })}
                 </AnimatePresence>
@@ -1388,7 +1299,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
         activeHospitalName={selectedHospital}
       />
 
-      {/* GSA Stipend Audit Modal */}
+      {/* GSA Stipend Audit Modal (Gated for Phase 1 Acceptance) */}
       {isGsaModalOpen && (
         <div
           className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-start"
@@ -1398,53 +1309,152 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
             }
           }}
         >
-          <div
-            className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-lg border border-[rgba(11,37,89,0.1)] text-[#001848] dark:text-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>
-                <h3 className="font-bold text-base">GSA Per-Diem Stipend Comparison</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsGsaModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
-              <p>
-                Under IRS Revenue Procedure 2024-34, traveling healthcare professionals can receive tax-free housing stipends when duplicating expenses.
-              </p>
-              <div className="p-4 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] space-y-2">
-                <div className="flex justify-between font-bold text-sm text-[#001848] dark:text-white">
-                  <span>San Francisco Lodging Cap:</span>
-                  <span>$3,120 / month</span>
-                </div>
-                <div className="flex justify-between text-xs text-[#195b4c] font-semibold">
-                  <span>Nurses Pillow Average Rent:</span>
-                  <span>$1,950 / month</span>
-                </div>
-                <div className="flex justify-between text-xs font-bold text-[#005684] pt-1 border-t border-gray-200 dark:border-gray-700">
-                  <span>Stipend Surplus Retained:</span>
-                  <span>+$1,170 / month tax-free</span>
-                </div>
-              </div>
-              <p className="text-[11px] text-gray-500">
-                All itemized invoices generate automatically in your traveler receipt portal.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsGsaModalOpen(false)}
-              className="w-full py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold mt-2"
+          {!m2BypassMode ? (
+            <div
+              className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-500/30 text-[#001848] dark:text-white"
+              onClick={(e) => e.stopPropagation()}
             >
-              Got It, Continue Search
-            </button>
-          </div>
+              <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">lock_clock</span>
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 mb-1">
+                      <span className="material-symbols-outlined text-[12px]">event_upcoming</span>
+                      Milestone 2 Contract Deliverable
+                    </div>
+                    <h3 className="font-bold text-base leading-tight">
+                      GSA Per-Diem Stipend Comparison
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsGsaModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
+                <p className="leading-relaxed">
+                  In accordance with Lawrence Roberts&apos; confirmed Phase 1 core marketplace scope, federal GSA lodging per-diem comparison, agency tax deductions, and duplicate living expense calculation are scheduled as <strong>Milestone 2 deliverables</strong>.
+                </p>
+
+                <div className="p-3.5 rounded-2xl bg-[#EFF6FB] dark:bg-[#182840] border border-[#005684]/15 space-y-2">
+                  <div className="text-[11px] font-bold text-[#001848] dark:text-white uppercase tracking-wider">
+                    Phase 1 vs. Milestone 2 Boundaries
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#111e33] border border-emerald-500/20">
+                      <div className="font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                        Phase 1 Live
+                      </div>
+                      <div className="text-gray-500 mt-0.5">Direct RN rates, $0 traveler fee, quiet guarantees.</div>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white dark:bg-[#111e33] border border-amber-500/20">
+                      <div className="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">lock</span>
+                        Milestone 2 Gated
+                      </div>
+                      <div className="text-gray-500 mt-0.5">IRS duplicate lodging ledger &amp; GSA per diem audit.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-gray-500 italic">
+                  To maintain strict acceptance boundaries and avoid scope creep, this module is gated during Phase 1 core review.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setIsGsaModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-[#001848] hover:bg-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Return to Phase 1 Search
+                </button>
+                {onToggleM2Bypass && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleM2Bypass();
+                    }}
+                    className="px-3 py-2.5 rounded-xl border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-mono font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/20 cursor-pointer"
+                    title="Developer toggle to preview in-flight Milestone 2 module"
+                  >
+                    Bypass Gate (Dev)
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div
+              className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-500/30 text-[#001848] dark:text-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>
+                  <div>
+                    <h3 className="font-bold text-base">GSA Per-Diem Stipend Comparison</h3>
+                    <span className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold">[Milestone 2 Unlocked]</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsGsaModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
+                <p>
+                  Under IRS Revenue Procedure 2024-34, traveling healthcare professionals can receive tax-free housing stipends when duplicating expenses.
+                </p>
+                <div className="p-4 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] space-y-2">
+                  <div className="flex justify-between font-bold text-sm text-[#001848] dark:text-white">
+                    <span>San Francisco Lodging Cap:</span>
+                    <span>$3,120 / month</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-[#195b4c] font-semibold">
+                    <span>Nurses Pillow Average Rent:</span>
+                    <span>$1,950 / month</span>
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-[#005684] pt-1 border-t border-gray-200 dark:border-gray-700">
+                    <span>Stipend Surplus Retained:</span>
+                    <span>+$1,170 / month tax-free</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  All itemized invoices generate automatically in your traveler receipt portal.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsGsaModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold cursor-pointer"
+                >
+                  Close Comparison
+                </button>
+                {onToggleM2Bypass && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleM2Bypass()}
+                    className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-mono text-gray-600 dark:text-gray-300 cursor-pointer"
+                  >
+                    Lock Gate
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

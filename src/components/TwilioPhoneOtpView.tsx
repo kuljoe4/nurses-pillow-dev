@@ -111,10 +111,10 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
             <button
               type="button"
               onClick={onBackToEmailVerification}
-              className="flex items-center gap-1.5 text-[#195b4c] dark:text-[#aff0db] hover:underline cursor-pointer"
+              className="flex items-center gap-1.5 text-[#195b4c] dark:text-[#aff0db] cursor-pointer group"
             >
               <span className="material-symbols-outlined text-[18px]">check_circle</span>
-              <span className="text-xs font-semibold">Account</span>
+              <span className="text-xs font-semibold group-hover:underline">Account</span>
             </button>
             <span className="w-4 h-0.5 bg-[#195b4c] dark:bg-[#aff0db]" />
             <div className="flex items-center gap-1.5 text-[#005684] dark:text-[#93ccff] font-bold">

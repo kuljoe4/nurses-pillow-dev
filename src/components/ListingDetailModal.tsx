@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
+import { PillowSaveButton } from './PillowSaveButton';
 
 interface ListingDetailModalProps {
   listing: HousingListing | null;
@@ -228,7 +229,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 <span className="material-symbols-outlined text-[#195b4c] text-[22px]">payments</span>
                 <h4 className="font-bold text-xs">Stipend Matched Rate</h4>
                 <p className="text-[11px] text-gray-500 leading-relaxed">
-                  Zero hidden booking fees. Monthly pricing calibrated to standard San Francisco GSA lodging per diem.
+                  Zero hidden booking fees. Monthly pricing calibrated directly for traveling clinician stipends.
                 </p>
               </div>
             </div>
@@ -355,7 +356,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   <span className="text-xs text-gray-500"> / month</span>
                   <div className="text-[11px] text-[#195b4c] font-semibold flex items-center gap-1 mt-0.5">
                     <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                    <span>Matches GSA rate ($65/night)</span>
+                    <span>Shift-Certified Direct Rate ($65/night)</span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-[#195b4c]/10 text-[#195b4c] text-[11px] font-bold">
@@ -413,20 +414,17 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   <span>Request to book (Shift-protected)</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => onToggleSave(listing.id)}
-                  className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                <PillowSaveButton
+                  isSaved={isSaved}
+                  onToggle={() => onToggleSave(listing.id)}
+                  showLabel={true}
+                  size={18}
+                  className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     isSaved
-                      ? 'bg-[#eaedff] text-[#005684] border-[#005684]'
-                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50'
+                      ? 'bg-[#EFF6FB] dark:bg-[#15233a] text-[#0B2559] dark:text-[#3E9AD1] border-[#0A6FA8]/40 shadow-xs'
+                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#15233a]'
                   }`}
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {isSaved ? 'bookmark_added' : 'bookmark_border'}
-                  </span>
-                  <span>{isSaved ? 'Saved to Pillows' : 'Save to Pillows'}</span>
-                </button>
+                />
               </div>
 
               <div className="text-center text-[11px] text-gray-400">

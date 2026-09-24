@@ -605,12 +605,12 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                   <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff]">
                     Clinician Stipend &amp; Tax Ledger
                   </span>
-                  <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
-                    receipt_long
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono font-bold">
+                    M2 Scope
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
-                  GSA per diem allowances, duplicate lodging expense audit proof, and assignment dates.
+                  Phase 2 lodging expense audit proof, stipend allowances, and assignment rotations.
                 </p>
                 <div className="mt-2 text-[10px] font-bold text-gray-400">
                   {bookingRequests.length} Rotations • 14 Fields
@@ -674,10 +674,10 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
                     type="button"
                     onClick={loadDriveSpreadsheets}
                     disabled={isLoadingSheets || !hasToken}
-                    className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer flex items-center gap-1"
+                    className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] cursor-pointer flex items-center gap-1 group"
                   >
                     <span className="material-symbols-outlined text-[14px]">refresh</span>
-                    <span>Refresh Drive Files</span>
+                    <span className="group-hover:underline">Refresh Drive Files</span>
                   </button>
                 </div>
 
