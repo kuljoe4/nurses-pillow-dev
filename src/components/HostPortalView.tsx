@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
+import { HostAddressMapping } from './HostAddressMapping';
 
 interface HostPortalViewProps {
   isNightShiftMode: boolean;
@@ -342,6 +343,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               <span>Listing changes saved and synchronized with the search index!</span>
             </div>
           )}
+
+          {/* HL-02: Google Maps Address Entry & Location Proximity */}
+          <HostAddressMapping isNightShiftMode={isNightShiftMode} />
 
           {/* Property Type Selector */}
           <div>

@@ -108,7 +108,7 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Mobile
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                Twilio SMS
+                SMS Verification
               </span>
             </div>
           </div>

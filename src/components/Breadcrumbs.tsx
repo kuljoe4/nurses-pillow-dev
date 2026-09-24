@@ -311,7 +311,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           },
           {
             id: 'phone-verify',
-            label: 'Twilio SMS OTP Mobile Verification',
+            label: 'Mobile Phone Verification',
             shortLabel: 'Phone Verification',
             icon: 'sms',
             screenCode: '[C-02B]',

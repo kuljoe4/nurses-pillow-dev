@@ -35,6 +35,7 @@ const Phase1InventoryView = React.lazy(() => import('./components/Phase1Inventor
 const LegalPoliciesView = React.lazy(() => import('./components/LegalPoliciesView').then(m => ({ default: m.LegalPoliciesView })));
 const SystemStatusView = React.lazy(() => import('./components/SystemStatusView').then(m => ({ default: m.SystemStatusView })));
 const MobileParityView = React.lazy(() => import('./components/MobileParityView').then(m => ({ default: m.MobileParityView })));
+const Tier2PlumbingDashboard = React.lazy(() => import('./components/Tier2PlumbingDashboard').then(m => ({ default: m.Tier2PlumbingDashboard })));
 
 // Modals lazy-loaded on demand (prevents heavy modules like Firebase from loading during initial page render)
 const GoogleSheetsSyncModal = React.lazy(() => import('./components/GoogleSheetsSyncModal').then(m => ({ default: m.GoogleSheetsSyncModal })));
@@ -595,9 +596,21 @@ export default function App() {
             isNightShiftMode={isNightShiftMode}
             onGoToHousing={() => setCurrentTab('find-housing')}
             onOpenGoogleSheets={handleOpenGoogleSheets}
+            onGoToTier2Plumbing={() => handleNavigateTab('tier2-plumbing')}
             bookingRequests={bookingRequests}
             listings={MOCK_LISTINGS}
             isDeveloper={isDeveloper}
+          />
+        )}
+
+        {/* Tier 2 Backend & Plumbing Console */}
+        {currentTab === 'tier2-plumbing' && (
+          <Tier2PlumbingDashboard
+            isNightShiftMode={isNightShiftMode}
+            onNavigateTab={(tab) => handleNavigateTab(tab as NavigationTab)}
+            onOpenCheckoutDemo={() => {
+              handleOpenCheckout(MOCK_LISTINGS[0]);
+            }}
           />
         )}
 

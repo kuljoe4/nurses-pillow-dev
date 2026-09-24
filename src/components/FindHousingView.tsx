@@ -4,11 +4,15 @@ import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 import { PillowSaveButton } from './PillowSaveButton';
+import { GoogleHospitalAutocomplete } from './GoogleHospitalAutocomplete';
+import { APIProvider } from '@vis.gl/react-google-maps';
 import {
   heroContainerVariant,
   heroItemVariant,
   heroSearchCardVariant,
 } from '../lib/animation-utilities';
+import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
+import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 
 interface ObservedListingCardProps {
   listing: HousingListing;
@@ -18,11 +22,14 @@ interface ObservedListingCardProps {
   onSelectListing: (listing: HousingListing) => void;
   onRequestToBook?: (listing: HousingListing) => void;
   shouldReduceMotion?: boolean | null;
+  selectedHospital?: string;
+  isNightShiftMode?: boolean;
 }
 
 /**
  * ObservedListingCard uses lightweight viewport detection
  * with smooth GPU-friendly transform and opacity transitions.
+ * Integrates Google Maps-powered commute duration to user's selected hospital.
  */
 const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
   listing,
@@ -32,7 +39,14 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
   onSelectListing,
   onRequestToBook,
   shouldReduceMotion,
+  selectedHospital = 'Duke University Hospital',
+  isNightShiftMode = false,
 }) => {
+  // Dynamically calculate commute metrics to the user's selected hospital
+  const commute = useMemo(() => {
+    return calculateCommuteDuration(listing, selectedHospital);
+  }, [listing, selectedHospital]);
+
   return (
     <motion.div
       initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
@@ -55,9 +69,12 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
-          <span className="material-symbols-outlined text-[14px]">near_me</span>
-          <span>{listing.distanceBadge || `${listing.driveTimeMinutes} min to hospital`}</span>
+        {/* Dynamic Google Maps Commute Badge on Image */}
+        <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-xs font-semibold shadow-md">
+          <span className="material-symbols-outlined text-[14px] text-[#aff0db]">directions_car</span>
+          <span className="tabular-nums">{commute.driveMinutes} min drive</span>
+          <span className="opacity-60">·</span>
+          <span className="tabular-nums opacity-90">{commute.distanceMiles} mi</span>
         </div>
         <div className="absolute top-4 right-4 z-10">
           <PillowSaveButton
@@ -71,8 +88,8 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
 
       {/* Content */}
       <div className="p-6 flex-1 flex flex-col justify-between gap-4">
-        <div>
-          <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1.5">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider">
             <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
             <div className="flex items-center gap-1 text-amber-500">
               <span className="material-symbols-outlined text-[16px]">star</span>
@@ -81,12 +98,12 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
             </div>
           </div>
 
-          <h3 className="text-base font-bold text-[#001848] dark:text-white line-clamp-1 mb-2 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
+          <h3 className="text-base font-bold text-[#001848] dark:text-white line-clamp-1 group-hover:text-[#005684] focus-visible:text-[#005684] transition-colors">
             {listing.title}
           </h3>
 
-          <div className="flex items-baseline gap-1 mb-4">
-            <span className="text-2xl font-black text-[#001848] dark:text-white">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-black text-[#001848] dark:text-white tabular-nums">
               ${listing.monthlyRate.toLocaleString()}
             </span>
             <span className="text-xs text-[#404850] dark:text-[#93ccff]">/ month</span>
@@ -95,7 +112,13 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
+          {/* Google Maps-Powered Travel Time Module */}
+          <GoogleMapsTravelTimeDisplay
+            commute={commute}
+            isNightShiftMode={isNightShiftMode}
+          />
+
+          <div className="flex flex-wrap gap-1.5 pt-1">
             {(listing.highlightBadges || ['Blackout Curtains', '≤35dB Quiet Daytime', 'In-unit Scrub Washer']).map((badge, idx) => (
               <span
                 key={idx}
@@ -370,105 +393,20 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               className="relative mb-5"
             >
               <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                Hospital or Medical Campus
+                Where are you assigned? (Hospital or clinic)
               </label>
-              <div ref={hospitalDropdownRef} className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[22px]">
-                  domain
-                </span>
-                <input
-                  type="text"
-                  readOnly
-                  value={selectedHospital}
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full h-14 pl-12 pr-32 rounded-xl bg-[#EFF6FB] hover:bg-[#E5F0F8] dark:bg-[#182840] dark:hover:bg-[#1f3350] text-[#0B2559] dark:text-white text-sm sm:text-base font-semibold cursor-pointer border border-[rgba(11,37,89,0.1)] dark:border-[#2b4162] focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] transition-colors"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] text-[11px] font-bold">
-                    <span className="material-symbols-outlined text-[13px]">verified</span>
-                    Verified
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#0B2559]/70 dark:text-[#E6ECF7]/70"
-                    aria-label="Toggle hospital options"
-                  >
-                    <span className="material-symbols-outlined text-[22px]">
-                      {isDropdownOpen ? 'expand_less' : 'expand_more'}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Dropdown Menu */}
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-2xl shadow-2xl z-50 border border-[rgba(11,37,89,0.12)] dark:border-[#2b4162] overflow-hidden flex flex-col">
-                    {/* Quick filter input */}
-                    <div className="p-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#2b4162] bg-[#EFF6FB]/50 dark:bg-[#111e33]">
-                      <div className="relative">
-                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">
-                          search
-                        </span>
-                        <input
-                          type="text"
-                          value={hospitalSearchQuery}
-                          onChange={(e) => setHospitalSearchQuery(e.target.value)}
-                          placeholder="Search or scroll through campuses..."
-                          className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-[#182840] border border-gray-200 dark:border-[#233550] text-[#0B2559] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#0A6FA8]"
-                          autoFocus
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Scrollable list container */}
-                    <div
-                      className="max-h-64 sm:max-h-72 overflow-y-auto overscroll-contain custom-scrollbar py-1"
-                      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
-                    >
-                      {filteredHospitals.length === 0 ? (
-                        <div className="px-4 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
-                          No hospital matches "{hospitalSearchQuery}".
-                        </div>
-                      ) : (
-                        filteredHospitals.map((hosp) => (
-                          <div
-                            key={hosp}
-                            onClick={() => {
-                              setSelectedHospital(hosp);
-                              setIsDropdownOpen(false);
-                              setHospitalSearchQuery('');
-                            }}
-                            className={`px-4 py-2.5 hover:bg-[#EFF6FB] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
-                              selectedHospital === hosp ? 'bg-[#EFF6FB] dark:bg-[#1f3350]' : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 pr-2">
-                              <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[18px] shrink-0">
-                                local_hospital
-                              </span>
-                              <span className="text-xs sm:text-sm font-semibold text-[#0B2559] dark:text-white line-clamp-1">{hosp}</span>
-                            </div>
-                            {selectedHospital === hosp ? (
-                              <span className="material-symbols-outlined text-[#2F6E5E] dark:text-[#aff0db] text-[16px] shrink-0">check_circle</span>
-                            ) : (
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Scroll indicator footer */}
-                    <div className="px-3 py-1.5 bg-[#EFF6FB]/50 dark:bg-[#111e33] border-t border-[rgba(11,37,89,0.08)] dark:border-[#2b4162] flex items-center justify-between text-[11px] text-[#0B2559]/70 dark:text-[#9CB3D3]">
-                      <span>{filteredHospitals.length} verified campuses</span>
-                      <span className="flex items-center gap-1 font-medium">
-                        <span className="material-symbols-outlined text-[14px]">swap_vert</span>
-                        Scroll to explore
-                      </span>
-                    </div>
-                  </div>
-                )}
+              <div className="relative">
+                <APIProvider
+                  apiKey={(import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDaF-kyMHn1puwn5Q5w-_dkija7MPOsV8o'}
+                  solutionChannel="GMP_devsite_samples_v3_rgmautocomplete"
+                >
+                  <GoogleHospitalAutocomplete
+                    value={selectedHospital}
+                    onChange={(hosp) => setSelectedHospital(hosp)}
+                    isNightShiftMode={isNightShiftMode}
+                    placeholder="Where are you assigned? (e.g. Duke University, UNC, WakeMed)..."
+                  />
+                </APIProvider>
               </div>
             </motion.div>
 
@@ -760,6 +698,28 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           </button>
         </div>
 
+        {/* Active Commute Anchor Header */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 shadow-xs">
+          <div className="flex items-center gap-2.5 text-xs">
+            <span className="w-7 h-7 rounded-xl bg-[#0A6FA8] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <span className="material-symbols-outlined text-[16px]">directions_car</span>
+            </span>
+            <div>
+              <span className="text-[#0B2559]/70 dark:text-[#c0c7d1] block text-[11px]">
+                Travel Time &amp; Commute Anchored To
+              </span>
+              <span className="font-bold text-[#0B2559] dark:text-white">
+                {selectedHospital.split(' - ')[0]}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-[#2F6E5E] dark:text-[#aff0db] font-semibold bg-white/80 dark:bg-[#111e33] px-2.5 py-1 rounded-xl">
+            <span className="w-2 h-2 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db] animate-pulse" />
+            <span>Hospital Travel Duration Active</span>
+          </div>
+        </div>
+
         {/* Interactive Search Filters with Staggered Viewport Reveal (Progressive Disclosure) */}
         <motion.div
           initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
@@ -836,6 +796,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   onSelectListing={setActiveDetailListing}
                   onRequestToBook={onRequestToBookListing}
                   shouldReduceMotion={shouldReduceMotion}
+                  selectedHospital={selectedHospital}
+                  isNightShiftMode={isNightShiftMode}
                 />
               );
             })}
@@ -1094,6 +1056,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         onToggleSave={onToggleSave}
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
+        selectedHospital={selectedHospital}
         onRequestToBook={(listing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);

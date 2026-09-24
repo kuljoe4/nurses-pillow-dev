@@ -234,7 +234,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">sms</span>
-                  Twilio SMS OTP Screen
+                  Mobile Phone Verification
                 </span>
                 <span className="material-symbols-outlined text-xs text-[#005684] dark:text-[#93ccff] group-hover:translate-x-0.5 transition-transform">
                   arrow_forward

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminLicenseReview, MarketDemandReport, PromoCode, BookingRequest, HousingListing } from '../types';
 import { AdminSheetsPreset } from './GoogleSheetsSyncModal';
 import { Milestone2ScopeGate } from './Milestone2ScopeGate';
+import { db } from '../services/database';
+import { stripeConnect, HostFeeOverride } from '../services/stripeConnect';
 
 interface AdminPortalViewProps {
   isNightShiftMode: boolean;
   onGoToHousing: () => void;
   onOpenGoogleSheets?: (preset?: AdminSheetsPreset) => void;
+  onGoToTier2Plumbing?: () => void;
   bookingRequests?: BookingRequest[];
   listings?: HousingListing[];
   isDeveloper?: boolean;
@@ -16,11 +19,12 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   isNightShiftMode,
   onGoToHousing,
   onOpenGoogleSheets,
+  onGoToTier2Plumbing,
   bookingRequests = [],
   listings = [],
   isDeveloper = false,
 }) => {
-  const [activeAdminTab, setActiveAdminTab] = useState<'queue' | 'fees' | 'analytics' | 'sheets'>('queue');
+  const [activeAdminTab, setActiveAdminTab] = useState<'queue' | 'hosts' | 'fees' | 'analytics' | 'sheets'>('queue');
   const [isAnalyticsUnlocked, setIsAnalyticsUnlocked] = useState(false);
 
   // Screen C1 State
@@ -32,7 +36,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
       issuingState: 'CA',
       licenseNumber: 'RN-9482015-CA',
       licenseStatus: 'verified',
-      hospitalAffiliation: 'UCSF Medical Center (Mission Bay)',
+      hospitalAffiliation: 'Duke University Hospital (Durham)',
       submittedAt: 'Today 10:14 AM',
       nursysLookupUrl: 'https://www.nursys.com',
       documentPurged: true,
@@ -53,10 +57,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
       id: 'rev-3',
       clinicianLegalName: 'Dr. David Chen',
       profession: 'MD',
-      issuingState: 'CA',
-      licenseNumber: 'C-548912',
+      issuingState: 'NC',
+      licenseNumber: 'MD-548912-NC',
       licenseStatus: 'pending_review',
-      hospitalAffiliation: 'Kaiser Permanente San Francisco',
+      hospitalAffiliation: 'UNC Medical Center (Chapel Hill)',
       submittedAt: 'Yesterday 16:45 PM',
       nursysLookupUrl: 'https://www.docinfo.org',
       documentPurged: false,
@@ -66,19 +70,37 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
       clinicianLegalName: 'Elena Rostova',
       profession: 'CRNA',
       issuingState: 'NC',
-      licenseNumber: 'CRNA-88190',
+      licenseNumber: 'CRNA-88190-NC',
       licenseStatus: 'pending_review',
-      hospitalAffiliation: 'UNC Hospitals (Chapel Hill)',
+      hospitalAffiliation: 'WakeMed Raleigh Campus',
       submittedAt: '2 days ago',
       nursysLookupUrl: 'https://www.nursys.com',
       documentPurged: false,
     },
   ]);
 
-  // Screen C2 Fee Slider State
-  const [platformFeePercent, setPlatformFeePercent] = useState<number>(5.0);
+  // Screen C2 Fee Slider & Host Management State
+  const [platformFeePercent, setPlatformFeePercent] = useState<number>(() => stripeConnect.getGlobalPlatformFeePercent());
   const [sampleRent] = useState<number>(2000);
   const [feeNoticeSent, setFeeNoticeSent] = useState(false);
+
+  // Dynamic Host Fee Overrides Directory State
+  const [hosts, setHosts] = useState<HostFeeOverride[]>(() => stripeConnect.getHostProfiles());
+  const [selectedHostIds, setSelectedHostIds] = useState<string[]>([]);
+  const [batchOverridePercent, setBatchOverridePercent] = useState<string>('5.0');
+  const [hostSearchQuery, setHostSearchQuery] = useState('');
+  const [hostFilter, setHostFilter] = useState<'all' | 'override' | 'global'>('all');
+  const [actionToast, setActionToast] = useState<string | null>(null);
+  const [showAddHostForm, setShowAddHostForm] = useState(false);
+  const [newHostForm, setNewHostForm] = useState({
+    hostName: '',
+    email: '',
+    phone: '',
+    propertyTitle: '',
+    hasOverride: true,
+    overridePercent: 5.0,
+    reason: 'Founder Host Cohort — 5% For Life Guarantee',
+  });
 
   // Screen C3 Market Demand & Promo State
   const [demandReports] = useState<MarketDemandReport[]>([
@@ -143,6 +165,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const [newPromoDiscount, setNewPromoDiscount] = useState(5);
 
   const handleApprove = (id: string) => {
+    const rev = reviews.find((r) => r.id === id);
+    if (rev) {
+      db.purgeClinicianDocuments(rev.id, rev.clinicianLegalName);
+    }
     setReviews((prev) =>
       prev.map((r) =>
         r.id === id ? { ...r, licenseStatus: 'verified', documentPurged: true } : r
@@ -159,6 +185,127 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const handleTriggerFeeNotice = () => {
     setFeeNoticeSent(true);
     setTimeout(() => setFeeNoticeSent(false), 3500);
+  };
+
+  // Toast notification helper
+  const showToast = (message: string) => {
+    setActionToast(message);
+    setTimeout(() => {
+      setActionToast((current) => (current === message ? null : current));
+    }, 4000);
+  };
+
+  // Sync state with stripeConnect
+  useEffect(() => {
+    const unsub = stripeConnect.subscribe(() => {
+      setHosts(stripeConnect.getHostProfiles());
+      setPlatformFeePercent(stripeConnect.getGlobalPlatformFeePercent());
+    });
+    return unsub;
+  }, []);
+
+  const handlePlatformFeeSliderChange = (newVal: number) => {
+    setPlatformFeePercent(newVal);
+    stripeConnect.setGlobalPlatformFeePercent(newVal);
+  };
+
+  // Toggle Fee Override for an individual host
+  const handleToggleHostFeeOverride = (hostId: string) => {
+    const host = hosts.find((h) => h.hostId === hostId);
+    if (!host) return;
+    const nextState = !host.hasOverride;
+    stripeConnect.setHostFeeOverride(hostId, nextState, host.overridePercent);
+    setHosts(stripeConnect.getHostProfiles());
+    showToast(
+      nextState
+        ? `Fee Override activated for ${host.hostName} (${host.overridePercent.toFixed(1)}%). Checkout will bypass global ${platformFeePercent.toFixed(1)}% rate.`
+        : `Fee Override disabled for ${host.hostName}. Reverted to global platform rate (${platformFeePercent.toFixed(1)}%).`
+    );
+  };
+
+  // Update specific percentage input for an individual host
+  const handleUpdateHostFeePercent = (hostId: string, val: number) => {
+    const valid = Math.max(0, Math.min(15, Number(val.toFixed(1))));
+    const host = hosts.find((h) => h.hostId === hostId);
+    if (!host) return;
+    stripeConnect.setHostFeeOverride(hostId, true, valid);
+    setHosts(stripeConnect.getHostProfiles());
+    showToast(`Updated fee override to ${valid.toFixed(1)}% for ${host.hostName}. Active in checkout calculations.`);
+  };
+
+  // Toggle selection for batch actions
+  const handleToggleSelectHost = (hostId: string) => {
+    setSelectedHostIds((prev) =>
+      prev.includes(hostId) ? prev.filter((id) => id !== hostId) : [...prev, hostId]
+    );
+  };
+
+  const handleSelectAllFiltered = (filteredList: HostFeeOverride[]) => {
+    if (selectedHostIds.length === filteredList.length) {
+      setSelectedHostIds([]);
+    } else {
+      setSelectedHostIds(filteredList.map((h) => h.hostId));
+    }
+  };
+
+  // Apply batch fee override to selected hosts
+  const handleApplyBatchOverride = (hasOverride: boolean, specificPercent?: number) => {
+    if (selectedHostIds.length === 0) return;
+    const targetPercent =
+      specificPercent !== undefined ? specificPercent : parseFloat(batchOverridePercent) || 5.0;
+    const validPercent = Math.max(0, Math.min(15, Number(targetPercent.toFixed(1))));
+
+    stripeConnect.batchSetHostFeeOverride(
+      selectedHostIds,
+      hasOverride,
+      validPercent,
+      hasOverride ? `Admin override adjustment (${validPercent.toFixed(1)}%)` : 'Standard Global Rate'
+    );
+    setHosts(stripeConnect.getHostProfiles());
+    showToast(
+      hasOverride
+        ? `Applied ${validPercent.toFixed(1)}% fee override to ${selectedHostIds.length} selected host(s). Bypasses global rate in checkout.`
+        : `Disabled override for ${selectedHostIds.length} selected host(s). Reverted to global ${platformFeePercent.toFixed(1)}% rate.`
+    );
+    setSelectedHostIds([]);
+  };
+
+  const handleAddNewHost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHostForm.hostName.trim() || !newHostForm.propertyTitle.trim()) return;
+
+    stripeConnect.addHostProfile({
+      hostId: `host-${Date.now()}`,
+      hostName: newHostForm.hostName.trim(),
+      email: newHostForm.email.trim() || `${newHostForm.hostName.toLowerCase().replace(/\s+/g, '.')}@partner.nursespillow.com`,
+      phone: newHostForm.phone.trim() || '+1 (919) 555-0199',
+      propertyTitle: newHostForm.propertyTitle.trim(),
+      connectedAccountId: `acct_${Math.random().toString(36).substring(2, 10)}_Express`,
+      hasOverride: newHostForm.hasOverride,
+      overridePercent: newHostForm.overridePercent,
+      isGrandfathered: newHostForm.overridePercent === 5.0,
+      reason: newHostForm.reason.trim() || 'Custom Host Fee Agreement',
+    });
+
+    setHosts(stripeConnect.getHostProfiles());
+    setShowAddHostForm(false);
+    setNewHostForm({
+      hostName: '',
+      email: '',
+      phone: '',
+      propertyTitle: '',
+      hasOverride: true,
+      overridePercent: 5.0,
+      reason: 'Founder Host Cohort — 5% For Life Guarantee',
+    });
+    showToast(`Registered new host with ${newHostForm.hasOverride ? `${newHostForm.overridePercent.toFixed(1)}% override` : 'global rate'}.`);
+  };
+
+  const handleDeleteHost = (hostId: string, hostName: string) => {
+    stripeConnect.removeHostProfile(hostId);
+    setHosts(stripeConnect.getHostProfiles());
+    setSelectedHostIds((prev) => prev.filter((id) => id !== hostId));
+    showToast(`Removed ${hostName} from managed hosts.`);
   };
 
   const handleAddPromo = (e: React.FormEvent) => {
@@ -231,6 +378,25 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           <button
             type="button"
             role="tab"
+            id="admin-tab-hosts"
+            aria-selected={activeAdminTab === 'hosts'}
+            aria-controls="admin-panel-hosts"
+            tabIndex={activeAdminTab === 'hosts' ? 0 : -1}
+            onClick={() => setActiveAdminTab('hosts')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#005684] ${
+              activeAdminTab === 'hosts'
+                ? 'bg-[#001848] text-white shadow-xs'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840]'
+            }`}
+          >
+            <span>Host Management</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#0A6FA8]/20 text-[#0A6FA8] dark:text-[#3E9AD1] font-mono">
+              {hosts.filter((h) => h.hasOverride).length} Overrides
+            </span>
+          </button>
+          <button
+            type="button"
+            role="tab"
             id="admin-tab-fees"
             aria-selected={activeAdminTab === 'fees'}
             aria-controls="admin-panel-fees"
@@ -284,6 +450,17 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               Admin
             </span>
           </button>
+
+          {onGoToTier2Plumbing && (
+            <button
+              type="button"
+              onClick={onGoToTier2Plumbing}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 bg-[#0A6FA8]/10 text-[#0A6FA8] hover:bg-[#0A6FA8]/20 dark:text-[#3E9AD1]"
+            >
+              <span className="material-symbols-outlined text-[16px]">terminal</span>
+              <span>Tier 2 Plumbing Console</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -362,15 +539,27 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         {r.hospitalAffiliation}
                       </td>
                       <td className="py-3.5 px-3">
-                        <a
-                          href={r.nursysLookupUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[#005684] dark:text-[#93ccff] font-bold group"
-                        >
-                          <span className="group-hover:underline">Nursys Lookup</span>
-                          <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                        </a>
+                        {r.profession === 'MD' || r.profession === 'DO' ? (
+                          <a
+                            href="https://www.docinfo.org"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[#005684] dark:text-[#93ccff] font-bold group"
+                          >
+                            <span className="group-hover:underline">FSMB DocInfo</span>
+                            <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                          </a>
+                        ) : (
+                          <a
+                            href="https://www.nursys.com"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[#005684] dark:text-[#93ccff] font-bold group"
+                          >
+                            <span className="group-hover:underline">Nursys QuickConfirm</span>
+                            <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                          </a>
+                        )}
                       </td>
                       <td className="py-3.5 px-3">
                         {r.licenseStatus === 'verified' ? (
@@ -504,6 +693,146 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 >
                   {feeNoticeSent ? 'Dispatched 30-Day Notice ✓' : 'Publish Fee Adjustment'}
                 </button>
+              </div>
+            </div>
+
+            {/* Founder Host Tier: First 50 Hosts @ 5% for Life Override Card */}
+            <div className="mt-8 pt-8 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-[#0B2559] dark:text-white">
+                      Founder Host Cohort — 5% For Life Override
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] text-[11px] font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
+                      Grandfathered
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Hosts in this cohort are permanently locked into the 5.0% take-rate. When you increase the global marketplace fee above, their fee never increases.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EFF6FB] dark:bg-[#182840] text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
+                    {founderCohort.length} / 50 Enrolled
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddFounderForm(!showAddFounderForm)}
+                    className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">
+                      {showAddFounderForm ? 'close' : 'add'}
+                    </span>
+                    <span>{showAddFounderForm ? 'Cancel' : 'Enroll Host'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Add Host Form */}
+              {showAddFounderForm && (
+                <div className="p-4 mb-4 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 space-y-3">
+                  <div className="text-xs font-bold text-[#0B2559] dark:text-white">
+                    Enroll Host into the 5% For Life Cohort
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Host Name (e.g. Rachel Adams)"
+                      value={newHostName}
+                      onChange={(e) => setNewHostName(e.target.value)}
+                      className="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0B1626] text-[#0B2559] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Property / Listing (e.g. Duke Medical Cottage)"
+                      value={newHostProperty}
+                      onChange={(e) => setNewHostProperty(e.target.value)}
+                      className="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0B1626] text-[#0B2559] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newHostName.trim() && newHostProperty.trim()) {
+                          setFounderCohort([
+                            ...founderCohort,
+                            {
+                              id: `fh-${Date.now()}`,
+                              name: newHostName.trim(),
+                              property: newHostProperty.trim(),
+                              dateEnrolled: 'Just now',
+                              overridePercent: 5.0,
+                              isLocked: true,
+                            },
+                          ]);
+                          setNewHostName('');
+                          setNewHostProperty('');
+                          setShowAddFounderForm(false);
+                        }
+                      }}
+                      disabled={!newHostName.trim() || !newHostProperty.trim()}
+                      className="px-4 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] disabled:opacity-50 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Confirm 5% Lifetime Lock
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Founder Hosts Table */}
+              <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-gray-50 dark:bg-[#14233a] border-b border-gray-200 dark:border-gray-800 text-[11px] font-bold text-gray-500 uppercase">
+                    <tr>
+                      <th className="px-4 py-2.5">Host Name</th>
+                      <th className="px-4 py-2.5">Property</th>
+                      <th className="px-4 py-2.5">Enrolled</th>
+                      <th className="px-4 py-2.5">Locked Fee</th>
+                      <th className="px-4 py-2.5">Status</th>
+                      <th className="px-4 py-2.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-[#0B1626]">
+                    {founderCohort.map((host) => (
+                      <tr key={host.id} className="hover:bg-gray-50/50 dark:hover:bg-[#111e33]">
+                        <td className="px-4 py-2.5 font-bold text-[#0B2559] dark:text-white">
+                          {host.name}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                          {host.property}
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-500 tabular-nums">
+                          {host.dateEnrolled}
+                        </td>
+                        <td className="px-4 py-2.5 font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
+                          {host.overridePercent.toFixed(1)}% Fixed
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] text-[10px] font-bold">
+                            <span className="material-symbols-outlined text-[12px]">lock</span>
+                            Locked for Life
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFounderCohort(founderCohort.filter((h) => h.id !== host.id));
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                            title="Remove from 5% Cohort"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

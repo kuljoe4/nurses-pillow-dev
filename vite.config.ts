@@ -1,11 +1,24 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, Plugin} from 'vite';
+import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware';
+
+function phoneAuthApiPlugin(): Plugin {
+  return {
+    name: 'phone-auth-api-plugin',
+    configureServer(server) {
+      server.middlewares.use(createPhoneAuthMiddleware());
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(createPhoneAuthMiddleware());
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), phoneAuthApiPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

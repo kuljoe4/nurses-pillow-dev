@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { postmarkMail } from '../services/postmarkMail';
 
 interface PostmarkEmailVerificationViewProps {
   isNightShiftMode: boolean;
@@ -16,12 +17,18 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   onBackToOverview,
 }) => {
   const [email, setEmail] = useState(initialEmail || 'sarah.jenkins@alumni.duke.edu');
-  const [pin, setPin] = useState(['9', '3', '8', '', '', '']);
+  const [pin, setPin] = useState(['9', '3', '8', '4', '1', '2']);
   const [countdown, setCountdown] = useState(48);
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [resendNotification, setResendNotification] = useState<string | null>(null);
   const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Send transactional email on mount
+  useEffect(() => {
+    postmarkMail.sendVerificationEmail(email, 'Sarah E. Jenkins', '938412');
+  }, [email]);
 
   // Countdown timer for resend
   useEffect(() => {
@@ -41,8 +48,8 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
 
     // Auto-advance
     if (cleanVal && index < 5) {
-      pinInputRefs.current[index+ 1]?.focus();
-      pinInputRefs.current[index+ 1]?.select();
+      pinInputRefs.current[index + 1]?.focus();
+      pinInputRefs.current[index + 1]?.select();
     }
   };
 
@@ -56,13 +63,17 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
     const newEmail = prompt('Enter your updated medical or institutional email address:', email);
     if (newEmail && newEmail.includes('@')) {
       setEmail(newEmail.trim());
+      void postmarkMail.sendVerificationEmail(newEmail.trim(), 'Sarah E. Jenkins', '938412');
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (!canResend) return;
+    const res = await postmarkMail.sendVerificationEmail(email, 'Sarah E. Jenkins', '938412');
     setCountdown(60);
     setCanResend(false);
+    setResendNotification(`Postmark email dispatched to ${email} (MessageID: ${res.messageId.slice(0, 12)}...)`);
+    setTimeout(() => setResendNotification(null), 5000);
   };
 
   const handleVerify = () => {
@@ -73,7 +84,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
       setTimeout(() => {
         onProceedToPhoneVerification();
       }, 1000);
-    }, 1200);
+    }, 1000);
   };
 
   const formattedCountdown = `00:${countdown < 10 ? `0${countdown}` : countdown}`;
@@ -149,7 +160,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 <span className="text-xs">3</span>
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-semibold truncate">Twilio SMS OTP</div>
+                <div className="text-xs font-semibold truncate">Mobile Verification</div>
                 <div className="text-[11px] text-[#404850] dark:text-[#c0c7d1] truncate">Up next</div>
               </div>
             </div>
@@ -406,6 +417,13 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                     <span className="text-xs text-[#404850] dark:text-[#c0c7d1]">Expires in 15:00</span>
                   </div>
 
+                  {resendNotification && (
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span>{resendNotification}</span>
+                    </div>
+                  )}
+
                   {/* 6 PIN inputs */}
                   <div className="grid grid-cols-6 gap-2 sm:gap-3.5" id="pin-container">
                     {pin.map((digit, idx) => (
@@ -441,12 +459,12 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                     {isVerifying ? (
                       <>
                         <span className="material-symbols-outlined text-[20px] animate-spin">sync</span>
-                        <span>Verifying with Postmark...</span>
+                        <span>Verifying Email...</span>
                       </>
                     ) : isVerified ? (
                       <>
                         <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                        <span>Verified! Routing to Twilio SMS...</span>
+                        <span>Verified! Routing to Mobile Verification...</span>
                       </>
                     ) : (
                       <>

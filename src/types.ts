@@ -8,6 +8,7 @@ export type NavigationTab =
   | 'host-dashboard'
   | 'host-onboarding'
   | 'admin-portal'
+  | 'tier2-plumbing'
   | 'how-it-works'
   | 'for-hosts'
   | 'nurse-support'
@@ -153,11 +154,15 @@ export interface HousingListing {
   featuredSanctuary: boolean;
   propertyType?: string;
   hostType?: string;
+  hostId?: string;
+  hostName?: string;
   highlightBadges?: string[];
   distanceBadge?: string;
   requiresSecurityDeposit?: boolean;
   securityDeposit?: number;
   depositTermsExplainer?: string;
+  customFeeOverridePercent?: number;
+  hasFeeOverride?: boolean;
 }
 
 export interface Hospital {

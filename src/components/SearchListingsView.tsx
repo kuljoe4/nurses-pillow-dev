@@ -7,6 +7,7 @@ import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
 import { PillowSaveButton } from './PillowSaveButton';
 import { SearchListingCard } from './SearchListingCard';
+import { GoogleMapsSplitView } from './GoogleMapsSplitView';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -31,7 +32,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   isVerified,
   onGoToVerification,
   onRequestToBookListing,
-  initialHospital = 'UCSF Medical Center - Mission Bay (San Francisco, CA)',
+  initialHospital = 'Duke University Hospital (Durham, NC)',
   initialDuration = '13',
   initialRadius = 5,
   isLoading,
@@ -53,7 +54,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [sortOption, setSortOption] = useState<'closest' | 'price_low' | 'quiet_score'>('closest');
   const [activeFilterChip, setActiveFilterChip] = useState<'all' | 'entire' | 'private' | 'blackout' | 'laundry' | 'parking'>('all');
   const [commuteMode, setCommuteMode] = useState<'transit' | 'drive'>('transit');
-  const [selectedMapListingId, setSelectedMapListingId] = useState<string>('sf-dogpatch-studio');
+  const [selectedMapListingId, setSelectedMapListingId] = useState<string>('nc-duke-condo');
   const [mapZoom, setMapZoom] = useState(1);
   const [mapNotification, setMapNotification] = useState<string | null>(null);
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
@@ -1064,96 +1065,19 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 </div>
               </div>
 
-              {/* Stylized SVG Map Graphics */}
-              <div className="relative my-2 sm:my-3 flex-1 min-h-[340px] lg:min-h-0 w-full rounded-2xl overflow-hidden bg-[#e5ecf5] dark:bg-[#0c1a2d] border border-[rgba(11,37,89,0.08)] flex items-center justify-center">
-                {/* SVG Visual Map */}
-                <svg className="w-full h-full absolute inset-0" viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Grid Lines */}
-                  <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(11,37,89,0.06)" strokeWidth="1" />
-                    </pattern>
-                  </defs>
-                  <rect width="600" height="500" fill="url(#grid)" />
-
-                  {/* Water Body */}
-                  <path
-                    d="M 450 0 C 470 120, 520 220, 600 280 L 600 0 Z"
-                    fill="rgba(0,86,132,0.12)"
-                    stroke="rgba(0,86,132,0.25)"
-                    strokeWidth="2"
-                  />
-
-                  {/* Commute Transit Transit Line */}
-                  <path
-                    d="M 300 250 Q 360 210, 420 180 T 480 140"
-                    stroke="#005684"
-                    strokeWidth="3"
-                    strokeDasharray="6 4"
-                    opacity="0.8"
-                  />
-
-                  {/* Hospital Hub (Center) */}
-                  <circle cx="300" cy="250" r="44" fill="rgba(0,86,132,0.15)" className="" />
-                  <circle cx="300" cy="250" r="22" fill="#005684" stroke="white" strokeWidth="3" />
-                  <text x="300" y="255" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">H</text>
-
-                  {/* Buffer Radius Circle */}
-                  <circle cx="300" cy="250" r={commuteBuffer * 16} fill="none" stroke="#005684" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.4" />
-                </svg>
-
-                {/* Listing Pins (Interactive overlay) */}
-                <div className="absolute inset-0 pointer-events-auto">
-                  {filteredListings.slice(0, 8).map((listing, idx) => {
-                    const offsets = [
-                      { top: '35%', left: '32%' },
-                      { top: '48%', left: '60%' },
-                      { top: '65%', left: '38%' },
-                      { top: '28%', left: '64%' },
-                      { top: '58%', left: '20%' },
-                      { top: '22%', left: '42%' },
-                      { top: '72%', left: '55%' },
-                      { top: '40%', left: '75%' },
-                    ];
-                    const pos = offsets[idx % offsets.length];
-                    const isSelected = selectedMapListingId === listing.id;
-
-                    return (
-                      <button
-                        key={listing.id}
-                        type="button"
-                        onClick={() => setSelectedMapListingId(listing.id)}
-                        style={{ top: pos.top, left: pos.left }}
-                        className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full text-xs font-extrabold shadow-md transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1 ${
-                          isSelected
-                            ? 'bg-[#001848] text-white scale-125 z-20 ring-2 ring-white ring-offset-1'
-                            : 'bg-white dark:bg-[#111e33] text-[#001848] dark:text-white hover:scale-110 z-10 border border-[rgba(11,37,89,0.15)]'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[13px] text-amber-500">bed</span>
-                        <span>${listing.monthlyRate.toLocaleString()}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Map Floating Zoom Controls */}
-                <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-20 bg-white dark:bg-[#111e33] rounded-xl p-1 shadow-md border border-[rgba(11,37,89,0.1)]">
-                  <button
-                    type="button"
-                    onClick={() => setMapZoom(Math.min(mapZoom+ 0.2, 2))}
-                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] rounded"
-                  >
-                   +
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMapZoom(Math.max(mapZoom - 0.2, 0.6))}
-                    className="w-7 h-7 flex items-center justify-center font-bold text-sm text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] rounded"
-                  >
-                    −
-                  </button>
-                </div>
+              {/* Live Interactive Google Maps Split View */}
+              <div className="relative my-2 sm:my-3 flex-1 min-h-[420px] lg:min-h-0 w-full rounded-2xl overflow-hidden shadow-sm">
+                <GoogleMapsSplitView
+                  isNightShiftMode={isNightShiftMode}
+                  listings={filteredListings}
+                  selectedListingId={selectedMapListingId}
+                  onSelectListing={(listing) => {
+                    setSelectedMapListingId(listing.id);
+                    setActiveDetailListing(listing);
+                  }}
+                  hospitalName={selectedHospital}
+                  radiusMiles={commuteBuffer}
+                />
               </div>
 
               {/* Bottom Selected Listing Preview Card */}
@@ -1282,6 +1206,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
         onToggleSave={onToggleSave}
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
+        selectedHospital={selectedHospital}
         onRequestToBook={(listing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);

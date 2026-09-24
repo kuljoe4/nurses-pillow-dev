@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
+import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
+import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 
 interface ListingDetailModalProps {
   listing: HousingListing | null;
@@ -12,6 +14,7 @@ interface ListingDetailModalProps {
   isVerified: boolean;
   onGoToVerification: () => void;
   onRequestToBook?: (listing: HousingListing) => void;
+  selectedHospital?: string;
 }
 
 export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
@@ -23,8 +26,14 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   isVerified,
   onGoToVerification,
   onRequestToBook,
+  selectedHospital = 'Duke University Hospital',
 }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const commute = useMemo(() => {
+    if (!listing) return null;
+    return calculateCommuteDuration(listing, selectedHospital);
+  }, [listing, selectedHospital]);
 
   // Close on Escape key press
   useEffect(() => {
@@ -206,6 +215,27 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 <span>Keyless Digital PIN</span>
               </span>
             </div>
+
+            {/* Google Maps-Powered Commute to Clinician's Selected Hospital */}
+            {commute && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[#0B2559] dark:text-white">
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                      directions_car
+                    </span>
+                    <span>Hospital Commute &amp; Travel Duration</span>
+                  </span>
+                  <span className="text-[11px] text-[#2F6E5E] dark:text-[#aff0db] font-semibold">
+                    Live Travel Duration
+                  </span>
+                </div>
+                <GoogleMapsTravelTimeDisplay
+                  commute={commute}
+                  isNightShiftMode={isNightShiftMode}
+                />
+              </div>
+            )}
 
             {/* Clinical Sanctuary Highlight Bento (3-Card Stack) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

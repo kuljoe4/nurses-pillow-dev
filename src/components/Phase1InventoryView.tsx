@@ -763,7 +763,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                   {notificationChannelPreview === 'SMS' && (
                     <div className="max-w-md mx-auto p-4 rounded-3xl bg-[#E9E9EB] dark:bg-[#1C2533] text-black dark:text-white shadow-sm space-y-2">
                       <div className="text-[10px] text-center opacity-60 font-semibold">
-                        Twilio SMS Verified Gateway • 1-800-PILLOWS
+                        SMS Notification Gateway • 1-800-PILLOWS
                       </div>
                       <div className="bg-[#007AFF] text-white p-3 rounded-2xl rounded-bl-none text-xs leading-relaxed max-w-[85%]">
                         {customNotificationCopy || selectedNotification.sampleBody}
@@ -1393,7 +1393,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
                 Lawrence placed an explicit hold on opening Milestone 1 pending final legal clarification regarding NC real-estate licensing (NCREC) and occupancy tax rules: <em>"Please do not open Milestone 1 until I provide written authorization"</em>.
               </p>
               <div className="text-[11px] font-semibold bg-amber-500/20 px-2.5 py-1 rounded-lg text-amber-800 dark:text-amber-200">
-                Stripe &amp; Twilio test/sandbox mode active: all QA runs safely with zero live money movement.
+                Payment &amp; verification test sandbox mode active: all QA runs safely with zero live money movement.
               </div>
             </div>
           </div>

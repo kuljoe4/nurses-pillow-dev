@@ -508,6 +508,28 @@ export const Header: React.FC<HeaderProps> = ({
                       </span>
                     </button>
 
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectTab('tier2-plumbing');
+                        setIsMoreMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                          terminal
+                        </span>
+                        <div>
+                          <div className="font-bold text-[#001848] dark:text-white">Tier 2 Backend &amp; Plumbing</div>
+                          <div className="text-[10px] text-gray-500">Stripe Split, DB Seeds, Refunds</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0A6FA8]/15 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold">
+                        Days 6–15
+                      </span>
+                    </button>
+
                     <div className="mt-1 pt-2 border-t border-gray-100 dark:border-[#1e3048] px-3 pb-1 flex items-center justify-between">
                       <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300">
                         Milestone 2 Scope

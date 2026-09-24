@@ -289,7 +289,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold mb-1">Mobile Phone Number (Twilio OTP)</label>
+                  <label className="block font-bold mb-1">Mobile Phone Number</label>
                   <input
                     type="tel"
                     value={phone}
