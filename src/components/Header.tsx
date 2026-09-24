@@ -550,7 +550,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
 
                 {/* Staging Access & Review Perspective (lawrence) */}
-                {isStagingAuthenticated && (
+                {isStagingAuthenticated && isDeveloper && (
                   <div className="mt-2 pt-2 border-t border-gray-100 dark:border-[#1e3048]">
                     <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
                       <span>Staging Review Access</span>
@@ -805,7 +805,7 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
 
                   {/* Staging Access & Review Control Capsule (lawrence) */}
-                  {isStagingAuthenticated && (
+                  {isStagingAuthenticated && isDeveloper && (
                     <div className="p-3 rounded-2xl bg-[#001848]/5 dark:bg-[#182840]/60 border border-[#0A6FA8]/20 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
@@ -1641,7 +1641,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Staging Access & Review Perspective for Mobile (lawrence) */}
-            {isStagingAuthenticated && (
+            {isStagingAuthenticated && isDeveloper && (
               <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
                 <div className="px-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   <span>Staging Review Access</span>

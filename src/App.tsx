@@ -434,15 +434,6 @@ export default function App() {
                   <span className="opacity-40 hidden sm:inline">|</span>
                   <button
                     type="button"
-                    onClick={handleDeveloperSignIn}
-                    className="hover:underline text-gray-400 hover:text-purple-300 focus-visible:text-purple-300 text-[10px] font-mono cursor-pointer"
-                    title="Switch to Developer Mode"
-                  >
-                    Developer Mode
-                  </button>
-                  <span className="opacity-40">|</span>
-                  <button
-                    type="button"
                     onClick={() => {
                       sessionStorage.removeItem('np_staging_auth_lawrence');
                       sessionStorage.removeItem('np_staging_user');
