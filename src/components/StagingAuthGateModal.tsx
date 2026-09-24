@@ -54,14 +54,6 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
     onAuthenticated('client');
   };
 
-  const handleQuickDeveloperUnlock = () => {
-    setUsername('developer');
-    setPassword('np-dev-2026');
-    sessionStorage.setItem('np_staging_auth_lawrence', 'true');
-    sessionStorage.setItem('np_staging_user', 'developer');
-    onAuthenticated('developer');
-  };
-
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#001848]/85 backdrop-blur-md animate-fade-in">
       <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
@@ -167,14 +159,6 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
             >
               <span className="material-symbols-outlined text-sm text-[#10b981]">verified_user</span>
               <span>Client Review Access (Lawrence Roberts • Milestone 1)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleQuickDeveloperUnlock}
-              className="w-full text-center text-[11px] text-gray-400 hover:text-purple-400 focus-visible:text-purple-400 dark:hover:text-purple-300 focus-visible:text-purple-300 transition-colors py-1 cursor-pointer font-mono"
-            >
-              Developer Access (Joshua • Milestone 2 Scaffold)
             </button>
           </div>
         </form>
