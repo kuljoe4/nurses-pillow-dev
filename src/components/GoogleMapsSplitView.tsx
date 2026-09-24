@@ -118,11 +118,13 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
     const lat = hospital.lat + Math.sin(angle) * degLat;
     const lng = hospital.lng + Math.cos(angle) * degLng;
     const isSelected = selectedListingId === listing.id;
+    const distanceMiles = Math.max(0.1, Math.round((distanceKm * 0.621371) * 10) / 10);
 
     return {
       listing,
       position: { lat, lng },
       isSelected,
+      distanceMiles,
     };
   });
 
@@ -199,7 +201,7 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
             </AdvancedMarker>
 
             {/* Housing Listing Markers */}
-            {listingMarkers.map(({ listing, position, isSelected }) => (
+            {listingMarkers.map(({ listing, position, isSelected, distanceMiles }) => (
               <AdvancedMarker
                 key={listing.id}
                 position={position}
@@ -207,12 +209,16 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
                 onClick={() => onSelectListing(listing)}
               >
                 <div
-                  className={`relative cursor-pointer transition-all duration-200 ease-in-out -translate-x-1/2 -translate-y-full ${
-                    isSelected ? 'scale-125 z-30' : 'hover:scale-110 z-10'
+                  className={`relative cursor-pointer transition-all duration-200 ease-in-out -translate-x-1/2 -translate-y-full flex flex-col items-center ${
+                    isSelected ? 'scale-110 z-30' : 'hover:scale-105 z-10'
                   }`}
                 >
+                  {/* Proximity Badge above price pin when hovered/selected */}
+                  <div className={`absolute -top-7 whitespace-nowrap px-2 py-1 rounded-md bg-[#195b4c] text-white text-[10px] font-bold shadow-sm transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                    📍 {distanceMiles} miles from {hospital.name}
+                  </div>
                   <div
-                    className={`px-2.5 py-1 rounded-full text-xs font-extrabold shadow-md flex items-center gap-1 whitespace-nowrap transition-colors ${
+                    className={`px-2.5 py-1 mt-6 rounded-full text-xs font-extrabold shadow-md flex items-center gap-1 whitespace-nowrap transition-colors ${
                       isSelected
                         ? 'bg-[#005684] text-white ring-2 ring-white ring-offset-1'
                         : 'bg-white dark:bg-[#111e33] text-[#001848] dark:text-white border border-[rgba(11,37,89,0.18)] hover:bg-[#f2f3ff]'

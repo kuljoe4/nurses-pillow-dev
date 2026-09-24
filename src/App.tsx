@@ -935,7 +935,7 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* 24/7 Nurse Concierge Support Modal */}
+      {/* 24/7 Support Modal */}
       {isSupportOpen && (
         <Suspense fallback={null}>
           <NurseSupportModal
