@@ -27,6 +27,12 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const [activeAdminTab, setActiveAdminTab] = useState<'queue' | 'hosts' | 'fees' | 'analytics' | 'sheets'>('queue');
   const [isAnalyticsUnlocked, setIsAnalyticsUnlocked] = useState(false);
 
+  // Cohort state
+  const [founderCohort, setFounderCohort] = useState<any[]>([]);
+  const [showAddFounderForm, setShowAddFounderForm] = useState(false);
+  const [newHostName, setNewHostName] = useState('');
+  const [newHostProperty, setNewHostProperty] = useState('');
+
   // Screen C1 State
   const [reviews, setReviews] = useState<AdminLicenseReview[]>([
     {
