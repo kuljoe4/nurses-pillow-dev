@@ -16,7 +16,8 @@ export interface SearchListingCardProps {
   isNightShiftMode?: boolean;
 }
 
-export const SearchListingCard: React.FC<SearchListingCardProps> = ({
+export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
+
   listing,
   isSaved,
   isSelectedOnMap = false,
@@ -53,7 +54,6 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
 
   return (
     <motion.div
-      layout
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
@@ -325,4 +325,4 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});

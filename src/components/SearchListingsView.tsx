@@ -58,6 +58,15 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [mapZoom, setMapZoom] = useState(1);
   const [mapNotification, setMapNotification] = useState<string | null>(null);
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
+
+  const handleSelectOnMap = useCallback((id: string) => {
+    setSelectedMapListingId(id);
+  }, []);
+
+  const handleViewDetails = useCallback((listing: HousingListing) => {
+    setActiveDetailListing(listing);
+  }, []);
+
   const [activeAmenityCount, setActiveAmenityCount] = useState(4);
   const [internalLoading, setInternalLoading] = useState(true);
 
@@ -1008,7 +1017,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                   </button>
                 </motion.div>
               ) : (
-                <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <AnimatePresence mode="popLayout">
                     {filteredListings.map((listing) => {
                       const isSaved = savedListingIds.includes(listing.id);
@@ -1021,8 +1030,8 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                           isSaved={isSaved}
                           isSelectedOnMap={isSelectedOnMap}
                           onToggleSave={onToggleSave}
-                          onSelectOnMap={setSelectedMapListingId}
-                          onViewDetails={setActiveDetailListing}
+                          onSelectOnMap={handleSelectOnMap}
+                          onViewDetails={handleViewDetails}
                           onRequestToBook={onRequestToBookListing}
                           selectedHospital={selectedHospital}
                           viewMode="split-map"
@@ -1170,7 +1179,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                 </button>
               </motion.div>
             ) : (
-              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
                   {filteredListings.map((listing) => {
                     const isSaved = savedListingIds.includes(listing.id);
@@ -1180,7 +1189,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
                         listing={listing}
                         isSaved={isSaved}
                         onToggleSave={onToggleSave}
-                        onViewDetails={setActiveDetailListing}
+                        onViewDetails={handleViewDetails}
                         onRequestToBook={onRequestToBookListing}
                         selectedHospital={selectedHospital}
                         viewMode="grid"
