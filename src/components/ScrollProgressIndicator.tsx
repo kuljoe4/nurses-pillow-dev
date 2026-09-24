@@ -3,11 +3,19 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 interface ScrollProgressIndicatorProps {
   isNightShiftMode: boolean;
   currentTab?: string;
+  isStagingHidden?: boolean;
+  onShowStagingBanner?: () => void;
+  stagingClientName?: string;
+  isDeveloper?: boolean;
 }
 
 export const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = ({
   isNightShiftMode,
   currentTab,
+  isStagingHidden = false,
+  onShowStagingBanner,
+  stagingClientName,
+  isDeveloper = false,
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -197,6 +205,24 @@ export const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = (
             <span className="material-symbols-outlined text-[13px] leading-none">arrow_upward</span>
             <span className="group-hover:underline underline-offset-2">Top</span>
           </button>
+
+          {/* Staging review banner toggle (when hidden) */}
+          {isStagingHidden && stagingClientName && onShowStagingBanner && (
+            <>
+              <span className="w-px h-3 bg-[rgba(11,37,89,0.15)] dark:bg-white/15" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={onShowStagingBanner}
+                title="Expand staging review bar"
+                className="flex items-center gap-1.5 text-[11px] font-medium text-[#001848] dark:text-[#E6ECF7] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] transition-colors cursor-pointer group"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 group-hover:scale-125 transition-transform" />
+                <span className="font-mono">{stagingClientName}</span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">({isDeveloper ? 'dev' : 'review'})</span>
+                <span className="material-symbols-outlined text-[13px] leading-none text-gray-400 group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1]">expand_less</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>

@@ -62,12 +62,19 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const hostEffective = stripeConnect.getEffectiveFeeRate(listing.id || listing.title);
   const hostOverride = hostEffective.host;
 
-  // Split calculation preview based on host's effective fee rate
+  // Determine the final fee rate to use (listing custom fee takes precedence over host effective fee)
+  const finalFeeRate = listing.customFeeOverridePercent !== undefined
+    ? listing.customFeeOverridePercent / 100
+    : hostEffective.feeRate;
+
+  const isListingOverrideActive = listing.customFeeOverridePercent !== undefined;
+
+  // Split calculation preview based on final effective fee rate
   const splitPreview = stripeConnect.calculateSplit(
     monthlyRent,
     cleaningFee,
     securityDeposit,
-    hostEffective.feeRate
+    finalFeeRate
   );
 
   const handleSelectCard = (card: typeof STRIPE_TEST_CARDS[0]) => {
@@ -84,14 +91,14 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Execute Stripe Connect split payment in sandbox mode with host's effective rate
+      // Execute Stripe Connect split payment in sandbox mode with final effective rate
       const splitTxn = await stripeConnect.processSplitPayment({
         monthlyRent,
         cleaningFee,
         securityDeposit,
         cardNumber,
         hostConnectedAccountId: hostOverride?.connectedAccountId || 'acct_1NC_DukeHost_Express',
-        customFeeRateOrPercent: hostEffective.feeRate,
+        customFeeRateOrPercent: finalFeeRate,
       });
       setLastSplitTxn(splitTxn);
 
@@ -346,10 +353,10 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               <div className="flex justify-between items-center text-[11px] text-purple-800 dark:text-purple-300">
                 <span className="flex items-center gap-1.5">
                   <span>Nurses Pillow {splitPreview.feePercent.toFixed(1)}% Platform Fee:</span>
-                  {hostEffective.isOverride && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-purple-200 dark:bg-purple-900/60 text-purple-900 dark:text-purple-200 text-[10px] font-bold">
+                  {(isListingOverrideActive || hostEffective.isOverride) && (
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-purple-200 dark:bg-purple-900/60 text-purple-900 dark:text-purple-200 text-[10px] font-bold" title={isListingOverrideActive ? "Listing Override Active" : "Host Override Active"}>
                       <span className="material-symbols-outlined text-[10px]">tune</span>
-                      Host Override Active
+                      {isListingOverrideActive ? 'Listing Override Active' : 'Host Override Active'}
                     </span>
                   )}
                   <strong>${splitPreview.platformFee.toFixed(2)}</strong>

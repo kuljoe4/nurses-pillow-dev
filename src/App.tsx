@@ -877,6 +877,10 @@ export default function App() {
         <ScrollProgressIndicator
           isNightShiftMode={isNightShiftMode}
           currentTab={currentTab}
+          isStagingHidden={isStagingAuthenticated && !isStagingBannerVisible}
+          onShowStagingBanner={() => setIsStagingBannerVisible(true)}
+          stagingClientName="lawrence"
+          isDeveloper={isDeveloper}
         />
       </main>
 
@@ -995,22 +999,6 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* Floating Discreet Staging Indicator when Top Bar is Autohidden */}
-      {isStagingAuthenticated && !isStagingBannerVisible && (
-        <aside aria-label="Staging Environment Indicator" className="fixed bottom-4 right-4 z-40">
-          <button
-            type="button"
-            onClick={() => setIsStagingBannerVisible(true)}
-            className="px-3 py-1.5 rounded-full bg-[#001848]/90 dark:bg-[#111e33]/90 backdrop-blur-md text-white border border-[#0A6FA8]/40 shadow-lg text-[11px] font-medium flex items-center gap-1.5 hover:border-[#0A6FA8] transition-all cursor-pointer group"
-            title="Expand staging review bar"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 group-hover:scale-125 transition-transform" />
-            <span className="font-mono text-[11px]">lawrence</span>
-            <span className="text-[10px] text-gray-300">({isDeveloper ? 'dev' : 'review'})</span>
-            <span className="material-symbols-outlined text-[13px] text-gray-400 group-hover:text-white">expand_less</span>
-          </button>
-        </aside>
-      )}
     </div>
   );
 }
