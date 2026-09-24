@@ -4,6 +4,7 @@ import { HousingListing, BookingRequest } from '../types';
 import { stripeConnect, STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, StripeSplitTransaction } from '../services/stripeConnect';
 import { CancellationRefundEngine, CancellationTier } from '../services/cancellationEngine';
 import { postmarkMail } from '../services/postmarkMail';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ItemizedCheckoutModalProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   isNightShiftMode,
   onBookingSubmitted,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [agreedToPolicy, setAgreedToPolicy] = useState(true);
   const [specialNote, setSpecialNote] = useState('Hi Sarah! I am rotating day shifts in the PICU at Duke University Hospital. Excited for the quiet sanctuary.');
   const [selectedTestCard, setSelectedTestCard] = useState(STRIPE_TEST_CARDS[0]);

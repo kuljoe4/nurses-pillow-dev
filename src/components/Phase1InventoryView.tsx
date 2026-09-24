@@ -12,6 +12,7 @@ import {
   getScreenBuildTier,
 } from '../data/phase1InventoryData';
 import { NavigationTab } from '../types';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface Phase1InventoryViewProps {
   isNightShiftMode: boolean;
@@ -26,6 +27,8 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
   onOpenSupport,
   onOpenAuthModal,
 }) => {
+
+
   const [activeMainTab, setActiveMainTab] = useState<'screens' | 'flows' | 'notifications' | 'states' | 'summary' | 'blocked' | 'out-of-scope'>('screens');
 
   // Screens filter state
@@ -35,6 +38,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
   const [buildTierFilter, setBuildTierFilter] = useState<'all' | 'T1' | 'T2' | 'T3' | 'T4'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedScreenForDetail, setSelectedScreenForDetail] = useState<InventoryScreen | null>(null);
+useBodyScrollLock(!!selectedScreenForDetail);
 
   // Flows filter state
   const [selectedFlow, setSelectedFlow] = useState<EndToEndFlow>(PHASE_1_FLOWS[0]);

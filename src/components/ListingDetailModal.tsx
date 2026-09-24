@@ -4,6 +4,7 @@ import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration } from '../lib/googleMapsCommute';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ListingDetailModalProps {
   listing: HousingListing | null;
@@ -28,6 +29,8 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   onRequestToBook,
   selectedHospital = 'Duke University Hospital',
 }) => {
+  useBodyScrollLock(true);
+
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const commute = useMemo(() => {

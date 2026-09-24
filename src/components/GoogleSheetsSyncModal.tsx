@@ -20,6 +20,7 @@ import {
   GoogleDriveFile,
 } from '../services/googleSheets';
 import { BookingRequest, HousingListing, MarketDemandReport, AdminLicenseReview, UserRole } from '../types';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 export type AdminSheetsPreset =
   | 'admin-demand'
@@ -50,6 +51,8 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
   demandReports = [],
   licenseReviews = [],
 }) => {
+  useBodyScrollLock(isOpen);
+
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [hasToken, setHasToken] = useState<boolean>(false);

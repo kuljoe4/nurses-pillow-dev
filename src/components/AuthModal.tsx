@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserRole } from '../types';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   isDeveloper = false,
   onDeveloperSignIn,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [role, setRole] = useState<UserRole>('nurse');
 

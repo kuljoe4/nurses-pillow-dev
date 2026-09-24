@@ -8,6 +8,7 @@ import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
 import { PillowSaveButton } from './PillowSaveButton';
 import { SearchListingCard } from './SearchListingCard';
 import { GoogleMapsSplitView } from './GoogleMapsSplitView';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -40,6 +41,8 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   onToggleM2Bypass,
   isDeveloper = false,
 }) => {
+
+
   const [selectedHospital, setSelectedHospital] = useState(initialHospital);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
@@ -58,6 +61,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const [mapZoom, setMapZoom] = useState(1);
   const [mapNotification, setMapNotification] = useState<string | null>(null);
   const [isGsaModalOpen, setIsGsaModalOpen] = useState(false);
+useBodyScrollLock(isGsaModalOpen);
 
   const handleSelectOnMap = useCallback((id: string) => {
     setSelectedMapListingId(id);

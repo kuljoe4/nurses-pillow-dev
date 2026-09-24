@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { UserRole } from '../types';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface LogoutConfirmationModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
   currentUser,
   isNightShiftMode,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close modal on Escape key press
