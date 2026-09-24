@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface StagingAuthGateModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
   onAuthenticated,
   isNightShiftMode,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [username, setUsername] = useState('lawrence');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

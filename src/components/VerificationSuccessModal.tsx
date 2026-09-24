@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { VerificationFormData } from '../types';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface VerificationSuccessModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
   onGoToHousing,
   isNightShiftMode,
 }) => {
+  useBodyScrollLock(isOpen);
+
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

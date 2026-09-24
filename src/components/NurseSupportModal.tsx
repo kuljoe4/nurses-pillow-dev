@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface NurseSupportModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
   onClose,
   isNightShiftMode,
 }) => {
+  useBodyScrollLock(isOpen);
+
   const [ticketSubject, setTicketSubject] = useState('quiet_hours');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);

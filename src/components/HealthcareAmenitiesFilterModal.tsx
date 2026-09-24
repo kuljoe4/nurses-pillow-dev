@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface HealthcareAmenitiesFilterModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
   isNightShiftMode,
   activeHospitalName = 'Duke University Hospital (Durham, NC)',
 }) => {
+  useBodyScrollLock(isOpen);
+
   // Section 1: Clinical Sleep Environment
   const [blackoutDrapes, setBlackoutDrapes] = useState(true);
   const [quietHoursGuarantee, setQuietHoursGuarantee] = useState(true);

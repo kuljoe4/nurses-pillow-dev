@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS } from '../data/mockData';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface SavedListingsModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
   isNightShiftMode,
   onGoToHousing,
 }) => {
+  useBodyScrollLock(isOpen);
+
   // Handle Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
