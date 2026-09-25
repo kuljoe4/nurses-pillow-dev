@@ -51,7 +51,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
   const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
   const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
   const [customDuration, setCustomDuration] = useState<number>(isInitialCustom ? parseInt(initialDuration) : 1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
+  const [earliestCheckIn, setEarliestCheckIn] = useState('2024-10-01');
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'split-map' | 'grid'>('split-map');
@@ -551,7 +551,7 @@ useBodyScrollLock(isGsaModalOpen);
                         calendar_today
                       </span>
                       <input
-                        type="text"
+                        type="date"
                         value={earliestCheckIn}
                         onChange={(e) => setEarliestCheckIn(e.target.value)}
                         className="w-full h-9 pl-8 pr-2 rounded-xl bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
