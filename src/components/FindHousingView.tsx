@@ -5,7 +5,6 @@ import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleHospitalAutocomplete } from './GoogleHospitalAutocomplete';
-import { APIProvider } from '@vis.gl/react-google-maps';
 import {
   heroContainerVariant,
   heroItemVariant,
@@ -396,17 +395,12 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 Where are you assigned? (Hospital or clinic)
               </label>
               <div className="relative">
-                <APIProvider
-                  apiKey={(import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || ''}
-                  solutionChannel="GMP_devsite_samples_v3_rgmautocomplete"
-                >
-                  <GoogleHospitalAutocomplete
-                    value={selectedHospital}
-                    onChange={(hosp) => setSelectedHospital(hosp)}
-                    isNightShiftMode={isNightShiftMode}
-                    placeholder="Where are you assigned? (e.g. Duke University, UNC, WakeMed)..."
-                  />
-                </APIProvider>
+                <GoogleHospitalAutocomplete
+                  value={selectedHospital}
+                  onChange={(hosp) => setSelectedHospital(hosp)}
+                  isNightShiftMode={isNightShiftMode}
+                  placeholder="Where are you assigned? (e.g. Duke University, UNC, WakeMed)..."
+                />
               </div>
             </motion.div>
 

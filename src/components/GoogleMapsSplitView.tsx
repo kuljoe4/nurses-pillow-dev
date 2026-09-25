@@ -1,7 +1,6 @@
 // Source: Google Maps Platform Code Assist
 import React, { useState, useEffect } from 'react';
 import {
-  APIProvider,
   Map,
   AdvancedMarker,
   useMap,
@@ -105,8 +104,6 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
     }
   }, [selectedListingId, hospital.lat, hospital.lng, listings]);
 
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
-
   // Compute simulated positions for listings around the hospital
   const listingMarkers = listings.slice(0, 10).map((listing, idx) => {
     // Distribute markers in real proximity ring (0.4 to 4.2 miles)
@@ -156,24 +153,20 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
 
       {/* Main Google Map Container */}
       <div className="w-full h-full flex-1 min-h-[460px] relative">
-        <APIProvider
-          apiKey={apiKey}
-          solutionChannel="GMP_devsite_samples_v3_rgmautocomplete"
+        <Map
+          mapId="bf51a910020fa25a"
+          defaultCenter={{ lat: hospital.lat, lng: hospital.lng }}
+          defaultZoom={activeZoom}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapTypeControl={false}
+          streetViewControl={false}
+          fullscreenControl={false}
+          zoomControl={true}
+          style={{ width: '100%', height: '100%' }}
+          internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
         >
-          <Map
-            mapId="bf51a910020fa25a"
-            defaultCenter={{ lat: hospital.lat, lng: hospital.lng }}
-            defaultZoom={activeZoom}
-            gestureHandling="greedy"
-            disableDefaultUI={false}
-            mapTypeControl={false}
-            streetViewControl={false}
-            fullscreenControl={false}
-            zoomControl={true}
-            style={{ width: '100%', height: '100%' }}
-            internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-          >
-            <MapPanController center={activeCenter} zoom={activeZoom} />
+          <MapPanController center={activeCenter} zoom={activeZoom} />
 
             {/* Hospital Anchor Marker with Pulsating Animation and Radius Graphic */}
             <AdvancedMarker
@@ -236,8 +229,7 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
                 </div>
               </AdvancedMarker>
             ))}
-          </Map>
-        </APIProvider>
+        </Map>
       </div>
 
       {/* Bottom Floating Legend / Proximity Bar */}

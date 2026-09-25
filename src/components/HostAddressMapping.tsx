@@ -1,7 +1,6 @@
 // Source: Google Maps Platform Code Assist - Places API (New)
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  APIProvider,
   Map,
   AdvancedMarker,
   useMapsLibrary,
@@ -54,8 +53,6 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   // Modern Places Library (Places API (New))
   const placesLibrary = useMapsLibrary('places');
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
 
   const handleInputChange = (text: string) => {
     setAddressInput(text);
@@ -276,19 +273,18 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
 
       {/* Interactive Verification Map with Pulsating Animation and Radius Graphic */}
       <div className="h-72 w-full rounded-2xl overflow-hidden border border-[rgba(11,37,89,0.12)] dark:border-[#233550] shadow-sm relative">
-        <APIProvider apiKey={apiKey} solutionChannel="GMP_devsite_samples_v3_rgmautocomplete">
-          <Map
-            mapId="bf51a910020fa25a"
-            defaultCenter={coords}
-            defaultZoom={14}
-            gestureHandling="greedy"
-            disableDefaultUI={true}
-            zoomControl={true}
-            style={{ width: '100%', height: '100%' }}
-            internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-          >
-            <PanToLocation coords={coords} />
-            <AdvancedMarker position={coords} title="Your Listing Location">
+        <Map
+          mapId="bf51a910020fa25a"
+          defaultCenter={coords}
+          defaultZoom={14}
+          gestureHandling="greedy"
+          disableDefaultUI={true}
+          zoomControl={true}
+          style={{ width: '100%', height: '100%' }}
+          internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
+        >
+          <PanToLocation coords={coords} />
+          <AdvancedMarker position={coords} title="Your Listing Location">
               <div className="relative -translate-x-1/2 -translate-y-full cursor-pointer flex flex-col items-center">
                 {/* Commute Radius Graphic & Pulsating Animation */}
                 <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-48 h-48 flex items-center justify-center -z-10">
@@ -308,8 +304,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
                 <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#001848] mx-auto -mt-0.5 z-10" />
               </div>
             </AdvancedMarker>
-          </Map>
-        </APIProvider>
+        </Map>
 
         {/* Pulsating Radius Graphic Overlay */}
         <div className="absolute top-2.5 right-2.5 bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-[#001848] dark:text-white shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center gap-2">
