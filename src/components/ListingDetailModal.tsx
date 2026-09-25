@@ -29,7 +29,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   onRequestToBook,
   selectedHospital = 'Duke University Hospital',
 }) => {
-  useBodyScrollLock(true);
+  useBodyScrollLock(!!listing);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
