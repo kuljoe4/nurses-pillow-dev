@@ -14,7 +14,9 @@ interface PillowSaveButtonProps {
  * Custom spring-bounce microinteraction (Outline -> Filled Navy with a 280ms spring bounce)
  * Replaces generic heart icons as specified in AGENTS.md
  */
-export const PillowSaveButton: React.FC<PillowSaveButtonProps> = ({
+// ⚡ Bolt Performance Optimization: Wrapped with React.memo to prevent unnecessary re-renders
+// when parent components update but the button's props remain unchanged.
+export const PillowSaveButton: React.FC<PillowSaveButtonProps> = React.memo(({
   isSaved,
   onToggle,
   className = '',
@@ -96,4 +98,4 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = ({
       )}
     </motion.button>
   );
-};
+});
