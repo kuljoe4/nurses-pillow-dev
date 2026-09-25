@@ -53,7 +53,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
       whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-30px' }}
       transition={{
-        duration: 0.35,
+        duration: 0.3,
         delay: shouldReduceMotion ? 0 : (index % 3) * 0.08,
         ease: [0.16, 1, 0.3, 1],
       }}
@@ -389,7 +389,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
               whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-20px' }}
-              transition={{ duration: 0.35, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
               className="relative mb-5"
             >
               <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
@@ -545,7 +545,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
               whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-20px' }}
-              transition={{ duration: 0.35, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
               className="pt-3"
             >
               <motion.button
@@ -614,7 +614,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
@@ -634,7 +634,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
@@ -654,7 +654,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.3, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
@@ -725,7 +725,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
           whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-20px' }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 custom-scrollbar"
         >
           <span className="text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 whitespace-nowrap mr-1 flex items-center gap-1">
@@ -838,7 +838,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-7xl mx-auto text-center"
         >
           <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2559] dark:text-white tracking-tight mb-2">
@@ -1011,7 +1011,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           className="rounded-[24px] p-8 sm:p-12 bg-white dark:bg-[#111e33] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] shadow-md relative overflow-hidden"
         >
           <div className="max-w-3xl relative z-10">

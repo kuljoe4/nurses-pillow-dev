@@ -27,7 +27,7 @@ interface SearchListingsViewProps {
   isDeveloper?: boolean;
 }
 
-export const SearchListingsView: React.FC<SearchListingsViewProps> = ({
+export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(({
   isNightShiftMode,
   savedListingIds,
   onToggleSave,
@@ -688,7 +688,7 @@ useBodyScrollLock(isGsaModalOpen);
                   height: 'auto',
                   opacity: 1,
                   transition: {
-                    height: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+                    height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
                     opacity: { duration: 0.25, delay: 0.05 },
                   },
                 }}
@@ -1026,8 +1026,8 @@ useBodyScrollLock(isGsaModalOpen);
                 </motion.div>
               ) : (
                 <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <AnimatePresence mode="popLayout">
-                    {filteredListings.map((listing: any) => {
+                  <AnimatePresence >
+                    {filteredListings.map((listing) => {
                       const isSaved = savedListingIds.includes(listing.id);
                       const isSelectedOnMap = selectedMapListingId === listing.id;
 
@@ -1188,8 +1188,8 @@ useBodyScrollLock(isGsaModalOpen);
               </motion.div>
             ) : (
               <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <AnimatePresence mode="popLayout">
-                  {filteredListings.map((listing: any) => {
+                <AnimatePresence >
+                  {filteredListings.map((listing) => {
                     const isSaved = savedListingIds.includes(listing.id);
                     return (
                       <SearchListingCard
@@ -1401,4 +1401,4 @@ useBodyScrollLock(isGsaModalOpen);
       )}
     </div>
   );
-};
+});
