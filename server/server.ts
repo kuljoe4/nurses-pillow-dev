@@ -2,6 +2,7 @@ import express from 'express';
 import { db } from './db.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import authRoutes from './authRoutes.js';
 import { mapDbListingToFrontend } from './mapper.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,6 +10,25 @@ import { v4 as uuidv4 } from 'uuid';
 dotenv.config();
 
 const app = express();
+
+// Configure Helmet for security headers and Content-Security-Policy
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval often needed for Vite/React dev
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com", "https://nurses-pillow-dev-production.up.railway.app"],
+        connectSrc: ["'self'", "https://maps.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
