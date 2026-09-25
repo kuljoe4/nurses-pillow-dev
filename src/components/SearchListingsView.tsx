@@ -466,7 +466,9 @@ useBodyScrollLock(isGsaModalOpen);
               <button
                 type="button"
                 onClick={() => setIsGsaModalOpen(true)}
-                className="hidden xl:inline-flex items-center gap-1.5 h-9 px-2.5 rounded-xl bg-amber-500/10 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-colors cursor-pointer border border-amber-500/20"
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
                 title="Calculate allowable federal GSA lodging per-diem (Phase 2 Contract Scope)"
               >
                 <span className="material-symbols-outlined text-[14px]">lock_clock</span>
