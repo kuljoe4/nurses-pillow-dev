@@ -302,7 +302,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                             : { height: val }
                         }
                         transition={{
-                          duration: 0.6,
+                          duration: 0.3,
                           repeat: isAuditingSound ? Infinity : 0,
                           delay: idx * 0.03,
                         }}

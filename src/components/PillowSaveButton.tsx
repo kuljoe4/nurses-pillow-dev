@@ -45,7 +45,7 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = ({
             : { scale: 1, rotate: 0 }
         }
         transition={{
-          duration: 0.32,
+          duration: 0.3,
           ease: [0.34, 1.56, 0.64, 1],
         }}
         className="flex items-center justify-center shrink-0"

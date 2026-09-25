@@ -141,7 +141,7 @@ export const heroVisualVariant: Variants = {
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.48,
+      duration: 0.3,
       ease: motionTokens.easing.smoothOut,
     },
   },
@@ -153,7 +153,7 @@ export const heroSearchCardVariant: Variants = {
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.52,
+      duration: 0.3,
       ease: motionTokens.easing.smoothOut,
     },
   },
@@ -170,7 +170,7 @@ export const listingCardRevealVariant: Variants = {
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.38,
+      duration: 0.3,
       ease: motionTokens.easing.smoothOut,
     },
   },
