@@ -105,6 +105,103 @@ app.get('/api/audit-logs', async (req, res) => {
   }
 });
 
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
+  apiVersion: '2025-02-24.acacia' as any,
+});
+
+// Stripe Connect Onboarding Link
+app.post('/api/stripe/account-link', async (req, res) => {
+  try {
+    const { hostId, returnUrl, refreshUrl } = req.body;
+    if (!hostId) {
+      return res.status(400).json({ error: 'Missing hostId' });
+    }
+
+    // Get or create Stripe Connect Account
+    let accountId;
+    const userRes = await db.query('SELECT stripe_connected_account_id FROM users WHERE id = $1', [hostId]);
+
+    if (userRes.rows.length > 0 && userRes.rows[0].stripe_connected_account_id) {
+      accountId = userRes.rows[0].stripe_connected_account_id;
+    } else {
+      const account = await stripe.accounts.create({ type: 'express' });
+      accountId = account.id;
+      await db.query('UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2', [accountId, hostId]);
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: refreshUrl || `${process.env.APP_URL}/host/stripe/refresh`,
+      return_url: returnUrl || `${process.env.APP_URL}/host/stripe/return`,
+      type: 'account_onboarding',
+    });
+
+    res.json({ url: accountLink.url });
+  } catch (error) {
+    console.error('Error generating Stripe Account Link:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Endpoint to fetch payout status
+app.get('/api/stripe/status/:hostId', async (req, res) => {
+  try {
+    const { hostId } = req.params;
+    const userRes = await db.query('SELECT stripe_payouts_enabled FROM users WHERE id = $1', [hostId]);
+
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Host not found' });
+    }
+
+    res.json({ payouts_enabled: userRes.rows[0].stripe_payouts_enabled });
+  } catch (error) {
+    console.error('Error fetching Stripe status:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Stripe Webhook Route
+app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  let event;
+  const signature = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (endpointSecret && signature) {
+    try {
+      event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+    } catch (err: any) {
+      console.warn(`⚠️  Webhook signature verification failed.`, err.message);
+      return res.sendStatus(400);
+    }
+  } else {
+    // Fallback if no secret provided, trust the payload
+    event = req.body;
+  }
+
+  try {
+    switch (event.type) {
+      case 'account.updated': {
+        const account = event.data.object;
+        if (account.payouts_enabled) {
+          console.log(`[Stripe Webhook] Payouts enabled for account: ${account.id}`);
+          await db.query(`
+            UPDATE users SET stripe_payouts_enabled = true WHERE stripe_connected_account_id = $1
+          `, [account.id]);
+        }
+        break;
+      }
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+    res.send();
+  } catch (error) {
+    console.error('Stripe webhook error:', error);
+    res.status(500).send('Webhook handler error');
+  }
+});
+
 // Postmark Webhook Route
 app.post('/api/webhooks/postmark', async (req, res) => {
   try {

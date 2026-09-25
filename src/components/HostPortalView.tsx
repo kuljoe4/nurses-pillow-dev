@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
@@ -41,6 +41,76 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
   // Calendar blocked dates
   const [blockedDays, setBlockedDays] = useState<number[]>([12, 13]);
+
+  // Stripe Connect State
+  const [isConnectingStripe, setIsConnectingStripe] = useState(false);
+  const [payoutsEnabled, setPayoutsEnabled] = useState(false);
+
+  // Dummy host ID for testing
+  const hostId = 'host-sarah-m';
+
+  useEffect(() => {
+    // Check return status from URL
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.get('stripe_return') === 'true') {
+      setActiveHostTab('onboarding');
+      // Set to true immediately for UI simulation purposes (webhook may be delayed)
+      // and poll the backend.
+      setPayoutsEnabled(true);
+
+      // Attempt to fetch true status from DB after a delay to allow webhook to process
+      setTimeout(() => {
+        fetchPayoutStatus();
+      }, 2500);
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (urlParams.get('stripe_refresh') === 'true') {
+       setActiveHostTab('onboarding');
+       // Auto-retrigger if they abandoned and clicked refresh
+       window.history.replaceState({}, document.title, window.location.pathname);
+       fetchPayoutStatus();
+    } else {
+      fetchPayoutStatus();
+    }
+  }, []);
+
+  const fetchPayoutStatus = async () => {
+    try {
+      const res = await fetch(`/api/stripe/status/${hostId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPayoutsEnabled(data.payouts_enabled);
+      }
+    } catch (err) {
+      console.error('Failed to fetch Stripe status', err);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    setIsConnectingStripe(true);
+    try {
+      const res = await fetch('/api/stripe/account-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hostId,
+          returnUrl: `${window.location.origin}${window.location.pathname}?stripe_return=true`,
+          refreshUrl: `${window.location.origin}${window.location.pathname}?stripe_refresh=true`,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setIsConnectingStripe(false);
+      }
+    } catch (err) {
+      console.error('Failed to generate account link', err);
+      setIsConnectingStripe(false);
+    }
+  };
 
   const toggleBlockDay = (day: number) => {
     setBlockedDays((prev) =>
@@ -602,6 +672,35 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                 <span>Deed Verified on File</span>
               </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] space-y-3 col-span-1 sm:col-span-2 mt-2">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#005684]">account_balance</span>
+                <h3 className="font-bold text-sm">3. Payout Account Setup</h3>
+              </div>
+              <p className="text-xs text-gray-500">
+                Connect your bank account or debit card via Stripe Connect Express to receive automatic direct deposits. We do not store your financial details.
+              </p>
+              {isConnectingStripe ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-[#005684] dark:text-[#93ccff]">
+                  <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  <span>Redirecting to Stripe...</span>
+                </div>
+              ) : payoutsEnabled ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-[#195b4c] dark:text-[#aff0db]">
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  <span>Stripe Connect Express Direct</span>
+                </div>
+              ) : (
+                <button
+                  onClick={handleConnectStripe}
+                  className="mt-2 bg-[#005684] hover:bg-[#004368] text-white text-xs font-bold py-2 px-4 rounded-xl transition-all w-fit cursor-pointer flex items-center gap-2 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
+                  Connect Bank Account for Payouts
+                </button>
+              )}
             </div>
           </div>
         </div>
