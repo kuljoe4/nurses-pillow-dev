@@ -27,6 +27,17 @@ interface SearchListingsViewProps {
   isDeveloper?: boolean;
 }
 
+const formatDateFriendly = (dateStr: string) => {
+  if (!dateStr) return 'Select date';
+  try {
+    const [year, month, day] = dateStr.split('-');
+    const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
+
 export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(({
   isNightShiftMode,
   savedListingIds,
@@ -419,7 +430,7 @@ useBodyScrollLock(isGsaModalOpen);
                 calendar_today
               </span>
               <span>
-                {earliestCheckIn} · {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} wks`} · {commuteBuffer} mi
+                {formatDateFriendly(earliestCheckIn)} · {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} wks`} · {commuteBuffer} mi
               </span>
               <span
                 className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
@@ -552,12 +563,17 @@ useBodyScrollLock(isGsaModalOpen);
                       <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[15px]">
                         calendar_today
                       </span>
-                      <input
-                        type="date"
-                        value={earliestCheckIn}
-                        onChange={(e) => setEarliestCheckIn(e.target.value)}
-                        className="w-full h-9 pl-8 pr-2 rounded-xl bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
-                      />
+                      <div className="relative w-full h-9 rounded-xl bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] flex items-center pl-8 pr-2 focus-within:ring-2 focus-within:ring-[#0A6FA8]">
+                        <span className="text-xs font-semibold text-[#001848] dark:text-white pointer-events-none">
+                          {formatDateFriendly(earliestCheckIn)}
+                        </span>
+                        <input
+                          type="date"
+                          value={earliestCheckIn}
+                          onChange={(e) => setEarliestCheckIn(e.target.value)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </div>
                     </div>
                   </div>
 

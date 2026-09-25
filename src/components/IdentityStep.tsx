@@ -9,6 +9,17 @@ interface IdentityStepProps {
   isNightShiftMode: boolean;
 }
 
+const formatDateFriendly = (dateStr: string) => {
+  if (!dateStr) return '';
+  try {
+    const [year, month, day] = dateStr.split('-');
+    const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
+
 export const IdentityStep: React.FC<IdentityStepProps> = ({
   data,
   onChange,
@@ -173,16 +184,21 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-1.5">Date of Birth</label>
-              <input
-                type="date"
-                value={data.dob}
-                onChange={(e) => onChange({ dob: e.target.value })}
-                className={`w-full rounded-xl px-4 py-3 text-sm font-medium focus:outline-none ${
+              <div className={`relative w-full h-[46px] rounded-xl border flex items-center px-3 focus-within:ring-2 ${
                   isNightShiftMode
-                    ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
-                }`}
-              />
+                    ? 'border-[#233550] focus-within:ring-[#3E9AD1]'
+                    : 'border-gray-200 focus-within:ring-[#0A6FA8]'
+                }`}>
+                <span className="text-sm font-semibold pointer-events-none">
+                  {formatDateFriendly(data.dob)}
+                </span>
+                <input
+                  type="date"
+                  value={data.dob}
+                  onChange={(e) => onChange({ dob: e.target.value })}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1.5">SSN (Last 4 Digits)</label>

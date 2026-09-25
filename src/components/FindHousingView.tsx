@@ -168,6 +168,17 @@ interface FindHousingViewProps {
   userName?: string;
 }
 
+const formatDateFriendly = (dateStr: string) => {
+  if (!dateStr) return 'Select date';
+  try {
+    const [year, month, day] = dateStr.split('-');
+    const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d);
+  } catch {
+    return dateStr;
+  }
+};
+
 export const FindHousingView: React.FC<FindHousingViewProps> = ({
   isNightShiftMode,
   savedListingIds,
@@ -453,13 +464,17 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[20px]">
                           calendar_today
                         </span>
-                        <input
-                          type="date"
-                          value={earliestCheckIn}
-                          onChange={(e) => setEarliestCheckIn(e.target.value)}
-                          placeholder="e.g. 2024-10-01"
-                          className="w-full h-12 pl-12 pr-4 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#0B2559] dark:text-white text-sm font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
-                        />
+                        <div className="relative w-full h-12 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center pl-12 pr-4 focus-within:ring-2 focus-within:ring-[#0A6FA8]">
+                          <span className="text-sm font-semibold text-[#0B2559] dark:text-white tabular-nums pointer-events-none">
+                            {formatDateFriendly(earliestCheckIn)}
+                          </span>
+                          <input
+                            type="date"
+                            value={earliestCheckIn}
+                            onChange={(e) => setEarliestCheckIn(e.target.value)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                        </div>
                       </div>
                     </div>
 
