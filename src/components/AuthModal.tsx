@@ -53,6 +53,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [quietHoursAgreed, setQuietHoursAgreed] = useState(true);
   const [rememberDevice, setRememberDevice] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Password strength
   const calculateStrength = (pwd: string) => {
@@ -68,20 +70,72 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quietHoursAgreed) return;
-    onAuthenticated(role, fullName || 'Sarah Jenkins');
-    if (onOpenEmailVerification) {
-      onOpenEmailVerification();
+    if (!quietHoursAgreed || isLoading) return;
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName, role }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Backend returns 201 with requiresVerification: true for new signups
+      if (onOpenEmailVerification) {
+        onOpenEmailVerification();
+      }
+      onClose();
+    } catch (err: any) {
+      setAuthError(err.message || 'An error occurred during registration.');
+    } finally {
+      setIsLoading(false);
     }
-    onClose();
   };
 
-  const handleSigninSubmit = (e: React.FormEvent) => {
+  const handleSigninSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAuthenticated(role, fullName || 'Sarah Jenkins');
-    onClose();
+    if (isLoading) return;
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 403 && data.requiresVerification) {
+        // Enforce email verification strictly
+        if (onOpenEmailVerification) {
+          onOpenEmailVerification();
+        }
+        onClose();
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Invalid credentials');
+      }
+
+      onAuthenticated(data.user.role as UserRole, data.user.full_name);
+      onClose();
+    } catch (err: any) {
+      setAuthError(err.message || 'An error occurred during login.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -110,6 +164,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
+
+        {/* Authentication Error Banner */}
+        {authError && (
+          <div role="alert" className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            {authError}
+          </div>
+        )}
 
         {/* Developer Screen Code Badge (Visible when showScreenCodes is enabled) */}
         {showScreenCodes && (
@@ -369,8 +431,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out cursor-pointer"
+                disabled={isLoading}
+                className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
               >
+                {isLoading && <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>}
                 {role === 'nurse' ? 'Create Clinician Account' : 'Create Property Host Account'}
               </button>
             </form>
@@ -498,8 +562,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out cursor-pointer"
+                disabled={isLoading}
+                className="w-full py-3.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
               >
+                {isLoading && <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>}
                 Sign In to Sanctuary Hub
               </button>
             </form>
