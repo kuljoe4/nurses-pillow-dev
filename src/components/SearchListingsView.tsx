@@ -10,6 +10,7 @@ import { PillowSaveButton } from './PillowSaveButton';
 import { SearchListingCard } from './SearchListingCard';
 import { GoogleMapsSplitView } from './GoogleMapsSplitView';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { ClinicalDatePicker } from './ClinicalDatePicker';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -22,9 +23,6 @@ interface SearchListingsViewProps {
   initialDuration?: string;
   initialRadius?: number;
   isLoading?: boolean;
-  m2BypassMode?: boolean;
-  onToggleM2Bypass?: () => void;
-  isDeveloper?: boolean;
 }
 
 const formatDateFriendly = (dateStr: string) => {
@@ -49,9 +47,6 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   initialDuration = '13',
   initialRadius = 5,
   isLoading,
-  m2BypassMode = false,
-  onToggleM2Bypass,
-  isDeveloper = false,
 }) => {
 
 
@@ -62,7 +57,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
   const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
   const [customDuration, setCustomDuration] = useState<number>(isInitialCustom ? parseInt(initialDuration) : 1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('2024-10-01');
+  const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'split-map' | 'grid'>('split-map');
@@ -551,30 +546,18 @@ useBodyScrollLock(isGsaModalOpen);
                     opacity: { duration: 0.12 },
                   },
                 }}
-                className="overflow-hidden border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] pt-3 pb-1"
+                className="border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] pt-3 pb-1 px-1 -mx-1"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-[#EFF6FB]/60 dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
                   {/* Move-in Date */}
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
-                      Earliest Move-In
-                    </label>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[15px]">
-                        calendar_today
-                      </span>
-                      <div className="relative w-full h-9 rounded-xl bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] flex items-center pl-8 pr-2 focus-within:ring-2 focus-within:ring-[#0A6FA8]">
-                        <span className="text-xs font-semibold text-[#001848] dark:text-white pointer-events-none">
-                          {formatDateFriendly(earliestCheckIn)}
-                        </span>
-                        <input
-                          type="date"
-                          value={earliestCheckIn}
-                          onChange={(e) => setEarliestCheckIn(e.target.value)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                      </div>
-                    </div>
+                    <ClinicalDatePicker
+                      value={earliestCheckIn}
+                      onChange={setEarliestCheckIn}
+                      label="Earliest Move-In"
+                      subLabel="Shift Start"
+                      isNightShiftMode={isNightShiftMode}
+                    />
                   </div>
 
                   {/* Rotation Duration */}
@@ -1259,162 +1242,68 @@ useBodyScrollLock(isGsaModalOpen);
         activeHospitalName={selectedHospital}
       />
 
-      {/* GSA Stipend Audit Modal (Gated for Phase 1 Acceptance) */}
+      {/* GSA Stipend Audit Modal */}
       {isGsaModalOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-start"
+          className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsGsaModalOpen(false);
             }
           }}
         >
-          {!m2BypassMode ? (
-            <div
-              className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-2xl border border-amber-500/30 text-[#001848] dark:text-white"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[22px]">lock_clock</span>
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 mb-1">
-                      <span className="material-symbols-outlined text-[12px]">event_upcoming</span>
-                      Milestone 2 Contract Deliverable
-                    </div>
-                    <h3 className="font-bold text-base leading-tight">
-                      GSA Per-Diem Stipend Comparison
-                    </h3>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsGsaModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
-                <p className="leading-relaxed">
-                  In accordance with Lawrence Roberts&apos; confirmed Phase 1 core marketplace scope, federal GSA lodging per-diem comparison, agency tax deductions, and duplicate living expense calculation are scheduled as <strong>Milestone 2 deliverables</strong>.
-                </p>
-
-                <div className="p-3.5 rounded-2xl bg-[#EFF6FB] dark:bg-[#182840] border border-[#005684]/15 space-y-2">
-                  <div className="text-[11px] font-bold text-[#001848] dark:text-white uppercase tracking-wider">
-                    Phase 1 vs. Milestone 2 Boundaries
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="p-2 rounded-xl bg-white dark:bg-[#111e33] border border-emerald-500/20">
-                      <div className="font-bold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                        Phase 1 Live
-                      </div>
-                      <div className="text-gray-500 mt-0.5">Direct RN rates, $0 traveler fee, quiet guarantees.</div>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white dark:bg-[#111e33] border border-amber-500/20">
-                      <div className="font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">lock</span>
-                        Milestone 2 Gated
-                      </div>
-                      <div className="text-gray-500 mt-0.5">IRS duplicate lodging ledger &amp; GSA per diem audit.</div>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-[11px] text-gray-500 italic">
-                  To maintain strict acceptance boundaries and avoid scope creep, this module is gated during Phase 1 core review.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                <button
-                  type="button"
-                  onClick={() => setIsGsaModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#001848] hover:bg-[#005684] text-white text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Return to Phase 1 Search
-                </button>
-                {onToggleM2Bypass && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onToggleM2Bypass();
-                    }}
-                    className="px-3 py-2.5 rounded-xl border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-mono font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/20 cursor-pointer"
-                    title="Developer toggle to preview in-flight Milestone 2 module"
-                  >
-                    Bypass Gate (Dev)
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div
-              className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-lg border border-purple-500/30 text-[#001848] dark:text-white"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>
-                  <div>
-                    <h3 className="font-bold text-base">GSA Per-Diem Stipend Comparison</h3>
-                    <span className="text-[10px] font-mono text-purple-600 dark:text-purple-300 font-bold">[Milestone 2 Unlocked]</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsGsaModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
-                <p>
-                  Under IRS Revenue Procedure 2024-34, traveling healthcare professionals can receive tax-free housing stipends when duplicating expenses.
-                </p>
-                <div className="p-4 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] space-y-2">
-                  <div className="flex justify-between font-bold text-sm text-[#001848] dark:text-white">
-                    <span>San Francisco Lodging Cap:</span>
-                    <span>$3,120 / month</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-[#195b4c] font-semibold">
-                    <span>Nurses Pillow Average Rent:</span>
-                    <span>$1,950 / month</span>
-                  </div>
-                  <div className="flex justify-between text-xs font-bold text-[#005684] pt-1 border-t border-gray-200 dark:border-gray-700">
-                    <span>Stipend Surplus Retained:</span>
-                    <span>+$1,170 / month tax-free</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-gray-500">
-                  All itemized invoices generate automatically in your traveler receipt portal.
-                </p>
-              </div>
+          <div
+            className="w-full max-w-lg my-auto bg-white dark:bg-[#111e33] rounded-3xl p-6 sm:p-8 shadow-lg border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#001848] dark:text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsGsaModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold cursor-pointer"
-                >
-                  Close Comparison
-                </button>
-                {onToggleM2Bypass && (
-                  <button
-                    type="button"
-                    onClick={() => onToggleM2Bypass()}
-                    className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-mono text-gray-600 dark:text-gray-300 cursor-pointer"
-                  >
-                    Lock Gate
-                  </button>
-                )}
+                <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>
+                <div>
+                  <h3 className="font-bold text-base">GSA Per-Diem Stipend Comparison</h3>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Federal Lodging Allowance Analysis</span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsGsaModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
-          )}
+            <div className="py-4 space-y-3 text-xs text-[#404850] dark:text-[#c0c7d1]">
+              <p>
+                Under IRS Revenue Procedure guidelines, traveling healthcare professionals can receive tax-free housing stipends when duplicating expenses away from their tax home.
+              </p>
+              <div className="p-4 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] space-y-2">
+                <div className="flex justify-between font-bold text-sm text-[#001848] dark:text-white">
+                  <span>Standard Regional Lodging Cap:</span>
+                  <span>$2,850 / month</span>
+                </div>
+                <div className="flex justify-between text-xs text-[#195b4c] font-semibold">
+                  <span>Nurses Pillow Average Rent:</span>
+                  <span>$1,950 / month</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold text-[#005684] dark:text-[#93ccff] pt-1 border-t border-gray-200 dark:border-gray-700">
+                  <span>Estimated Stipend Surplus:</span>
+                  <span>+$900 / month retained</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500">
+                Itemized invoices with facility proximity and quiet guarantees generate automatically in your clinician portal.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsGsaModalOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold cursor-pointer hover:bg-[#0A6FA8] transition-colors"
+              >
+                Close Comparison
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

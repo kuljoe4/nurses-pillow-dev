@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { HousingListing, BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { NurseDashboardSkeleton } from './skeletons/NurseDashboardSkeleton';
-import { Milestone2ScopeGate } from './Milestone2ScopeGate';
 
 interface NurseDashboardViewProps {
   isNightShiftMode: boolean;
@@ -16,9 +15,6 @@ interface NurseDashboardViewProps {
   onGoToVerification?: () => void;
   onOpenSupport?: () => void;
   isLoading?: boolean;
-  m2BypassMode?: boolean;
-  onToggleM2Bypass?: () => void;
-  isDeveloper?: boolean;
 }
 
 export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
@@ -33,19 +29,12 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   onGoToVerification,
   onOpenSupport,
   isLoading,
-  m2BypassMode = false,
-  onToggleM2Bypass,
-  isDeveloper = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'current' | 'profile' | 'saved' | 'verification' | 'messages' | 'receipts'>('current');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [extendedNotice, setExtendedNotice] = useState(false);
   const [internalLoading, setInternalLoading] = useState(true);
   const [tabLoading, setTabLoading] = useState(false);
-
-  // Keyless Smartlock & Active Door Token Scope Gating (Milestone 2 Deliverables NB-07 & ND-01)
-  const [smartlockUnlockedLocally, setSmartlockUnlockedLocally] = useState(false);
-  const isSmartlockGated = !(m2BypassMode || smartlockUnlockedLocally);
 
   // Initial simulated load for realistic clinical registry and booking fetch
   useEffect(() => {
@@ -390,143 +379,54 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                   </div>
                 </div>
 
-                {/* Keyless Credentials Vault: Milestone 2 Scope Gating (Deliverables NB-07 & ND-01) */}
-                {isSmartlockGated ? (
-                  <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/5 dark:bg-[#1c1912] border border-amber-500/30 dark:border-amber-400/25 space-y-3.5 transition-all">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-                          <span className="material-symbols-outlined text-[19px]">lock_clock</span>
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-[#001848] dark:text-white flex items-center gap-2 flex-wrap">
-                            <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
-                            <span className="font-mono text-[10px] text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-full font-bold">
-                              [NB-07 • Milestone 2]
-                            </span>
-                          </div>
-                          <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                            Active IoT Door Code Token &amp; Sanctuary Wi-Fi Vault
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full shrink-0 self-start sm:self-auto">
-                        <span className="material-symbols-outlined text-[13px]">lock</span>
-                        <span>Milestone 2 Scope Gated</span>
-                      </div>
+                {/* Keyless Credentials Vault */}
+                <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3 transition-all animate-fadeIn">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 text-[#001848] dark:text-white">
+                      <span className="material-symbols-outlined text-[18px] text-[#005684]">key</span>
+                      <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
                     </div>
+                    <span className="text-[11px] text-[#195b4c] dark:text-[#aff0db] font-semibold bg-[#195b4c]/10 px-2 py-0.5 rounded-full">
+                      Active Door Lock PIN
+                    </span>
+                  </div>
 
-                    {/* Confirmation explanation box */}
-                    <div className="p-3.5 rounded-xl bg-white dark:bg-[#0E1A2E] border border-amber-500/20 dark:border-amber-500/20 text-xs space-y-2">
-                      <div className="flex items-start gap-2.5 text-[#001848] dark:text-[#E6ECF7]">
-                        <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[18px] shrink-0 mt-0.5">
-                          verified
-                        </span>
-                        <div className="space-y-1">
-                          <div className="font-bold text-xs text-[#001848] dark:text-white">
-                            Contract Scope Confirmation: Active Door Lock Token is Milestone 2 (NB-07) — Not Phase 1 / Milestone 1
-                          </div>
-                          <p className="text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
-                            Per the project roadmap, the <strong className="text-[#001848] dark:text-white">Active Door Lock Token, IoT Keyless Smartlock &amp; Wi-Fi Credentials Vault</strong> are scheduled for <strong className="text-amber-700 dark:text-amber-300 font-semibold">Milestone 2 (Deliverables NB-07 &amp; ND-01)</strong>. 
-                            <strong className="text-emerald-700 dark:text-emerald-400 font-semibold"> Phase 1 / Milestone 1</strong> provides confirmed reservation acceptance, shift dates, arrival countdown instructions, and daytime quiet environment guarantees (<strong className="text-emerald-700 dark:text-emerald-400 font-semibold">NB-06</strong>).
-                          </p>
-                        </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
+                      <div>
+                        <div className="text-[10px] text-gray-500 uppercase">Front Gate &amp; Suite Door PIN</div>
+                        <div className="font-mono text-base font-bold tracking-wider">4821</div>
                       </div>
-
-                      {/* Comparison tags */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px]">
-                        <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-                          <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                          <span className="font-semibold">Phase 1 / M1 Scope:</span>
-                          <span className="text-gray-600 dark:text-gray-300">Confirmed Stay &amp; Quiet Guarantee (Active)</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
-                          <span className="material-symbols-outlined text-[14px]">lock</span>
-                          <span className="font-semibold">Milestone 2 Scope:</span>
-                          <span className="text-gray-600 dark:text-gray-300">IoT Keyless Door Lock Token &amp; Wi-Fi Vault (Gated)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Inspection action */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
-                        Door lock token securely withheld until Milestone 2 in-flight activation.
-                      </span>
                       <button
                         type="button"
-                        onClick={() => setSmartlockUnlockedLocally(true)}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
-                        title="Preview Milestone 2 smartlock credentials vault scaffold"
+                        onClick={() => handleCopy('4821', 'pin')}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                        title="Copy PIN"
                       >
-                        <span className="material-symbols-outlined text-[15px]">visibility</span>
-                        <span>Preview M2 Door Code Vault</span>
+                        <span className="material-symbols-outlined text-[18px]">
+                          {copiedKey === 'pin' ? 'check' : 'content_copy'}
+                        </span>
+                      </button>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
+                      <div>
+                        <div className="text-[10px] text-gray-500 uppercase">High-Speed Wi-Fi (500 Mbps)</div>
+                        <div className="font-bold text-sm truncate">SunsetSanctuary-5G</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy('RestWellHealBetter2024!', 'wifi')}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
+                        title="Copy Wi-Fi Password"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {copiedKey === 'wifi' ? 'check' : 'wifi_password'}
+                        </span>
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3 transition-all animate-fadeIn">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
-                      <div className="flex items-center gap-1.5 text-[#001848] dark:text-white">
-                        <span className="material-symbols-outlined text-[18px] text-[#005684]">key</span>
-                        <span>Keyless Smartlock &amp; Wi-Fi Credentials</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono">
-                          [M2 Preview Active]
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-[#195b4c] dark:text-[#aff0db] font-semibold bg-[#195b4c]/10 px-2 py-0.5 rounded-full">
-                          Active Door Lock Token
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setSmartlockUnlockedLocally(false)}
-                          className="text-[11px] text-gray-500 hover:text-amber-700 dark:text-gray-400 dark:hover:text-amber-300 font-semibold underline cursor-pointer"
-                          title="Re-lock to Milestone 1 scope boundary"
-                        >
-                          Re-gate to M1 Scope
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
-                        <div>
-                          <div className="text-[10px] text-gray-500 uppercase">Front Gate &amp; Suite Door PIN</div>
-                          <div className="font-mono text-base font-bold tracking-wider">•••• 4821</div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy('4821', 'pin')}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
-                          title="Copy PIN"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            {copiedKey === 'pin' ? 'check' : 'content_copy'}
-                          </span>
-                        </button>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-white dark:bg-[#111e33] flex items-center justify-between shadow-xs">
-                        <div>
-                          <div className="text-[10px] text-gray-500 uppercase">High-Speed Wi-Fi (500 Mbps)</div>
-                          <div className="font-bold text-sm truncate">SunsetSanctuary-5G</div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy('RestWellHealBetter2024!', 'wifi')}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 text-gray-600 dark:text-gray-300 cursor-pointer"
-                          title="Copy Wi-Fi Password"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            {copiedKey === 'wifi' ? 'check' : 'wifi_password'}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 {/* Primary Actions */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -999,36 +899,24 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       )}
 
-      {/* TAB 5: Receipts & History (Gated Phase 2 / Milestone 2 Deliverable) */}
+      {/* TAB 5: Receipts & History */}
       {activeTab === 'receipts' && (
-        !m2BypassMode ? (
-          <Milestone2ScopeGate
-            isNightShiftMode={isNightShiftMode}
-            featureTitle="GSA Per Diem & Tax Home Ledger (Phase 2)"
-            featureDescription="In accordance with Lawrence Roberts' confirmed Phase 1 core marketplace scope, federal GSA lodging per diem audit ledgers, IRS travel tax packets, and duplicate living expense receipts are scheduled for Milestone 2 deliverables. This ledger is strictly gated during Milestone 1 core acceptance."
-            onReturnToMarketplace={() => setActiveTab('current')}
-            onBypassGate={onToggleM2Bypass}
-          />
-        ) : (
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold mb-1">
-                    <span>M2 SCOPE UNLOCKED</span>
-                  </div>
-                  <h2 className="text-xl font-bold">GSA Per Diem &amp; Tax Home Ledger</h2>
-                  <p className="text-xs text-gray-500">IRS-compliant duplicate lodging expense records</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => alert('Exporting full IRS travel tax packet (PDF)...')}
-                  className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">file_download</span>
-                  <span>Export Tax Packet</span>
-                </button>
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-xl font-bold">GSA Per Diem &amp; Tax Home Ledger</h2>
+                <p className="text-xs text-gray-500">IRS-compliant duplicate lodging expense records</p>
               </div>
+              <button
+                type="button"
+                onClick={() => alert('Exporting full IRS travel tax packet (PDF)...')}
+                className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-[#0A6FA8] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">file_download</span>
+                <span>Export Tax Packet</span>
+              </button>
+            </div>
 
               <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-2 text-xs mb-6">
                 <div className="flex justify-between text-gray-600 dark:text-gray-300">
@@ -1070,7 +958,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               </div>
             </div>
           </div>
-        )
+        </div>
       )}
         </>
       )}

@@ -543,51 +543,6 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                       />
                     ))}
                   </div>
-
-                  {/* Test Scenario Simulator */}
-                  <div className="mt-3 p-2.5 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20">
-                    <div className="text-[10px] font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                      <span>Simulate Verification Scenarios:</span>
-                      <span className="font-mono text-[9px] text-gray-400">Status Check</span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 text-[10px]">
-                      <button
-                        type="button"
-                        onClick={() => handleApplyTestScenario('valid')}
-                        className="p-1 rounded-lg bg-white dark:bg-[#111e33] border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-50 cursor-pointer"
-                      >
-                        Valid (200)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyTestScenario('invalid')}
-                        className="p-1 rounded-lg bg-white dark:bg-[#111e33] border border-rose-500/30 text-rose-700 dark:text-rose-300 font-bold hover:bg-rose-50 cursor-pointer"
-                      >
-                        Invalid (400)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyTestScenario('expired')}
-                        className="p-1 rounded-lg bg-white dark:bg-[#111e33] border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold hover:bg-amber-50 cursor-pointer"
-                      >
-                        Expired (410)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyTestScenario('network')}
-                        className="p-1 rounded-lg bg-white dark:bg-[#111e33] border border-blue-500/30 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-50 cursor-pointer"
-                      >
-                        Network (503)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyTestScenario('ratelimit')}
-                        className="p-1 rounded-lg bg-white dark:bg-[#111e33] border border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-50 cursor-pointer"
-                      >
-                        Lockout (429)
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Timer and Resend Actions */}

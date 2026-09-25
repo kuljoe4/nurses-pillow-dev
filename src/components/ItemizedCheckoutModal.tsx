@@ -301,65 +301,67 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
 
                     {/* Payment Method */}
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-bold text-[#001848] dark:text-white">
-                          Payment Method (Test)
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
+                          <span>Payment Method</span>
+                          <span className="text-[10px] font-normal text-gray-400">Encrypted 256-bit SSL</span>
                         </label>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mb-2">
-                        {STRIPE_TEST_CARDS.map((c) => (
-                          <button
-                            key={c.number}
-                            type="button"
-                            onClick={() => handleSelectCard(c)}
-                            className={`p-2 rounded-xl border text-left text-[11px] transition-all cursor-pointer ${
-                              cardNumber === c.number
-                                ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#182840] font-bold'
-                                : 'border-gray-200 dark:border-[#233550] text-gray-600 dark:text-gray-400'
-                            }`}
-                          >
-                            <div className="truncate">{c.label}</div>
-                            <div className="text-[9px] font-mono text-gray-400">{c.number}</div>
-                          </button>
-                        ))}
+                        <div className="flex items-center gap-1.5 opacity-60">
+                          <span className="text-[10px] font-semibold text-gray-400">Visa • MC • Amex</span>
+                        </div>
                       </div>
 
-                      <div className="p-3 rounded-xl border border-[rgba(11,37,89,0.15)] dark:border-[#233550] bg-white dark:bg-[#111e33] flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2 flex-1">
-                          <span className="material-symbols-outlined text-[18px] text-[#0A6FA8]">credit_card</span>
+                      <div className="p-3.5 rounded-2xl border border-[rgba(11,37,89,0.15)] dark:border-[#233550] bg-white dark:bg-[#111e33] flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs shadow-xs">
+                        <div className="flex items-center gap-2 flex-1 min-w-[140px]">
+                          <span className="material-symbols-outlined text-[20px] text-[#0A6FA8]">credit_card</span>
                           <input
                             type="text"
                             value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
-                            className="bg-transparent focus:outline-none w-36 font-mono font-medium"
-                            placeholder="4242 •••• •••• 4242"
+                            onChange={(e) => {
+                              const v = e.target.value.replace(/\D/g, '').slice(0, 16);
+                              const formatted = v.match(/.{1,4}/g)?.join(' ') || v;
+                              setCardNumber(formatted);
+                            }}
+                            className="bg-transparent focus:outline-none w-full font-mono font-medium text-[#001848] dark:text-white"
+                            placeholder="Card number"
                             required
                           />
                         </div>
-                        <input
-                          type="text"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="bg-transparent focus:outline-none w-14 text-center font-mono"
-                          placeholder="MM/YY"
-                          required
-                        />
-                        <input
-                          type="text"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value)}
-                          className="bg-transparent focus:outline-none w-10 text-center font-mono"
-                          placeholder="CVC"
-                          required
-                        />
-                        <input
-                          type="text"
-                          value={cardZip}
-                          onChange={(e) => setCardZip(e.target.value)}
-                          className="bg-transparent focus:outline-none w-14 text-center font-mono text-gray-500"
-                          placeholder="ZIP"
-                          required
-                        />
+                        <div className="flex items-center gap-2 shrink-0">
+                          <input
+                            type="text"
+                            value={cardExpiry}
+                            onChange={(e) => {
+                              let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                              if (v.length >= 2) v = `${v.slice(0, 2)}/${v.slice(2)}`;
+                              setCardExpiry(v);
+                            }}
+                            className="bg-transparent focus:outline-none w-14 text-center font-mono text-[#001848] dark:text-white"
+                            placeholder="MM/YY"
+                            maxLength={5}
+                            required
+                          />
+                          <span className="text-gray-300">|</span>
+                          <input
+                            type="text"
+                            value={cardCvc}
+                            onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                            className="bg-transparent focus:outline-none w-12 text-center font-mono text-[#001848] dark:text-white"
+                            placeholder="CVC"
+                            maxLength={4}
+                            required
+                          />
+                          <span className="text-gray-300">|</span>
+                          <input
+                            type="text"
+                            value={cardZip}
+                            onChange={(e) => setCardZip(e.target.value.slice(0, 5))}
+                            className="bg-transparent focus:outline-none w-14 text-center font-mono text-gray-600 dark:text-gray-300"
+                            placeholder="ZIP"
+                            maxLength={5}
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
 

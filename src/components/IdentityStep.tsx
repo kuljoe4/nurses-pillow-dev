@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
+import { ClinicalDatePicker } from './ClinicalDatePicker';
 
 interface IdentityStepProps {
   data: VerificationFormData;
@@ -183,22 +184,14 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold mb-1.5">Date of Birth</label>
-              <div className={`relative w-full h-[46px] rounded-xl border flex items-center px-3 focus-within:ring-2 ${
-                  isNightShiftMode
-                    ? 'border-[#233550] focus-within:ring-[#3E9AD1]'
-                    : 'border-gray-200 focus-within:ring-[#0A6FA8]'
-                }`}>
-                <span className="text-sm font-semibold pointer-events-none">
-                  {formatDateFriendly(data.dob)}
-                </span>
-                <input
-                  type="date"
-                  value={data.dob}
-                  onChange={(e) => onChange({ dob: e.target.value })}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </div>
+              <ClinicalDatePicker
+                value={data.dob}
+                onChange={(newDob) => onChange({ dob: newDob })}
+                label="Date of Birth"
+                maxDate={new Date().toISOString().split('T')[0]}
+                showPresets={false}
+                isNightShiftMode={isNightShiftMode}
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1.5">SSN (Last 4 Digits)</label>

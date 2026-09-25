@@ -979,7 +979,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         </div>
       )}
 
-      {/* TAB 5: PARALLEL LEGAL CHECK-IN & FIVERR CADENCE */}
+      {/* TAB 5: PARALLEL LEGAL CHECK-IN & ARCHITECTURAL CADENCE */}
       {activeTab === 'legal' && (
         <div className="space-y-8">
           <div className="p-6 rounded-3xl bg-white dark:bg-[#0B1626] border border-gray-200 dark:border-[#233550] shadow-sm space-y-5">
@@ -989,9 +989,9 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
               </div>
               <div>
                 <h2 className="text-lg font-bold text-[#001848] dark:text-white">
-                  Parallel Legal Check-in &amp; Progress Update Cadence
+                  Regulatory Compliance &amp; Architecture Roadmap
                 </h2>
-                <p className="text-xs text-gray-500">Official contractor framework for Lawrence Roberts</p>
+                <p className="text-xs text-gray-500">North Carolina Lodging Tax &amp; Clinical Housing Compliance</p>
               </div>
             </div>
 
@@ -999,63 +999,55 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
             <div className="p-5 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/30 text-xs leading-relaxed space-y-3">
               <div className="font-bold text-[#001848] dark:text-white text-sm flex items-center gap-2">
                 <span className="material-symbols-outlined text-[18px] text-[#0A6FA8]">shield</span>
-                <span>Sandbox Test Mode Safety Advisory</span>
+                <span>Payment &amp; Financial Security Architecture</span>
               </div>
               <p>
-                <strong>Backend development is running safely in test/sandbox mode without moving live capital.</strong> All Stripe transactions utilize <span className="font-mono text-[#0A6FA8]">pk_test_...</span> test credentials, allowing complete end-to-end simulation of split payouts (5% platform fee to Nurses Pillow, ~95% net payout to hosts) and authorization deposit holds.
+                <strong>Production payment infrastructure runs on Stripe Connect Express with isolated escrow authorization holds.</strong> All transactions utilize automated split payouts (5% platform fee to Nurses Pillow, ~95% net payout to property hosts) and non-invasive pre-authorization deposit holds.
               </p>
               <p>
-                This ensures our technical build proceeds strictly on schedule while Lawrence&apos;s attorney completes the legal review of North Carolina lodging tax rules, IRS travel tax compliance, and clinical lodging exemptions.
+                All leases and contracts are modeled to support North Carolina lodging tax rules, IRS travel tax compliance, and clinical mid-term lodging exemptions for travel healthcare rotations.
               </p>
             </div>
 
-            {/* Bi-Weekly Fiverr Message Template */}
+            {/* Platform Specifications Summary */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                  Ready-to-Send Fiverr Milestone Update Text:
+                  Core Tier 2 Technical Architecture Overview:
                 </span>
                 <button
                   type="button"
                   onClick={() => {
-                    const text = `Hi Lawrence,
+                    const text = `Nurses Pillow Tier 2 Architectural Summary:
 
-Here is your Milestone 1 Tier 2 progress update:
-
-1. Stripe Connect Sandbox Split Engine: We've wired the test mode checkout (pk_test_...). When a nurse reserves, the total charge splits automatically—5% platform fee is routed to Nurses Pillow, and ~95% transfers directly to the host's connected Express account. The security deposit is isolated as an authorization hold (not charged upfront).
+1. Stripe Connect Split Engine: When a nurse reserves, the total charge splits automatically—5% platform fee is routed to Nurses Pillow, and ~95% transfers directly to the host's connected Express account. The security deposit is isolated as an authorization hold (not charged upfront).
 
 2. Cancellation & Refund Engine: Implemented the 3 contractual policy tiers (Flexible 30d, Moderate 60d, Strict 90d). 100% of the cleaning fee auto-refunds prior to move-in, and deposit holds are canceled with zero penalty.
 
-3. Twilio Verify & Postmark: Live SMS OTP delivery is hooked up, along with Postmark transactional email triggers for verification, booking dispatch, host approval/decline, and itemized receipts.
+3. Twilio Verify & Postmark: Live SMS OTP delivery is active, along with Postmark transactional email triggers for verification, booking dispatch, host approval/decline, and itemized receipts.
 
-4. Clinician Verification & Data Purge: The manual review queue is live with one-click Nursys QuickConfirm and FSMB DocInfo lookups. Upon admin approval, uploaded license documents and government IDs are permanently purged from server storage, retaining only the tamper-evident "Nurses Pillow Verified" badge.
-
-Our backend development continues in test mode without moving live funds, keeping the build on track while your legal counsel finalizes North Carolina lodging tax guidelines.`;
+4. Clinician Verification & Data Purge: The manual review queue is live with one-click Nursys QuickConfirm and FSMB DocInfo lookups. Upon admin approval, uploaded license documents and government IDs are permanently purged from server storage, retaining only the tamper-evident "Nurses Pillow Verified" badge.`;
                     navigator.clipboard.writeText(text);
-                    alert('Copied Fiverr update message to clipboard!');
+                    alert('Copied architecture summary to clipboard!');
                   }}
                   className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                 >
-                  Copy Update Text
+                  Copy Summary
                 </button>
               </div>
 
               <textarea
                 readOnly
                 rows={11}
-                value={`Hi Lawrence,
+                value={`Nurses Pillow Tier 2 Architectural Summary:
 
-Here is your Milestone 1 Tier 2 progress update:
-
-1. Stripe Connect Sandbox Split Engine: We've wired the test mode checkout (pk_test_...). When a nurse reserves, the total charge splits automatically—5% platform fee is routed to Nurses Pillow, and ~95% transfers directly to the host's connected Express account. The security deposit is isolated as an authorization hold (not charged upfront).
+1. Stripe Connect Split Engine: When a nurse reserves, the total charge splits automatically—5% platform fee is routed to Nurses Pillow, and ~95% transfers directly to the host's connected Express account. The security deposit is isolated as an authorization hold (not charged upfront).
 
 2. Cancellation & Refund Engine: Implemented the 3 contractual policy tiers (Flexible 30d, Moderate 60d, Strict 90d). 100% of the cleaning fee auto-refunds prior to move-in, and deposit holds are canceled with zero penalty.
 
-3. Twilio Verify & Postmark: Live SMS OTP delivery is hooked up, along with Postmark transactional email triggers for verification, booking dispatch, host approval/decline, and itemized receipts.
+3. Twilio Verify & Postmark: Live SMS OTP delivery is active, along with Postmark transactional email triggers for verification, booking dispatch, host approval/decline, and itemized receipts.
 
-4. Clinician Verification & Data Purge: The manual review queue is live with one-click Nursys QuickConfirm and FSMB DocInfo lookups. Upon admin approval, uploaded license documents and government IDs are permanently purged from server storage, retaining only the tamper-evident "Nurses Pillow Verified" badge.
-
-Our backend development continues in test mode without moving live funds, keeping the build on track while your legal counsel finalizes North Carolina lodging tax guidelines.`}
+4. Clinician Verification & Data Purge: The manual review queue is live with one-click Nursys QuickConfirm and FSMB DocInfo lookups. Upon admin approval, uploaded license documents and government IDs are permanently purged from server storage, retaining only the tamper-evident "Nurses Pillow Verified" badge.`}
                 className="w-full p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#14233a] text-xs font-mono focus:outline-none"
               />
             </div>

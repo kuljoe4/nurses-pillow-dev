@@ -4,13 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"tsx server/server.ts\" \"vite --port=3000 --host=0.0.0.0\"",
+    "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "migrate": "tsx server/migrate.ts",
-    "start": "tsx server/server.ts",
+    "start": "tsx server.ts",
     "seed": "tsx server/seed.ts"
   },
   "dependencies": {

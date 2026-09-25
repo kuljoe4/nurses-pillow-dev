@@ -405,114 +405,9 @@ export default function App() {
         isNightShiftMode={isNightShiftMode}
       />
 
-      {/* Sticky Navigation Header with Integrated Staging Status Banner */}
+      {/* Sticky Navigation Header */}
       <Header
-        topBanner={
-          isStagingAuthenticated && isStagingBannerVisible ? (
-            isDeveloper ? (
-              <div className="w-full bg-[#130b2e] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-purple-400" />
-                  <span className="font-semibold tracking-wide">
-                    Developer Workspace: <span className="text-purple-300 font-mono">Joshua (Lead Dev)</span>
-                  </span>
-                  <span className="hidden sm:inline opacity-40">•</span>
-                  <span className="hidden sm:inline opacity-80 text-purple-200">
-                    Milestone 2 In-Flight Tools &amp; System Specs Unlocked
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-[11px]">
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${
-                    m2BypassMode
-                      ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                      : 'bg-gray-700 text-gray-300 border border-gray-600'
-                  }`}>
-                    M2 Scope: {m2BypassMode ? 'UNLOCKED' : 'GATED'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setM2BypassMode(!m2BypassMode)}
-                    className="hover:underline opacity-80 hover:opacity-100 cursor-pointer font-mono"
-                  >
-                    {m2BypassMode ? 'Lock M2' : 'Unlock M2'}
-                  </button>
-                  <span className="opacity-40">|</span>
-                  <button
-                    type="button"
-                    onClick={handleDeveloperSignOut}
-                    className="text-amber-300 cursor-pointer flex items-center gap-1 font-semibold group"
-                    title="Switch to Client Review perspective to see what Lawrence sees"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">visibility</span>
-                    <span className="group-hover:underline">View as Client</span>
-                  </button>
-                  <span className="opacity-40">|</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sessionStorage.removeItem('np_staging_auth_lawrence');
-                      sessionStorage.removeItem('np_staging_user');
-                      setIsStagingAuthenticated(false);
-                    }}
-                    className="text-[#ffb4ab] cursor-pointer flex items-center gap-1 group"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">lock</span>
-                    <span className="group-hover:underline">Lock Preview</span>
-                  </button>
-                  <span className="opacity-40">|</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsStagingBannerVisible(false)}
-                    className="p-1 rounded-md hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
-                    title="Autohide staging review bar"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">close</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full bg-[#001848] text-white py-1.5 px-4 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#10b981]" />
-                  <span className="font-semibold tracking-wide">
-                    Staging Review: <span className="text-[#aff0db] font-mono">lawrence</span>
-                  </span>
-                  <span className="hidden sm:inline opacity-40">•</span>
-                  <span className="hidden sm:inline opacity-80">
-                    Milestone 1 Core Acceptance Build (NC Focus)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-[11px]">
-                  <span className="text-[#aff0db] font-medium hidden sm:inline">
-                    Verified Client Review Access
-                  </span>
-                  <span className="opacity-40 hidden sm:inline">|</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sessionStorage.removeItem('np_staging_auth_lawrence');
-                      sessionStorage.removeItem('np_staging_user');
-                      setIsStagingAuthenticated(false);
-                    }}
-                    className="text-[#ffb4ab] cursor-pointer flex items-center gap-1 group"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">lock</span>
-                    <span className="group-hover:underline">Lock Preview</span>
-                  </button>
-                  <span className="opacity-40">|</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsStagingBannerVisible(false)}
-                    className="p-1 rounded-md hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
-                    title="Autohide staging review bar"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">close</span>
-                  </button>
-                </div>
-              </div>
-            )
-          ) : null
-        }
+        topBanner={null}
         currentTab={currentTab}
         onSelectTab={handleNavigateTab}
         savedCount={savedListingIds.length}
@@ -531,17 +426,17 @@ export default function App() {
         onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
         isDeveloper={isDeveloper}
         onLogout={handleInitiateLogout}
-        showScreenCodes={showScreenCodes}
+        showScreenCodes={false}
         onToggleScreenCodes={() => setShowScreenCodes(!showScreenCodes)}
         isStagingAuthenticated={isStagingAuthenticated}
-        stagingClientName="lawrence"
+        stagingClientName="production"
         onToggleDeveloperMode={isDeveloper ? handleDeveloperSignOut : handleDeveloperSignIn}
         onLockPreview={() => {
           sessionStorage.removeItem('np_staging_auth_lawrence');
           sessionStorage.removeItem('np_staging_user');
           setIsStagingAuthenticated(false);
         }}
-        isStagingBannerVisible={isStagingBannerVisible}
+        isStagingBannerVisible={false}
         onToggleStagingBanner={() => setIsStagingBannerVisible(!isStagingBannerVisible)}
       />
 

@@ -1,6 +1,8 @@
 // Nurses Pillow - Relational Database Schema & Service (Railway PostgreSQL Architecture)
 // Models: Users, Hospitals, Multi-Room Listings, Listing Rooms, Pricing Calendars, Bookings, Audit Logs
 
+import { railwayClient, RailwayDatabaseStatus } from './railway';
+
 export interface DbUser {
   id: string;
   email: string;
@@ -418,14 +420,50 @@ class DatabaseService {
     },
   ];
 
+  private railwayStatus: RailwayDatabaseStatus | null = null;
+
+  async init(): Promise<{ railwayActive: boolean; status: RailwayDatabaseStatus | null }> {
+    try {
+      this.railwayStatus = await railwayClient.getStatus();
+      if (this.railwayStatus.isConnected) {
+        console.log(`[DatabaseService] Connected to Railway PostgreSQL (${this.railwayStatus.database})`);
+      } else {
+        console.warn(`[DatabaseService] PostgreSQL Status: ${this.railwayStatus.diagnostics}`);
+      }
+
+      await Promise.allSettled([
+        this.fetchHospitals(),
+        this.fetchListings(),
+        this.fetchAuditLogs(),
+      ]);
+
+      return {
+        railwayActive: this.railwayStatus.isConnected,
+        status: this.railwayStatus,
+      };
+    } catch (err: any) {
+      console.error('[DatabaseService] Database initialization check error:', err);
+      return {
+        railwayActive: false,
+        status: null,
+      };
+    }
+  }
+
+  getRailwayStatus(): RailwayDatabaseStatus | null {
+    return this.railwayStatus;
+  }
+
   async fetchHospitals(): Promise<DbHospital[]> {
     try {
       const response = await fetch('/api/hospitals');
       if (response.ok) {
         this.hospitals = await response.json();
+      } else {
+        console.error('[DatabaseService] Failed to fetch hospitals from PostgreSQL API');
       }
     } catch (error) {
-      console.warn('Failed to fetch hospitals from API, falling back to mock data', error);
+      console.error('[DatabaseService] Network error fetching hospitals from PostgreSQL API:', error);
     }
     return this.hospitals;
   }
@@ -435,9 +473,11 @@ class DatabaseService {
       const response = await fetch('/api/listings');
       if (response.ok) {
         this.listings = await response.json();
+      } else {
+        console.error('[DatabaseService] Failed to fetch listings from PostgreSQL API');
       }
     } catch (error) {
-      console.warn('Failed to fetch listings from API, falling back to mock data', error);
+      console.error('[DatabaseService] Network error fetching listings from PostgreSQL API:', error);
     }
     return this.listings;
   }
@@ -447,16 +487,16 @@ class DatabaseService {
       const response = await fetch('/api/audit-logs');
       if (response.ok) {
         this.auditLogs = await response.json();
+      } else {
+        console.error('[DatabaseService] Failed to fetch audit logs from PostgreSQL API');
       }
     } catch (error) {
-      console.warn('Failed to fetch audit logs from API, falling back to mock data', error);
+      console.error('[DatabaseService] Network error fetching audit logs from PostgreSQL API:', error);
     }
     return this.auditLogs;
   }
 
   getHospitals(): DbHospital[] {
-    // This is synchronous for UI components that haven't been updated to async yet.
-    // Call fetchHospitals() beforehand to populate data.
     return this.hospitals;
   }
 
@@ -488,23 +528,19 @@ class DatabaseService {
       created_at: new Date().toISOString(),
     };
 
-    try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newBooking),
-      });
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newBooking),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to create booking on the server');
-      }
-    } catch (error) {
-      console.warn('Failed to post booking to API, falling back to local simulation', error);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Failed to create booking in PostgreSQL database');
     }
 
-    // Fallback/sync to local memory array
     this.bookings.unshift(newBooking);
 
     // Database Trigger Simulation: Log Audit Trail

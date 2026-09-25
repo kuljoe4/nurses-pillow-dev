@@ -12,6 +12,7 @@ import {
 } from '../lib/animation-utilities';
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration } from '../lib/googleMapsCommute';
+import { ClinicalDatePicker } from './ClinicalDatePicker';
 
 interface ObservedListingCardProps {
   listing: HousingListing;
@@ -198,7 +199,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [customDuration, setCustomDuration] = useState<number>(1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('2024-10-01');
+  const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
   const [isCustomizingAssignment, setIsCustomizingAssignment] = useState(false);
   const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
@@ -417,21 +418,51 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
             {/* Progressive Disclosure Bar: Staged Data Summary + Expand Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-[#0B2559] dark:text-[#E6ECF7]">
-                <span className="text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">Move-in</span>
-                <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">{earliestCheckIn}</span>
+              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs sm:text-sm text-[#0B2559] dark:text-[#E6ECF7]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomizingAssignment((prev) => !prev);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
+                  title="Click to select move-in date"
+                >
+                  <span className="text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">Move-in</span>
+                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
+                    {formatDateFriendly(earliestCheckIn)}
+                  </span>
+                  <span className="material-symbols-outlined text-[15px] text-[#0A6FA8] dark:text-[#3E9AD1] opacity-70 group-hover:opacity-100 transition-opacity">
+                    edit_calendar
+                  </span>
+                </button>
                 <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
-                <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
-                  {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} weeks`}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomizingAssignment(true)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
+                  title="Click to customize rotation duration"
+                >
+                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
+                    {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} weeks`}
+                  </span>
+                </button>
                 <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
-                <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">Within {commuteBuffer} mi</span>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomizingAssignment(true)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
+                  title="Click to customize commute radius"
+                >
+                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
+                    Within {commuteBuffer} mi
+                  </span>
+                </button>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsCustomizingAssignment(!isCustomizingAssignment)}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors self-start sm:self-auto group"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors self-start sm:self-auto group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
               >
                 <span className="group-hover:underline">{isCustomizingAssignment ? 'Fewer options' : 'Customize dates & radius'}</span>
                 <span
@@ -451,31 +482,19 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   animate={{ opacity: 1, height: 'auto', y: 0 }}
                   exit={{ opacity: 0, height: 0, y: -8 }}
                   transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden pt-4 pb-2 space-y-5"
+                  className="pt-4 pb-2 space-y-5 px-1 -mx-1"
                 >
                   {/* Dual Column: Check-in & Duration */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {/* Check-In Date */}
                     <div>
-                      <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                        Earliest Check-In
-                      </label>
-                      <div className="relative">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#0A6FA8] dark:text-[#3E9AD1] pointer-events-none text-[20px]">
-                          calendar_today
-                        </span>
-                        <div className="relative w-full h-12 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center pl-12 pr-4 focus-within:ring-2 focus-within:ring-[#0A6FA8]">
-                          <span className="text-sm font-semibold text-[#0B2559] dark:text-white tabular-nums pointer-events-none">
-                            {formatDateFriendly(earliestCheckIn)}
-                          </span>
-                          <input
-                            type="date"
-                            value={earliestCheckIn}
-                            onChange={(e) => setEarliestCheckIn(e.target.value)}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                        </div>
-                      </div>
+                      <ClinicalDatePicker
+                        value={earliestCheckIn}
+                        onChange={setEarliestCheckIn}
+                        label="Earliest Check-In"
+                        subLabel="Shift Start"
+                        isNightShiftMode={isNightShiftMode}
+                      />
                     </div>
 
                     {/* Assignment Duration */}

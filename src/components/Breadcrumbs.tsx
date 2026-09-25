@@ -21,7 +21,6 @@ interface CrumbItem {
   icon?: string;
   onClick?: () => void;
   isCurrent?: boolean;
-  screenCode?: string;
   badge?: string;
 }
 
@@ -29,7 +28,6 @@ interface CrumbTooltipProps {
   label: string;
   fullPath?: string;
   hint?: string;
-  screenCode?: string;
   badge?: string;
   align?: 'left' | 'center' | 'right';
   disabled?: boolean;
@@ -41,7 +39,6 @@ const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
   label,
   fullPath,
   hint,
-  screenCode,
   badge,
   align = 'center',
   disabled = false,
@@ -91,11 +88,6 @@ const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
         {/* Header: Segment Title & Badges */}
         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
           <span className="font-bold text-xs leading-snug">{label}</span>
-          {screenCode && (
-            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/25 text-purple-300 font-bold shrink-0">
-              {screenCode}
-            </span>
-          )}
           {badge && (
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 font-semibold shrink-0">
               {badge}
@@ -201,19 +193,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     }
   };
 
-  const getVerificationStepCode = (step: VerificationStepId) => {
-    switch (step) {
-      case 1:
-        return '[C-01]';
-      case 2:
-        return '[C-02]';
-      case 3:
-        return '[C-03]';
-      case 4:
-        return '[C-04]';
-    }
-  };
-
   // Build the hierarchical trail items based on currentTab
   const buildTrail = (): CrumbItem[] => {
     const homeCrumb: CrumbItem = {
@@ -232,7 +211,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Sanitized Housing Search',
             shortLabel: 'Search',
             icon: 'travel_explore',
-            screenCode: '[A-02]',
             isCurrent: !searchHospital,
             onClick: searchHospital ? () => navigateTo('search-listings') : undefined,
           },
@@ -265,7 +243,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             id: `step-${verificationStep}`,
             label: getVerificationStepTitle(verificationStep),
             icon: 'badge',
-            screenCode: getVerificationStepCode(verificationStep),
             badge: `Step ${verificationStep} of 4`,
             isCurrent: true,
           },
@@ -287,10 +264,9 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           },
           {
             id: 'email-verify',
-            label: 'Postmark Institutional Email Verification',
+            label: 'Institutional Email Verification',
             shortLabel: 'Email Verification',
             icon: 'mark_email_read',
-            screenCode: '[C-02A]',
             isCurrent: true,
           },
         ];
@@ -314,7 +290,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Mobile Phone Verification',
             shortLabel: 'Phone Verification',
             icon: 'sms',
-            screenCode: '[C-02B]',
             isCurrent: true,
           },
         ];
@@ -334,7 +309,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'My Bookings & Verified Profile',
             shortLabel: 'My Bookings',
             icon: 'inventory_2',
-            screenCode: '[C-05]',
             isCurrent: true,
           },
         ];
@@ -354,7 +328,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Sanctuary Listings & Reservation Requests',
             shortLabel: 'Listings & Requests',
             icon: 'home_work',
-            screenCode: '[H-01]',
             isCurrent: true,
           },
         ];
@@ -375,7 +348,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'List a Clinician Sanctuary',
             shortLabel: 'New Sanctuary',
             icon: 'add_home_work',
-            screenCode: '[H-02]',
             isCurrent: true,
           },
         ];
@@ -386,16 +358,15 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           homeCrumb,
           {
             id: 'admin-root',
-            label: 'Super-Admin Operations Portal',
-            shortLabel: 'Super-Admin',
+            label: 'Operations Portal',
+            shortLabel: 'Operations',
             icon: 'admin_panel_settings',
           },
           {
             id: 'admin-queue',
-            label: 'Operations & Primary Source License Queue',
+            label: 'Primary Source License Verification Queue',
             shortLabel: 'License Queue',
             icon: 'fact_check',
-            screenCode: '[A-01]',
             isCurrent: true,
           },
         ];
@@ -415,7 +386,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'NC Trauma Centers & Verified Teaching Hospitals',
             shortLabel: 'Verified Hospitals',
             icon: 'local_hospital',
-            screenCode: '[HOS-01]',
             isCurrent: true,
           },
         ];
@@ -434,7 +404,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'How Nurses Pillow Works',
             shortLabel: 'How It Works',
             icon: 'psychology_alt',
-            screenCode: '[P-01]',
             isCurrent: true,
           },
         ];
@@ -453,7 +422,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Sanctuary Host Standards & Guarantees',
             shortLabel: 'Host Standards',
             icon: 'shield_lock',
-            screenCode: '[P-02]',
             isCurrent: true,
           },
         ];
@@ -472,7 +440,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: '24/7 Clinical Support Hotline & Dispatch',
             shortLabel: '24/7 Support',
             icon: 'headset_mic',
-            screenCode: '[P-03]',
             isCurrent: true,
           },
         ];
@@ -491,7 +458,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Sanctuary Standards, Cancellation & Terms',
             shortLabel: 'Legal & Policies',
             icon: 'gavel',
-            screenCode: '[P-05]',
             isCurrent: true,
           },
         ];
@@ -510,7 +476,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Platform Reliability & Live Health',
             shortLabel: 'System Status',
             icon: 'dns',
-            screenCode: '[P-12]',
             isCurrent: true,
           },
         ];
@@ -521,8 +486,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           homeCrumb,
           {
             id: 'dev-workspace',
-            label: 'Developer Workspace',
-            shortLabel: 'Dev Workspace',
+            label: 'Platform Architecture',
+            shortLabel: 'Architecture',
             icon: 'terminal',
           },
           {
@@ -530,7 +495,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             label: 'Phase 1 Master Screen Inventory & Scope Navigator',
             shortLabel: 'Screen Inventory',
             icon: 'integration_instructions',
-            screenCode: '[DEV-01]',
             isCurrent: true,
           },
         ];
@@ -541,17 +505,16 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           homeCrumb,
           {
             id: 'dev-workspace',
-            label: 'Developer Workspace',
-            shortLabel: 'Dev Workspace',
+            label: 'Platform Architecture',
+            shortLabel: 'Architecture',
             icon: 'terminal',
             onClick: () => navigateTo('phase1-inventory'),
           },
           {
             id: 'mobile-preview-current',
-            label: 'Native Mobile App Preview (Milestone 2)',
+            label: 'Native Mobile App Preview',
             shortLabel: 'Mobile Preview',
             icon: 'smartphone',
-            screenCode: '[M2-01]',
             isCurrent: true,
           },
         ];
@@ -749,11 +712,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             </span>
                           )}
                           <span className="truncate flex-1 font-medium">{crumb.label}</span>
-                          {crumb.screenCode && showScreenCodes && (
-                            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold shrink-0">
-                              {crumb.screenCode}
-                            </span>
-                          )}
                         </button>
                       ))}
                     </div>
@@ -778,7 +736,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     label={lastCrumb.label}
                     fullPath={fullPathString}
                     hint="Current Active View"
-                    screenCode={showScreenCodes ? lastCrumb.screenCode : undefined}
                     badge={lastCrumb.badge}
                     align="right"
                     isNightShiftMode={isNightShiftMode}
@@ -814,12 +771,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                           {lastCrumb.badge}
                         </span>
                       )}
-
-                      {showScreenCodes && lastCrumb.screenCode && (
-                        <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold shrink-0 ml-0.5">
-                          {lastCrumb.screenCode}
-                        </span>
-                      )}
                     </div>
                   </CrumbTooltip>
                 </li>
@@ -848,7 +799,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                       label={crumb.label}
                       fullPath={fullPathString}
                       hint={isLast ? 'Current Active View' : crumb.onClick ? 'Click to navigate to this view' : undefined}
-                      screenCode={showScreenCodes ? crumb.screenCode : undefined}
                       badge={crumb.badge}
                       align={index === 0 ? 'left' : isLast ? 'right' : 'center'}
                       isNightShiftMode={isNightShiftMode}
@@ -884,12 +834,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                               }`}
                             >
                               {crumb.badge}
-                            </span>
-                          )}
-
-                          {showScreenCodes && crumb.screenCode && (
-                            <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold ml-0.5">
-                              {crumb.screenCode}
                             </span>
                           )}
                         </div>

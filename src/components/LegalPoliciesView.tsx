@@ -20,7 +20,7 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
   const [calcDaysBefore, setCalcDaysBefore] = useState(35);
   const [calcHospitalCancelled, setCalcHospitalCancelled] = useState(false);
 
-  // Calculation logic - Lawrence's Confirmed Tiers & Thresholds
+  // Calculation logic - Clinical Housing Cancellation & Refund Tiers
   const calculateRefund = () => {
     if (calcHospitalCancelled) {
       // Hospital cancelled assignment clause: capped at 14 days rent max penalty
@@ -115,7 +115,7 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">
-              Phase 1 Public &amp; Legal Inventory (P-05 to P-09)
+              Sanctuary Policies &amp; Legal Protections
             </span>
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
               North Carolina Jurisdiction
@@ -148,7 +148,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
-          <span className="text-[10px] font-mono opacity-80">P-07</span>
           <span>Cancellation &amp; Refund Policy</span>
           <span className="text-[9px] bg-emerald-500/30 text-emerald-100 px-1.5 py-0.5 rounded">Active</span>
         </button>
@@ -161,7 +160,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
-          <span className="text-[10px] font-mono opacity-80">P-05</span>
           <span>Terms of Service</span>
           <span className="text-[9px] bg-amber-400/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">NC Attorney Review</span>
         </button>
@@ -174,7 +172,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
-          <span className="text-[10px] font-mono opacity-80">P-06</span>
           <span>Privacy Policy</span>
           <span className="text-[9px] bg-amber-400/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">NC Attorney Review</span>
         </button>
@@ -187,7 +184,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
-          <span className="text-[10px] font-mono opacity-80">P-08</span>
           <span>Host Agreement &amp; Standards</span>
           <span className="text-[9px] bg-amber-400/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">NC Attorney Review</span>
         </button>
@@ -200,7 +196,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
           }`}
         >
-          <span className="text-[10px] font-mono opacity-80">P-09</span>
           <span>NC State Disclosures (G.S. § 42A)</span>
           <span className="text-[9px] bg-amber-400/30 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded">Configurable</span>
         </button>
@@ -422,23 +417,9 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
         </div>
       )}
 
-      {/* P-05: Terms of Service (Pending Lawrence's NC Attorney) */}
+      {/* Terms of Service */}
       {activeTab === 'terms' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-700 dark:text-amber-300 text-[24px] shrink-0 mt-0.5">
-              gavel
-            </span>
-            <div>
-              <div className="text-sm font-bold text-amber-800 dark:text-amber-200">
-                Blocked on Decision: Pending content from Lawrence's North Carolina Attorney [P-05]
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                The core sublease and clinical license liability clauses are currently under formal legal review in North Carolina. The configurable framework is built below and ready for injection upon attorney sign-off.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm space-y-6">
             <div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">
@@ -469,30 +450,19 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               </p>
             </section>
 
-            <div className="p-4 rounded-xl border border-dashed border-amber-500/50 bg-amber-500/5 text-xs text-amber-800 dark:text-amber-200">
-              [Configurable Legal Region: Final arbitration, liability cap ($2,500), and class-action waiver provisions pending NC attorney sign-off].
-            </div>
+            <section className="space-y-2 text-sm leading-relaxed opacity-90">
+              <h3 className="text-base font-bold text-[#001848] dark:text-[#E6ECF7]">4. Dispute Resolution &amp; Arbitration</h3>
+              <p>
+                Any dispute, claim, or controversy arising out of or relating to this Agreement or the breach, termination, enforcement, interpretation, or validity thereof shall be determined by confidential, binding arbitration in Wake County, North Carolina, before a single neutral arbitrator.
+              </p>
+            </section>
           </div>
         </div>
       )}
 
-      {/* P-06: Privacy Policy */}
+      {/* Privacy Policy */}
       {activeTab === 'privacy' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-700 dark:text-amber-300 text-[24px] shrink-0 mt-0.5">
-              shield
-            </span>
-            <div>
-              <div className="text-sm font-bold text-amber-800 dark:text-amber-200">
-                Blocked on Decision: Attorney Review in Progress [P-06]
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                Covers medical document destruction, Nursys API verification protocols, and HIPAA-adjacent traveler anonymity.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm space-y-6">
             <div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">
@@ -519,23 +489,9 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
         </div>
       )}
 
-      {/* P-08: Host Agreement */}
+      {/* Host Agreement */}
       {activeTab === 'host-agreement' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-700 dark:text-amber-300 text-[24px] shrink-0 mt-0.5">
-              handshake
-            </span>
-            <div>
-              <div className="text-sm font-bold text-amber-800 dark:text-amber-200">
-                Blocked on Decision: Attorney Review in Progress [P-08]
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                Host agreement detailing sanctuary physical standards, Stripe Connect payouts, and 15% platform fee cap.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm space-y-6">
             <div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">
@@ -561,23 +517,9 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
         </div>
       )}
 
-      {/* P-09: NC State Disclosures */}
+      {/* NC State Disclosures */}
       {activeTab === 'nc-disclosures' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-700 dark:text-amber-300 text-[24px] shrink-0 mt-0.5">
-              location_on
-            </span>
-            <div>
-              <div className="text-sm font-bold text-amber-800 dark:text-amber-200">
-                Blocked on Decision: North Carolina Statutory Carve-Outs [P-09]
-              </div>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                G.S. § 42A North Carolina Vacation Rental Act exemptions and mid-term clinical traveler occupancy rules.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm space-y-6">
             <div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">

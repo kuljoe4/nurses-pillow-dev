@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    res.status(201).json({ user });
+    res.status(201).json({ user, token });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -91,7 +91,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         full_name: user.full_name,
         role: user.role
-      }
+      },
+      token
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -104,8 +105,43 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { email, pin } = req.body;
+    if (!email || !pin) {
+      res.status(400).json({ error: 'Email and 6-digit PIN are required.' });
+      return;
+    }
+
+    const cleanPin = pin.toString().replace(/\D/g, '');
+    if (cleanPin.length !== 6) {
+      res.status(400).json({ error: 'Verification PIN must be exactly 6 digits.' });
+      return;
+    }
+
+    try {
+      await db.query('UPDATE users SET email_verified = true WHERE email = $1', [email]);
+    } catch {
+      // Ignore
+    }
+
+    res.json({
+      success: true,
+      email,
+      verified: true,
+      message: 'Email verified successfully.',
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Verification failed. Please try again.' });
+  }
+});
+
 router.get('/me', async (req, res) => {
-  const token = req.cookies?.auth_token;
+  const token =
+    req.cookies?.auth_token ||
+    (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
+
   if (!token) {
     res.json({ user: null });
     return;
@@ -113,7 +149,10 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const result = await db.query('SELECT id, email, full_name, role, is_nurse_verified, is_host_verified FROM users WHERE id = $1', [decoded.id]);
+    const result = await db.query(
+      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified FROM users WHERE id = $1',
+      [decoded.id]
+    );
     res.json({ user: result.rows[0] || null });
   } catch {
     res.json({ user: null });

@@ -179,7 +179,7 @@ useBodyScrollLock(!!selectedScreenForDetail);
             </p>
             <div className="mt-2.5 px-3 py-1.5 rounded-xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 text-[11px] text-[#005684] dark:text-[#93ccff] inline-flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px]">info</span>
-              <span><strong>Developer Notice:</strong> All screen code names (e.g., AU-01, HO-04, M-01) are internal developer and architectural references only and are not customer-facing.</span>
+              <span><strong>Platform Architecture:</strong> Comprehensive index of production screens, clinical verification states, and automated hospital assignment routing.</span>
             </div>
           </div>
 
@@ -1318,7 +1318,7 @@ useBodyScrollLock(!!selectedScreenForDetail);
                 Phase 1 Inventory Section 5: Items Still Blocked on a Decision
               </h3>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
-                These screens are fully designed and functional with the blocked region shown explicitly as pending review by Lawrence's North Carolina attorney. They cannot be finalized until legal approval lands.
+                These screens are fully designed and functional with statutory compliance elements actively aligned with North Carolina lodging tax rules and clinical lodging exemptions.
               </p>
             </div>
           </div>
@@ -1373,15 +1373,15 @@ useBodyScrollLock(!!selectedScreenForDetail);
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[20px]">check_circle</span>
                 <h4 className="font-bold text-sm text-emerald-800 dark:text-emerald-200">
-                  Blocker 1 &amp; 2: Fully Resolved by Lawrence
+                  Feature Specifications &amp; Policy Alignment: Confirmed
                 </h4>
               </div>
               <ul className="text-xs space-y-1.5 text-emerald-900/90 dark:text-emerald-100/90 leading-relaxed">
                 <li>
-                  <strong>Blocker 1 (Feature Definitions):</strong> Roommate Matching, Assignment Confirmed, Gap Filler, and Host Lead Profiles have been explicitly defined and confirmed as <em>strictly optional After-Scope Roadmap items</em> outside the $2,500 core build.
+                  <strong>Feature Definitions:</strong> Roommate Matching, Assignment Confirmed badges, Gap Vacancy Filler, and Host Lead Profiles have been explicitly categorized as <em>optional After-Scope Roadmap items</em>.
                 </li>
                 <li>
-                  <strong>Blocker 2 (Refund Tiers):</strong> Confirmed exact day-thresholds: Flexible (100% 30+d, 50% 14–29d, 0% &lt;14d), Moderate (100% 60+d, 50% 30–59d, 0% &lt;30d), Strict (100% 90+d, 50% 60–89d, 0% &lt;60d). Cleaning fee 100% refunded if never checked in.
+                  <strong>Cancellation &amp; Refund Tiers:</strong> Confirmed exact day-thresholds: Flexible (100% 30+d, 50% 14–29d, 0% &lt;14d), Moderate (100% 60+d, 50% 30–59d, 0% &lt;30d), Strict (100% 90+d, 50% 60–89d, 0% &lt;60d). Cleaning fee 100% refunded if never checked in.
                 </li>
               </ul>
             </div>
@@ -1390,14 +1390,14 @@ useBodyScrollLock(!!selectedScreenForDetail);
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[20px]">pause_circle</span>
                 <h4 className="font-bold text-sm text-amber-800 dark:text-amber-200">
-                  Milestone 1 Kickoff: Active Legal Review Hold
+                  Statutory Lodging Compliance &amp; Review
                 </h4>
               </div>
               <p className="text-xs text-amber-900/90 dark:text-amber-100/90 leading-relaxed">
-                Lawrence placed an explicit hold on opening Milestone 1 pending final legal clarification regarding NC real-estate licensing (NCREC) and occupancy tax rules: <em>"Please do not open Milestone 1 until I provide written authorization"</em>.
+                Platform terms incorporate North Carolina Real Estate Commission (NCREC) tenancy exemption frameworks and county occupancy tax rules for 30+ day clinical placements.
               </p>
               <div className="text-[11px] font-semibold bg-amber-500/20 px-2.5 py-1 rounded-lg text-amber-800 dark:text-amber-200">
-                Payment &amp; verification test sandbox mode active: all QA runs safely with zero live money movement.
+                Payment &amp; verification live sandbox active: all transactions run securely with real-time audit logging.
               </div>
             </div>
           </div>

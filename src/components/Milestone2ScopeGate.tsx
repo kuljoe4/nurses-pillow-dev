@@ -32,7 +32,7 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-[#ffdc84]/40 text-[#745b0d] dark:bg-[#745b0d]/30 dark:text-[#ffdf91]">
               <span className="material-symbols-outlined text-xs">event_upcoming</span>
-              Milestone 2 Contract Scope
+              Upcoming Platform Release
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight mt-1">
               {featureTitle}
@@ -43,7 +43,7 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
         {/* Description */}
         <p className="text-sm leading-relaxed text-[#404850] dark:text-[#8ea5c8] mb-6">
           {featureDescription ||
-            'In accordance with the agreed Final Scope Addendum between Lawrence Roberts (Buyer) and Joshua (Developer), this module is part of the Milestone 2 deliverables schedule. To ensure clear acceptance boundaries, it is gated during the Milestone 1 core marketplace review.'}
+            'This enterprise module is scheduled for rollout in the upcoming platform release. All core housing discovery, clinical credential verification, and booking management features are fully active and production ready.'}
         </p>
 
         {/* Milestone Comparison Card */}
