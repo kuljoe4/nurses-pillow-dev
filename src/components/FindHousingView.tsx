@@ -188,7 +188,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [customDuration, setCustomDuration] = useState<number>(1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
+  const [earliestCheckIn, setEarliestCheckIn] = useState('2024-10-01');
   const [isCustomizingAssignment, setIsCustomizingAssignment] = useState(false);
   const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
@@ -460,10 +460,10 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                           calendar_today
                         </span>
                         <input
-                          type="text"
+                          type="date"
                           value={earliestCheckIn}
                           onChange={(e) => setEarliestCheckIn(e.target.value)}
-                          placeholder="e.g. Oct 1, 2024"
+                          placeholder="e.g. 2024-10-01"
                           className="w-full h-12 pl-12 pr-4 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#0B2559] dark:text-white text-sm font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
                         />
                       </div>

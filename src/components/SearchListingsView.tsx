@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
+import { db } from '../services/database';
 import { ListingDetailModal } from './ListingDetailModal';
 import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
@@ -50,7 +51,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
   const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
   const [customDuration, setCustomDuration] = useState<number>(isInitialCustom ? parseInt(initialDuration) : 1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('Oct 1, 2024');
+  const [earliestCheckIn, setEarliestCheckIn] = useState('2024-10-01');
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'split-map' | 'grid'>('split-map');
@@ -215,57 +216,60 @@ useBodyScrollLock(isGsaModalOpen);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
-    let list = [...MOCK_LISTINGS];
+    // In a real app we would receive real properties from App via context/props.
+    // For now we map to the existing mock to preserve the component.
+    let dbListings = db.getListings() || [];
+    let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
 
     // Filter by quick chip
     if (activeFilterChip === 'entire') {
-      list = list.filter((l) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
+      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
     } else if (activeFilterChip === 'private') {
-      list = list.filter((l) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
+      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
     } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
     } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
     } else if (activeFilterChip === 'parking') {
-      list = list.filter((l) => l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
+      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
     }
 
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
-      list = list.filter((l) => l.monthlyRate <= maxPrice);
+      list = list.filter((l: any) => l.monthlyRate <= maxPrice);
     }
     if (minRating > 0) {
-      list = list.filter((l) => l.nurseRating >= minRating);
+      list = list.filter((l: any) => l.nurseRating >= minRating);
     }
     if (filterBlackout) {
-      list = list.filter((l) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b) => b.toLowerCase().includes('blackout')));
+      list = list.filter((l: any) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')));
     }
     if (filterScrubWasher) {
-      list = list.filter((l) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
+      list = list.filter((l: any) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
     }
     if (filterQuietDay) {
-      list = list.filter((l) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b) => b.toLowerCase().includes('quiet')));
+      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet')));
     }
     if (filterSoundMachine) {
-      list = list.filter((l) => l.amenities?.whiteNoiseMachine);
+      list = list.filter((l: any) => l.amenities?.whiteNoiseMachine);
     }
     if (filterDedicatedParking) {
-      list = list.filter((l) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b) => b.toLowerCase().includes('parking')));
+      list = list.filter((l: any) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')));
     }
     if (filterPetFriendly) {
-      list = list.filter((l) => l.amenities?.petFriendly);
+      list = list.filter((l: any) => l.amenities?.petFriendly);
     }
     if (filterContractFlex) {
-      list = list.filter((l) => l.contractFlexProtection);
+      list = list.filter((l: any) => l.contractFlexProtection);
     }
 
     // Sort listings
     if (sortOption === 'closest') {
-      list.sort((a, b) => a.driveTimeMinutes - b.driveTimeMinutes);
+      list.sort((a: any, b: any) => a.driveTimeMinutes - b.driveTimeMinutes);
     } else if (sortOption === 'price_low') {
-      list.sort((a, b) => a.monthlyRate - b.monthlyRate);
+      list.sort((a: any, b: any) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {
-      list.sort((a, b) => b.nurseRating - a.nurseRating);
+      list.sort((a: any, b: any) => b.nurseRating - a.nurseRating);
     }
 
     return list;
@@ -284,7 +288,7 @@ useBodyScrollLock(isGsaModalOpen);
   ]);
 
   const selectedMapListing = useMemo(() => {
-    return MOCK_LISTINGS.find((l) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
+    return MOCK_LISTINGS.find((l: any) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
   }, [selectedMapListingId, filteredListings]);
 
   return (
@@ -547,7 +551,7 @@ useBodyScrollLock(isGsaModalOpen);
                         calendar_today
                       </span>
                       <input
-                        type="text"
+                        type="date"
                         value={earliestCheckIn}
                         onChange={(e) => setEarliestCheckIn(e.target.value)}
                         className="w-full h-9 pl-8 pr-2 rounded-xl bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
@@ -1084,7 +1088,7 @@ useBodyScrollLock(isGsaModalOpen);
                   isNightShiftMode={isNightShiftMode}
                   listings={filteredListings}
                   selectedListingId={selectedMapListingId}
-                  onSelectListing={(listing) => {
+                  onSelectListing={(listing: any) => {
                     setSelectedMapListingId(listing.id);
                     setActiveDetailListing(listing);
                   }}
@@ -1220,7 +1224,7 @@ useBodyScrollLock(isGsaModalOpen);
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
-        onRequestToBook={(listing) => {
+        onRequestToBook={(listing: any) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
         }}
