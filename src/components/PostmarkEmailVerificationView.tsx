@@ -23,11 +23,13 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [resendNotification, setResendNotification] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Send transactional email on mount
   useEffect(() => {
-    postmarkMail.sendVerificationEmail(email, 'Sarah E. Jenkins', '938412');
+    // In a real flow, OTP generation happens on backend. For dev mode, this mock triggers the email.
+    postmarkMail.sendVerificationEmail(email, 'User', '938412');
   }, [email]);
 
   // Countdown timer for resend
@@ -76,15 +78,34 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
     setTimeout(() => setResendNotification(null), 5000);
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     setIsVerifying(true);
-    setTimeout(() => {
-      setIsVerifying(false);
+    setError(null);
+
+    try {
+      const pinCode = pin.join('');
+      if (pinCode.length !== 6) throw new Error('Please enter a 6-digit PIN');
+
+      const res = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, pin: pinCode })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Verification failed');
+      }
+
       setIsVerified(true);
       setTimeout(() => {
         onProceedToPhoneVerification();
       }, 1000);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Verification failed');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const formattedCountdown = `00:${countdown < 10 ? `0${countdown}` : countdown}`;
@@ -113,6 +134,12 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 Complete clinical credentialing to unlock verified night-shift sanctuaries.
               </p>
             </div>
+            {error && (
+              <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {error}
+              </div>
+            )}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#367464]/15 text-[#195b4c] dark:bg-[#aff0db]/20 dark:text-[#aff0db]">
               <span className="material-symbols-outlined text-[18px]">verified_user</span>
               <span className="text-xs font-semibold">Postmark Secure Gateway Active</span>
