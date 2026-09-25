@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import authRoutes from './authRoutes.js';
 import { mapDbListingToFrontend } from './mapper.js';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -18,7 +20,9 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval often needed for Vite/React dev
+        scriptSrcElem: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com", "https://nurses-pillow-dev-production.up.railway.app"],
         connectSrc: ["'self'", "https://maps.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -311,7 +315,22 @@ app.post('/api/webhooks/postmark', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const distPath = path.join(__dirname, '../dist');
+
+  app.use(express.static(distPath));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
+// Avoid port collision during local dev (Vite uses 3000, Express uses 3001)
+// In production (Railway), use process.env.PORT
+const PORT = process.env.NODE_ENV === 'production' ? process.env.PORT || 3000 : 3001;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

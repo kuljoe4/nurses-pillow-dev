@@ -2,7 +2,7 @@
 // Implements /api/auth/phone/send-otp and /api/auth/phone/verify-otp
 
 import type { IncomingMessage, ServerResponse } from 'http';
-import { phoneAuthStore } from '../services/phoneAuthApi';
+import { phoneAuthStore } from '../services/phoneAuthApi.ts';
 
 export function createPhoneAuthMiddleware() {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
