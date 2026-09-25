@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import {
   NavigationTab,
   VerificationStepId,
@@ -94,12 +94,14 @@ export default function App() {
     INITIAL_VERIFICATION_DATA
   );
 
-  const handleNavigateTab = (tab: NavigationTab) => {
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // for the numerous child components that receive this prop, preventing cascading re-renders.
+  const handleNavigateTab = useCallback((tab: NavigationTab) => {
     if (tab === currentTab) return;
     setTabHistory((prev) => [...prev, currentTab]);
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [currentTab]);
 
   const handleGoBack = () => {
     if (currentTab === 'verification' && verificationStep > 1) {
@@ -315,11 +317,14 @@ export default function App() {
     setVerificationData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleToggleSaveListing = (id: string) => {
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // to child components like SearchListingsView and SearchListingCard that use React.memo,
+  // preventing unnecessary re-renders when App.tsx re-renders.
+  const handleToggleSaveListing = useCallback((id: string) => {
     setSavedListingIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   const handleSelectHospitalFromDirectory = () => {
     setCurrentTab('find-housing');
