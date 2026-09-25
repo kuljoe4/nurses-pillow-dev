@@ -1,12 +1,11 @@
 // Source: Google Maps Platform Code Assist - Places API (New)
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
-  APIProvider,
   Map,
   AdvancedMarker,
   useMapsLibrary,
   useMap,
-} from '@vis.gl/react-google-maps';
+} from "@vis.gl/react-google-maps";
 
 interface HostAddressMappingProps {
   isNightShiftMode: boolean;
@@ -18,12 +17,18 @@ interface HostAddressMappingProps {
     city: string;
     state: string;
     zipCode: string;
-    nearestHospitalDistances: { hospital: string; distanceMiles: number; driveMins: number }[];
+    nearestHospitalDistances: {
+      hospital: string;
+      distanceMiles: number;
+      driveMins: number;
+    }[];
   }) => void;
 }
 
 // Map center synchronizer
-const PanToLocation: React.FC<{ coords: { lat: number; lng: number } }> = ({ coords }) => {
+const PanToLocation: React.FC<{ coords: { lat: number; lng: number } }> = ({
+  coords,
+}) => {
   const map = useMap();
   useEffect(() => {
     if (map) {
@@ -36,26 +41,27 @@ const PanToLocation: React.FC<{ coords: { lat: number; lng: number } }> = ({ coo
 
 export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   isNightShiftMode,
-  initialAddress = '208 S LaSalle St, Durham, NC 27705',
+  initialAddress = "208 S LaSalle St, Durham, NC 27705",
   onAddressConfirmed,
 }) => {
   const [addressInput, setAddressInput] = useState(initialAddress);
-  const [unitApt, setUnitApt] = useState('Unit 3B');
+  const [unitApt, setUnitApt] = useState("Unit 3B");
   const [coords, setCoords] = useState<{ lat: number; lng: number }>({
     lat: 36.0098,
     lng: -78.9412,
   });
-  const [cityState, setCityState] = useState('Durham, NC 27705');
+  const [cityState, setCityState] = useState("Durham, NC 27705");
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const [placesSuggestions, setPlacesSuggestions] = useState<google.maps.places.AutocompleteSuggestion[]>([]);
+  const [placesSuggestions, setPlacesSuggestions] = useState<
+    google.maps.places.AutocompleteSuggestion[]
+  >([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
   // Modern Places Library (Places API (New))
-  const placesLibrary = useMapsLibrary('places');
-  const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
+  const placesLibrary = useMapsLibrary("places");
+  const sessionTokenRef =
+    useRef<google.maps.places.AutocompleteSessionToken | null>(null);
 
   const handleInputChange = (text: string) => {
     setAddressInput(text);
@@ -74,7 +80,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
       const request: google.maps.places.AutocompleteRequest = {
         input: trimmed,
         sessionToken: sessionTokenRef.current ?? undefined,
-        region: 'us',
+        region: "us",
       };
 
       placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
@@ -97,11 +103,14 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
     }
   };
 
-  const handleSelectPlacesSuggestion = async (suggestion: google.maps.places.AutocompleteSuggestion) => {
+  const handleSelectPlacesSuggestion = async (
+    suggestion: google.maps.places.AutocompleteSuggestion,
+  ) => {
     const prediction = suggestion.placePrediction;
     if (!prediction) return;
 
-    const formattedAddress = prediction.text?.text || prediction.mainText?.text || '';
+    const formattedAddress =
+      prediction.text?.text || prediction.mainText?.text || "";
     setAddressInput(formattedAddress);
     setIsDropdownOpen(false);
 
@@ -109,7 +118,12 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
       // Modern Places API (New) Place.fetchFields()
       const place = prediction.toPlace();
       await place.fetchFields({
-        fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'],
+        fields: [
+          "displayName",
+          "formattedAddress",
+          "location",
+          "addressComponents",
+        ],
       });
 
       if (place.location) {
@@ -118,20 +132,21 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         setCoords({ lat, lng });
       }
 
-      let city = 'Durham';
-      let state = 'NC';
-      let zip = '27705';
+      let city = "Durham";
+      let state = "NC";
+      let zip = "27705";
 
       if (place.addressComponents) {
         place.addressComponents.forEach((c) => {
-          if (c.types.includes('locality')) city = c.longText || city;
-          if (c.types.includes('administrative_area_level_1')) state = c.shortText || state;
-          if (c.types.includes('postal_code')) zip = c.shortText || zip;
+          if (c.types.includes("locality")) city = c.longText || city;
+          if (c.types.includes("administrative_area_level_1"))
+            state = c.shortText || state;
+          if (c.types.includes("postal_code")) zip = c.shortText || zip;
         });
       }
       setCityState(`${city}, ${state} ${zip}`);
     } catch (err) {
-      console.warn('Place.fetchFields error:', err);
+      console.warn("Place.fetchFields error:", err);
     } finally {
       sessionTokenRef.current = null;
     }
@@ -139,20 +154,20 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
 
   // Nearby hospital distance calculations relative to marker coords
   const nearbyDistances = [
-    { hospital: 'Duke University Hospital', distanceMiles: 0.8, driveMins: 3 },
-    { hospital: 'UNC Medical Center', distanceMiles: 11.4, driveMins: 18 },
-    { hospital: 'WakeMed Raleigh Campus', distanceMiles: 26.2, driveMins: 32 },
+    { hospital: "Duke University Hospital", distanceMiles: 0.8, driveMins: 3 },
+    { hospital: "UNC Medical Center", distanceMiles: 11.4, driveMins: 18 },
+    { hospital: "WakeMed Raleigh Campus", distanceMiles: 26.2, driveMins: 32 },
   ];
 
   const handleConfirm = () => {
     setIsConfirmed(true);
     onAddressConfirmed?.({
-      formattedAddress: `${addressInput} ${unitApt ? `(${unitApt})` : ''}`,
+      formattedAddress: `${addressInput} ${unitApt ? `(${unitApt})` : ""}`,
       lat: coords.lat,
       lng: coords.lng,
-      city: cityState.split(',')[0] || 'Durham',
-      state: 'NC',
-      zipCode: cityState.split(' ').pop() || '27705',
+      city: cityState.split(",")[0] || "Durham",
+      state: "NC",
+      zipCode: cityState.split(" ").pop() || "27705",
       nearestHospitalDistances: nearbyDistances,
     });
   };
@@ -170,7 +185,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
             </h3>
           </div>
           <span className="px-2.5 py-1 rounded-full bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/20 dark:text-[#aff0db] text-xs font-bold flex items-center gap-1">
-            <span className="material-symbols-outlined text-[15px]">pin_drop</span>
+            <span className="material-symbols-outlined text-[15px]">
+              pin_drop
+            </span>
             <span>Location Verified</span>
           </span>
         </div>
@@ -201,8 +218,12 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
             {isDropdownOpen && placesSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-[#111e33] rounded-xl shadow-lg border border-[rgba(11,37,89,0.1)] dark:border-[#233550] overflow-hidden max-h-48 overflow-y-auto">
                 {placesSuggestions.map((suggestion, idx) => {
-                  const mainText = suggestion.placePrediction?.mainText?.text || suggestion.placePrediction?.text?.text || '';
-                  const secondaryText = suggestion.placePrediction?.secondaryText?.text || '';
+                  const mainText =
+                    suggestion.placePrediction?.mainText?.text ||
+                    suggestion.placePrediction?.text?.text ||
+                    "";
+                  const secondaryText =
+                    suggestion.placePrediction?.secondaryText?.text || "";
                   return (
                     <button
                       key={`host-place-${idx}`}
@@ -210,8 +231,14 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
                       onClick={() => handleSelectPlacesSuggestion(suggestion)}
                       className="w-full text-left px-3 py-2 text-xs hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-colors cursor-pointer border-b border-gray-100 dark:border-[#233550] last:border-b-0"
                     >
-                      <div className="font-semibold text-[#001848] dark:text-white">{mainText}</div>
-                      {secondaryText && <div className="text-[10px] text-gray-500">{secondaryText}</div>}
+                      <div className="font-semibold text-[#001848] dark:text-white">
+                        {mainText}
+                      </div>
+                      {secondaryText && (
+                        <div className="text-[10px] text-gray-500">
+                          {secondaryText}
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -235,13 +262,15 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
 
         {/* Quick Demo North Carolina Presets */}
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-          <span className="text-[11px] font-semibold text-gray-400">Sample Stays:</span>
+          <span className="text-[11px] font-semibold text-gray-400">
+            Sample Stays:
+          </span>
           <button
             type="button"
             onClick={() => {
-              setAddressInput('208 S LaSalle St, Durham, NC 27705');
+              setAddressInput("208 S LaSalle St, Durham, NC 27705");
               setCoords({ lat: 36.0098, lng: -78.9412 });
-              setCityState('Durham, NC 27705');
+              setCityState("Durham, NC 27705");
             }}
             className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
           >
@@ -251,9 +280,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           <button
             type="button"
             onClick={() => {
-              setAddressInput('120 E Franklin St, Chapel Hill, NC 27514');
+              setAddressInput("120 E Franklin St, Chapel Hill, NC 27514");
               setCoords({ lat: 35.9132, lng: -79.0558 });
-              setCityState('Chapel Hill, NC 27514');
+              setCityState("Chapel Hill, NC 27514");
             }}
             className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
           >
@@ -263,9 +292,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           <button
             type="button"
             onClick={() => {
-              setAddressInput('3012 New Bern Ave, Raleigh, NC 27610');
+              setAddressInput("3012 New Bern Ave, Raleigh, NC 27610");
               setCoords({ lat: 35.7898, lng: -78.5872 });
-              setCityState('Raleigh, NC 27610');
+              setCityState("Raleigh, NC 27610");
             }}
             className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
           >
@@ -276,40 +305,40 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
 
       {/* Interactive Verification Map with Pulsating Animation and Radius Graphic */}
       <div className="h-72 w-full rounded-2xl overflow-hidden border border-[rgba(11,37,89,0.12)] dark:border-[#233550] shadow-sm relative">
-        <APIProvider apiKey={apiKey} solutionChannel="GMP_devsite_samples_v3_rgmautocomplete">
-          <Map
-            mapId="bf51a910020fa25a"
-            defaultCenter={coords}
-            defaultZoom={14}
-            gestureHandling="greedy"
-            disableDefaultUI={true}
-            zoomControl={true}
-            style={{ width: '100%', height: '100%' }}
-            internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
-          >
-            <PanToLocation coords={coords} />
-            <AdvancedMarker position={coords} title="Your Listing Location">
-              <div className="relative -translate-x-1/2 -translate-y-full cursor-pointer flex flex-col items-center">
-                {/* Commute Radius Graphic & Pulsating Animation */}
-                <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-48 h-48 flex items-center justify-center -z-10">
-                  {/* Outer pulsating ripple */}
-                  <div className="absolute w-44 h-44 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/30 animate-ping opacity-75" />
-                  {/* Intermediate radar ring */}
-                  <div className="absolute w-32 h-32 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40 animate-pulse" />
-                  {/* Inner radius boundary disc */}
-                  <div className="absolute w-20 h-20 rounded-full bg-[#0A6FA8]/20 border-2 border-dashed border-[#0A6FA8]/60" />
-                </div>
-
-                {/* Marker Pin */}
-                <div className="relative z-10 px-3 py-1.5 rounded-full bg-[#001848] text-white text-xs font-bold shadow-lg ring-2 ring-white flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[15px] text-amber-400">home</span>
-                  <span>Listing Location</span>
-                </div>
-                <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#001848] mx-auto -mt-0.5 z-10" />
+        <Map
+          mapId="bf51a910020fa25a"
+          defaultCenter={coords}
+          defaultZoom={14}
+          gestureHandling="greedy"
+          disableDefaultUI={true}
+          zoomControl={true}
+          style={{ width: "100%", height: "100%" }}
+          internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
+        >
+          <PanToLocation coords={coords} />
+          <AdvancedMarker position={coords} title="Your Listing Location">
+            <div className="relative -translate-x-1/2 -translate-y-full cursor-pointer flex flex-col items-center">
+              {/* Commute Radius Graphic & Pulsating Animation */}
+              <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-48 h-48 flex items-center justify-center -z-10">
+                {/* Outer pulsating ripple */}
+                <div className="absolute w-44 h-44 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/30 animate-ping opacity-75" />
+                {/* Intermediate radar ring */}
+                <div className="absolute w-32 h-32 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40 animate-pulse" />
+                {/* Inner radius boundary disc */}
+                <div className="absolute w-20 h-20 rounded-full bg-[#0A6FA8]/20 border-2 border-dashed border-[#0A6FA8]/60" />
               </div>
-            </AdvancedMarker>
-          </Map>
-        </APIProvider>
+
+              {/* Marker Pin */}
+              <div className="relative z-10 px-3 py-1.5 rounded-full bg-[#001848] text-white text-xs font-bold shadow-lg ring-2 ring-white flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[15px] text-amber-400">
+                  home
+                </span>
+                <span>Listing Location</span>
+              </div>
+              <div className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#001848] mx-auto -mt-0.5 z-10" />
+            </div>
+          </AdvancedMarker>
+        </Map>
 
         {/* Pulsating Radius Graphic Overlay */}
         <div className="absolute top-2.5 right-2.5 bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-[#001848] dark:text-white shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center gap-2">
@@ -331,7 +360,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
             route
           </span>
-          <span>Verified Hospital Distance Tags (Displayed on Traveler Search)</span>
+          <span>
+            Verified Hospital Distance Tags (Displayed on Traveler Search)
+          </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {nearbyDistances.map((item) => (
@@ -360,11 +391,13 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         <div className="text-xs text-gray-500">
           {isConfirmed ? (
             <span className="text-[#195b4c] font-bold flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <span className="material-symbols-outlined text-[16px]">
+                check_circle
+              </span>
               Address and hospital distance tags locked for listing.
             </span>
           ) : (
-            'Confirm address to generate traveler distance tags'
+            "Confirm address to generate traveler distance tags"
           )}
         </div>
         <button
@@ -372,7 +405,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           onClick={handleConfirm}
           className="px-5 py-2.5 rounded-full bg-[#005684] hover:bg-[#004266] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
         >
-          <span className="material-symbols-outlined text-[16px]">pin_drop</span>
+          <span className="material-symbols-outlined text-[16px]">
+            pin_drop
+          </span>
           <span>Confirm Property Location</span>
         </button>
       </div>

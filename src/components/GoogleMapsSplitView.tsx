@@ -1,12 +1,7 @@
 // Source: Google Maps Platform Code Assist
-import React, { useState, useEffect } from 'react';
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-  useMap,
-} from '@vis.gl/react-google-maps';
-import { HousingListing } from '../types';
+import React, { useState, useEffect } from "react";
+import { Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { HousingListing } from "../types";
 
 interface HospitalLocation {
   name: string;
@@ -16,35 +11,35 @@ interface HospitalLocation {
 }
 
 const NC_HOSPITALS: Record<string, HospitalLocation> = {
-  'Duke University Hospital': {
-    name: 'Duke University Hospital',
+  "Duke University Hospital": {
+    name: "Duke University Hospital",
     lat: 36.0076,
     lng: -78.9382,
-    system: 'Duke Health (Level I Trauma)',
+    system: "Duke Health (Level I Trauma)",
   },
-  'UNC Medical Center': {
-    name: 'UNC Medical Center',
+  "UNC Medical Center": {
+    name: "UNC Medical Center",
     lat: 35.9049,
     lng: -79.0526,
-    system: 'UNC Health (Level I Trauma & Burn Center)',
+    system: "UNC Health (Level I Trauma & Burn Center)",
   },
-  'WakeMed Raleigh Campus': {
-    name: 'WakeMed Raleigh Campus',
+  "WakeMed Raleigh Campus": {
+    name: "WakeMed Raleigh Campus",
     lat: 35.7892,
     lng: -78.5886,
-    system: 'WakeMed Health (Level I Trauma)',
+    system: "WakeMed Health (Level I Trauma)",
   },
-  'Atrium Health Carolinas Medical Center': {
-    name: 'Atrium Health Carolinas Medical Center',
+  "Atrium Health Carolinas Medical Center": {
+    name: "Atrium Health Carolinas Medical Center",
     lat: 35.2036,
     lng: -80.8385,
-    system: 'Advocate Health (Level I Trauma)',
+    system: "Advocate Health (Level I Trauma)",
   },
-  'ECU Health Medical Center': {
-    name: 'ECU Health Medical Center',
+  "ECU Health Medical Center": {
+    name: "ECU Health Medical Center",
     lat: 35.6074,
     lng: -77.4048,
-    system: 'ECU Health (Level I Trauma)',
+    system: "ECU Health (Level I Trauma)",
   },
 };
 
@@ -58,7 +53,10 @@ interface GoogleMapsSplitViewProps {
 }
 
 // Map Controller to smoothly pan when selected hospital or listing changes
-const MapPanController: React.FC<{ center: { lat: number; lng: number }; zoom: number }> = ({ center, zoom }) => {
+const MapPanController: React.FC<{
+  center: { lat: number; lng: number };
+  zoom: number;
+}> = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
     if (map) {
@@ -74,16 +72,22 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
   listings,
   selectedListingId,
   onSelectListing,
-  hospitalName = 'Duke University Hospital',
+  hospitalName = "Duke University Hospital",
   radiusMiles = 5,
 }) => {
   // Find hospital coordinates
-  const matchedHospitalKey = Object.keys(NC_HOSPITALS).find((k) =>
-    hospitalName.toLowerCase().includes(k.toLowerCase())
-  ) || 'Duke University Hospital';
-  const hospital = NC_HOSPITALS[matchedHospitalKey] || NC_HOSPITALS['Duke University Hospital'];
+  const matchedHospitalKey =
+    Object.keys(NC_HOSPITALS).find((k) =>
+      hospitalName.toLowerCase().includes(k.toLowerCase()),
+    ) || "Duke University Hospital";
+  const hospital =
+    NC_HOSPITALS[matchedHospitalKey] ||
+    NC_HOSPITALS["Duke University Hospital"];
 
-  const [activeCenter, setActiveCenter] = useState({ lat: hospital.lat, lng: hospital.lng });
+  const [activeCenter, setActiveCenter] = useState({
+    lat: hospital.lat,
+    lng: hospital.lng,
+  });
   const [activeZoom, setActiveZoom] = useState(13);
 
   // Sync center when hospital changes
@@ -98,27 +102,29 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
       const listing = listings.find((l) => l.id === selectedListingId);
       if (listing) {
         // Place listing slightly offset from hospital if exact lat/lng is within NC
-        const listingLat = hospital.lat + (Math.sin(listing.title.length) * 0.02);
-        const listingLng = hospital.lng + (Math.cos(listing.title.length) * 0.02);
+        const listingLat = hospital.lat + Math.sin(listing.title.length) * 0.02;
+        const listingLng = hospital.lng + Math.cos(listing.title.length) * 0.02;
         setActiveCenter({ lat: listingLat, lng: listingLng });
       }
     }
   }, [selectedListingId, hospital.lat, hospital.lng, listings]);
-
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
 
   // Compute simulated positions for listings around the hospital
   const listingMarkers = listings.slice(0, 10).map((listing, idx) => {
     // Distribute markers in real proximity ring (0.4 to 4.2 miles)
     const angle = (idx * (2 * Math.PI)) / Math.min(listings.length, 10) + 0.4;
     const distanceKm = 0.8 + (idx % 4) * 1.2;
-    const degLat = (distanceKm / 111);
-    const degLng = (distanceKm / (111 * Math.cos((hospital.lat * Math.PI) / 180)));
+    const degLat = distanceKm / 111;
+    const degLng =
+      distanceKm / (111 * Math.cos((hospital.lat * Math.PI) / 180));
 
     const lat = hospital.lat + Math.sin(angle) * degLat;
     const lng = hospital.lng + Math.cos(angle) * degLng;
     const isSelected = selectedListingId === listing.id;
-    const distanceMiles = Math.max(0.1, Math.round((distanceKm * 0.621371) * 10) / 10);
+    const distanceMiles = Math.max(
+      0.1,
+      Math.round(distanceKm * 0.621371 * 10) / 10,
+    );
 
     return {
       listing,
@@ -134,7 +140,9 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
       <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between gap-2 pointer-events-none">
         <div className="pointer-events-auto bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-md border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center gap-2.5 max-w-[85%]">
           <div className="w-7 h-7 rounded-xl bg-[#005684] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <span className="material-symbols-outlined text-[16px]">local_hospital</span>
+            <span className="material-symbols-outlined text-[16px]">
+              local_hospital
+            </span>
           </div>
           <div className="min-w-0">
             <div className="text-[10px] uppercase font-bold tracking-wider text-[#005684] dark:text-[#93ccff]">
@@ -156,52 +164,51 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
 
       {/* Main Google Map Container */}
       <div className="w-full h-full flex-1 min-h-[460px] relative">
-        <APIProvider
-          apiKey={apiKey}
-          solutionChannel="GMP_devsite_samples_v3_rgmautocomplete"
+        <Map
+          mapId="bf51a910020fa25a"
+          defaultCenter={{ lat: hospital.lat, lng: hospital.lng }}
+          defaultZoom={activeZoom}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapTypeControl={false}
+          streetViewControl={false}
+          fullscreenControl={false}
+          zoomControl={true}
+          style={{ width: "100%", height: "100%" }}
+          internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
         >
-          <Map
-            mapId="bf51a910020fa25a"
-            defaultCenter={{ lat: hospital.lat, lng: hospital.lng }}
-            defaultZoom={activeZoom}
-            gestureHandling="greedy"
-            disableDefaultUI={false}
-            mapTypeControl={false}
-            streetViewControl={false}
-            fullscreenControl={false}
-            zoomControl={true}
-            style={{ width: '100%', height: '100%' }}
-            internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
+          <MapPanController center={activeCenter} zoom={activeZoom} />
+
+          {/* Hospital Anchor Marker with Pulsating Animation and Radius Graphic */}
+          <AdvancedMarker
+            position={{ lat: hospital.lat, lng: hospital.lng }}
+            title={hospital.name}
           >
-            <MapPanController center={activeCenter} zoom={activeZoom} />
-
-            {/* Hospital Anchor Marker with Pulsating Animation and Radius Graphic */}
-            <AdvancedMarker
-              position={{ lat: hospital.lat, lng: hospital.lng }}
-              title={hospital.name}
-            >
-              <div className="relative group cursor-pointer -translate-x-1/2 -translate-y-full flex flex-col items-center">
-                {/* Commute Radius Graphic & Pulsating Radar Rings */}
-                <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-56 h-56 flex items-center justify-center -z-10">
-                  {/* Outer pulsating wave */}
-                  <div className="absolute w-52 h-52 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/25 animate-ping opacity-75" />
-                  {/* Intermediate commute radius boundary */}
-                  <div className="absolute w-36 h-36 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40 animate-pulse" />
-                  {/* Inner hospital core halo */}
-                  <div className="absolute w-20 h-20 rounded-full bg-[#195b4c]/20 border-2 border-dashed border-[#195b4c]/50" />
-                </div>
-
-                <div className="relative z-10 px-3 py-1.5 rounded-2xl bg-[#001848] text-white text-xs font-extrabold shadow-xl ring-2 ring-white flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="material-symbols-outlined text-[15px] text-[#aff0db]">local_hospital</span>
-                  <span>{hospital.name.split(' ')[0]} Hub</span>
-                </div>
-                {/* Needle */}
-                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#001848] mx-auto -mt-0.5 z-10" />
+            <div className="relative group cursor-pointer -translate-x-1/2 -translate-y-full flex flex-col items-center">
+              {/* Commute Radius Graphic & Pulsating Radar Rings */}
+              <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-56 h-56 flex items-center justify-center -z-10">
+                {/* Outer pulsating wave */}
+                <div className="absolute w-52 h-52 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/25 animate-ping opacity-75" />
+                {/* Intermediate commute radius boundary */}
+                <div className="absolute w-36 h-36 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40 animate-pulse" />
+                {/* Inner hospital core halo */}
+                <div className="absolute w-20 h-20 rounded-full bg-[#195b4c]/20 border-2 border-dashed border-[#195b4c]/50" />
               </div>
-            </AdvancedMarker>
 
-            {/* Housing Listing Markers */}
-            {listingMarkers.map(({ listing, position, isSelected, distanceMiles }) => (
+              <div className="relative z-10 px-3 py-1.5 rounded-2xl bg-[#001848] text-white text-xs font-extrabold shadow-xl ring-2 ring-white flex items-center gap-1.5 whitespace-nowrap">
+                <span className="material-symbols-outlined text-[15px] text-[#aff0db]">
+                  local_hospital
+                </span>
+                <span>{hospital.name.split(" ")[0]} Hub</span>
+              </div>
+              {/* Needle */}
+              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#001848] mx-auto -mt-0.5 z-10" />
+            </div>
+          </AdvancedMarker>
+
+          {/* Housing Listing Markers */}
+          {listingMarkers.map(
+            ({ listing, position, isSelected, distanceMiles }) => (
               <AdvancedMarker
                 key={listing.id}
                 position={position}
@@ -210,34 +217,42 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
               >
                 <div
                   className={`relative cursor-pointer transition-all duration-200 ease-in-out -translate-x-1/2 -translate-y-full flex flex-col items-center ${
-                    isSelected ? 'scale-110 z-30' : 'hover:scale-105 z-10'
+                    isSelected ? "scale-110 z-30" : "hover:scale-105 z-10"
                   }`}
                 >
                   {/* Proximity Badge above price pin when hovered/selected */}
-                  <div className={`absolute -top-7 whitespace-nowrap px-2 py-1 rounded-md bg-[#195b4c] text-white text-[10px] font-bold shadow-sm transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div
+                    className={`absolute -top-7 whitespace-nowrap px-2 py-1 rounded-md bg-[#195b4c] text-white text-[10px] font-bold shadow-sm transition-opacity duration-200 ${isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                  >
                     📍 {distanceMiles} miles from {hospital.name}
                   </div>
                   <div
                     className={`px-2.5 py-1 mt-6 rounded-full text-xs font-extrabold shadow-md flex items-center gap-1 whitespace-nowrap transition-colors ${
                       isSelected
-                        ? 'bg-[#005684] text-white ring-2 ring-white ring-offset-1'
-                        : 'bg-white dark:bg-[#111e33] text-[#001848] dark:text-white border border-[rgba(11,37,89,0.18)] hover:bg-[#f2f3ff]'
+                        ? "bg-[#005684] text-white ring-2 ring-white ring-offset-1"
+                        : "bg-white dark:bg-[#111e33] text-[#001848] dark:text-white border border-[rgba(11,37,89,0.18)] hover:bg-[#f2f3ff]"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[13px] text-amber-500">bed</span>
-                    <span className="tabular-nums">${listing.monthlyRate.toLocaleString()}</span>
+                    <span className="material-symbols-outlined text-[13px] text-amber-500">
+                      bed
+                    </span>
+                    <span className="tabular-nums">
+                      ${listing.monthlyRate.toLocaleString()}
+                    </span>
                   </div>
                   {/* Point */}
                   <div
                     className={`w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] mx-auto -mt-0.5 ${
-                      isSelected ? 'border-t-[#005684]' : 'border-t-white dark:border-t-[#111e33]'
+                      isSelected
+                        ? "border-t-[#005684]"
+                        : "border-t-white dark:border-t-[#111e33]"
                     }`}
                   />
                 </div>
               </AdvancedMarker>
-            ))}
-          </Map>
-        </APIProvider>
+            ),
+          )}
+        </Map>
       </div>
 
       {/* Bottom Floating Legend / Proximity Bar */}
