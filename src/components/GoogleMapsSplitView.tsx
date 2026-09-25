@@ -105,7 +105,7 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
     }
   }, [selectedListingId, hospital.lat, hospital.lng, listings]);
 
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDaF-kyMHn1puwn5Q5w-_dkija7MPOsV8o';
+  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
 
   // Compute simulated positions for listings around the hospital
   const listingMarkers = listings.slice(0, 10).map((listing, idx) => {
