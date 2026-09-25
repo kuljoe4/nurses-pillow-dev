@@ -555,7 +555,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       e.preventDefault();
                       setActiveTab('receipts');
                     }}
-                    className="text-xs font-bold text-[#005684] dark:text-[#93ccff] cursor-pointer flex items-center gap-1.5 group"
+                    className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
                     title="GSA Per Diem & Tax Home Ledger (Phase 2 Gated Scope)"
                   >
                     <span className="material-symbols-outlined text-[15px]">lock_clock</span>
