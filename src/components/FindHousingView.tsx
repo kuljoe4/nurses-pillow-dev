@@ -397,7 +397,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               </label>
               <div className="relative">
                 <APIProvider
-                  apiKey={(import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDaF-kyMHn1puwn5Q5w-_dkija7MPOsV8o'}
+                  apiKey={(import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || ''}
                   solutionChannel="GMP_devsite_samples_v3_rgmautocomplete"
                 >
                   <GoogleHospitalAutocomplete

@@ -55,7 +55,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   const placesLibrary = useMapsLibrary('places');
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
 
-  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyDaF-kyMHn1puwn5Q5w-_dkija7MPOsV8o';
+  const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
 
   const handleInputChange = (text: string) => {
     setAddressInput(text);
