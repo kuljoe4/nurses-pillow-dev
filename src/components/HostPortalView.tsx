@@ -9,6 +9,7 @@ interface HostPortalViewProps {
   onApproveBooking: (id: string) => void;
   onDeclineBooking: (id: string) => void;
   onGoToHousing: () => void;
+  initialTab?: 'dashboard' | 'editor' | 'onboarding';
 }
 
 export const HostPortalView: React.FC<HostPortalViewProps> = ({
@@ -17,8 +18,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   onApproveBooking,
   onDeclineBooking,
   onGoToHousing,
+  initialTab = 'dashboard',
 }) => {
-  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>('dashboard');
+  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveHostTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Screen B2 Editor Form State
   const [propertyType, setPropertyType] = useState<'entire_property' | 'individual_rooms'>('individual_rooms');

@@ -15,9 +15,9 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   onProceedToLicenseVerification,
   onBackToOverview,
 }) => {
-  const [email, setEmail] = useState(initialEmail || 'sarah.jenkins@travelrn-health.org');
+  const [email, setEmail] = useState(initialEmail || '');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [editEmailInput, setEditEmailInput] = useState(email);
+  const [editEmailInput, setEditEmailInput] = useState(initialEmail || '');
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(45);
   const [canResend, setCanResend] = useState(false);
@@ -27,20 +27,42 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   const [error, setError] = useState<string | null>(null);
   const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Synchronize email if prop changes after mount
+  useEffect(() => {
+    if (initialEmail && initialEmail !== email) {
+      setEmail(initialEmail);
+      setEditEmailInput(initialEmail);
+    }
+  }, [initialEmail]);
+
   // Send transactional email code on mount or email update
   useEffect(() => {
+    if (!email) return;
+    let isCancelled = false;
     const sendInitialEmail = async () => {
       try {
-        await fetch('/api/auth/send-verification-email', {
+        setError(null);
+        const res = await fetch('/api/auth/send-verification-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
         });
+        const data = await res.json();
+        if (!res.ok && !isCancelled) {
+          setError(data.error || 'Failed to send verification email.');
+          if (data.pin) {
+            setResendNotification(`Preview note: Verification PIN is ${data.pin}`);
+          }
+        }
       } catch (err) {
-        console.error('Failed to send verification email:', err);
+        if (!isCancelled) {
+          console.error('Failed to send verification email:', err);
+          setError('Unable to contact verification service.');
+        }
       }
     };
     sendInitialEmail();
+    return () => { isCancelled = true; };
   }, [email]);
 
   // Countdown timer for code resend
@@ -80,35 +102,56 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
       setIsEditingEmail(false);
       setCountdown(45);
       setCanResend(false);
-      setResendNotification(`New verification code sent to ${updated}`);
+      setResendNotification(`Sending verification code to ${updated}...`);
+      setError(null);
       try {
-        await fetch('/api/auth/send-verification-email', {
+        const res = await fetch('/api/auth/send-verification-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: updated }),
         });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || 'Failed to send verification email.');
+          if (data.pin) {
+            setResendNotification(`Preview note: Verification PIN is ${data.pin}`);
+          }
+        } else {
+          setResendNotification(`Verification code sent to ${updated}`);
+        }
       } catch (err) {
         console.error('Failed to send verification email:', err);
+        setError('Network error contacting verification service.');
       }
-      setTimeout(() => setResendNotification(null), 4000);
+      setTimeout(() => setResendNotification(null), 5000);
     }
   };
 
   const handleResend = async () => {
     if (!canResend) return;
     try {
-      await fetch('/api/auth/send-verification-email', {
+      setError(null);
+      setCountdown(45);
+      setCanResend(false);
+      setResendNotification(`Sending new verification code to ${email}...`);
+      const res = await fetch('/api/auth/send-verification-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      setCountdown(60);
-      setCanResend(false);
-      setResendNotification(`Verification code resent to ${email}`);
-      setTimeout(() => setResendNotification(null), 4000);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to send verification email.');
+        if (data.pin) {
+          setResendNotification(`Preview note: Verification PIN is ${data.pin}`);
+        }
+      } else {
+        setResendNotification(`New verification code delivered to ${email}`);
+      }
+      setTimeout(() => setResendNotification(null), 5000);
     } catch (err) {
       console.error('Failed to resend verification email:', err);
-      setError('Failed to resend verification email. Please try again.');
+      setError('Network error contacting verification service.');
     }
   };
 

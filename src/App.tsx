@@ -9,6 +9,7 @@ import {
 } from "./types";
 import {
   INITIAL_VERIFICATION_DATA,
+  BLANK_VERIFICATION_DATA,
   MOCK_LISTINGS,
   MOCK_DEMAND_REPORTS,
   MOCK_ADMIN_LICENSE_REVIEWS,
@@ -176,12 +177,22 @@ export default function App() {
     );
   });
 
-  // Milestone 2 Scope Bypass Mode (Allows developer review of M2 scaffold)
-  const [m2BypassMode, setM2BypassMode] = useState<boolean>(false);
+  // User Authentication & Role State
+  const [currentUser, setCurrentUser] = useState<{
+    id?: string;
+    role: UserRole;
+    name: string;
+    email?: string;
+    isNurseVerified?: boolean;
+    isHostVerified?: boolean;
+  }>({ role: "guest", name: "Guest User" });
+  const isDeveloper = stagingUser === "developer" || currentUser.role === "developer";
 
-  // Staging Review Bar Visibility: autohidden by default to maximize vertical screen space
-  const [isStagingBannerVisible, setIsStagingBannerVisible] =
-    useState<boolean>(false);
+  // Access control feedback banner state
+  const [accessNotice, setAccessNotice] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>("find-housing");
@@ -191,16 +202,99 @@ export default function App() {
   const [verificationData, setVerificationData] =
     useState<VerificationFormData>(INITIAL_VERIFICATION_DATA);
 
-  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
-  // for the numerous child components that receive this prop, preventing cascading re-renders.
+  // Proactive Role-Based Access Navigation Guard
   const handleNavigateTab = useCallback(
     (tab: NavigationTab) => {
+      // 1. Technical specs & dev simulators: redirect to public marketplace
+      if (tab === "phase1-inventory" || tab === "mobile-preview") {
+        setTabHistory((prev) => [...prev, currentTab]);
+        setCurrentTab("find-housing");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       if (tab === currentTab) return;
+
+      // 2. Super Admin restricted routes
+      if (tab === "admin-portal" || tab === "tier2-plumbing") {
+        if (currentUser.role !== "super_admin") {
+          setAccessNotice({
+            title: "Administrator Access Required",
+            message: "Standard security governance requires verified administrator credentials to access the Operations Hub.",
+          });
+          return;
+        }
+      }
+
+      // 3. Property Host restricted routes
+      if (tab === "host-dashboard" || tab === "host-onboarding") {
+        if (currentUser.role === "nurse") {
+          setAccessNotice({
+            title: "Host Sanctuary Standards",
+            message: "Property listing management is reserved for hosts. Here is our informational guide on hosting traveling clinicians.",
+          });
+          setTabHistory((prev) => [...prev, currentTab]);
+          setCurrentTab("for-hosts");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        if (currentUser.role === "guest") {
+          setAccessNotice({
+            title: "Host Account Required",
+            message: "Please sign in with your property host account or explore our host standards.",
+          });
+          setAuthModalMode("signin");
+          setIsAuthModalOpen(true);
+          return;
+        }
+      }
+
+      // 4. Clinician restricted routes
+      if (tab === "nurse-dashboard") {
+        if (currentUser.role === "host") {
+          setAccessNotice({
+            title: "Clinician Booking Workspace",
+            message: "The booking workspace is reserved for traveling healthcare professionals. You have been directed to your Host Sanctuary Portal.",
+          });
+          setTabHistory((prev) => [...prev, currentTab]);
+          setCurrentTab("host-dashboard");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        if (currentUser.role === "guest") {
+          setAccessNotice({
+            title: "Clinician Workspace",
+            message: "Please sign in with your clinician account to view hospital assignment bookings.",
+          });
+          setAuthModalMode("signin");
+          setIsAuthModalOpen(true);
+          return;
+        }
+      }
+
+      // 5. Clinician Credentialing restricted from hosts
+      if (
+        tab === "verification" ||
+        tab === "email-verification" ||
+        tab === "phone-verification"
+      ) {
+        if (currentUser.role === "host") {
+          setAccessNotice({
+            title: "Clinician Credentialing",
+            message: "Clinical license verification is for traveling healthcare professionals. Property host standards are managed in your Host Portal.",
+          });
+          setTabHistory((prev) => [...prev, currentTab]);
+          setCurrentTab("host-dashboard");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+
       setTabHistory((prev) => [...prev, currentTab]);
       setCurrentTab(tab);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [currentTab],
+    [currentTab, currentUser.role],
   );
 
   const handleGoBack = () => {
@@ -262,42 +356,7 @@ export default function App() {
 
 
 
-  // Developer mode flag: true ONLY if developer is logged in or in developer role
-  const [currentUser, setCurrentUser] = useState<{ role: UserRole; name: string; }>({ role: "guest", name: "Guest User" });
 
-  const isDeveloper =
-    stagingUser === "developer" || currentUser.role === "developer";
-
-
-  const handleDeveloperSignIn = () => {
-    setStagingUser("developer");
-    sessionStorage.setItem("np_staging_user", "developer");
-    setCurrentUser({ role: "developer", name: "Joshua (Lead Developer)" });
-    setM2BypassMode(true);
-  };
-
-  const handleDeveloperSignOut = () => {
-    setStagingUser("client");
-    sessionStorage.setItem("np_staging_user", "client");
-    setCurrentUser({ role: "nurse", name: "Sarah Jenkins, RN" });
-    setM2BypassMode(false);
-    if (currentTab === "mobile-preview" || currentTab === "phase1-inventory") {
-      setCurrentTab("find-housing");
-    }
-  };
-
-  // Screen Code visibility state [XX-00]
-  const [showScreenCodes, setShowScreenCodes] = useState<boolean>(() => {
-    return localStorage.getItem("np_show_screen_codes") === "true";
-  });
-
-  const handleToggleScreenCodes = () => {
-    setShowScreenCodes((prev) => {
-      const next = !prev;
-      localStorage.setItem("np_show_screen_codes", String(next));
-      return next;
-    });
-  };
 
   // Initiate Logout confirmation dialog
   const handleInitiateLogout = () => {
@@ -313,19 +372,24 @@ export default function App() {
     sessionStorage.removeItem("np_active_role");
     sessionStorage.removeItem("np_active_user");
     localStorage.removeItem("np_remembered_user");
+    localStorage.removeItem("np_auth_token");
+
+    // Clear backend auth cookie
+    fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
 
     // 2. Reset currentUser state to Guest
-    setCurrentUser({ role: "guest", name: "Guest Explorer" });
+    setCurrentUser({ role: "guest", name: "Guest User" });
+    setBookingRequests([]);
+    setVerificationData(INITIAL_VERIFICATION_DATA);
 
     // 3. Reset developer staging perspective if active
     if (stagingUser === "developer") {
       setStagingUser("client");
       sessionStorage.setItem("np_staging_user", "client");
-      setM2BypassMode(false);
     }
 
     // 4. Return to default guest explore tab
-    setCurrentTab("find-housing");
+    handleNavigateTab("find-housing");
 
     // 5. Close confirmation dialog
     setIsLogoutDialogOpen(false);
@@ -399,14 +463,37 @@ export default function App() {
     initializeDb();
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me");
+        const token = localStorage.getItem("np_auth_token");
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        const res = await fetch("/api/auth/me", { headers });
         if (res.ok) {
           const data = await res.json();
           if (data.user) {
-             setCurrentUser({
-               role: data.user.role,
-               name: data.user.full_name || data.user.email
-             });
+            setCurrentUser({
+              id: data.user.id,
+              role: data.user.role,
+              name: data.user.full_name || data.user.email,
+              email: data.user.email,
+              isNurseVerified: data.user.is_nurse_verified,
+              isHostVerified: data.user.is_host_verified,
+            });
+            // Synchronize verified user email into verification workflow
+            setVerificationData((prev) => ({
+              ...prev,
+              workEmail: data.user.email || prev.workEmail,
+              legalFirstName: (data.user.full_name || "").split(" ")[0] || prev.legalFirstName,
+              legalLastName: (data.user.full_name || "").split(" ").slice(1).join(" ") || prev.legalLastName,
+              isContactVerified: data.user.email_verified || prev.isContactVerified,
+              phoneVerified: data.user.phone_verified || prev.phoneVerified,
+              licenseStatus: data.user.is_nurse_verified ? "verified" : prev.licenseStatus,
+            }));
+            // Clear static mock bookings for real registered user
+            if (data.user.id && !data.user.id.startsWith("usr_demo")) {
+              setBookingRequests([]);
+            }
           }
         }
       } catch (err) {
@@ -481,21 +568,59 @@ export default function App() {
     );
   };
 
-  const handleAuthenticated = (role: UserRole, name: string) => {
-    setCurrentUser({ role, name });
+  const handleAuthenticated = (
+    role: UserRole,
+    name: string,
+    email?: string,
+    id?: string,
+    isNurseVerified?: boolean,
+    isHostVerified?: boolean,
+    skipAutoNavigate?: boolean
+  ) => {
+    setCurrentUser({
+      role,
+      name,
+      email,
+      id,
+      isNurseVerified,
+      isHostVerified,
+    });
+
+    if (email) {
+      setVerificationData({
+        ...BLANK_VERIFICATION_DATA,
+        workEmail: email,
+        legalFirstName: name.split(" ")[0] || "",
+        legalLastName: name.split(" ").slice(1).join(" ") || "",
+        isContactVerified: isNurseVerified || false,
+        licenseStatus: isNurseVerified ? "verified" : "not_started",
+      });
+    }
+
+    // Clear static mock bookings for newly registered user so dashboard starts clean
+    if (id && !id.startsWith("usr_demo")) {
+      setBookingRequests([]);
+    }
+
+    if (skipAutoNavigate) {
+      return;
+    }
+
     if (role === "host") {
       setCurrentTab("host-dashboard");
     } else if (role === "super_admin") {
       setCurrentTab("admin-portal");
     } else if (role === "developer") {
-      setStagingUser("developer");
-      sessionStorage.setItem("np_staging_user", "developer");
-      setM2BypassMode(true);
-      setCurrentTab("phase1-inventory");
+      setCurrentUser((prev) => ({
+        ...prev,
+        role: "super_admin",
+        name: "Operations Administrator",
+      }));
+      handleNavigateTab("admin-portal");
     } else if (role === "guest") {
-      setCurrentTab("find-housing");
+      handleNavigateTab("find-housing");
     } else {
-      setCurrentTab("nurse-dashboard");
+      handleNavigateTab("nurse-dashboard");
     }
   };
 
@@ -515,13 +640,11 @@ export default function App() {
           setStagingUser(userType);
           if (userType === "developer") {
             setCurrentUser({
-              role: "developer",
-              name: "Joshua (Lead Developer)",
+              role: "super_admin",
+              name: "Operations Administrator",
             });
-            setM2BypassMode(true);
           } else {
             setCurrentUser({ role: "nurse", name: "Sarah Jenkins, RN" });
-            setM2BypassMode(false);
           }
         }}
         isNightShiftMode={isNightShiftMode}
@@ -543,27 +666,12 @@ export default function App() {
           setIsAuthModalOpen(true);
         }}
         currentUser={currentUser}
-
-        m2BypassMode={m2BypassMode}
-        onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
-        isDeveloper={isDeveloper}
         onLogout={handleInitiateLogout}
-        showScreenCodes={false}
-        onToggleScreenCodes={() => setShowScreenCodes(!showScreenCodes)}
-        isStagingAuthenticated={isStagingAuthenticated}
-        stagingClientName="production"
-        onToggleDeveloperMode={
-          isDeveloper ? handleDeveloperSignOut : handleDeveloperSignIn
-        }
         onLockPreview={() => {
           sessionStorage.removeItem("np_staging_auth_lawrence");
           sessionStorage.removeItem("np_staging_user");
           setIsStagingAuthenticated(false);
         }}
-        isStagingBannerVisible={false}
-        onToggleStagingBanner={() =>
-          setIsStagingBannerVisible(!isStagingBannerVisible)
-        }
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
@@ -584,122 +692,253 @@ export default function App() {
               : undefined
           }
           currentUserRole={currentUser.role}
-          showScreenCodes={showScreenCodes}
+          showScreenCodes={false}
           onGoBack={handleGoBack}
           canGoBack={tabHistory.length > 0 || currentTab !== "find-housing"}
         />
         <Suspense fallback={<ViewLoadingFallback />}>
-          {/* Clinician Dashboard & Trust Profile (Exempt from M2 gate per user directive) */}
-          {currentTab === "nurse-dashboard" && (
-            <NurseDashboardView
-              isNightShiftMode={isNightShiftMode}
-              isVerified={verificationData.licenseStatus === "verified"}
-              onGoToVerification={() => {
-                setCurrentTab("verification");
-                setVerificationStep(3);
-              }}
-              onGoToHousing={() => setCurrentTab("find-housing")}
-              onOpenSupport={() => setIsSupportOpen(true)}
-              savedListingIds={savedListingIds}
-              onToggleSave={handleToggleSaveListing}
-              allListings={MOCK_LISTINGS}
-              activeBookings={bookingRequests}
-            />
-          )}
-
-          {/* Host Portal & Dashboard (Exempt from M2 gate per user directive) */}
-          {currentTab === "host-dashboard" && (
-            <HostPortalView
-              isNightShiftMode={isNightShiftMode}
-              bookingRequests={bookingRequests}
-              onApproveBooking={handleApproveBooking}
-              onDeclineBooking={handleDeclineBooking}
-              onGoToHousing={() => setCurrentTab("find-housing")}
-            />
-          )}
-
-          {/* Super-Admin Portal: Meaningful Access Role Gating */}
-          {currentTab === "admin-portal" &&
-            currentUser.role !== "super_admin" && (
+          {/* Clinician Dashboard & Trust Profile: Protected Role Guard */}
+          {currentTab === "nurse-dashboard" &&
+            (currentUser.role === "nurse" || currentUser.role === "super_admin" ? (
+              <NurseDashboardView
+                isNightShiftMode={isNightShiftMode}
+                isVerified={currentUser.isNurseVerified || verificationData.licenseStatus === "verified"}
+                onGoToVerification={() => {
+                  handleNavigateTab("verification");
+                  setVerificationStep(3);
+                }}
+                onGoToHousing={() => handleNavigateTab("find-housing")}
+                onOpenSupport={() => setIsSupportOpen(true)}
+                savedListingIds={savedListingIds}
+                onToggleSave={handleToggleSaveListing}
+                allListings={MOCK_LISTINGS}
+                activeBookings={bookingRequests}
+                currentUser={currentUser}
+                verificationData={verificationData}
+              />
+            ) : (
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
-                <div className="max-w-lg w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-5">
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
-                    <span className="material-symbols-outlined text-3xl">
-                      admin_panel_settings
-                    </span>
+                <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-400 mx-auto flex items-center justify-center">
+                    <span className="material-symbols-outlined text-2xl">medical_services</span>
                   </div>
-                  <div className="space-y-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                      Role Permission Restricted
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
+                      Clinician Area
                     </span>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#001848] dark:text-white">
-                      Super-Admin Workspace Required
+                    <h2 className="text-xl font-bold text-[#001848] dark:text-white">
+                      Traveling Clinician Access Required
                     </h2>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                      You are currently browsing as{" "}
-                      <strong>{currentUser.name}</strong> (
-                      {currentUser.role === "nurse"
-                        ? "Clinician"
-                        : "Property Host"}
-                      ). The Super-Admin Operations Hub manages sensitive
-                      primary source license queues, platform fee escrow
-                      controls, and the Google Sheets data bridge.
+                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                      {currentUser.role === "host"
+                        ? "You are currently signed in as a Property Host. The Clinician Workspace is reserved for traveling healthcare professionals."
+                        : "Please sign in with your verified clinician account to access hospital assignment bookings."}
                     </p>
                   </div>
-                  <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="pt-2 flex flex-col gap-2">
+                    {currentUser.role === "host" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleNavigateTab("host-dashboard")}
+                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
+                      >
+                        Go to Host Sanctuary Portal
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthModalMode("signin");
+                          setIsAuthModalOpen(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                      >
+                        Sign In as Clinician
+                      </button>
+                    )}
                     <button
                       type="button"
-
-                      className="px-6 py-3 rounded-full bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                      onClick={() => handleNavigateTab("find-housing")}
+                      className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[16px]">
-                        verified_user
-                      </span>
-                      <span>Switch to Super-Admin Role</span>
+                      Explore Stays
                     </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {/* Host Portal & Sanctuary Dashboard: Protected Role Guard */}
+          {(currentTab === "host-dashboard" || currentTab === "host-onboarding") &&
+            (currentUser.role === "host" || currentUser.role === "super_admin" ? (
+              <HostPortalView
+                isNightShiftMode={isNightShiftMode}
+                bookingRequests={bookingRequests}
+                onApproveBooking={handleApproveBooking}
+                onDeclineBooking={handleDeclineBooking}
+                onGoToHousing={() => handleNavigateTab("find-housing")}
+                initialTab={currentTab === "host-onboarding" ? "onboarding" : "dashboard"}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
+                <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/15 text-blue-700 dark:text-blue-400 mx-auto flex items-center justify-center">
+                    <span className="material-symbols-outlined text-2xl">real_estate_agent</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
+                      Property Host Portal
+                    </span>
+                    <h2 className="text-xl font-bold text-[#001848] dark:text-white">
+                      Host Sanctuary Account Required
+                    </h2>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                      {currentUser.role === "nurse"
+                        ? "You are currently signed in as a Clinician. The Host Portal is reserved for verified property owners."
+                        : "Please sign in with your property host account or review our host standards."}
+                    </p>
+                  </div>
+                  <div className="pt-2 flex flex-col gap-2">
+                    {currentUser.role === "nurse" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleNavigateTab("for-hosts")}
+                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
+                      >
+                        View Host Standards &amp; Guidelines
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthModalMode("signin");
+                          setIsAuthModalOpen(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
+                      >
+                        Sign In as Property Host
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() =>
-                        setCurrentTab(
-                          currentUser.role === "host"
-                            ? "host-dashboard"
+                        handleNavigateTab(
+                          currentUser.role === "nurse"
+                            ? "nurse-dashboard"
                             : "find-housing",
                         )
                       }
-                      className="px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-800 transition-colors cursor-pointer"
+                      className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+                    >
+                      {currentUser.role === "nurse"
+                        ? "Return to My Bookings"
+                        : "Explore Stays"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {/* Super-Admin Portal: Meaningful Access Role Gating (Standard Practice) */}
+          {currentTab === "admin-portal" &&
+            (currentUser.role === "super_admin" ? (
+              <AdminPortalView
+                isNightShiftMode={isNightShiftMode}
+                onGoToHousing={() => handleNavigateTab("find-housing")}
+                onOpenGoogleSheets={handleOpenGoogleSheets}
+                onGoToTier2Plumbing={() => handleNavigateTab("tier2-plumbing")}
+                bookingRequests={bookingRequests}
+                listings={MOCK_LISTINGS}
+                isDeveloper={false}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
+                <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+                    <span className="material-symbols-outlined text-2xl">
+                      admin_panel_settings
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      Restricted Operations
+                    </span>
+                    <h2 className="text-xl font-bold text-[#001848] dark:text-white">
+                      Administrator Access Required
+                    </h2>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                      Access to the Operations Hub is restricted to verified administrators via credential authentication.
+                    </p>
+                  </div>
+                  <div className="pt-2 flex flex-col gap-2">
+                    {currentUser.role === "guest" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthModalMode("signin");
+                          setIsAuthModalOpen(true);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-full bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                      >
+                        Administrator Sign In
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleNavigateTab(
+                          currentUser.role === "host"
+                            ? "host-dashboard"
+                            : currentUser.role === "nurse"
+                            ? "nurse-dashboard"
+                            : "find-housing",
+                        )
+                      }
+                      className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                     >
                       Return to My Workspace
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+            ))}
 
-          {/* Super-Admin / Operations Portal: Authorized */}
-          {currentTab === "admin-portal" &&
-            (currentUser.role === "super_admin" ||
-              currentUser.role === "developer") && (
-              <AdminPortalView
+          {/* Tier 2 Backend & Plumbing Console: Super-Admin Only */}
+          {currentTab === "tier2-plumbing" &&
+            (currentUser.role === "super_admin" ? (
+              <Tier2PlumbingDashboard
                 isNightShiftMode={isNightShiftMode}
-                onGoToHousing={() => setCurrentTab("find-housing")}
-                onOpenGoogleSheets={handleOpenGoogleSheets}
-                onGoToTier2Plumbing={() => handleNavigateTab("tier2-plumbing")}
-                bookingRequests={bookingRequests}
-                listings={MOCK_LISTINGS}
-                isDeveloper={isDeveloper}
+                onNavigateTab={(tab) => handleNavigateTab(tab as NavigationTab)}
+                onOpenCheckoutDemo={() => {
+                  handleOpenCheckout(MOCK_LISTINGS[0]);
+                }}
               />
-            )}
-
-          {/* Tier 2 Backend & Plumbing Console */}
-          {currentTab === "tier2-plumbing" && (
-            <Tier2PlumbingDashboard
-              isNightShiftMode={isNightShiftMode}
-              onNavigateTab={(tab) => handleNavigateTab(tab as NavigationTab)}
-              onOpenCheckoutDemo={() => {
-                handleOpenCheckout(MOCK_LISTINGS[0]);
-              }}
-            />
-          )}
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
+                <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
+                    <span className="material-symbols-outlined text-2xl">lock</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      Restricted Console
+                    </span>
+                    <h2 className="text-xl font-bold text-[#001848] dark:text-white">
+                      Administrator Access Required
+                    </h2>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleNavigateTab("find-housing")}
+                      className="w-full py-2.5 px-4 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                    >
+                      Return to Housing Search
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
 
           {/* Portal A: Credentialing Flow View */}
           {currentTab === "verification" && (
@@ -721,9 +960,9 @@ export default function App() {
                   onSelectStep={(step) => setVerificationStep(step)}
                   isNightShiftMode={isNightShiftMode}
                   onOpenPostmarkEmail={() =>
-                    setCurrentTab("email-verification")
+                    handleNavigateTab("email-verification")
                   }
-                  onOpenTwilioOtp={() => setCurrentTab("phone-verification")}
+                  onOpenTwilioOtp={() => handleNavigateTab("phone-verification")}
                 />
               )}
               {verificationStep === 3 && (
@@ -756,14 +995,14 @@ export default function App() {
               onToggleSave={handleToggleSaveListing}
               isVerified={verificationData.licenseStatus === "verified"}
               onGoToVerification={() => {
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(3);
               }}
               onGoToEmailVerification={() => {
-                setCurrentTab("email-verification");
+                handleNavigateTab("email-verification");
               }}
               onGoToPhoneVerification={() => {
-                setCurrentTab("phone-verification");
+                handleNavigateTab("phone-verification");
               }}
               onRequestToBookListing={handleOpenCheckout}
               onGoToSearchListings={(params) => {
@@ -774,9 +1013,9 @@ export default function App() {
                     radius: params.radius ?? prev.radius,
                   }));
                 }
-                setCurrentTab("search-listings");
+                handleNavigateTab("search-listings");
               }}
-              onGoToHostPortal={() => setCurrentTab("host-dashboard")}
+              onGoToHostPortal={() => handleNavigateTab("host-dashboard")}
               userRole={currentUser.role}
               userName={currentUser.name}
             />
@@ -790,7 +1029,7 @@ export default function App() {
               onToggleSave={handleToggleSaveListing}
               isVerified={verificationData.licenseStatus === "verified"}
               onGoToVerification={() => {
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(3);
               }}
               onRequestToBookListing={handleOpenCheckout}
@@ -807,15 +1046,15 @@ export default function App() {
               initialEmail={verificationData.workEmail}
               onProceedToPhoneVerification={() => {
                 handleUpdateVerification({ isContactVerified: true });
-                setCurrentTab("phone-verification");
+                handleNavigateTab("phone-verification");
               }}
               onProceedToLicenseVerification={() => {
                 handleUpdateVerification({ isContactVerified: true });
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(3);
               }}
               onBackToOverview={() => {
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(2);
               }}
             />
@@ -828,11 +1067,11 @@ export default function App() {
               initialPhone={verificationData.mobilePhone}
               onProceedToLicenseVerification={() => {
                 handleUpdateVerification({ phoneVerified: true });
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(3);
               }}
               onBackToEmail={() => {
-                setCurrentTab("email-verification");
+                handleNavigateTab("email-verification");
               }}
             />
           )}
@@ -842,10 +1081,10 @@ export default function App() {
             <HowItWorksView
               isNightShiftMode={isNightShiftMode}
               onGoToVerification={() => {
-                setCurrentTab("verification");
+                handleNavigateTab("verification");
                 setVerificationStep(3);
               }}
-              onGoToHousing={() => setCurrentTab("find-housing")}
+              onGoToHousing={() => handleNavigateTab("find-housing")}
             />
           )}
 
@@ -853,11 +1092,8 @@ export default function App() {
           {currentTab === "for-hosts" && (
             <ForHostsView
               isNightShiftMode={isNightShiftMode}
-              onGoToHousing={() => setCurrentTab("find-housing")}
-              onGoToHostPortal={() => {
-                setCurrentUser({ role: "host", name: "Michael Vance (Host)" });
-                setCurrentTab("host-dashboard");
-              }}
+              onGoToHousing={() => handleNavigateTab("find-housing")}
+              onGoToHostPortal={() => handleNavigateTab("host-dashboard")}
             />
           )}
 
@@ -869,94 +1105,27 @@ export default function App() {
             />
           )}
 
-          {/* Phase 1 Master Inventory & Flow Navigator: Developer Gate */}
-          {currentTab === "phase1-inventory" && !isDeveloper && (
-            <Milestone2ScopeGate
-              isNightShiftMode={isNightShiftMode}
-              featureTitle="Product Scope &amp; Screen Specifications (Developer Audit)"
-              featureDescription="This technical specification inventory and screen simulator is restricted to developer access during Milestone 1 client acceptance."
-              onReturnToMarketplace={() => setCurrentTab("find-housing")}
-            />
-          )}
-
-          {currentTab === "phase1-inventory" &&
-            isDeveloper &&
-            !m2BypassMode && (
-              <Milestone2ScopeGate
-                isNightShiftMode={isNightShiftMode}
-                featureTitle="Product Scope &amp; Screen Specifications (Developer Audit)"
-                featureDescription="The 150-screen master inventory, step-by-step UX flow simulator, and design system contract matrix are internal developer tools. You can enable Developer Mode to inspect all technical deliverables."
-                onReturnToMarketplace={() => setCurrentTab("find-housing")}
-                onBypassGate={() => setM2BypassMode(true)}
-              />
-            )}
-
-          {currentTab === "phase1-inventory" && isDeveloper && m2BypassMode && (
-            <Phase1InventoryView
-              isNightShiftMode={isNightShiftMode}
-              onNavigateTab={(tab) => {
-                setCurrentTab(tab);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              onOpenSupport={() => setIsSupportOpen(true)}
-              onOpenAuthModal={() => {
-                setAuthModalMode("signup");
-                setIsAuthModalOpen(true);
-              }}
-            />
-          )}
-
-          {/* Public &amp; Legal Sanctuaries */}
+          {/* Public & Legal Sanctuaries */}
           {currentTab === "legal-policies" && (
             <LegalPoliciesView
               isNightShiftMode={isNightShiftMode}
               onNavigateHome={() => {
-                setCurrentTab("find-housing");
+                handleNavigateTab("find-housing");
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
           )}
 
-          {/* System Error &amp; Maintenance States */}
+          {/* System Error & Maintenance States */}
           {currentTab === "system-status" && (
             <SystemStatusView
               isNightShiftMode={isNightShiftMode}
               onNavigateHome={() => {
-                setCurrentTab("find-housing");
+                handleNavigateTab("find-housing");
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               onOpenSupport={() => setIsSupportOpen(true)}
-              isDeveloper={isDeveloper}
-            />
-          )}
-
-          {/* Mobile Native Parity Simulator (Milestone 2 Deliverable) */}
-          {currentTab === "mobile-preview" && !isDeveloper && (
-            <Milestone2ScopeGate
-              isNightShiftMode={isNightShiftMode}
-              featureTitle="Native iOS &amp; Android Mobile Parity (Milestone 2)"
-              featureDescription="Native iOS &amp; Android mobile application releases, push notifications, and shift geo-fencing are scheduled as Milestone 2 deliverables following web core milestone acceptance."
-              onReturnToMarketplace={() => setCurrentTab("find-housing")}
-            />
-          )}
-
-          {currentTab === "mobile-preview" && isDeveloper && !m2BypassMode && (
-            <Milestone2ScopeGate
-              isNightShiftMode={isNightShiftMode}
-              featureTitle="Native iOS &amp; Android Mobile Parity (Milestone 2)"
-              featureDescription="Native iOS &amp; Android mobile application releases, push notifications, and shift geo-fencing are scheduled as Milestone 2 deliverables following web core milestone acceptance."
-              onReturnToMarketplace={() => setCurrentTab("find-housing")}
-              onBypassGate={() => setM2BypassMode(true)}
-            />
-          )}
-
-          {currentTab === "mobile-preview" && isDeveloper && m2BypassMode && (
-            <MobileParityView
-              isNightShiftMode={isNightShiftMode}
-              onNavigateHome={() => {
-                setCurrentTab("find-housing");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
+              isDeveloper={false}
             />
           )}
         </Suspense>

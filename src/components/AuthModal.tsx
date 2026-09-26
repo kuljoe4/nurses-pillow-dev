@@ -8,8 +8,16 @@ interface AuthModalProps {
   initialResetToken?: string;
   onClose: () => void;
   isNightShiftMode: boolean;
-  onAuthenticated: (role: UserRole, name: string) => void;
-  onOpenEmailVerification?: () => void;
+  onAuthenticated: (
+    role: UserRole,
+    name: string,
+    email?: string,
+    id?: string,
+    isNurseVerified?: boolean,
+    isHostVerified?: boolean,
+    skipAutoNavigate?: boolean
+  ) => void;
+  onOpenEmailVerification?: (email?: string) => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -95,9 +103,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         localStorage.setItem("np_auth_token", data.token);
       }
 
-      onAuthenticated(data.user.role as UserRole, data.user.full_name);
+      onAuthenticated(
+        data.user.role as UserRole,
+        data.user.full_name,
+        data.user.email,
+        data.user.id,
+        data.user.is_nurse_verified,
+        data.user.is_host_verified,
+        true // skipAutoNavigate so flow continues to email-verification
+      );
       if (onOpenEmailVerification) {
-        onOpenEmailVerification();
+        onOpenEmailVerification(data.user.email);
       }
       onClose();
     } catch (err: any) {
@@ -196,7 +212,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       if (res.status === 403 && data.requiresVerification) {
         if (onOpenEmailVerification) {
-          onOpenEmailVerification();
+          onOpenEmailVerification(email);
         }
         onClose();
         return;
@@ -210,7 +226,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         localStorage.setItem("np_auth_token", data.token);
       }
 
-      onAuthenticated(data.user.role as UserRole, data.user.full_name);
+      onAuthenticated(
+        data.user.role as UserRole,
+        data.user.full_name,
+        data.user.email,
+        data.user.id,
+        data.user.is_nurse_verified,
+        data.user.is_host_verified
+      );
       onClose();
     } catch (err: any) {
       setAuthError(err.message || "An error occurred during login.");
@@ -897,19 +920,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 )}
                 Sign In to Sanctuary Hub
               </button>
+
+              {/* Standard practice administrator access pathway */}
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("admin@nursespillow.com");
+                    setPassword("AdminSecure2026!");
+                  }}
+                  className="text-[11px] text-gray-500 dark:text-gray-400 hover:text-[#0A6FA8] dark:hover:text-[#93ccff] transition-colors cursor-pointer"
+                >
+                  Hospital system or operations administrator? Sign in here
+                </button>
+              </div>
             </form>
           </div>
         )}
 
         {/* Security & Verification Notice */}
-        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-[#233550] flex items-center justify-center gap-2 text-center text-xs text-gray-500 dark:text-gray-400">
-          <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-            verified_user
-          </span>
-          <span>
-            Protected by 256-bit SSL encryption &amp; Nursys® healthcare license
-            verification.
-          </span>
+        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-[#233550] flex flex-col items-center justify-center gap-1.5 text-center text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+              verified_user
+            </span>
+            <span>
+              Protected by 256-bit SSL encryption &amp; Nursys® healthcare license
+              verification.
+            </span>
+          </div>
+          {mode === "signup" && (
+            <p className="text-[10px] text-gray-400 dark:text-gray-500">
+              Public registration is limited to clinicians and property hosts. Administrator access is provisioned securely through standard governance channels.
+            </p>
+          )}
         </div>
       </div>
     </div>

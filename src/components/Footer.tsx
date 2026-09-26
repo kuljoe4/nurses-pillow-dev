@@ -216,26 +216,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Privacy Policy &amp; Terms
                 </button>
               </li>
-              {isDeveloper && (
-                <>
-                  <li>
-                    <button
-                      onClick={() => onSelectTab('phase1-inventory')}
-                      className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
-                    >
-                      Product Scope &amp; Specifications
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => onSelectTab('mobile-preview')}
-                      className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
-                    >
-                      Mobile App Experience (M2)
-                    </button>
-                  </li>
-                </>
-              )}
               <li>
                 <button
                   onClick={() => onSelectTab('system-status')}

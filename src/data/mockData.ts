@@ -1,5 +1,37 @@
 import { HousingListing, Hospital, VerificationFormData, AdminLicenseReview, MarketDemandReport } from '../types';
 
+export const BLANK_VERIFICATION_DATA: VerificationFormData = {
+  // Step 1: Identity
+  legalFirstName: '',
+  legalLastName: '',
+  dob: '',
+  lastFourSSN: '',
+  idDocumentName: undefined,
+  isIdVerified: false,
+
+  // Step 2: Email & Phone
+  workEmail: '',
+  mobilePhone: '',
+  phoneVerified: false,
+  isContactVerified: false,
+
+  // Step 3: Clinical License
+  professionSpecialty: 'Registered Nurse (RN) - Travel ICU/Telemetry',
+  licenseNumber: '',
+  issuingStateBoard: '',
+  licenseExpirationDate: '',
+  uploadedDocument: undefined,
+  licenseStatus: 'not_started',
+
+  // Step 4: Work Contract
+  travelAgency: '',
+  contractHospital: '',
+  assignmentStartDate: '',
+  contractDurationWeeks: 13,
+  contractDocumentName: undefined,
+  isContractVerified: false,
+};
+
 export const INITIAL_VERIFICATION_DATA: VerificationFormData = {
   // Step 1: Identity
   legalFirstName: 'Sarah',

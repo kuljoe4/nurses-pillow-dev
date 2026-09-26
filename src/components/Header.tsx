@@ -14,19 +14,9 @@ interface HeaderProps {
   isVerified: boolean;
   onOpenAuth?: (mode?: 'signin' | 'signup') => void;
   currentUser: { role: UserRole; name: string };
-
-  m2BypassMode: boolean;
-  onToggleM2Bypass: () => void;
   isDeveloper?: boolean;
   onLogout?: () => void;
-  showScreenCodes?: boolean;
-  onToggleScreenCodes?: () => void;
-  isStagingAuthenticated?: boolean;
-  stagingClientName?: string;
-  onToggleDeveloperMode?: () => void;
   onLockPreview?: () => void;
-  isStagingBannerVisible?: boolean;
-  onToggleStagingBanner?: () => void;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.png';
@@ -43,19 +33,9 @@ export const Header: React.FC<HeaderProps> = ({
   isVerified,
   onOpenAuth,
   currentUser,
-
-  m2BypassMode,
-  onToggleM2Bypass,
   isDeveloper = false,
   onLogout,
-  showScreenCodes = false,
-  onToggleScreenCodes,
-  isStagingAuthenticated = false,
-  stagingClientName = 'lawrence',
-  onToggleDeveloperMode,
   onLockPreview,
-  isStagingBannerVisible = false,
-  onToggleStagingBanner,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -232,109 +212,271 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </button>
 
-        {/* Desktop Primary Navigation - Streamlined & Reduced Density */}
+        {/* Desktop Primary Navigation - Role-Tailored */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-          <button
-            onClick={() => onSelectTab('find-housing')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
-              currentTab === 'find-housing'
-                ? isNightShiftMode
-                  ? 'bg-[#182840] text-[#93ccff] font-bold'
-                  : 'bg-[#eaedff] text-[#005684] font-bold'
-                : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
-            }`}
-          >
-            {showScreenCodes && (
-              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] mr-1.5 font-bold">
-                [HL-01]
-              </span>
-            )}
-            <span>Explore Stays</span>
-          </button>
+          {/* Clinician Navigation */}
+          {currentUser.role === 'nurse' && (
+            <>
+              <button
+                onClick={() => onSelectTab('find-housing')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'find-housing'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>Explore Stays</span>
+              </button>
 
-          <button
-            onClick={() => onSelectTab('search-listings')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
-              currentTab === 'search-listings'
-                ? isNightShiftMode
-                  ? 'bg-[#182840] text-[#93ccff] font-bold'
-                  : 'bg-[#eaedff] text-[#005684] font-bold'
-                : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px]">travel_explore</span>
-            {showScreenCodes && (
-              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                [HL-02]
-              </span>
-            )}
-            <span>Search &amp; Map</span>
-          </button>
+              <button
+                onClick={() => onSelectTab('search-listings')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'search-listings'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+                <span>Search &amp; Map</span>
+              </button>
 
-          <button
-            onClick={() => {
-              if (currentUser.role === 'host') {
-                onSelectTab('host-dashboard');
-              } else {
-                onSelectTab('for-hosts');
-              }
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
-              currentTab === 'for-hosts' || currentTab === 'host-dashboard'
-                ? isNightShiftMode
-                  ? 'bg-[#005684]/25 text-[#93ccff] font-bold'
-                  : 'bg-[#eaedff] text-[#005684] font-bold'
-                : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px]">home</span>
-            {showScreenCodes && (
-              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                [H-01]
-              </span>
-            )}
-            <span>For Property Hosts</span>
-          </button>
+              <button
+                onClick={() => onSelectTab('nurse-dashboard')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'nurse-dashboard'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#aff0db] font-bold'
+                      : 'bg-[#E1EFE9] text-[#2F6E5E] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">inventory_2</span>
+                <span>My Bookings</span>
+              </button>
 
-          <button
-            onClick={() => onSelectTab('how-it-works')}
-            className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
-              currentTab === 'how-it-works'
-                ? isNightShiftMode
-                  ? 'bg-[#182840] text-[#93ccff] font-bold'
-                  : 'bg-[#eaedff] text-[#005684] font-bold'
-                : isNightShiftMode
-                ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
-            }`}
-          >
-            {showScreenCodes && (
-              <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] mr-1.5 font-bold">
-                [P-01]
-              </span>
-            )}
-            <span>How It Works</span>
-          </button>
+              <button
+                onClick={() => onSelectTab('how-it-works')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'how-it-works'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>How It Works</span>
+              </button>
+            </>
+          )}
+
+          {/* Host Navigation */}
+          {currentUser.role === 'host' && (
+            <>
+              <button
+                onClick={() => onSelectTab('host-dashboard')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'host-dashboard'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
+                <span>My Sanctuaries</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('host-onboarding')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'host-onboarding'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">add_home</span>
+                <span>List Sanctuary</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('for-hosts')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'for-hosts'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>Host Standards</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('how-it-works')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'how-it-works'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>How It Works</span>
+              </button>
+            </>
+          )}
+
+          {/* Super Admin / Operations Navigation */}
+          {currentUser.role === 'super_admin' && (
+            <>
+              <button
+                onClick={() => onSelectTab('admin-portal')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'admin-portal'
+                    ? 'bg-amber-500 text-white font-bold'
+                    : isNightShiftMode
+                    ? 'text-amber-400 hover:bg-amber-400/10'
+                    : 'text-amber-700 hover:bg-amber-50'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
+                <span>Operations Portal</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('find-housing')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'find-housing'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>Explore Stays</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('search-listings')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'search-listings'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>Search &amp; Map</span>
+              </button>
+            </>
+          )}
+
+          {/* Guest Navigation */}
+          {currentUser.role === 'guest' && (
+            <>
+              <button
+                onClick={() => onSelectTab('find-housing')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'find-housing'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>Explore Stays</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('search-listings')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'search-listings'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+                <span>Search &amp; Map</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('for-hosts')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'for-hosts'
+                    ? isNightShiftMode
+                      ? 'bg-[#005684]/25 text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">home</span>
+                <span>For Property Hosts</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('how-it-works')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
+                  currentTab === 'how-it-works'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span>How It Works</span>
+              </button>
+            </>
+          )}
 
           {/* More Menu Dropdown */}
           <div className="relative" ref={moreMenuRef}>
             <button
               type="button"
               onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-              className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-all duration-200 ease-in-out flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
                 isMoreMenuOpen
                   ? isNightShiftMode
                     ? 'bg-[#182840] text-white'
                     : 'bg-gray-100 text-[#001848]'
                   : isNightShiftMode
-                  ? 'text-[#c0c7d1] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                  : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100/80'
+                  ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                  : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
               }`}
             >
               <span>More</span>
@@ -352,9 +494,9 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 onWheel={(e) => e.stopPropagation()}
               >
-                {/* Section 1: Healthcare & Verification */}
+                {/* Healthcare Directory & Credentialing */}
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Healthcare Directory &amp; Licenses
+                  Healthcare Directory
                 </div>
 
                 <button
@@ -363,52 +505,44 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('verified-hospitals');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
                     local_hospital
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
-                      {showScreenCodes && (
-                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
-                          [HOS-01]
-                        </span>
-                      )}
-                      <span>Verified Hospitals Directory</span>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Verified Hospitals Directory
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">NC trauma centers &amp; teaching systems</div>
                   </div>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('verification');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
-                    verified_user
-                  </span>
-                  <div>
-                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
-                      {showScreenCodes && (
-                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
-                          [C-01]
-                        </span>
-                      )}
-                      <span>Clinician Credentialing</span>
+                {currentUser.role !== 'host' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('verification');
+                      setIsMoreMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
+                      verified_user
+                    </span>
+                    <div>
+                      <div className="font-bold text-[#001848] dark:text-white">
+                        Clinician Credentialing
+                      </div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
                     </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
-                  </div>
-                </button>
+                  </button>
+                )}
 
-                {/* Section 2: Standards & Protections */}
+                {/* Standards & Protections */}
                 <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Standards &amp; Reliability
+                  Standards &amp; Policies
                 </div>
 
                 <button
@@ -417,19 +551,14 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('legal-policies');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
                     policy
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
-                      {showScreenCodes && (
-                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
-                          [P-05]
-                        </span>
-                      )}
-                      <span>Sanctuary Standards &amp; Policies</span>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Sanctuary Standards &amp; Policies
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Quiet guarantee, contract flex &amp; auto-purge</div>
                   </div>
@@ -441,162 +570,18 @@ export const Header: React.FC<HeaderProps> = ({
                     onSelectTab('system-status');
                     setIsMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
                     dns
                   </span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white flex items-center gap-1.5">
-                      {showScreenCodes && (
-                        <span className="font-mono text-[10px] text-purple-600 dark:text-purple-300 font-bold">
-                          [P-12]
-                        </span>
-                      )}
-                      <span>Platform Reliability &amp; Status</span>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Platform Reliability &amp; Status
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Live uptime &amp; system health metrics</div>
                   </div>
                 </button>
-
-                {/* Section 3: Developer Tools - STRICTLY SHOWN ONLY IF isDeveloper IS TRUE */}
-                {isDeveloper && (
-                  <>
-                    <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
-                    <div className="px-3 py-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      <span>Developer Deliverables</span>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
-                        Dev Access
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('mobile-preview');
-                        setIsMoreMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
-                          smartphone
-                        </span>
-                        <span className="font-medium text-[#001848] dark:text-white">Mobile Native App</span>
-                      </div>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
-                        Milestone 2
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('phase1-inventory');
-                        setIsMoreMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">
-                          integration_instructions
-                        </span>
-                        <span className="font-medium text-[#001848] dark:text-white">Product Scope &amp; Screens</span>
-                      </div>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold">
-                        Developer
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectTab('tier2-plumbing');
-                        setIsMoreMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                          terminal
-                        </span>
-                        <div>
-                          <div className="font-bold text-[#001848] dark:text-white">Tier 2 Backend &amp; Plumbing</div>
-                          <div className="text-[10px] text-gray-500">Stripe Split, DB Seeds, Refunds</div>
-                        </div>
-                      </div>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0A6FA8]/15 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold">
-                        Days 6–15
-                      </span>
-                    </button>
-
-                    <div className="mt-1 pt-2 border-t border-gray-100 dark:border-[#1e3048] px-3 pb-1 flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300">
-                        Milestone 2 Scope
-                      </span>
-                      <button
-                        type="button"
-                        onClick={onToggleM2Bypass}
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all duration-200 ease-in-out cursor-pointer ${
-                          m2BypassMode
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
-                        }`}
-                      >
-                        {m2BypassMode ? 'UNLOCKED' : 'GATED'}
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {/* Staging Access & Review Perspective (lawrence) */}
-                {isStagingAuthenticated && isDeveloper && (
-                  <div className="mt-2 pt-2 border-t border-gray-100 dark:border-[#1e3048]">
-                    <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      <span>Staging Review Access</span>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold lowercase">
-                        {stagingClientName}
-                      </span>
-                    </div>
-
-                    {onToggleDeveloperMode && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onToggleDeveloperMode();
-                          setIsMoreMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] flex items-center justify-between transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[17px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                            {isDeveloper ? 'visibility' : 'code'}
-                          </span>
-                          <span className="font-semibold text-[#001848] dark:text-white">
-                            {isDeveloper ? 'Switch to Client View (lawrence)' : 'Switch to Developer Mode'}
-                          </span>
-                        </div>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] font-mono font-bold">
-                          {isDeveloper ? 'Dev' : 'Client'}
-                        </span>
-                      </button>
-                    )}
-
-                    {onLockPreview && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onLockPreview();
-                          setIsMoreMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-50 dark:hover:bg-rose-950 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-950/20 text-rose-600 dark:text-rose-400 flex items-center gap-2 transition-colors cursor-pointer text-xs"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">lock</span>
-                        <span>Lock Preview Session</span>
-                      </button>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -773,119 +758,21 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* Developer Screen Codes Toggle HUD */}
-                  {onToggleScreenCodes && (
-                    <div className="p-2.5 rounded-2xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[17px] text-purple-600 dark:text-purple-400">
-                          code
-                        </span>
-                        <div>
-                          <div className="text-[11px] font-bold text-purple-900 dark:text-purple-200">
-                            Screen Codes [XX-00]
-                          </div>
-                          <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                            {showScreenCodes ? 'Visible (Dev Mode Active)' : 'Clean Client View (Hidden)'}
-                          </div>
-                        </div>
-                      </div>
+                  {/* Clean Session Control if staging locked preview is supported */}
+                  {onLockPreview && (
+                    <div className="pt-1 flex justify-end">
                       <button
                         type="button"
-                        onClick={onToggleScreenCodes}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono transition-all duration-200 ease-in-out cursor-pointer ${
-                          showScreenCodes
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-300 dark:hover:bg-gray-600 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-600'
-                        }`}
-                        title="Toggle Developer Screen Codes in navigation and UI"
+                        onClick={() => {
+                          onLockPreview();
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="py-1 px-2.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                        title="Lock preview session"
                       >
-                        {showScreenCodes ? 'ON' : 'OFF'}
+                        <span className="material-symbols-outlined text-[13px]">lock</span>
+                        <span>Lock Preview</span>
                       </button>
-                    </div>
-                  )}
-
-                  {/* Staging Access & Review Control Capsule (lawrence) */}
-                  {isStagingAuthenticated && isDeveloper && (
-                    <div className="p-3 rounded-2xl bg-[#001848]/5 dark:bg-[#182840]/60 border border-[#0A6FA8]/20 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <span className="text-[11px] font-bold text-[#001848] dark:text-white">
-                            Staging Review: <span className="text-[#0A6FA8] dark:text-[#3E9AD1] font-mono">{stagingClientName}</span>
-                          </span>
-                        </div>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
-                          isDeveloper
-                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300'
-                            : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                        }`}>
-                          {isDeveloper ? 'Developer Mode' : 'Client Review'}
-                        </span>
-                      </div>
-
-                      {/* Access Toggle Actions */}
-                      <div className="flex flex-col gap-1.5 pt-1 text-xs">
-                        {onToggleDeveloperMode && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onToggleDeveloperMode();
-                              setIsProfileMenuOpen(false);
-                            }}
-                            className="w-full py-1.5 px-2.5 rounded-xl border border-gray-200 dark:border-[#233550] bg-white dark:bg-[#111e33] hover:border-[#0A6FA8] text-left flex items-center justify-between font-semibold text-[11px] text-[#001848] dark:text-white transition-colors cursor-pointer"
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span className="material-symbols-outlined text-[15px] text-[#0A6FA8]">
-                                {isDeveloper ? 'visibility' : 'code'}
-                              </span>
-                              <span>{isDeveloper ? 'Switch to Client View (lawrence)' : 'Switch to Developer Mode'}</span>
-                            </div>
-                            <span className="text-[10px] text-gray-400 font-mono">Toggle</span>
-                          </button>
-                        )}
-
-                        <div className="flex items-center justify-between gap-1.5 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={onToggleM2Bypass}
-                            className={`flex-1 py-1 px-2 rounded-lg font-mono font-bold text-[10px] flex items-center justify-center gap-1 transition-colors cursor-pointer ${
-                              m2BypassMode
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                            }`}
-                            title="Toggle Milestone 2 Scope Gating"
-                          >
-                            <span>M2 Scope:</span>
-                            <span>{m2BypassMode ? 'UNLOCKED' : 'GATED'}</span>
-                          </button>
-
-                          {onToggleStagingBanner && (
-                            <button
-                              type="button"
-                              onClick={onToggleStagingBanner}
-                              className="py-1 px-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-medium transition-colors cursor-pointer"
-                              title="Toggle the top staging review banner visibility"
-                            >
-                              {isStagingBannerVisible ? 'Hide Top Bar' : 'Show Top Bar'}
-                            </button>
-                          )}
-
-                          {onLockPreview && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onLockPreview();
-                                setIsProfileMenuOpen(false);
-                              }}
-                              className="py-1 px-2 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-50 dark:hover:bg-rose-950 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-950/30 text-[10px] font-bold flex items-center gap-0.5 cursor-pointer"
-                              title="Lock staging preview session"
-                            >
-                              <span className="material-symbols-outlined text-[12px]">lock</span>
-                              <span>Lock</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   )}
 
@@ -941,26 +828,9 @@ export const Header: React.FC<HeaderProps> = ({
                         <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                       </button>
                     )}
-
-                    {currentUser.role === 'developer' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSelectTab('phase1-inventory');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full py-2 px-3 rounded-xl bg-purple-700 text-white font-bold flex items-center justify-between hover:bg-purple-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-800 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[18px]">terminal</span>
-                          <span>Developer System Specs</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                      </button>
-                    )}
                   </div>
 
-                  {/* Support & Auth Modal Trigger */}
+                  {/* Support */}
                   <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
                     <button
                       type="button"
@@ -973,18 +843,6 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className="material-symbols-outlined text-[15px]">help_outline</span>
                       <span className="group-hover:underline">Support</span>
                     </button>
-                    {onOpenAuth && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onOpenAuth('signin');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="text-xs text-[#005684] dark:text-[#93ccff] font-bold hover:underline cursor-pointer"
-                      >
-                        Switch Account
-                      </button>
-                    )}
                   </div>
 
                   {/* Dedicated Log Out Button */}
@@ -1002,7 +860,6 @@ export const Header: React.FC<HeaderProps> = ({
                           <span className="material-symbols-outlined text-[17px]">logout</span>
                           <span>Log Out</span>
                         </div>
-                        <span className="text-[10px] opacity-75 font-normal">Switch to Guest</span>
                       </button>
                     </div>
                   )}
@@ -1164,7 +1021,6 @@ export const Header: React.FC<HeaderProps> = ({
                     if (currentUser.role === 'nurse') onSelectTab('nurse-dashboard');
                     else if (currentUser.role === 'host') onSelectTab('host-dashboard');
                     else if (currentUser.role === 'super_admin') onSelectTab('admin-portal');
-                    else if (currentUser.role === 'developer') onSelectTab('phase1-inventory');
                     setIsMobileMenuOpen(false);
                   }}
                   className="px-2.5 py-1.5 rounded-xl bg-[#005684] text-white text-xs font-bold shrink-0 flex items-center gap-1 hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] cursor-pointer shadow-2xs"
@@ -1175,140 +1031,309 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
 
-            {/* 2. PRIMARY NAVIGATION LINKS (Clear, prominent, visible without scrolling) */}
+            {/* 2. PRIMARY NAVIGATION LINKS - Tailored by User Role */}
             <div className="space-y-1">
               <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1 flex items-center justify-between">
                 <span>Main Navigation</span>
               </div>
 
-              {/* Explore Stays */}
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('find-housing');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
-                  currentTab === 'find-housing'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`material-symbols-outlined text-[20px] ${
-                    currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    bed
-                  </span>
-                  <span>Explore Stays</span>
-                </div>
-                {showScreenCodes && (
-                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                    [HL-01]
-                  </span>
-                )}
-              </button>
+              {/* Clinician Navigation */}
+              {currentUser.role === 'nurse' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('find-housing');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'find-housing'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>bed</span>
+                      <span>Explore Stays</span>
+                    </div>
+                  </button>
 
-              {/* Search & Map */}
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('search-listings');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
-                  currentTab === 'search-listings'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`material-symbols-outlined text-[20px] ${
-                    currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    travel_explore
-                  </span>
-                  <span>Search Stays &amp; Map</span>
-                </div>
-                {showScreenCodes && (
-                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                    [HL-02]
-                  </span>
-                )}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('search-listings');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'search-listings'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>travel_explore</span>
+                      <span>Search Stays &amp; Map</span>
+                    </div>
+                  </button>
 
-              {/* For Property Hosts */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (currentUser.role === 'host') {
-                    onSelectTab('host-dashboard');
-                  } else {
-                    onSelectTab('for-hosts');
-                  }
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
-                  currentTab === 'for-hosts' || currentTab === 'host-dashboard'
-                    ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`material-symbols-outlined text-[20px] ${
-                    currentTab === 'for-hosts' || currentTab === 'host-dashboard'
-                      ? 'text-[#005684] dark:text-[#93ccff]'
-                      : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    home
-                  </span>
-                  <span>For Property Hosts</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {showScreenCodes && (
-                    <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                      [H-01]
-                    </span>
-                  )}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold">
-                    {currentUser.role === 'host' ? 'My Portal' : 'Host Info'}
-                  </span>
-                </div>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('nurse-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'nurse-dashboard'
+                        ? 'bg-[#E1EFE9] dark:bg-[#182840] text-[#2F6E5E] dark:text-[#aff0db] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'nurse-dashboard' ? 'text-[#2F6E5E] dark:text-[#aff0db]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>inventory_2</span>
+                      <span>My Bookings</span>
+                    </div>
+                  </button>
 
-              {/* How It Works & Quiet Guarantee */}
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('how-it-works');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
-                  currentTab === 'how-it-works'
-                    ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                    : 'text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`material-symbols-outlined text-[20px] ${
-                    currentTab === 'how-it-works' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    verified
-                  </span>
-                  <span>How It Works &amp; Quiet Guarantee</span>
-                </div>
-                {showScreenCodes && (
-                  <span className="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
-                    [P-01]
-                  </span>
-                )}
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('how-it-works');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'how-it-works'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'how-it-works' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>verified</span>
+                      <span>How It Works &amp; Quiet Guarantee</span>
+                    </div>
+                  </button>
+                </>
+              )}
+
+              {/* Host Navigation */}
+              {currentUser.role === 'host' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('host-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'host-dashboard'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'host-dashboard' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>real_estate_agent</span>
+                      <span>My Sanctuaries</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('host-onboarding');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'host-onboarding'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'host-onboarding' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>add_home</span>
+                      <span>List Sanctuary</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('for-hosts');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'for-hosts'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'for-hosts' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>verified_user</span>
+                      <span>Host Standards</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('find-housing');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'find-housing'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>travel_explore</span>
+                      <span>Explore Stays</span>
+                    </div>
+                  </button>
+                </>
+              )}
+
+              {/* Admin Navigation */}
+              {currentUser.role === 'super_admin' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('admin-portal');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'admin-portal'
+                        ? 'bg-amber-500 text-white shadow-2xs'
+                        : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                      <span>Operations Portal</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('find-housing');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'find-housing'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[20px]">travel_explore</span>
+                      <span>Explore Stays</span>
+                    </div>
+                  </button>
+                </>
+              )}
+
+              {/* Guest Navigation */}
+              {currentUser.role === 'guest' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('find-housing');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'find-housing'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>bed</span>
+                      <span>Explore Stays</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('search-listings');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'search-listings'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>travel_explore</span>
+                      <span>Search Stays &amp; Map</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('for-hosts');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'for-hosts'
+                        ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">home</span>
+                      <span>For Property Hosts</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('how-it-works');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'how-it-works'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">verified</span>
+                      <span>How It Works &amp; Quiet Guarantee</span>
+                    </div>
+                  </button>
+                </>
+              )}
             </div>
 
             {/* 3. DIRECTORY & CLINICAL RESOURCES */}
             <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1">
               <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
-                Directory &amp; Clinical Verification
+                Directory &amp; Standards
               </div>
 
               <button
@@ -1320,7 +1345,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                   currentTab === 'verified-hospitals'
                     ? 'bg-blue-50 dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -1334,28 +1359,30 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('verification');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                  currentTab === 'verification'
-                    ? 'bg-emerald-50 dark:bg-[#182840] text-[#195b4c] dark:text-[#aff0db] font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
-                    verified_user
+              {currentUser.role !== 'host' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('verification');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                    currentTab === 'verification'
+                      ? 'bg-emerald-50 dark:bg-[#182840] text-[#195b4c] dark:text-[#aff0db] font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
+                      verified_user
+                    </span>
+                    <span>Clinician Credentialing (Nursys)</span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
+                    Step 4
                   </span>
-                  <span>Clinician Credentialing (Nursys)</span>
-                </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
-                  Step 4
-                </span>
-              </button>
+                </button>
+              )}
 
               <button
                 type="button"
@@ -1366,7 +1393,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
                   currentTab === 'legal-policies'
                     ? 'bg-gray-100 dark:bg-[#182840] text-[#001848] dark:text-white font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px] text-gray-500">
@@ -1384,7 +1411,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                   currentTab === 'system-status'
                     ? 'bg-emerald-50 dark:bg-[#182840] text-emerald-800 dark:text-emerald-300 font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -1395,7 +1422,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Operational
+                  99.9%
                 </span>
               </button>
             </div>
@@ -1440,106 +1467,24 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Staging Access & Review Perspective for Mobile (lawrence) */}
-            {isStagingAuthenticated && isDeveloper && (
-              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
-                <div className="px-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  <span>Staging Review Access</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono font-bold lowercase">
-                    {stagingClientName}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5">
-                  {onToggleDeveloperMode && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onToggleDeveloperMode();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="py-2 px-2.5 rounded-xl border border-[#0A6FA8]/30 bg-[#EFF6FB] dark:bg-[#182840] text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">
-                        {isDeveloper ? 'visibility' : 'code'}
-                      </span>
-                      <span>{isDeveloper ? 'Client View' : 'Dev Mode'}</span>
-                    </button>
-                  )}
-
-                  {onLockPreview && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onLockPreview();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="py-2 px-2.5 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 text-[11px] font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">lock</span>
-                      <span>Lock Session</span>
-                    </button>
-                  )}
-                </div>
+            {/* Session Lock for Mobile (if staging is active) */}
+            {onLockPreview && (
+              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLockPreview();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="py-2 px-3 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[15px]">lock</span>
+                  <span>Lock Preview Session</span>
+                </button>
               </div>
             )}
 
-            {/* 6. DEVELOPER HUD CONTROLS (If Developer) */}
-            {isDeveloper && (
-              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
-                <div className="px-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  <span>Developer Diagnostics</span>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-purple-500/10 text-purple-600 dark:text-purple-300 font-mono">
-                    Dev Mode
-                  </span>
-                </div>
-
-                {onToggleScreenCodes && (
-                  <div className="p-2.5 rounded-xl bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-purple-600">code</span>
-                      <span className="text-xs font-bold text-purple-900 dark:text-purple-200">Screen Codes [XX-00]</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={onToggleScreenCodes}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono cursor-pointer ${
-                        showScreenCodes ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {showScreenCodes ? 'ON' : 'OFF'}
-                    </button>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('mobile-preview');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="py-1.5 px-2.5 rounded-xl border border-purple-200 dark:border-purple-900/30 text-[11px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-50 dark:hover:bg-purple-950 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-950/20 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">smartphone</span>
-                    <span>App Simulator</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('phase1-inventory');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="py-1.5 px-2.5 rounded-xl border border-purple-200 dark:border-purple-900/30 text-[11px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 hover:bg-purple-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-50 dark:hover:bg-purple-950 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-950/20 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">inventory_2</span>
-                    <span>Spec Inventory</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* 7. SUPPORT & AUTH ACTIONS */}
+            {/* 6. SUPPORT & AUTH ACTIONS */}
             <div className="pt-2 border-t border-gray-100 dark:border-[#233550] flex flex-col gap-2">
               <button
                 type="button"
@@ -1563,7 +1508,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-100 dark:hover:bg-rose-900 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-900/50"
                 >
                   <span className="material-symbols-outlined text-[18px]">logout</span>
-                  <span>Log Out (Switch to Guest)</span>
+                  <span>Log Out</span>
                 </button>
               ) : onOpenAuth ? (
                 <div className="flex items-center gap-2">
