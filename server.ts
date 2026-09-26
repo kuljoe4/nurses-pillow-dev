@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,8 +11,6 @@ import { mapDbListingToFrontend } from './server/mapper.js';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
