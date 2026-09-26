@@ -26,8 +26,6 @@ interface CrumbItem {
 
 interface CrumbTooltipProps {
   label: string;
-  fullPath?: string;
-  hint?: string;
   badge?: string;
   align?: 'left' | 'center' | 'right';
   disabled?: boolean;
@@ -37,8 +35,6 @@ interface CrumbTooltipProps {
 
 const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
   label,
-  fullPath,
-  hint,
   badge,
   align = 'center',
   disabled = false,
@@ -95,25 +91,6 @@ const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
           )}
         </div>
 
-        {/* Full Hierarchical Path Trace */}
-        {fullPath && (
-          <div className="text-[10px] text-gray-300 dark:text-gray-400 font-normal leading-relaxed break-words border-t border-white/10 dark:border-white/5 pt-1 mt-0.5">
-            <span className="text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold text-[9px] block mb-0.5">
-              Full Navigation Path
-            </span>
-            <span className="text-gray-200 dark:text-gray-300 font-medium">{fullPath}</span>
-          </div>
-        )}
-
-        {/* Action / Context Hint */}
-        {hint && (
-          <div className="text-[10px] text-blue-200 dark:text-[#93ccff] font-medium mt-1 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[12px] leading-none" aria-hidden="true">
-              info
-            </span>
-            <span>{hint}</span>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -536,7 +513,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   const firstCrumb = trail[0];
   const lastCrumb = trail[trail.length - 1];
   const middleCrumbs = trail.slice(1, -1);
-  const fullPathString = trail.map((c) => c.label).join(' › ');
 
   return (
     <div
@@ -588,8 +564,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 <li className="flex items-center gap-1 shrink-0">
                   <CrumbTooltip
                     label={firstCrumb.label}
-                    fullPath={fullPathString}
-                    hint={firstCrumb.onClick ? 'Click to return to Marketplace Home' : undefined}
                     align="left"
                     isNightShiftMode={isNightShiftMode}
                   >
@@ -597,7 +571,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                       <button
                         type="button"
                         onClick={firstCrumb.onClick}
-                        title={`Home: Return to ${firstCrumb.label} • Path: ${fullPathString}`}
                         className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                           isNightShiftMode
                             ? 'text-[#a1b5d8] hover:text-[#93ccff] focus-visible:text-[#93ccff]'
@@ -616,7 +589,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         className={`flex items-center gap-1 font-medium ${
                           isNightShiftMode ? 'text-[#6e85a6]' : 'text-gray-400'
                         }`}
-                        title={`${firstCrumb.label} • Path: ${fullPathString}`}
                       >
                         {firstCrumb.icon && (
                           <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
@@ -648,8 +620,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 <li className="relative shrink-0 flex items-center gap-1">
                   <CrumbTooltip
                     label={`Collapsed Steps (${middleCrumbs.length})`}
-                    fullPath={middleCrumbs.map((c) => c.label).join(' › ')}
-                    hint="Tap to expand all intermediate views"
                     align="center"
                     disabled={isEllipsisOpen}
                     isNightShiftMode={isNightShiftMode}
@@ -697,7 +667,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             crumb.onClick?.();
                           }}
                           disabled={!crumb.onClick}
-                          title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
                           className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center gap-2 transition-colors ${
                             crumb.onClick
                               ? isNightShiftMode
@@ -711,7 +680,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                               {crumb.icon}
                             </span>
                           )}
-                          <span className="truncate flex-1 font-medium">{crumb.label}</span>
+                          <span className="truncate flex-1 font-medium">{crumb.shortLabel || crumb.label}</span>
                         </button>
                       ))}
                     </div>
@@ -734,8 +703,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                 <li className="flex items-center gap-1 shrink-0 min-w-0 font-bold" aria-current="page">
                   <CrumbTooltip
                     label={lastCrumb.label}
-                    fullPath={fullPathString}
-                    hint="Current Active View"
                     badge={lastCrumb.badge}
                     align="right"
                     isNightShiftMode={isNightShiftMode}
@@ -744,7 +711,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                       className={`flex items-center gap-1 font-bold truncate cursor-default ${
                         isNightShiftMode ? 'text-white' : 'text-[#001848]'
                       }`}
-                      title={`${lastCrumb.label} (Current View) • Path: ${fullPathString}`}
                     >
                       {lastCrumb.icon && (
                         <span
@@ -797,8 +763,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
                     <CrumbTooltip
                       label={crumb.label}
-                      fullPath={fullPathString}
-                      hint={isLast ? 'Current Active View' : crumb.onClick ? 'Click to navigate to this view' : undefined}
                       badge={crumb.badge}
                       align={index === 0 ? 'left' : isLast ? 'right' : 'center'}
                       isNightShiftMode={isNightShiftMode}
@@ -809,7 +773,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                             isNightShiftMode ? 'text-white' : 'text-[#001848]'
                           }`}
                           aria-current="page"
-                          title={`${crumb.label} (Current View) • Path: ${fullPathString}`}
                         >
                           {crumb.icon && (
                             <span
@@ -841,7 +804,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         <button
                           type="button"
                           onClick={crumb.onClick}
-                          title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
                           className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                             isNightShiftMode
                               ? 'text-[#a1b5d8] hover:text-[#93ccff] focus-visible:text-[#93ccff]'
@@ -860,7 +822,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                           className={`flex items-center gap-1 font-medium ${
                             isNightShiftMode ? 'text-[#6e85a6]' : 'text-gray-400'
                           }`}
-                          title={`${crumb.label} • Path: ${fullPathString}`}
                         >
                           {crumb.icon && (
                             <span className="material-symbols-outlined text-[15px]" aria-hidden="true">
