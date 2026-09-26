@@ -51,8 +51,8 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
 
     // Auto-advance to next input
     if (cleanVal && index < 5) {
-      pinInputRefs.current[index + 1]?.focus();
-      pinInputRefs.current[index + 1]?.select();
+      pinInputRefs.current[index+ 1]?.focus();
+      pinInputRefs.current[index+ 1]?.select();
     }
   };
 
@@ -149,7 +149,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               <button
                 type="button"
                 onClick={onBackToOverview}
-                className="text-gray-400 hover:text-[#0B2559] dark:hover:text-white transition-colors p-1"
+                className="text-gray-400 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white transition-colors p-1"
                 aria-label="Back to overview"
               >
                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -166,7 +166,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
           </div>
 
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-            <span className="w-2 h-2 rounded-full bg-[#0A6FA8] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#0A6FA8]" />
             <span>Postmark Delivery</span>
           </div>
         </div>
@@ -185,7 +185,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
           <div className="text-center space-y-1 mb-6">
             <span
               className="text-[#B9822E] dark:text-[#F1CF78] text-2xl block"
-              style={{ fontFamily: "'Kaushan Script', cursive" }}
+              style={{ fontFamily:"'Kaushan Script', cursive" }}
             >
               Rest Well. Heal Better.
             </span>
@@ -219,7 +219,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                   />
                   <button
                     type="submit"
-                    className="px-3 py-1.5 rounded-lg bg-[#0A6FA8] text-white text-xs font-semibold hover:bg-[#0C7EBF] transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-[#0A6FA8] text-white text-xs font-semibold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] transition-colors"
                   >
                     Save
                   </button>
@@ -229,7 +229,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                       setEditEmailInput(email);
                       setIsEditingEmail(false);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
@@ -251,7 +251,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                 <button
                   type="button"
                   onClick={() => setIsEditingEmail(true)}
-                  className="text-xs font-semibold text-[#0A6FA8] hover:text-[#0C7EBF] dark:text-[#3E9AD1] transition-colors cursor-pointer shrink-0"
+                  className="text-xs font-semibold text-[#0A6FA8] hover:text-[#0C7EBF] focus-visible:text-[#0C7EBF] dark:text-[#3E9AD1] transition-colors cursor-pointer shrink-0"
                 >
                   Change
                 </button>
@@ -297,14 +297,14 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
                   ref={(el) => {
                     pinInputRefs.current[idx] = el;
                   }}
-                  aria-label={`Digit ${idx + 1}`}
+                  aria-label={`Digit ${idx+ 1}`}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handlePinChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
-                  className={`h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl focus:outline-none transition-all tabular-nums border ${
+                  className={`h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-xl focus:outline-none transition-all duration-200 ease-in-out tabular-nums border ${
                     isNightShiftMode
                       ? 'bg-[#0E1A2E] border-[#233550] text-white focus:border-[#3E9AD1] focus:ring-2 focus:ring-[#3E9AD1]/20'
                       : 'bg-[#EFF6FB] border-[#0A6FA8]/20 text-[#0B2559] focus:bg-white focus:border-[#0A6FA8] focus:ring-2 focus:ring-[#0A6FA8]/20'
@@ -319,15 +319,15 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
             type="button"
             onClick={handleVerify}
             disabled={isVerifying}
-            className={`w-full py-3.5 px-6 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs ${
+            className={`w-full py-3.5 px-6 rounded-full text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 ease-in-out cursor-pointer shadow-xs ${
               isVerified
                 ? 'bg-[#2F6E5E] text-white'
-                : 'bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:ring-offset-2'
+                : 'bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:ring-offset-1'
             }`}
           >
             {isVerifying ? (
               <>
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Verifying code...</span>
               </>
             ) : isVerified ? (
@@ -361,7 +361,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
             <button
               type="button"
               onClick={onProceedToPhoneVerification}
-              className="text-gray-500 hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] transition-colors cursor-pointer"
+              className="text-gray-500 hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:text-[#3E9AD1] transition-colors cursor-pointer"
             >
               Prefer SMS? Verify by phone
             </button>

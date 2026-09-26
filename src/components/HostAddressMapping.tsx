@@ -1,11 +1,11 @@
 // Source: Google Maps Platform Code Assist - Places API (New)
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from"react";
 import {
   Map,
   AdvancedMarker,
   useMapsLibrary,
   useMap,
-} from "@vis.gl/react-google-maps";
+} from"@vis.gl/react-google-maps";
 
 interface HostAddressMappingProps {
   isNightShiftMode: boolean;
@@ -41,7 +41,7 @@ const PanToLocation: React.FC<{ coords: { lat: number; lng: number } }> = ({
 
 export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   isNightShiftMode,
-  initialAddress = "208 S LaSalle St, Durham, NC 27705",
+  initialAddress ="208 S LaSalle St, Durham, NC 27705",
   onAddressConfirmed,
 }) => {
   const [addressInput, setAddressInput] = useState(initialAddress);
@@ -80,7 +80,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
       const request: google.maps.places.AutocompleteRequest = {
         input: trimmed,
         sessionToken: sessionTokenRef.current ?? undefined,
-        region: "us",
+        region:"us",
       };
 
       placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
@@ -110,7 +110,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
     if (!prediction) return;
 
     const formattedAddress =
-      prediction.text?.text || prediction.mainText?.text || "";
+      prediction.text?.text || prediction.mainText?.text ||"";
     setAddressInput(formattedAddress);
     setIsDropdownOpen(false);
 
@@ -118,11 +118,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
       // Modern Places API (New) Place.fetchFields()
       const place = prediction.toPlace();
       await place.fetchFields({
-        fields: [
-          "displayName",
-          "formattedAddress",
-          "location",
-          "addressComponents",
+        fields: ["displayName","formattedAddress","location","addressComponents",
         ],
       });
 
@@ -132,9 +128,9 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         setCoords({ lat, lng });
       }
 
-      let city = "Durham";
-      let state = "NC";
-      let zip = "27705";
+      let city ="Durham";
+      let state ="NC";
+      let zip ="27705";
 
       if (place.addressComponents) {
         place.addressComponents.forEach((c) => {
@@ -154,20 +150,20 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
 
   // Nearby hospital distance calculations relative to marker coords
   const nearbyDistances = [
-    { hospital: "Duke University Hospital", distanceMiles: 0.8, driveMins: 3 },
-    { hospital: "UNC Medical Center", distanceMiles: 11.4, driveMins: 18 },
-    { hospital: "WakeMed Raleigh Campus", distanceMiles: 26.2, driveMins: 32 },
+    { hospital:"Duke University Hospital", distanceMiles: 0.8, driveMins: 3 },
+    { hospital:"UNC Medical Center", distanceMiles: 11.4, driveMins: 18 },
+    { hospital:"WakeMed Raleigh Campus", distanceMiles: 26.2, driveMins: 32 },
   ];
 
   const handleConfirm = () => {
     setIsConfirmed(true);
     onAddressConfirmed?.({
-      formattedAddress: `${addressInput} ${unitApt ? `(${unitApt})` : ""}`,
+      formattedAddress: `${addressInput} ${unitApt ? `(${unitApt})` :""}`,
       lat: coords.lat,
       lng: coords.lng,
-      city: cityState.split(",")[0] || "Durham",
-      state: "NC",
-      zipCode: cityState.split(" ").pop() || "27705",
+      city: cityState.split(",")[0] ||"Durham",
+      state:"NC",
+      zipCode: cityState.split("").pop() ||"27705",
       nearestHospitalDistances: nearbyDistances,
     });
   };
@@ -210,7 +206,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
                 className="w-full pl-9 pr-3 py-2.5 text-xs font-medium rounded-xl bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] text-[#001848] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#005684]"
               />
               {isSearching && (
-                <div className="absolute right-3 top-3 w-4 h-4 border-2 border-[#005684]/20 border-t-[#005684] rounded-full animate-spin" />
+                <div className="absolute right-3 top-3 w-4 h-4 border border-[#005684]/20 border-t-[#005684] rounded-full animate-spin" />
               )}
             </div>
 
@@ -220,16 +216,15 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
                 {placesSuggestions.map((suggestion, idx) => {
                   const mainText =
                     suggestion.placePrediction?.mainText?.text ||
-                    suggestion.placePrediction?.text?.text ||
-                    "";
+                    suggestion.placePrediction?.text?.text ||"";
                   const secondaryText =
-                    suggestion.placePrediction?.secondaryText?.text || "";
+                    suggestion.placePrediction?.secondaryText?.text ||"";
                   return (
                     <button
                       key={`host-place-${idx}`}
                       type="button"
                       onClick={() => handleSelectPlacesSuggestion(suggestion)}
-                      className="w-full text-left px-3 py-2 text-xs hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-colors cursor-pointer border-b border-gray-100 dark:border-[#233550] last:border-b-0"
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] transition-colors cursor-pointer border-b border-gray-100 dark:border-[#233550] last:border-b-0"
                     >
                       <div className="font-semibold text-[#001848] dark:text-white">
                         {mainText}
@@ -312,7 +307,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           gestureHandling="greedy"
           disableDefaultUI={true}
           zoomControl={true}
-          style={{ width: "100%", height: "100%" }}
+          style={{ width:"100%", height:"100%" }}
           internalUsageAttributionIds={["gmp_mcp_codeassist_v1_aistudio"]}
         >
           <PanToLocation coords={coords} />
@@ -321,11 +316,11 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
               {/* Commute Radius Graphic & Pulsating Animation */}
               <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-48 h-48 flex items-center justify-center -z-10">
                 {/* Outer pulsating ripple */}
-                <div className="absolute w-44 h-44 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/30 animate-ping opacity-75" />
+                <div className="absolute w-44 h-44 rounded-full bg-[#0A6FA8]/10 border border-[#0A6FA8]/30  opacity-75" />
                 {/* Intermediate radar ring */}
-                <div className="absolute w-32 h-32 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40 animate-pulse" />
+                <div className="absolute w-32 h-32 rounded-full bg-[#0A6FA8]/15 border border-[#0A6FA8]/40" />
                 {/* Inner radius boundary disc */}
-                <div className="absolute w-20 h-20 rounded-full bg-[#0A6FA8]/20 border-2 border-dashed border-[#0A6FA8]/60" />
+                <div className="absolute w-20 h-20 rounded-full bg-[#0A6FA8]/20 border border-dashed border-[#0A6FA8]/60" />
               </div>
 
               {/* Marker Pin */}
@@ -343,7 +338,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         {/* Pulsating Radius Graphic Overlay */}
         <div className="absolute top-2.5 right-2.5 bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-bold text-[#001848] dark:text-white shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0A6FA8] opacity-75"></span>
+            <span className="absolute inline-flex h-full w-full rounded-full bg-[#0A6FA8] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0A6FA8]"></span>
           </span>
           <span>1.0 mi Proximity Radius</span>
@@ -396,14 +391,13 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
               </span>
               Address and hospital distance tags locked for listing.
             </span>
-          ) : (
-            "Confirm address to generate traveler distance tags"
+          ) : ("Confirm address to generate traveler distance tags"
           )}
         </div>
         <button
           type="button"
           onClick={handleConfirm}
-          className="px-5 py-2.5 rounded-full bg-[#005684] hover:bg-[#004266] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+          className="px-5 py-2.5 rounded-full bg-[#005684] hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] text-white text-xs font-bold transition-all duration-200 ease-in-out shadow-xs cursor-pointer flex items-center gap-1.5"
         >
           <span className="material-symbols-outlined text-[16px]">
             pin_drop

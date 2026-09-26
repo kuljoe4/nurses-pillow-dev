@@ -282,7 +282,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
           {label && (
             <label
               onClick={() => setIsOpen((prev) => !prev)}
-              className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider cursor-pointer hover:text-[#0A6FA8] transition-colors"
+              className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider cursor-pointer hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8] transition-colors"
             >
               {label}
             </label>
@@ -304,11 +304,11 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
           aria-haspopup="dialog"
           aria-expanded={isOpen}
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`w-full h-12 rounded-xl border flex items-center justify-between px-3.5 sm:px-4 cursor-pointer transition-all duration-200 text-left outline-none ${
+          className={`w-full h-12 rounded-xl border flex items-center justify-between px-3.5 sm:px-4 cursor-pointer transition-all duration-200 ease-in-out duration-200 text-left outline-none ${
             isOpen
-              ? 'ring-2 ring-[#0A6FA8] dark:ring-[#3E9AD1] ring-offset-2 dark:ring-offset-[#0B1626] border-[#0A6FA8] bg-white dark:bg-[#182840]'
+              ? 'ring-2 ring-[#0A6FA8] dark:ring-[#3E9AD1] ring-offset-1 dark:ring-offset-[#0B1626] border-[#0A6FA8] bg-white dark:bg-[#182840]'
               : 'hover:border-[#0A6FA8] dark:hover:border-[#3E9AD1] bg-[#EFF6FB] dark:bg-[#182840] border-[rgba(11,37,89,0.15)] dark:border-[#233550]'
-          } focus-visible:ring-2 focus-visible:ring-[#0A6FA8] dark:focus-visible:ring-[#3E9AD1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1626]`}
+          } focus-visible:ring-2 focus-visible:ring-[#0A6FA8] dark:focus-visible:ring-[#3E9AD1] focus-visible:ring-offset-1 dark:focus-visible:ring-offset-[#0B1626]`}
         >
           <div className="flex items-center gap-3 min-w-0">
             <span
@@ -361,7 +361,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
                 value === preset.value
                   ? 'bg-[#0A6FA8] text-white border-[#0A6FA8] shadow-2xs'
-                  : 'bg-white dark:bg-[#182840] text-gray-700 dark:text-gray-200 border-gray-200 dark:border-[#233550] hover:bg-gray-100 dark:hover:bg-[#203450]'
+                  : 'bg-white dark:bg-[#182840] text-gray-700 dark:text-gray-200 border-gray-200 dark:border-[#233550] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#203450] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#203450]'
               } focus-visible:ring-2 focus-visible:ring-[#0A6FA8] outline-none`}
             >
               {preset.label}
@@ -417,7 +417,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                 <button
                   type="button"
                   onClick={handlePrevMonth}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                   title="Previous month"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -425,7 +425,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                 <button
                   type="button"
                   onClick={handleNextMonth}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                   title="Next month"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -460,16 +460,16 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                         handleSelectDay(item.day, e);
                       }
                     }}
-                    className={`h-9 w-full rounded-xl text-xs font-semibold flex items-center justify-center relative transition-all duration-150 tabular-nums ${
+                    className={`h-9 w-full rounded-xl text-xs font-semibold flex items-center justify-center relative transition-all duration-200 ease-in-out duration-150 tabular-nums ${
                       isDisabled
                         ? 'opacity-25 cursor-not-allowed text-gray-400'
                         : isSelected
                         ? 'bg-[#0A6FA8] text-white shadow-xs font-bold cursor-pointer'
                         : isToday
-                        ? 'border border-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] cursor-pointer'
+                        ? 'border border-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] font-bold hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] cursor-pointer'
                         : isCurrentMonth
-                        ? 'text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] cursor-pointer'
-                        : 'text-gray-400 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-[#152338] cursor-pointer'
+                        ? 'text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8] cursor-pointer'
+                        : 'text-gray-400 dark:text-gray-600 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#152338] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#152338] cursor-pointer'
                     }`}
                   >
                     <span>{item.day}</span>
@@ -494,7 +494,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 cursor-pointer"
+                  className="font-semibold text-gray-500 hover:text-gray-800 focus-visible:text-gray-800 dark:hover:text-gray-200 focus-visible:text-gray-200 cursor-pointer"
                 >
                   Done
                 </button>
@@ -532,7 +532,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                       setIsOpen(false);
                     }
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-[#0A6FA8] text-white text-xs font-semibold hover:bg-[#0C7EBF] cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-[#0A6FA8] text-white text-xs font-semibold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] cursor-pointer"
                 >
                   Apply
                 </button>

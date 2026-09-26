@@ -142,7 +142,7 @@ export const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = (
 
       {/* 2. Floating, ergonomic vanishing pill with orientation and quick return affordance */}
       <div
-        className={`fixed bottom-5 right-5 sm:right-8 z-30 transition-all duration-300 ease-out transform ${
+        className={`fixed bottom-5 right-5 sm:right-8 z-30 transition-all duration-200 ease-in-out duration-300 ease-out transform ${
           isVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-3 pointer-events-none'
@@ -194,7 +194,7 @@ export const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = (
             type="button"
             onClick={scrollToTop}
             title="Return to top of page"
-            className="flex items-center gap-0.5 text-[11px] font-medium text-[#0A6FA8] dark:text-[#3E9AD1] hover:text-[#0C7EBF] dark:hover:text-[#67b5e4] transition-colors cursor-pointer group"
+            className="flex items-center gap-0.5 text-[11px] font-medium text-[#0A6FA8] dark:text-[#3E9AD1] hover:text-[#0C7EBF] focus-visible:text-[#0C7EBF] dark:hover:text-[#67b5e4] focus-visible:text-[#67b5e4] transition-colors cursor-pointer group"
           >
             <span className="material-symbols-outlined text-[13px] leading-none">arrow_upward</span>
             <span className="group-hover:underline underline-offset-2">Top</span>

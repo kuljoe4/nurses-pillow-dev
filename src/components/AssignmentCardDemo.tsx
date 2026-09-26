@@ -32,7 +32,7 @@ export const AssignmentCardDemo: React.FC = () => {
               whileHover="hover"
               whileTap="tap"
               animate={isSaved ? "saved" : "rest"}
-              className="p-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] transition-colors"
+              className="p-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors"
               aria-label={isSaved ? "Remove from saved properties" : "Save this property"}
             >
               <svg
@@ -59,7 +59,7 @@ export const AssignmentCardDemo: React.FC = () => {
             <input
               type="text"
               defaultValue="Duke University Hospital"
-              className="w-full bg-[#EFF6FB] text-[#0B2559] font-semibold text-lg md:text-xl rounded-[8px] py-3 pl-10 pr-4 outline-none border-[1.5px] border-transparent focus:bg-white focus:border-[#0A6FA8] focus:ring-2 focus:ring-[#0A6FA8] focus:ring-opacity-50 transition-all duration-200"
+              className="w-full bg-[#EFF6FB] text-[#0B2559] font-semibold text-lg md:text-xl rounded-[8px] py-3 pl-10 pr-4 outline-none border-[1.5px] border-transparent focus:bg-white focus:border-[#0A6FA8] focus:ring-2 focus:ring-[#0A6FA8] focus:ring-opacity-50 transition-all duration-200 ease-in-out duration-200"
               placeholder="Enter hospital name..."
             />
           </motion.div>
@@ -81,13 +81,13 @@ export const AssignmentCardDemo: React.FC = () => {
 
           {/* Primary CTA and Filters Trigger */}
           <motion.div variants={staggerItemVariant} className="flex gap-3">
-            <button className="flex-1 bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white font-semibold py-3 px-4 rounded-full flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8]">
+            <button className="flex-1 bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white font-semibold py-3 px-4 rounded-full flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]">
               <Search className="w-5 h-5" />
               Search housing
             </button>
             <button
               onClick={() => setShowFilters(true)}
-              className="bg-[#EFF6FB] hover:bg-[#E1EFE9] text-[#0B2559] p-3 rounded-full flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0B2559]"
+              className="bg-[#EFF6FB] hover:bg-[#E1EFE9] text-[#0B2559] p-3 rounded-full flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0B2559]"
               aria-label="Open advanced filters"
             >
               <Filter className="w-5 h-5" />
@@ -124,7 +124,7 @@ export const AssignmentCardDemo: React.FC = () => {
                   </h2>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="text-[#0B2559]/60 hover:text-[#0B2559] p-1 rounded-full transition-colors"
+                    className="text-[#0B2559]/60 hover:text-[#0B2559] focus-visible:text-[#0B2559] p-1 rounded-full transition-colors"
                   >
                     Close
                   </button>
@@ -134,13 +134,13 @@ export const AssignmentCardDemo: React.FC = () => {
                   <div>
                     <h3 className="text-[#0B2559] font-medium mb-3">Clinician Priorities</h3>
                     <div className="flex flex-wrap gap-2">
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#2F6E5E] text-white font-medium text-sm transition-all shadow-[0_1px_2px_rgba(11,37,89,0.08)]">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#2F6E5E] text-white font-medium text-sm transition-all duration-200 ease-in-out shadow-[0_1px_2px_rgba(11,37,89,0.08)]">
                         <Check className="w-4 h-4" /> Quiet Daytime (Night Shift)
                       </button>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#EFF6FB] text-[#0B2559] hover:bg-[#E1EFE9] font-medium text-sm transition-colors border border-transparent">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#EFF6FB] text-[#0B2559] hover:bg-[#E1EFE9] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#E1EFE9] font-medium text-sm transition-colors border border-transparent">
                         Blackout Curtains
                       </button>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#EFF6FB] text-[#0B2559] hover:bg-[#E1EFE9] font-medium text-sm transition-colors border border-transparent">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#EFF6FB] text-[#0B2559] hover:bg-[#E1EFE9] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#E1EFE9] font-medium text-sm transition-colors border border-transparent">
                         In-unit Laundry
                       </button>
                     </div>
@@ -153,7 +153,7 @@ export const AssignmentCardDemo: React.FC = () => {
                           <input type="radio" name="property_type" defaultChecked className="w-4 h-4 text-[#0A6FA8] focus:ring-[#0A6FA8]" />
                           <span className="text-[#0B2559] font-medium">Entire Place</span>
                         </label>
-                        <label className="flex items-center gap-3 p-3 rounded-[8px] border-[1.5px] border-transparent bg-[#F2F4F7] hover:bg-[#EFF6FB] cursor-pointer transition-colors">
+                        <label className="flex items-center gap-3 p-3 rounded-[8px] border-[1.5px] border-transparent bg-[#F2F4F7] hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] cursor-pointer transition-colors">
                           <input type="radio" name="property_type" className="w-4 h-4 text-[#0A6FA8] focus:ring-[#0A6FA8]" />
                           <span className="text-[#0B2559] font-medium">Private Room</span>
                         </label>
@@ -162,7 +162,7 @@ export const AssignmentCardDemo: React.FC = () => {
 
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="w-full mt-4 bg-[#0B2559] hover:bg-[#0A1A40] text-white font-semibold py-3 px-4 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0B2559]"
+                    className="w-full mt-4 bg-[#0B2559] hover:bg-[#0A1A40] text-white font-semibold py-3 px-4 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0B2559]"
                   >
                     Show 14 properties
                   </button>

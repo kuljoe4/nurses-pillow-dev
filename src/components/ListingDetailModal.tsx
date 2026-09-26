@@ -441,7 +441,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                       onRequestToBook(listing);
                     }
                   }}
-                  className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">shield</span>
                   <span>Request to book (Shift-protected)</span>
@@ -452,10 +452,10 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   onToggle={() => onToggleSave(listing.id)}
                   showLabel={true}
                   size={18}
-                  className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-200 ease-in-out cursor-pointer ${
                     isSaved
                       ? 'bg-[#EFF6FB] dark:bg-[#15233a] text-[#0B2559] dark:text-[#3E9AD1] border-[#0A6FA8]/40 shadow-xs'
-                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#15233a]'
+                      : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
                   }`}
                 />
               </div>

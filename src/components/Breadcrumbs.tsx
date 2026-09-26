@@ -69,10 +69,10 @@ const CrumbTooltip: React.FC<CrumbTooltipProps> = ({
       {/* Tooltip Card with rich path and clarity metadata */}
       <div
         role="tooltip"
-        className={`pointer-events-none absolute top-full mt-2 ${alignClasses} hidden group-hover/crumb:flex group-focus-within/crumb:flex flex-col z-50 w-max max-w-[280px] sm:max-w-xs p-2.5 rounded-xl shadow-2xl border text-left transition-all duration-150 animate-in fade-in-0 zoom-in-95 ${
+        className={`pointer-events-none absolute top-full mt-2 ${alignClasses} hidden group-hover/crumb:flex group-focus-within/crumb:flex flex-col z-50 w-max max-w-[280px] sm:max-w-xs p-2.5 rounded-xl shadow-lg border text-left transition-all duration-200 ease-in-out duration-150 animate-in fade-in-0 zoom-in-95 ${
           isNightShiftMode
             ? 'bg-[#0E1A2E]/95 backdrop-blur-md border-[#233550] text-[#E6ECF7] shadow-black/60'
-            : 'bg-[#001848]/95 backdrop-blur-md border-[rgba(255,255,255,0.15)] text-white shadow-xl shadow-blue-950/20'
+            : 'bg-[#001848]/95 backdrop-blur-md border-[rgba(255,255,255,0.15)] text-white shadow-md shadow-blue-950/20'
         }`}
       >
         {/* Upward Caret */}
@@ -557,8 +557,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               onClick={onGoBack}
               className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold text-xs transition-colors shrink-0 cursor-pointer ${
                 isNightShiftMode
-                  ? 'text-[#93ccff] hover:text-white hover:bg-[#182840]'
-                  : 'text-[#005684] hover:text-[#001848] hover:bg-[#eaedff]'
+                  ? 'text-[#93ccff] hover:text-white hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                  : 'text-[#005684] hover:text-[#001848] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
               }`}
               title="Return to previous screen"
               aria-label="Navigate to previous screen"
@@ -600,8 +600,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                         title={`Home: Return to ${firstCrumb.label} • Path: ${fullPathString}`}
                         className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                           isNightShiftMode
-                            ? 'text-[#a1b5d8] hover:text-[#93ccff]'
-                            : 'text-gray-600 hover:text-[#005684]'
+                            ? 'text-[#a1b5d8] hover:text-[#93ccff] focus-visible:text-[#93ccff]'
+                            : 'text-gray-600 hover:text-[#005684] focus-visible:text-[#005684]'
                         }`}
                       >
                         {firstCrumb.icon && (
@@ -659,8 +659,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                       onClick={() => setIsEllipsisOpen(!isEllipsisOpen)}
                       className={`px-1.5 py-0.5 rounded-md font-bold text-xs flex items-center justify-center transition-colors cursor-pointer border ${
                         isNightShiftMode
-                          ? 'bg-[#182840] hover:bg-[#203656] text-[#93ccff] border-[#233550]'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200'
+                          ? 'bg-[#182840] hover:bg-[#203656] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#203656] text-[#93ccff] border-[#233550]'
+                          : 'bg-gray-100 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 text-gray-700 border-gray-200'
                       }`}
                       aria-expanded={isEllipsisOpen}
                       aria-haspopup="menu"
@@ -678,7 +678,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     <div
                       ref={ellipsisMenuRef}
                       role="menu"
-                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs max-h-60 overflow-y-auto overscroll-contain custom-scrollbar rounded-xl shadow-2xl border p-1.5 z-50 text-xs space-y-1 ${
+                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs max-h-60 overflow-y-auto overscroll-contain custom-scrollbar rounded-xl shadow-lg border p-1.5 z-50 text-xs space-y-1 ${
                         isNightShiftMode
                           ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
                           : 'bg-white border-gray-200 text-gray-800'
@@ -701,8 +701,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                           className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center gap-2 transition-colors ${
                             crumb.onClick
                               ? isNightShiftMode
-                                ? 'hover:bg-[#182840] text-[#93ccff] cursor-pointer'
-                                : 'hover:bg-[#eaedff] text-[#005684] cursor-pointer'
+                                ? 'hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] text-[#93ccff] cursor-pointer'
+                                : 'hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff] text-[#005684] cursor-pointer'
                               : 'text-gray-400 cursor-default'
                           }`}
                         >
@@ -844,8 +844,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                           title={`Navigate to ${crumb.label} • Path: ${fullPathString}`}
                           className={`flex items-center gap-1 font-medium transition-colors cursor-pointer group ${
                             isNightShiftMode
-                              ? 'text-[#a1b5d8] hover:text-[#93ccff]'
-                              : 'text-gray-600 hover:text-[#005684]'
+                              ? 'text-[#a1b5d8] hover:text-[#93ccff] focus-visible:text-[#93ccff]'
+                              : 'text-gray-600 hover:text-[#005684] focus-visible:text-[#005684]'
                           }`}
                         >
                           {crumb.icon && (
@@ -885,8 +885,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             onClick={() => navigateTo('find-housing')}
             className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
               isNightShiftMode
-                ? 'border-[#233550] text-[#a1b5d8] hover:bg-[#15233a] hover:text-white'
-                : 'border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-[#001848]'
+                ? 'border-[#233550] text-[#a1b5d8] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a] hover:text-white focus-visible:text-white'
+                : 'border-gray-200 text-gray-600 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 hover:text-[#001848] focus-visible:text-[#001848]'
             }`}
             title="Return to Sanitized Housing Marketplace"
           >

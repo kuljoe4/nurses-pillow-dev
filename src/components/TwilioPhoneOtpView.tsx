@@ -396,14 +396,14 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                   />
                   <button
                     type="submit"
-                    className="px-3 py-1 bg-[#005684] text-white text-xs font-bold rounded-lg hover:bg-[#004266] transition-colors cursor-pointer"
+                    className="px-3 py-1 bg-[#005684] text-white text-xs font-bold rounded-lg hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] transition-colors cursor-pointer"
                   >
                     Save
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditingPhone(false)}
-                    className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
+                    className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 focus-visible:text-gray-700 cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -435,7 +435,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                   {detailedError && (
                     <div
                       role="alert"
-                      className={`mb-3 p-3.5 rounded-2xl border transition-all ${
+                      className={`mb-3 p-3.5 rounded-2xl border transition-all duration-200 ease-in-out ${
                         detailedError.code === 'INVALID_CODE'
                           ? 'bg-[#F4E2DC] text-[#A8452E] dark:bg-[#381610] dark:text-[#ffb4a2] border-[#A8452E]/30'
                           : detailedError.code === 'TOKEN_EXPIRED'
@@ -487,7 +487,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                               <button
                                 type="button"
                                 onClick={handleResend}
-                                className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 text-[#001848] dark:text-white text-xs font-bold shadow-xs hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1 cursor-pointer transition-colors"
+                                className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 text-[#001848] dark:text-white text-xs font-bold shadow-xs hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-700 flex items-center gap-1 cursor-pointer transition-colors"
                               >
                                 <span className="material-symbols-outlined text-[14px]">send</span>
                                 <span>Request new code</span>
@@ -497,7 +497,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => void executeVerify(otp.join(''))}
-                                className="px-2.5 py-1 rounded-full bg-[#005684] text-white text-xs font-bold shadow-xs hover:bg-[#004266] flex items-center gap-1 cursor-pointer transition-colors"
+                                className="px-2.5 py-1 rounded-full bg-[#005684] text-white text-xs font-bold shadow-xs hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] flex items-center gap-1 cursor-pointer transition-colors"
                               >
                                 <span className="material-symbols-outlined text-[14px]">refresh</span>
                                 <span>Retry</span>
@@ -507,7 +507,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleApplyTestScenario('valid')}
-                                className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 text-[#001848] dark:text-white text-xs font-bold shadow-xs hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1 cursor-pointer transition-colors"
+                                className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 text-[#001848] dark:text-white text-xs font-bold shadow-xs hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-700 flex items-center gap-1 cursor-pointer transition-colors"
                               >
                                 <span className="material-symbols-outlined text-[14px]">check</span>
                                 <span>Fill sample code (842199)</span>
@@ -533,9 +533,9 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                         disabled={lockoutCooldown !== null && lockoutCooldown > 0}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(idx, e)}
-                        className={`w-11 sm:w-14 h-13 sm:h-15 text-center text-xl sm:text-2xl font-bold rounded-xl shadow-xs focus:outline-none transition-all duration-150 ${
+                        className={`w-11 sm:w-14 h-13 sm:h-15 text-center text-xl sm:text-2xl font-bold rounded-xl shadow-xs focus:outline-none transition-all duration-200 ease-in-out duration-150 ${
                           detailedError?.code === 'INVALID_CODE'
-                            ? 'border-2 border-[#A8452E] bg-rose-50/40 text-[#A8452E]'
+                            ? 'border border-[#A8452E] bg-rose-50/40 text-[#A8452E]'
                             : isNightShiftMode
                             ? 'bg-[#182840] text-white focus:bg-[#1f3350] focus:ring-2 focus:ring-[#3E9AD1]'
                             : 'bg-[#f2f3ff] text-[#001848] focus:bg-white focus:ring-2 focus:ring-[#005684]'
@@ -591,9 +591,9 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                     type="button"
                     onClick={handleResend}
                     disabled={timeLeft > 0 || (lockoutCooldown !== null && lockoutCooldown > 0)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
                       timeLeft === 0 && (!lockoutCooldown || lockoutCooldown === 0)
-                        ? 'bg-[#005684] text-white hover:bg-[#0a6fa8]'
+                        ? 'bg-[#005684] text-white hover:bg-[#0a6fa8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8]'
                         : 'bg-[#dae2ff] dark:bg-[#152438] text-[#404850] dark:text-[#c0c7d1] cursor-not-allowed opacity-60'
                     }`}
                   >
@@ -606,12 +606,12 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                   <button
                     type="submit"
                     disabled={isVerifying || (lockoutCooldown !== null && lockoutCooldown > 0)}
-                    className={`w-full py-3.5 px-6 rounded-full text-sm font-bold shadow-md flex items-center justify-center gap-2 group transition-all cursor-pointer ${
+                    className={`w-full py-3.5 px-6 rounded-full text-sm font-bold shadow-md flex items-center justify-center gap-2 group transition-all duration-200 ease-in-out cursor-pointer ${
                       isVerified
                         ? 'bg-[#195b4c] text-white'
                         : lockoutCooldown && lockoutCooldown > 0
                         ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-[#005684] hover:bg-[#0a6fa8] text-white'
+                        : 'bg-[#005684] hover:bg-[#0a6fa8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] text-white'
                     }`}
                   >
                     {isVerifying ? (

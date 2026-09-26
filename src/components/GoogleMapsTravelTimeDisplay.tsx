@@ -20,7 +20,7 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
 
   return (
     <div
-      className={`rounded-2xl border transition-all duration-200 ${
+      className={`rounded-2xl border transition-all duration-200 ease-in-out duration-200 ${
         isNightShiftMode
           ? 'bg-[#15233a] border-[#233550] text-[#E6ECF7]'
           : 'bg-[#EFF6FB]/80 border-[rgba(11,37,89,0.08)] text-[#0B2559]'
@@ -65,10 +65,10 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
               e.stopPropagation();
               setSelectedMode('drive');
             }}
-            className={`p-1.5 rounded-xl border transition-all duration-150 cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
               selectedMode === 'drive'
                 ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white'
-                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white/80 dark:hover:bg-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
+                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
             }`}
             title="Drive Time to Hospital"
           >
@@ -88,10 +88,10 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
               e.stopPropagation();
               setSelectedMode('transit');
             }}
-            className={`p-1.5 rounded-xl border transition-all duration-150 cursor-pointer ${
+            className={`p-1.5 rounded-xl border transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
               selectedMode === 'transit'
                 ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white'
-                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white/80 dark:hover:bg-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
+                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
             }`}
             title="Hospital Shuttle or Public Transit"
           >

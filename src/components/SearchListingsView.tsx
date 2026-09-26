@@ -328,7 +328,7 @@ useBodyScrollLock(isGsaModalOpen);
                     {selectedHospital}
                   </span>
                 </div>
-                <span className="material-symbols-outlined text-[#404850] dark:text-[#93ccff] text-[18px] shrink-0 transition-transform duration-200 group-hover:text-[#0A6FA8]">
+                <span className="material-symbols-outlined text-[#404850] dark:text-[#93ccff] text-[18px] shrink-0 transition-transform duration-200 group-hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8]">
                   {isDropdownOpen ? 'expand_less' : 'expand_more'}
                 </span>
               </div>
@@ -340,7 +340,7 @@ useBodyScrollLock(isGsaModalOpen);
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
                     transition={{ duration: 0.16, ease: 'easeOut' }}
-                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-xl z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col max-w-lg"
+                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#15233a] rounded-xl shadow-md z-50 border border-[#c0c7d1]/40 dark:border-[#2b4162] overflow-hidden flex flex-col max-w-lg"
                   >
                     {/* Quick search input */}
                     <div className="p-2 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
@@ -379,7 +379,7 @@ useBodyScrollLock(isGsaModalOpen);
                               setIsDropdownOpen(false);
                               setHospitalSearchQuery('');
                             }}
-                            className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
+                            className={`px-3 py-2 text-xs font-semibold hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
                               selectedHospital === hosp ? 'bg-[#eaedff] dark:bg-[#1f3350] text-[#005684]' : 'text-[#001848] dark:text-white'
                             }`}
                           >
@@ -414,10 +414,10 @@ useBodyScrollLock(isGsaModalOpen);
                 setIsAssignmentDrawerExpanded((prev) => !prev);
                 if (isFilterPanelExpanded) setIsFilterPanelExpanded(false);
               }}
-              className={`h-10 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+              className={`h-10 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 ease-in-out duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
                 isAssignmentDrawerExpanded
                   ? 'bg-[#0A6FA8] text-white shadow-xs'
-                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
+                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e]'
               }`}
               title="Edit move-in date, contract rotation length, or commute radius"
             >
@@ -444,10 +444,10 @@ useBodyScrollLock(isGsaModalOpen);
                 setIsFilterPanelExpanded((prev) => !prev);
                 if (isAssignmentDrawerExpanded) setIsAssignmentDrawerExpanded(false);
               }}
-              className={`h-10 px-3.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
+              className={`h-10 px-3.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all duration-200 ease-in-out duration-200 cursor-pointer whitespace-nowrap shrink-0 ${
                 isFilterPanelExpanded || activePanelFilterCount > 0
                   ? 'bg-[#001848] text-white shadow-xs'
-                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
+                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e]'
               }`}
               title="Filter by rent ceiling, day-sleeper quiet score, and shift logistics"
             >
@@ -499,7 +499,7 @@ useBodyScrollLock(isGsaModalOpen);
                 <button
                   type="button"
                   onClick={() => setViewMode('split-map')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-200 ease-in-out duration-150 ${
                     viewMode === 'split-map'
                       ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
                       : 'text-[#404850] dark:text-[#c0c7d1]'
@@ -512,7 +512,7 @@ useBodyScrollLock(isGsaModalOpen);
                 <button
                   type="button"
                   onClick={() => setViewMode('grid')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-200 ease-in-out duration-150 ${
                     viewMode === 'grid'
                       ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
                       : 'text-[#404850] dark:text-[#c0c7d1]'
@@ -575,7 +575,7 @@ useBodyScrollLock(isGsaModalOpen);
                           className={`flex-1 h-9 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
                             selectedDuration === opt.value
                               ? 'bg-[#0A6FA8] text-white shadow-2xs'
-                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)]'
+                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] border border-[rgba(11,37,89,0.08)]'
                           }`}
                         >
                           {opt.label}
@@ -620,7 +620,7 @@ useBodyScrollLock(isGsaModalOpen);
                           className={`flex-1 h-9 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
                             commuteBuffer === opt.miles
                               ? 'bg-[#001848] text-white shadow-2xs'
-                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 dark:hover:bg-[#1f3350] border border-[rgba(11,37,89,0.08)]'
+                              : 'bg-white dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] border border-[rgba(11,37,89,0.08)]'
                           }`}
                         >
                           {opt.label}
@@ -653,7 +653,7 @@ useBodyScrollLock(isGsaModalOpen);
                     className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-[#0B2559] text-white shadow-2xs'
-                        : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#e2edf7] dark:hover:bg-[#20324e]'
+                        : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e]'
                     }`}
                   >
                     {chip.label}
@@ -665,7 +665,7 @@ useBodyScrollLock(isGsaModalOpen);
                 type="button"
                 id="open-full-filter-modal-button"
                 onClick={() => setIsFilterModalOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors cursor-pointer ml-1"
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] transition-colors cursor-pointer ml-1"
                 title="Open comprehensive 25-point clinical amenities checklist"
               >
                 <span className="material-symbols-outlined text-[14px]">checklist</span>
@@ -780,7 +780,7 @@ useBodyScrollLock(isGsaModalOpen);
                               className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
                                 maxPrice === preset
                                   ? 'bg-[#005684] text-white shadow-2xs'
-                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                               }`}
                             >
                               {preset === 3500 ? 'Any' : `$${preset / 1000}k`}
@@ -821,7 +821,7 @@ useBodyScrollLock(isGsaModalOpen);
                               className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition-colors cursor-pointer ${
                                 minRating === opt.val
                                   ? 'bg-[#005684] text-white shadow-2xs'
-                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff]'
+                                  : 'bg-[#f2f3ff] dark:bg-[#182840] text-[#404850] dark:text-[#c0c7d1] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
                               }`}
                             >
                               {opt.label}
@@ -1021,7 +1021,7 @@ useBodyScrollLock(isGsaModalOpen);
                   <button
                     type="button"
                     onClick={handleResetAllFilters}
-                    className="mt-2 px-4 py-2 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] transition-colors shadow-xs cursor-pointer"
+                    className="mt-2 px-4 py-2 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#001848] transition-colors shadow-xs cursor-pointer"
                   >
                     Reset All Filters
                   </button>
@@ -1183,7 +1183,7 @@ useBodyScrollLock(isGsaModalOpen);
                 <button
                   type="button"
                   onClick={handleResetAllFilters}
-                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] transition-colors shadow-xs cursor-pointer"
+                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#001848] transition-colors shadow-xs cursor-pointer"
                 >
                   Reset All Filters
                 </button>
@@ -1299,7 +1299,7 @@ useBodyScrollLock(isGsaModalOpen);
               <button
                 type="button"
                 onClick={() => setIsGsaModalOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold cursor-pointer hover:bg-[#0A6FA8] transition-colors"
+                className="w-full py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold cursor-pointer hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors"
               >
                 Close Comparison
               </button>

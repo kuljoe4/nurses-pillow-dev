@@ -293,7 +293,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
           {isSearching && (
-            <div className="w-4 h-4 border-2 border-[#0A6FA8]/20 border-t-[#0A6FA8] rounded-full animate-spin mr-1" />
+            <div className="w-4 h-4 border border-[#0A6FA8]/20 border-t-[#0A6FA8] rounded-full animate-spin mr-1" />
           )}
           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] text-[11px] font-bold">
             <span className="material-symbols-outlined text-[13px]">verified</span>
@@ -302,7 +302,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-[#0B2559]/70 dark:text-[#E6ECF7]/70"
+            className="p-1 rounded-lg hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors cursor-pointer text-[#0B2559]/70 dark:text-[#E6ECF7]/70"
             aria-label="Toggle hospital search options"
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -314,7 +314,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
 
       {/* Autocomplete Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-2xl shadow-2xl z-50 border border-[rgba(11,37,89,0.12)] dark:border-[#2b4162] overflow-hidden flex flex-col max-h-96">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-2xl shadow-lg z-50 border border-[rgba(11,37,89,0.12)] dark:border-[#2b4162] overflow-hidden flex flex-col max-h-96">
           {/* Quick preset chips */}
           <div className="p-3 bg-[#EFF6FB]/60 dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#2b4162]">
             <div className="text-[10px] font-bold text-[#0B2559]/60 dark:text-[#9CB3D3] uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -327,7 +327,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
                   key={h.name}
                   type="button"
                   onClick={() => handleSelectCurated(h)}
-                  className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.1)] dark:border-[#2b4162] text-[#0B2559] dark:text-white hover:bg-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] transition-colors cursor-pointer"
+                  className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.1)] dark:border-[#2b4162] text-[#0B2559] dark:text-white hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer"
                 >
                   {h.name.replace(' Hospital', '').replace(' Medical Center', '')}
                 </button>
@@ -350,7 +350,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
                 <div
                   key={`places-${idx}`}
                   onClick={() => handleSelectPlacesSuggestion(suggestion)}
-                  className="px-4 py-2.5 hover:bg-[#EFF6FB] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0"
+                  className="px-4 py-2.5 hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0"
                 >
                   <div className="flex items-center gap-2.5 pr-2">
                     <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[18px] shrink-0">
@@ -387,7 +387,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
                 <div
                   key={hosp.name}
                   onClick={() => handleSelectCurated(hosp)}
-                  className={`px-4 py-2.5 hover:bg-[#EFF6FB] dark:hover:bg-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
+                  className={`px-4 py-2.5 hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#1f3350] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1f3350] cursor-pointer flex items-center justify-between transition-colors ${
                     inputValue === hosp.name ? 'bg-[#EFF6FB] dark:bg-[#1f3350]' : ''
                   }`}
                 >
