@@ -512,9 +512,6 @@ export default function App() {
       >
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-4 border-[#aff0db] border-t-transparent animate-spin" />
-          <p className="text-sm font-bold text-[#195b4c] dark:text-[#aff0db]">
-            Syncing with Database...
-          </p>
         </div>
       </div>
     );
