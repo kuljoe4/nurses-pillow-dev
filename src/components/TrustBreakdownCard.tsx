@@ -67,13 +67,13 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-3">
         {/* Source 1: Identity (Stripe Identity) */}
         <div
-          className={`p-3 rounded-xl border flex flex-col justify-between transition-colors ${
+          className={`relative p-3 rounded-xl border flex flex-col justify-between transition-colors overflow-hidden group ${
             isNightShiftMode
               ? 'bg-[#152740] border-[#223c60]'
               : 'bg-[#f7fafc] border-[#e2e8f0]'
           }`}
         >
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 relative z-10">
             <div className="w-7 h-7 rounded-lg bg-[#005684]/10 dark:bg-[#005684]/25 flex items-center justify-center text-[#005684] dark:text-[#93ccff] shrink-0">
               <span className="material-symbols-outlined text-[17px]">badge</span>
             </div>
@@ -86,9 +86,13 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
               </span>
             </div>
           </div>
-          <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug">
+          <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug relative z-10">
             Government RealID &amp; biometric liveness match verified.
           </p>
+          {/* subtle trust badge watermark fade in */}
+          <div className="absolute right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none transform translate-x-2 translate-y-2">
+            <span className="material-symbols-outlined text-[64px] text-[#0a6fa8] dark:text-[#93ccff]">how_to_reg</span>
+          </div>
         </div>
 
         {/* Source 2: Mobile (Twilio SMS) */}
@@ -119,13 +123,13 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
 
         {/* Source 3: Credential (Official Primary Source Registry & State) */}
         <div
-          className={`p-3 rounded-xl border flex flex-col justify-between transition-colors ${
+          className={`relative p-3 rounded-xl border flex flex-col justify-between transition-colors overflow-hidden group ${
             isNightShiftMode
               ? 'bg-[#152740] border-[#223c60]'
               : 'bg-[#f7fafc] border-[#e2e8f0]'
           }`}
         >
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 relative z-10">
             <div className="w-7 h-7 rounded-lg bg-[#2F6E5E]/15 dark:bg-[#2F6E5E]/30 flex items-center justify-center text-[#2F6E5E] dark:text-[#aff0db] shrink-0">
               <span className="material-symbols-outlined text-[17px]">health_and_safety</span>
             </div>
@@ -138,9 +142,13 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
               </span>
             </div>
           </div>
-          <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug">
+          <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug relative z-10">
             Active, unencumbered standing with {stateBoard}.
           </p>
+          {/* subtle trust badge watermark fade in */}
+          <div className="absolute right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none transform translate-x-2 translate-y-2">
+            <span className="material-symbols-outlined text-[64px] text-[#2F6E5E] dark:text-[#aff0db]">verified</span>
+          </div>
         </div>
       </div>
 

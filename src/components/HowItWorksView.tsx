@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ProductPreviewHero } from './ProductPreviewHero';
+import { MOCK_LISTINGS } from '../data/mockData';
 
 interface HowItWorksViewProps {
   isNightShiftMode: boolean;
@@ -11,6 +14,10 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
   onGoToVerification,
   onGoToHousing,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+  const [isSaved, setIsSaved] = useState(false);
+  const heroListing = MOCK_LISTINGS[0]; // Use the first listing for the demo
+
   const commitments = [
     {
       icon: 'verified_user',
@@ -44,9 +51,15 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
         isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#f2f3ff]'
       }`}
     >
-      <div className="max-w-5xl mx-auto space-y-10">
+      <div className="max-w-5xl mx-auto space-y-16">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto">
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="text-center max-w-2xl mx-auto pt-4"
+        >
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db] mb-3">
             Built by Nurses for Nurses
           </span>
@@ -64,13 +77,40 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           >
             Traveling clinicians work 12+ hour shifts under life-or-death pressure. We created a sanctuary network designed to eliminate the anxiety of unreliable sublets and noisy daytime neighborhoods.
           </p>
-        </div>
+        </motion.div>
+
+        {/* Product Preview Interactive Screenshot - Sells Trust & Functionality */}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="mb-4 text-center">
+            <span className="text-sm font-semibold uppercase tracking-wider text-[#0a6fa8] dark:text-[#3E9AD1]">
+              Interactive Preview
+            </span>
+          </div>
+          <ProductPreviewHero
+            listing={heroListing}
+            isSaved={isSaved}
+            onToggleSave={() => setIsSaved(!isSaved)}
+            onSelectListing={onGoToHousing}
+            onRequestToBook={onGoToHousing}
+            shouldReduceMotion={shouldReduceMotion}
+          />
+        </motion.div>
 
         {/* 4 Sanctuary Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {commitments.map((c, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+              whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.4, delay: shouldReduceMotion ? 0 : i * 0.1, ease: 'easeOut' }}
               className={`p-6 sm:p-8 rounded-3xl border shadow-md transition-all duration-200 ease-in-out ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
@@ -88,12 +128,16 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
               >
                 {c.description}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Action card */}
-        <div
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           className={`rounded-3xl p-8 sm:p-10 border text-center shadow-md ${
             isNightShiftMode
               ? 'bg-[#15233a] border-[#233550] text-white'
@@ -123,7 +167,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
               Browse Housing Sanctuaries
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

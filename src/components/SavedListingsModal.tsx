@@ -74,6 +74,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
               onClick={onClose}
               type="button"
               className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors"
+              aria-label="Close saved listings modal"
             >
               <span className="material-symbols-outlined text-lg">close</span>
             </button>

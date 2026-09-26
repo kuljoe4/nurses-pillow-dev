@@ -487,7 +487,8 @@ useBodyScrollLock(isGsaModalOpen);
                 onClick={triggerLiveQueryRefresh}
                 disabled={isDataLoading}
                 title="Refresh listings for assigned campus"
-                className="h-9 w-9 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Refresh listings for assigned campus"
+                className="h-9 w-9 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] dark:hover:bg-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
               >
                 <span className={`material-symbols-outlined text-[16px] ${isDataLoading ? 'animate-spin' : ''}`}>
                   sync
