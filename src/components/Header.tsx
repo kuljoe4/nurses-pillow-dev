@@ -1273,7 +1273,6 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="space-y-1">
               <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1 flex items-center justify-between">
                 <span>Main Navigation</span>
-                <span className="text-[9px] text-[#005684] dark:text-[#93ccff] font-semibold">Phase 1 Marketplace</span>
               </div>
 
               {/* Explore Stays */}
