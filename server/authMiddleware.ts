@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-  console.error('FATAL ERROR: JWT_SECRET environment variable is not set in production.');
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development') {
+  console.error('FATAL ERROR: JWT_SECRET environment variable is not set in ' + process.env.NODE_ENV + '.');
   process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_only';
