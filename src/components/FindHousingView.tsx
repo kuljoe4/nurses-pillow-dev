@@ -31,7 +31,7 @@ interface ObservedListingCardProps {
  * with smooth GPU-friendly transform and opacity transitions.
  * Integrates Google Maps-powered commute duration to user's selected hospital.
  */
-const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
+const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
   listing,
   index,
   isSaved,
@@ -152,7 +152,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});
 
 interface FindHousingViewProps {
   isNightShiftMode: boolean;
@@ -206,6 +206,13 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     userRole === 'host' ? 'hosts' : 'clinicians'
   );
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
+
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // to child components like ObservedListingCard that use React.memo,
+  // preventing unnecessary re-renders when FindHousingView re-renders.
+  const handleSelectListing = useCallback((listing: HousingListing) => {
+    setActiveDetailListing(listing);
+  }, []);
 
   const hospitalDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -821,7 +828,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   index={index}
                   isSaved={isSaved}
                   onToggleSave={onToggleSave}
-                  onSelectListing={setActiveDetailListing}
+                  onSelectListing={handleSelectListing}
                   onRequestToBook={onRequestToBookListing}
                   shouldReduceMotion={shouldReduceMotion}
                   selectedHospital={selectedHospital}
@@ -1078,17 +1085,17 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
       {/* DETAIL MODAL */}
       <ListingDetailModal
         listing={activeDetailListing}
-        onClose={() => setActiveDetailListing(null)}
+        onClose={useCallback(() => setActiveDetailListing(null), [])}
         isNightShiftMode={isNightShiftMode}
         isSaved={activeDetailListing ? savedListingIds.includes(activeDetailListing.id) : false}
         onToggleSave={onToggleSave}
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
-        onRequestToBook={(listing) => {
+        onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
-        }}
+        }, [onRequestToBookListing])}
       />
     </div>
   );

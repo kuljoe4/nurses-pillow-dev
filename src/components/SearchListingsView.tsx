@@ -1218,17 +1218,17 @@ useBodyScrollLock(isGsaModalOpen);
       {/* MODALS */}
       <ListingDetailModal
         listing={activeDetailListing}
-        onClose={() => setActiveDetailListing(null)}
+        onClose={useCallback(() => setActiveDetailListing(null), [])}
         isNightShiftMode={isNightShiftMode}
         isSaved={activeDetailListing ? savedListingIds.includes(activeDetailListing.id) : false}
         onToggleSave={onToggleSave}
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
-        onRequestToBook={(listing: any) => {
+        onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
-        }}
+        }, [onRequestToBookListing])}
       />
 
       <HealthcareAmenitiesFilterModal
