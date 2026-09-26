@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
 
@@ -29,12 +29,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
   viewMode = 'split-map',
   isNightShiftMode = false,
 }) => {
-  const shouldReduceMotion = useReducedMotion();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
-  // Determine if secondary details drawer should be shown
-  const isExpanded = isHovered || isMobileExpanded;
 
   // Transparent Fee Calculations (per AGENTS.md rule 4.C Transparent Pricing)
   const monthlyRent = listing.monthlyRate || 1950;
@@ -54,26 +49,17 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
 
   return (
     <motion.div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
-      onBlur={(e) => {
-        // Only blur if focus left the card entirely
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-          setIsHovered(false);
-        }
-      }}
-      onClick={() => {
-        if (onSelectOnMap) onSelectOnMap(listing.id);
-      }}
+      onMouseEnter={() => { if (onSelectOnMap) onSelectOnMap(listing.id); }}
+
+      onFocus={() => { if (onSelectOnMap) onSelectOnMap(listing.id); }}
+
+      onClick={() => onViewDetails(listing)}
       tabIndex={0}
       role="article"
       aria-label={`${listing.title}, $${monthlyRent.toLocaleString()} per month near ${hospitalDisplay}`}
       className={`relative rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-250 cursor-pointer flex flex-col justify-between group outline-none ${
         isSelectedOnMap
           ? 'border-[#0A6FA8] ring-2 ring-[#0A6FA8]/40 shadow-lg'
-          : isExpanded
-          ? 'border-[#0A6FA8]/60 shadow-[0_8px_24px_rgba(11,37,89,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] -translate-y-0.5'
           : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-xs hover:border-[#0A6FA8]/40 hover:shadow-md'
       }`}
     >
@@ -107,13 +93,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           />
         </div>
 
-        {/* Subtle Hover Cue Tag (disappears on hover/expand to give room) */}
-        {!isExpanded && (
-          <div className="absolute bottom-2 right-2.5 hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/90 dark:bg-[#111e33]/90 backdrop-blur-xs text-[10px] font-bold text-[#0B2559]/80 dark:text-[#E6ECF7]/80 shadow-2xs pointer-events-none transition-opacity duration-200">
-            <span className="material-symbols-outlined text-[12px] text-[#0A6FA8] dark:text-[#3E9AD1]">visibility</span>
-            <span>Hover for fees &amp; transit</span>
-          </div>
-        )}
+
       </div>
 
       {/* 2. CARD BODY: PRIMARY RESTING DETAILS */}
@@ -158,145 +138,8 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           </div>
         </div>
 
-        {/* 3. MOBILE TOGGLE TRIGGER (Touch screens have no mouse hover) */}
-        <div className="sm:hidden pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMobileExpanded(!isMobileExpanded);
-            }}
-            className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1 cursor-pointer"
-          >
-            <span>{isMobileExpanded ? 'Hide commute & fees' : 'Show commute & fees'}</span>
-            <span className={`material-symbols-outlined text-[15px] transition-transform ${isMobileExpanded ? 'rotate-180' : ''}`}>
-              expand_more
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails(listing);
-            }}
-            className="text-[11px] font-bold text-[#0B2559] dark:text-white hover:underline cursor-pointer"
-          >
-            Details →
-          </button>
-        </div>
-
-        {/* 4. PROGRESSIVE HOVER/EXPANDED DRAWER: SECONDARY COMMUTE & TOTAL FEES */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-              animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden pt-2.5 mt-1 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]"
-            >
-              {/* SECTION A: DISTANCE & COMMUTE LOGISTICS */}
-              <div className="p-2.5 rounded-xl bg-[#EFF6FB]/70 dark:bg-[#16253c] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1.5 mb-2.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-[#0B2559] dark:text-white flex items-center gap-1 truncate max-w-[210px]">
-                    <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0">
-                      local_hospital
-                    </span>
-                    <span className="truncate">{hospitalDisplay}</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-[#195b4c] dark:text-[#aff0db] shrink-0">
-                    Shift-Safe Route
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-1.5 text-[10px] text-[#404850] dark:text-[#c0c7d1]">
-                  <div className="flex items-center gap-1 bg-white/70 dark:bg-[#111e33] px-2 py-1 rounded-lg">
-                    <span className="material-symbols-outlined text-[12px] text-[#0A6FA8]">directions_car</span>
-                    <span className="tabular-nums font-semibold">{driveMinutes} min drive</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-white/70 dark:bg-[#111e33] px-2 py-1 rounded-lg">
-                    <span className="material-symbols-outlined text-[12px] text-[#0A6FA8]">directions_bus</span>
-                    <span className="tabular-nums font-semibold">~{transitMinutes} min transit</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION B: ITEMISED TOTAL FEES BREAKDOWN */}
-              <div className="p-2.5 rounded-xl bg-[#f8faff] dark:bg-[#0c182c] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1 text-[11px]">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1 flex items-center justify-between">
-                  <span>Transparent Fee Audit</span>
-                  <span className="text-[9px] text-[#195b4c] dark:text-[#aff0db] font-semibold">No Surprise Add-ons</span>
-                </div>
-
-                <div className="flex justify-between text-[#404850] dark:text-[#c0c7d1] text-[10px]">
-                  <span>Monthly Lodging</span>
-                  <span className="font-semibold tabular-nums text-[#0B2559] dark:text-white">
-                    ${monthlyRent.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-[#404850] dark:text-[#c0c7d1] text-[10px]">
-                  <span>Clinical Sanitization</span>
-                  <span className="font-semibold tabular-nums text-[#0B2559] dark:text-white">
-                    ${cleaningFee}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-[#404850] dark:text-[#c0c7d1] text-[10px]">
-                  <span>Security Deposit Hold</span>
-                  <span className="font-semibold tabular-nums text-[#0B2559] dark:text-white">
-                    ${depositHold}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-[#195b4c] dark:text-[#aff0db] text-[10px] font-semibold">
-                  <span>Traveler Booking Fee</span>
-                  <span className="tabular-nums">$0.00</span>
-                </div>
-
-                <div className="pt-1.5 mt-1 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex justify-between items-baseline font-bold text-xs">
-                  <span className="text-[#0B2559] dark:text-white">Total Move-In Hold</span>
-                  <span className="text-[#0A6FA8] dark:text-[#3E9AD1] font-black tabular-nums">
-                    ${totalMoveInHold.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* SECTION C: DIRECT ACTIONS */}
-              <div className="pt-2.5 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewDetails(listing);
-                  }}
-                  className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer py-1"
-                >
-                  Full Checklist
-                </button>
-
-                {onRequestToBook && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRequestToBook(listing);
-                    }}
-                    className="px-3.5 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1"
-                  >
-                    <span>Request to book</span>
-                    <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* 5. RESTING ACTION BAR (Only shown when not expanded to maintain clean line) */}
-        {!isExpanded && (
-          <div className="hidden sm:flex pt-2.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] items-center justify-between gap-2">
+        {/* 3. RESTING ACTION BAR (Only shown when not expanded to maintain clean line) */}
+        <div className="flex pt-2.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] items-center justify-between gap-2">
             <button
               type="button"
               onClick={(e) => {
@@ -321,7 +164,6 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
               </button>
             )}
           </div>
-        )}
       </div>
     </motion.div>
   );
