@@ -95,7 +95,7 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
       }}
     >
       <div
-        className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-2xl transition-all duration-200 ease-out relative border ${
+        className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-lg transition-all duration-200 ease-in-out duration-200 ease-out relative border ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-gray-200 text-[#001848]'

@@ -139,7 +139,7 @@ export const HealthcareAmenitiesFilterModal: React.FC<HealthcareAmenitiesFilterM
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative w-full max-w-3xl sm:rounded-3xl rounded-t-[24px] rounded-b-none sm:rounded-b-3xl shadow-xl flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden border ${
+        className={`relative w-full max-w-3xl sm:rounded-3xl rounded-t-[24px] rounded-b-none sm:rounded-b-3xl shadow-md flex flex-col max-h-[88vh] sm:max-h-[92vh] overflow-hidden border ${
           isNightShiftMode
             ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
             : 'bg-white text-[#001848] border-[rgba(11,37,89,0.12)]'

@@ -97,6 +97,12 @@ export const db = {
       const railwayOk = await railwayDb.initialize();
       if (railwayOk) {
         console.log('[PostgreSQL] Railway production database initialized and active.');
+        // Ensure reset password columns exist
+        await railwayDb.query(`
+          ALTER TABLE users
+          ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+        `);
         return;
       }
 
@@ -108,6 +114,13 @@ export const db = {
           await pool.query(schema);
           console.log('[PostgreSQL] Database schema initialized successfully from schema.sql');
         }
+
+        // Ensure reset password columns exist
+        await pool.query(`
+          ALTER TABLE users
+          ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+        `);
       } else {
         console.warn(`[PostgreSQL] Live database not yet connected: ${lastConnectionError || 'DATABASE_URL pending'}`);
       }

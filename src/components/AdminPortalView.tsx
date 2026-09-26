@@ -405,7 +405,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#005684] ${
               activeAdminTab === 'hosts'
                 ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840]'
+                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
             }`}
           >
             <span>Host Management</span>
@@ -474,7 +474,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <button
               type="button"
               onClick={onGoToTier2Plumbing}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 bg-[#0A6FA8]/10 text-[#0A6FA8] hover:bg-[#0A6FA8]/20 dark:text-[#3E9AD1]"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 bg-[#0A6FA8]/10 text-[#0A6FA8] hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]/20 dark:text-[#3E9AD1]"
             >
               <span className="material-symbols-outlined text-[16px]">terminal</span>
               <span>Tier 2 Plumbing Console</span>
@@ -658,7 +658,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddHostForm(!showAddHostForm)}
-                  className="px-4 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  className="px-4 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     {showAddHostForm ? 'close' : 'person_add'}
@@ -825,13 +825,13 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowAddHostForm(false)}
-                    className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-800 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+                    className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
                   >
                     Save Host &amp; Issue Account
                   </button>
@@ -861,7 +861,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                     hostFilter === 'all'
                       ? 'bg-[#0B2559] text-white dark:bg-[#3E9AD1] dark:text-[#0B1626]'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#182840] dark:text-gray-300'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 dark:bg-[#182840] dark:text-gray-300'
                   }`}
                 >
                   All ({hosts.length})
@@ -872,7 +872,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                     hostFilter === 'override'
                       ? 'bg-[#0A6FA8] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#182840] dark:text-gray-300'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 dark:bg-[#182840] dark:text-gray-300'
                   }`}
                 >
                   Override Active ({hosts.filter((h) => h.hasOverride).length})
@@ -883,7 +883,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                     hostFilter === 'global'
                       ? 'bg-[#0B2559] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#182840] dark:text-gray-300'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 dark:bg-[#182840] dark:text-gray-300'
                   }`}
                 >
                   Global Rate ({hosts.filter((h) => !h.hasOverride).length})
@@ -914,7 +914,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         className={`px-2 py-0.5 rounded-md text-[11px] font-bold tabular-nums transition-colors ${
                           batchOverridePercent === preset
                             ? 'bg-[#0A6FA8] text-white'
-                            : 'bg-white/10 hover:bg-white/20 text-gray-200'
+                            : 'bg-white/10 hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/20 text-gray-200'
                         }`}
                       >
                         {preset}%
@@ -934,7 +934,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleApplyBatchOverride(true)}
-                    className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-bold transition-colors cursor-pointer"
                   >
                     Apply Override
                   </button>
@@ -942,7 +942,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleApplyBatchOverride(false)}
-                    className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-medium transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/25 text-white text-xs font-medium transition-colors cursor-pointer"
                   >
                     Revert to Global
                   </button>
@@ -950,7 +950,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setSelectedHostIds([])}
-                    className="text-gray-300 hover:text-white text-xs underline p-1 cursor-pointer"
+                    className="text-gray-300 hover:text-white focus-visible:text-white text-xs underline p-1 cursor-pointer"
                   >
                     Deselect
                   </button>
@@ -1000,7 +1000,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                       return (
                         <tr
                           key={host.hostId}
-                          className={`hover:bg-[#EFF6FB]/40 dark:hover:bg-[#14233a]/40 transition-colors ${
+                          className={`hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB]/40 dark:hover:bg-[#14233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14233a]/40 transition-colors ${
                             isSelected ? 'bg-[#EFF6FB]/70 dark:bg-[#182840]' : ''
                           }`}
                         >
@@ -1061,7 +1061,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                               role="switch"
                               aria-checked={host.hasOverride}
                               onClick={() => handleToggleHostFeeOverride(host.hostId)}
-                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] ${
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] ${
                                 host.hasOverride ? 'bg-[#0A6FA8]' : 'bg-gray-300 dark:bg-gray-700'
                               }`}
                             >
@@ -1089,7 +1089,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleUpdateHostFeePercent(host.hostId, host.overridePercent - 0.5)}
-                                  className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-[#0B2559] dark:text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
+                                  className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 text-[#0B2559] dark:text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
                                   title="Decrease rate by 0.5%"
                                 >
                                   -
@@ -1100,7 +1100,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleUpdateHostFeePercent(host.hostId, host.overridePercent + 0.5)}
-                                  className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-[#0B2559] dark:text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
+                                  className="w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 text-[#0B2559] dark:text-white font-bold flex items-center justify-center cursor-pointer transition-colors"
                                   title="Increase rate by 0.5%"
                                 >
                                   +
@@ -1136,7 +1136,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             <button
                               type="button"
                               onClick={() => handleDeleteHost(host.hostId, host.hostName)}
-                              className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                              className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-red-50 dark:hover:bg-red-950 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-red-950/30 transition-colors cursor-pointer"
                               title={`Remove ${host.hostName}`}
                             >
                               <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -1264,7 +1264,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowAddFounderForm(!showAddFounderForm)}
-                    className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[14px]">
                       {showAddFounderForm ? 'close' : 'add'}
@@ -1318,7 +1318,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         }
                       }}
                       disabled={!newHostName.trim() || !newHostProperty.trim()}
-                      className="px-4 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] disabled:opacity-50 text-white text-xs font-bold transition-colors cursor-pointer"
+                      className="px-4 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] disabled:opacity-50 text-white text-xs font-bold transition-colors cursor-pointer"
                     >
                       Confirm 5% Lifetime Lock
                     </button>
@@ -1341,7 +1341,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-[#0B1626]">
                     {founderCohort.map((host) => (
-                      <tr key={host.id} className="hover:bg-gray-50/50 dark:hover:bg-[#111e33]">
+                      <tr key={host.id} className="hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50/50 dark:hover:bg-[#111e33] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#111e33]">
                         <td className="px-4 py-2.5 font-bold text-[#0B2559] dark:text-white">
                           {host.name}
                         </td>
@@ -1366,7 +1366,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             onClick={() => {
                               setFounderCohort(founderCohort.filter((h) => h.id !== host.id));
                             }}
-                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                            className="text-gray-400 hover:text-red-500 focus-visible:text-red-500 transition-colors p-1"
                             title="Remove from 5% Cohort"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -1788,7 +1788,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         <aside
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 right-6 z-50 max-w-md bg-[#0B2559] text-white px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center gap-3 animate-fade-in text-xs font-medium"
+          className="fixed bottom-6 right-6 z-50 max-w-md bg-[#0B2559] text-white px-4 py-3 rounded-2xl shadow-md border border-white/10 flex items-center gap-3 animate-fade-in text-xs font-medium"
         >
           <span className="material-symbols-outlined text-[18px] text-[#3E9AD1] shrink-0">
             check_circle
@@ -1797,7 +1797,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           <button
             type="button"
             onClick={() => setActionToast(null)}
-            className="text-white/60 hover:text-white p-0.5 rounded-md cursor-pointer transition-colors"
+            className="text-white/60 hover:text-white focus-visible:text-white p-0.5 rounded-md cursor-pointer transition-colors"
             aria-label="Dismiss message"
           >
             <span className="material-symbols-outlined text-[16px]">close</span>

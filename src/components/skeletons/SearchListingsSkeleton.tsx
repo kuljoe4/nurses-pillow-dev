@@ -74,7 +74,7 @@ export const SearchListingsSkeleton: React.FC<SearchListingsSkeletonProps> = ({
         <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-6 pointer-events-none">
           {/* Hospital Center Marker Skeleton */}
           <div className="flex flex-col items-center gap-1.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#005684]/20 dark:bg-[#93ccff]/20 animate-pulse flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#005684]/20 dark:bg-[#93ccff]/20  flex items-center justify-center">
               <span className="material-symbols-outlined text-[#005684] dark:text-[#93ccff] text-[22px]">
                 local_hospital
               </span>
@@ -84,13 +84,13 @@ export const SearchListingsSkeleton: React.FC<SearchListingsSkeletonProps> = ({
 
           {/* Surrounding Sanctuary Pins Skeletons */}
           <div className="flex items-center gap-16 opacity-75">
-            <div className="h-8 w-20 rounded-full bg-white dark:bg-[#15233a] shadow-md border border-slate-200 dark:border-[#233650] animate-pulse" />
-            <div className="h-8 w-22 rounded-full bg-[#005684]/30 dark:bg-[#93ccff]/30 shadow-md border border-slate-200 dark:border-[#233650] animate-pulse" />
+            <div className="h-8 w-20 rounded-full bg-white dark:bg-[#15233a] shadow-md border border-slate-200 dark:border-[#233650]" />
+            <div className="h-8 w-22 rounded-full bg-[#005684]/30 dark:bg-[#93ccff]/30 shadow-md border border-slate-200 dark:border-[#233650]" />
           </div>
         </div>
 
         {/* Bottom Floating Route Card Skeleton */}
-        <div className="relative z-10 p-3.5 rounded-2xl bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md shadow-xl border border-[rgba(11,37,89,0.12)] dark:border-[#233550] flex items-center justify-between gap-3">
+        <div className="relative z-10 p-3.5 rounded-2xl bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-md shadow-md border border-[rgba(11,37,89,0.12)] dark:border-[#233550] flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-xl bg-slate-200 dark:bg-[#182840] skeleton-shimmer shrink-0" />
             <div className="space-y-1.5">

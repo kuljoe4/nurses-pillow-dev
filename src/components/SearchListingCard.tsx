@@ -69,7 +69,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
       tabIndex={0}
       role="article"
       aria-label={`${listing.title}, $${monthlyRent.toLocaleString()} per month near ${hospitalDisplay}`}
-      className={`relative rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-250 cursor-pointer flex flex-col justify-between group outline-none ${
+      className={`relative rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-200 ease-in-out duration-250 cursor-pointer flex flex-col justify-between group outline-none ${
         isSelectedOnMap
           ? 'border-[#0A6FA8] ring-2 ring-[#0A6FA8]/40 shadow-lg'
           : isExpanded
@@ -130,7 +130,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           </div>
 
           {/* Listing Title */}
-          <h3 className="text-sm sm:text-base font-bold text-[#0B2559] dark:text-white line-clamp-1 group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-[#0B2559] dark:text-white line-clamp-1 group-hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] focus-visible:text-[#3E9AD1] transition-colors">
             {listing.title}
           </h3>
 
@@ -283,7 +283,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
                       e.stopPropagation();
                       onRequestToBook(listing);
                     }}
-                    className="px-3.5 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] active:bg-[#095C8C] text-white text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1"
                   >
                     <span>Request to book</span>
                     <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
@@ -315,7 +315,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
                   e.stopPropagation();
                   onRequestToBook(listing);
                 }}
-                className="px-3 py-1 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold transition-all cursor-pointer"
+                className="px-3 py-1 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer"
               >
                 Book Stay
               </button>

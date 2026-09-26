@@ -46,7 +46,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
   };
 
   return (
-    <div className="w-full rounded-[24px] bg-white dark:bg-[#0E1A2E] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] shadow-[0_16px_40px_rgba(11,37,89,0.1)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.55)] overflow-hidden text-left transition-all">
+    <div className="w-full rounded-[24px] bg-white dark:bg-[#0E1A2E] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] shadow-[0_16px_40px_rgba(11,37,89,0.1)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.55)] overflow-hidden text-left transition-all duration-200 ease-in-out">
       {/* 1. PRODUCT WINDOW CHROME & CONTROLS */}
       <div className="px-4 sm:px-6 py-3 bg-[#EFF6FB] dark:bg-[#0B1626] border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-wrap items-center justify-between gap-3">
         {/* Window dots & App Identification */}
@@ -76,7 +76,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
             className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
               activeTab === 'radar'
                 ? 'bg-[#0A6FA8] text-white shadow-xs font-bold'
-                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] dark:hover:text-white'
+                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white'
             }`}
           >
             <span className="material-symbols-outlined text-[14px]">distance</span>
@@ -88,7 +88,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
             className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
               activeTab === 'sleep_audit'
                 ? 'bg-[#0A6FA8] text-white shadow-xs font-bold'
-                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] dark:hover:text-white'
+                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white'
             }`}
           >
             <span className="material-symbols-outlined text-[14px]">volume_down</span>
@@ -100,7 +100,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
             className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
               activeTab === 'pricing'
                 ? 'bg-[#0A6FA8] text-white shadow-xs font-bold'
-                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] dark:hover:text-white'
+                : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white'
             }`}
           >
             <span className="material-symbols-outlined text-[14px]">receipt_long</span>
@@ -123,10 +123,10 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                 <button
                   type="button"
                   onClick={() => setShiftType('night')}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
                     shiftType === 'night'
                       ? 'bg-[#0B2559] text-white shadow-xs'
-                      : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559]'
+                      : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] focus-visible:text-[#0B2559]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[14px] text-amber-300">
@@ -137,10 +137,10 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                 <button
                   type="button"
                   onClick={() => setShiftType('day')}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-1.5 ${
                     shiftType === 'day'
                       ? 'bg-[#0A6FA8] text-white shadow-xs'
-                      : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559]'
+                      : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/70 hover:text-[#0B2559] focus-visible:text-[#0B2559]'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[14px] text-amber-400">
@@ -151,7 +151,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
               </div>
             </div>
 
-            {/* Live Verification Badge (Color + Dot + Label) */}
+            {/* Live Verification Badge (Color+ Dot+ Label) */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EFE9] text-[#2F6E5E] text-xs font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-[#2F6E5E]" />
               <span>Verified Day-Sleeper Ready</span>
@@ -284,7 +284,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                     type="button"
                     onClick={handleSimulateSoundAudit}
                     disabled={isAuditingSound}
-                    className="px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {isAuditingSound ? 'Sampling room...' : 'Test live sound probe'}
                   </button>
@@ -379,7 +379,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                   <div className="pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex justify-between text-sm font-black text-[#0B2559] dark:text-white">
                     <span>Move-in Total</span>
                     <span>
-                      ${(listing.monthlyRate + 120 + (listing.securityDeposit ?? 500)).toLocaleString()}
+                      ${(listing.monthlyRate+ 120+ (listing.securityDeposit ?? 500)).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -392,7 +392,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
             <button
               type="button"
               onClick={() => onSelectListing(listing)}
-              className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <span>Explore full sanctuary profile</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -402,7 +402,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
               <button
                 type="button"
                 onClick={() => onRequestToBook(listing)}
-                className="px-5 py-2.5 rounded-full bg-[#0B2559] hover:bg-[#162e62] text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full bg-[#0B2559] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <span>Request to book</span>
               </button>
@@ -423,7 +423,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
         <div className="lg:col-span-5 relative">
           <div
             onClick={() => onSelectListing(listing)}
-            className="w-full rounded-2xl bg-white dark:bg-[#0B1626] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer group"
+            className="w-full rounded-2xl bg-white dark:bg-[#0B1626] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer group"
           >
             {/* Real photo with shift-aware ambient lighting overlay */}
             <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-gray-100">
@@ -454,7 +454,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
               </div>
 
               <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#2F6E5E] text-white text-[11px] font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
                 <span>&lt;28 dB</span>
               </div>
 
@@ -463,7 +463,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                   <span className="material-symbols-outlined text-[13px]">near_me</span>
                   <span>{commuteDistance} mi to Duke · {driveMinutes} min commute</span>
                 </div>
-                <h5 className="text-sm font-bold text-white line-clamp-1 group-hover:text-[#93ccff] transition-colors">
+                <h5 className="text-sm font-bold text-white line-clamp-1 group-hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors">
                   {listing.title}
                 </h5>
               </div>

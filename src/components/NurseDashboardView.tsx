@@ -148,7 +148,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               onClick={handleSyncRecords}
               disabled={isDataLoading}
               title="Sync clinician credentials, calendar and active bookings"
-              className="px-3.5 py-2.5 rounded-full border border-[rgba(11,37,89,0.12)] dark:border-[#233550] bg-white dark:bg-[#111e33] text-[#001848] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#182840] font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-2.5 rounded-full border border-[rgba(11,37,89,0.12)] dark:border-[#233550] bg-white dark:bg-[#111e33] text-[#001848] dark:text-gray-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <span className={`material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff] ${isDataLoading ? 'animate-spin' : ''}`}>
                 sync
@@ -380,7 +380,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 </div>
 
                 {/* Keyless Credentials Vault */}
-                <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3 transition-all animate-fadeIn">
+                <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] border border-[#005684]/20 space-y-3 transition-all duration-200 ease-in-out animate-fadeIn">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
                     <div className="flex items-center gap-1.5 text-[#001848] dark:text-white">
                       <span className="material-symbols-outlined text-[18px] text-[#005684]">key</span>
@@ -911,7 +911,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               <button
                 type="button"
                 onClick={() => alert('Exporting full IRS travel tax packet (PDF)...')}
-                className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-[#0A6FA8] transition-colors"
+                className="px-4 py-2 rounded-full bg-[#001848] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors"
               >
                 <span className="material-symbols-outlined text-[16px]">file_download</span>
                 <span>Export Tax Packet</span>

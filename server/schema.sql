@@ -134,6 +134,10 @@ CREATE TABLE users (
     is_suspended BOOLEAN DEFAULT FALSE,
     suspension_reason TEXT,
 
+    -- Password Reset
+    reset_password_token VARCHAR(255),
+    reset_password_expires TIMESTAMP WITH TIME ZONE,
+
     -- Financial Custody (Stripe Connect)
     stripe_customer_id VARCHAR(100),         -- For nurses/guests paying checkout
     stripe_connected_account_id VARCHAR(100),-- For hosts (Stripe Express connected account)

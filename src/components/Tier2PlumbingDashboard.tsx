@@ -198,10 +198,10 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('checkout')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out duration-200 cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'checkout'
               ? 'bg-[#001848] text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">payments</span>
@@ -211,10 +211,10 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('verification')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out duration-200 cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'verification'
               ? 'bg-[#001848] text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">verified_user</span>
@@ -224,10 +224,10 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('database')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out duration-200 cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'database'
               ? 'bg-[#001848] text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">database</span>
@@ -237,10 +237,10 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('notifications')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out duration-200 cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'notifications'
               ? 'bg-[#001848] text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">forward_to_inbox</span>
@@ -250,10 +250,10 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('legal')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out duration-200 cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'legal'
               ? 'bg-[#001848] text-white shadow-xs'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">gavel</span>
@@ -360,7 +360,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       key={card.number}
                       type="button"
                       onClick={() => setTestCard(card)}
-                      className={`p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-left text-xs transition-all duration-200 ease-in-out cursor-pointer ${
                         testCard.number === card.number
                           ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#182840]'
                           : 'border-gray-200 dark:border-[#233550] hover:border-gray-300'
@@ -378,7 +378,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                 type="button"
                 onClick={handleExecuteStripeSplit}
                 disabled={isProcessingStripe}
-                className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isProcessingStripe ? (
                   <>
@@ -439,7 +439,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       key={t}
                       type="button"
                       onClick={() => setSimulatedTier(t)}
-                      className={`p-2.5 rounded-xl border font-bold capitalize transition-all cursor-pointer ${
+                      className={`p-2.5 rounded-xl border font-bold capitalize transition-all duration-200 ease-in-out cursor-pointer ${
                         simulatedTier === t
                           ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#182840] text-[#0A6FA8] dark:text-[#3E9AD1]'
                           : 'border-gray-200 dark:border-[#233550] text-gray-600 dark:text-gray-400'
@@ -575,7 +575,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {purgeClinicians.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-50/50 dark:hover:bg-[#14233a]/50">
+                    <tr key={c.id} className="hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50/50 dark:hover:bg-[#14233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14233a]/50">
                       <td className="py-3 px-3 font-bold text-[#001848] dark:text-white">
                         {c.name}
                         <div className="text-[10px] text-gray-400 font-normal">ID: {c.id}</div>
@@ -638,7 +638,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                           <button
                             type="button"
                             onClick={() => handlePurgeDocs(c.id)}
-                            className="px-3 py-1.5 rounded-lg bg-[#001848] hover:bg-[#162e62] text-white font-bold text-[11px] transition-colors cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white font-bold text-[11px] transition-colors cursor-pointer"
                           >
                             Approve &amp; Purge PII
                           </button>
@@ -763,7 +763,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                 <button
                   type="button"
                   onClick={handleSendTwilioOtp}
-                  className="px-4 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] cursor-pointer transition-colors"
                 >
                   Send OTP Code
                 </button>
@@ -817,7 +817,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                     type="button"
                     onClick={() => handleTestVerifyOtp()}
                     disabled={isVerifyingOtp}
-                    className="px-4 py-2 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF] text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 disabled:opacity-50"
                   >
                     {isVerifyingOtp ? (
                       <>
@@ -842,7 +842,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       setTestVerifyCode('842199');
                       handleTestVerifyOtp('842199');
                     }}
-                    className="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-500/20 cursor-pointer"
+                    className="px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-emerald-500/20 cursor-pointer"
                   >
                     Valid (842199)
                   </button>
@@ -852,7 +852,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       setTestVerifyCode('111111');
                       handleTestVerifyOtp('111111');
                     }}
-                    className="px-2 py-1 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold hover:bg-rose-500/20 cursor-pointer"
+                    className="px-2 py-1 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold hover:bg-rose-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-500/20 cursor-pointer"
                   >
                     Invalid (111111)
                   </button>
@@ -862,7 +862,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       setTestVerifyCode('000000');
                       handleTestVerifyOtp('000000');
                     }}
-                    className="px-2 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold hover:bg-amber-500/20 cursor-pointer"
+                    className="px-2 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold hover:bg-amber-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-amber-500/20 cursor-pointer"
                   >
                     Expired (000000)
                   </button>
@@ -872,7 +872,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       setTestVerifyCode('999999');
                       handleTestVerifyOtp('999999');
                     }}
-                    className="px-2 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-500/20 cursor-pointer"
+                    className="px-2 py-1 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/20 cursor-pointer"
                   >
                     Network Drop (999999)
                   </button>
@@ -882,7 +882,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                       setTestVerifyCode('888888');
                       handleTestVerifyOtp('888888');
                     }}
-                    className="px-2 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-500/20 cursor-pointer"
+                    className="px-2 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-purple-500/20 cursor-pointer"
                   >
                     Rate Limit (888888)
                   </button>
@@ -948,7 +948,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                     key={m.messageId}
                     type="button"
                     onClick={() => setSelectedPostmarkMsg(m)}
-                    className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                    className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all duration-200 ease-in-out cursor-pointer ${
                       selectedPostmarkMsg?.messageId === m.messageId
                         ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#182840]'
                         : 'border-gray-200 dark:border-[#233550] hover:border-gray-300'
@@ -1030,7 +1030,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
                     navigator.clipboard.writeText(text);
                     alert('Copied architecture summary to clipboard!');
                   }}
-                  className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-700 cursor-pointer transition-colors"
                 >
                   Copy Summary
                 </button>

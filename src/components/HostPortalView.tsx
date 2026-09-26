@@ -695,7 +695,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               ) : (
                 <button
                   onClick={handleConnectStripe}
-                  className="mt-2 bg-[#005684] hover:bg-[#004368] text-white text-xs font-bold py-2 px-4 rounded-xl transition-all w-fit cursor-pointer flex items-center gap-2 shadow-sm"
+                  className="mt-2 bg-[#005684] hover:bg-[#004368] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004368] text-white text-xs font-bold py-2 px-4 rounded-xl transition-all duration-200 ease-in-out w-fit cursor-pointer flex items-center gap-2 shadow-sm"
                 >
                   <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
                   Connect Bank Account for Payouts

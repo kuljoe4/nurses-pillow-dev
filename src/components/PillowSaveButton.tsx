@@ -33,7 +33,7 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = React.memo(({
       whileTap={{ scale: 0.88 }}
       whileHover={{ scale: 1.08 }}
       transition={{ type: 'spring', stiffness: 450, damping: 22 }}
-      className={`group relative inline-flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer select-none ${className}`}
+      className={`group relative inline-flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer select-none ${className}`}
       aria-label={isSaved ? 'Remove from saved pillows' : 'Save to my pillows'}
       title={isSaved ? 'Saved to your Pillows' : 'Save to your Pillows'}
     >
@@ -65,7 +65,7 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = React.memo(({
           className={
             isSaved
               ? 'text-[#0B2559] dark:text-[#3E9AD1] drop-shadow-[0_1px_2px_rgba(11,37,89,0.25)]'
-              : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/80 group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1]'
+              : 'text-[#0B2559]/70 dark:text-[#E6ECF7]/80 group-hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] focus-visible:text-[#3E9AD1]'
           }
         >
           {/* Rounded plush pillow outer contour */}
@@ -90,7 +90,7 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = React.memo(({
           className={`text-xs font-semibold ${
             isSaved
               ? 'text-[#0B2559] dark:text-[#3E9AD1]'
-              : 'text-[#404850] dark:text-[#c0c7d1] group-hover:text-[#0A6FA8]'
+              : 'text-[#404850] dark:text-[#c0c7d1] group-hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8]'
           }`}
         >
           {isSaved ? 'Saved to Pillows' : 'Save to Pillows'}

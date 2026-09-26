@@ -345,7 +345,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               <img src="/nurses-pillow-logo.png" alt="Nurses Pillow" className="w-5 h-5 object-contain drop-shadow-xs" />
               <span
                 className="text-[26px] sm:text-[30px] leading-tight text-[#745b0d] dark:text-[#E4C36D]"
-                style={{ fontFamily: "'Kaushan Script', cursive" }}
+                style={{ fontFamily:"'Kaushan Script', cursive" }}
               >
                 Rest Well. Heal Better.
               </span>
@@ -416,7 +416,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               </div>
             </motion.div>
 
-            {/* Progressive Disclosure Bar: Staged Data Summary + Expand Button */}
+            {/* Progressive Disclosure Bar: Staged Data Summary+ Expand Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
               <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs sm:text-sm text-[#0B2559] dark:text-[#E6ECF7]">
                 <button
@@ -582,7 +582,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 whileTap={{ scale: 0.98 }}
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.15 }}
-                className="w-full h-14 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] text-white text-base font-bold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 group cursor-pointer"
+                className="w-full h-14 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-base font-bold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>Search housing near assignment</span>
                 <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
@@ -743,7 +743,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2 text-[11px] text-[#2F6E5E] dark:text-[#aff0db] font-semibold bg-white/80 dark:bg-[#111e33] px-2.5 py-1 rounded-xl">
-            <span className="w-2 h-2 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
             <span>Hospital Travel Duration Active</span>
           </div>
         </div>
@@ -781,10 +781,10 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 onClick={() => setActiveListingFilter(pill.id as any)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-1.5 cursor-pointer ${
                   isSelected
                     ? 'bg-[#0A6FA8] text-white shadow-xs'
-                    : 'bg-white dark:bg-[#15233a] text-[#0B2559]/80 dark:text-[#E6ECF7]/80 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] hover:text-[#0A6FA8]'
+                    : 'bg-white dark:bg-[#15233a] text-[#0B2559]/80 dark:text-[#E6ECF7]/80 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8]'
                 }`}
               >
                 <span className="material-symbols-outlined text-[15px]">{pill.icon}</span>
@@ -805,7 +805,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             <button
               type="button"
               onClick={() => setActiveListingFilter('all')}
-              className="px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-xs cursor-pointer hover:bg-[#0C7EBF]"
+              className="px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-xs cursor-pointer hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0C7EBF]"
             >
               Reset to All Stays
             </button>
@@ -986,7 +986,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       color: 'bg-[#745b0d] text-white',
                       metaColor: 'text-[#745b0d] dark:text-[#ffdf91]',
                       title: 'Contract Flex Vacancy Protection',
-                      body: "If a nurse's clinical placement is unexpectedly cancelled by the hospital with staffing agency documentation, hosts receive a guaranteed 14-day vacancy stipend payout and re-listing boost.",
+                      body:"If a nurse's clinical placement is unexpectedly cancelled by the hospital with staffing agency documentation, hosts receive a guaranteed 14-day vacancy stipend payout and re-listing boost.",
                       meta: '14-day vacancy stipend guarantee',
                     },
                   ].map((card, idx) => (
@@ -1017,7 +1017,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                     <button
                       type="button"
                       onClick={onGoToHostPortal}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] text-white text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 ease-in-out cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 ease-in-out cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[18px]">add_home</span>
                       <span>Enter Host Workspace &amp; Add Sanctuary Listing →</span>
@@ -1061,7 +1061,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 <button
                   type="button"
                   onClick={onGoToHostPortal}
-                  className="px-6 py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold shadow-sm transition-all duration-200 ease-in-out cursor-pointer"
+                  className="px-6 py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold shadow-sm transition-all duration-200 ease-in-out cursor-pointer"
                 >
                   Enter Host Portal
                 </button>
