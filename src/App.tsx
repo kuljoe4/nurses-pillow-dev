@@ -260,37 +260,14 @@ export default function App() {
   >("signup");
   const [resetToken, setResetToken] = useState<string>("");
 
-  const [currentUser, setCurrentUser] = useState<{
-    role: UserRole;
-    name: string;
-  }>(() => {
-    const isDev = sessionStorage.getItem("np_staging_user") === "developer";
-    return isDev
-      ? { role: "developer", name: "Joshua (Lead Developer)" }
-      : { role: "nurse", name: "Sarah Jenkins, RN" };
-  });
+
 
   // Developer mode flag: true ONLY if developer is logged in or in developer role
+  const [currentUser, setCurrentUser] = useState<{ role: UserRole; name: string; }>({ role: "guest", name: "Guest User" });
+
   const isDeveloper =
     stagingUser === "developer" || currentUser.role === "developer";
 
-  const handleSwitchRole = (newRole: UserRole) => {
-    if (newRole === "nurse") {
-      setCurrentUser({ role: "nurse", name: "Sarah Jenkins, RN" });
-      setCurrentTab("find-housing");
-    } else if (newRole === "host") {
-      setCurrentUser({ role: "host", name: "Michael Vance (Host)" });
-      setCurrentTab("host-dashboard");
-    } else if (newRole === "super_admin") {
-      setCurrentUser({ role: "super_admin", name: "Operations Admin" });
-      setCurrentTab("admin-portal");
-    } else if (newRole === "developer") {
-      setStagingUser("developer");
-      sessionStorage.setItem("np_staging_user", "developer");
-      setCurrentUser({ role: "developer", name: "Joshua (Lead Developer)" });
-      setM2BypassMode(true);
-    }
-  };
 
   const handleDeveloperSignIn = () => {
     setStagingUser("developer");
@@ -420,6 +397,23 @@ export default function App() {
       }
     };
     initializeDb();
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+             setCurrentUser({
+               role: data.user.role,
+               name: data.user.full_name || data.user.email
+             });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user auth state", err);
+      }
+    };
+    checkAuth();
   }, []);
 
   // Handle Password Reset Links
@@ -561,7 +555,7 @@ export default function App() {
           setIsAuthModalOpen(true);
         }}
         currentUser={currentUser}
-        onSwitchRole={handleSwitchRole}
+
         m2BypassMode={m2BypassMode}
         onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
         isDeveloper={isDeveloper}
@@ -667,7 +661,7 @@ export default function App() {
                   <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                       type="button"
-                      onClick={() => handleSwitchRole("super_admin")}
+
                       className="px-6 py-3 rounded-full bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px]">

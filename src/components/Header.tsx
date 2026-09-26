@@ -14,7 +14,7 @@ interface HeaderProps {
   isVerified: boolean;
   onOpenAuth?: (mode?: 'signin' | 'signup') => void;
   currentUser: { role: UserRole; name: string };
-  onSwitchRole: (role: UserRole) => void;
+
   m2BypassMode: boolean;
   onToggleM2Bypass: () => void;
   isDeveloper?: boolean;
@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
   isVerified,
   onOpenAuth,
   currentUser,
-  onSwitchRole,
+
   m2BypassMode,
   onToggleM2Bypass,
   isDeveloper = false,
@@ -960,100 +960,6 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
                   </div>
 
-                  {/* Switch Perspective Section */}
-                  <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
-                    <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
-                      Switch Perspective
-                    </div>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSwitchRole('nurse');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                          currentUser.role === 'nurse'
-                            ? 'bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] font-bold'
-                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px]">stethoscope</span>
-                          <span>Clinician (Sarah Jenkins)</span>
-                        </div>
-                        {currentUser.role === 'nurse' && (
-                          <span className="material-symbols-outlined text-[14px]">check</span>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSwitchRole('host');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                          currentUser.role === 'host'
-                            ? 'bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] font-bold'
-                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px]">home</span>
-                          <span>Property Host (Michael Vance)</span>
-                        </div>
-                        {currentUser.role === 'host' && (
-                          <span className="material-symbols-outlined text-[14px]">check</span>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSwitchRole('super_admin');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                          currentUser.role === 'super_admin'
-                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
-                            : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px]">shield_person</span>
-                          <span>Super-Admin Operations</span>
-                        </div>
-                        {currentUser.role === 'super_admin' && (
-                          <span className="material-symbols-outlined text-[14px]">check</span>
-                        )}
-                      </button>
-
-                      {isDeveloper && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSwitchRole('developer');
-                            setIsProfileMenuOpen(false);
-                          }}
-                          className={`w-full text-left px-2.5 py-2 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
-                            currentUser.role === 'developer'
-                              ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
-                              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[16px]">terminal</span>
-                            <span>Lead Developer (Joshua)</span>
-                          </div>
-                          {currentUser.role === 'developer' && (
-                            <span className="material-symbols-outlined text-[14px]">check</span>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Support & Auth Modal Trigger */}
                   <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
                     <button
@@ -1532,111 +1438,6 @@ export const Header: React.FC<HeaderProps> = ({
                   {isNightShiftMode ? 'ON' : 'OFF'}
                 </span>
               </button>
-            </div>
-
-            {/* 5. ROLE & PERSPECTIVE SWITCHER */}
-            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-2">
-              <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Switch Perspective
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSwitchRole('nurse');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                    currentUser.role === 'nurse'
-                      ? 'border-[#195b4c] bg-[#195b4c]/10 text-[#195b4c] dark:text-[#aff0db] font-bold'
-                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="material-symbols-outlined text-[16px] text-[#195b4c]">stethoscope</span>
-                    <span className="truncate">Clinician</span>
-                  </div>
-                  {currentUser.role === 'nurse' && <span className="text-xs">✓</span>}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSwitchRole('host');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                    currentUser.role === 'host'
-                      ? 'border-[#005684] bg-[#005684]/10 text-[#005684] dark:text-[#93ccff] font-bold'
-                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="material-symbols-outlined text-[16px] text-[#005684]">home</span>
-                    <span className="truncate">Host</span>
-                  </div>
-                  {currentUser.role === 'host' && <span className="text-xs">✓</span>}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSwitchRole('super_admin');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                    currentUser.role === 'super_admin'
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-800 dark:text-amber-300 font-bold'
-                      : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="material-symbols-outlined text-[16px] text-amber-600">shield_person</span>
-                    <span className="truncate">Admin</span>
-                  </div>
-                  {currentUser.role === 'super_admin' && <span className="text-xs">✓</span>}
-                </button>
-
-                {isDeveloper ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSwitchRole('developer');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                      currentUser.role === 'developer'
-                        ? 'border-purple-600 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold'
-                        : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="material-symbols-outlined text-[16px] text-purple-600">terminal</span>
-                      <span className="truncate">Dev</span>
-                    </div>
-                    {currentUser.role === 'developer' && <span className="text-xs">✓</span>}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSwitchRole('guest');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`py-2 px-2.5 rounded-xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                      currentUser.role === 'guest'
-                        ? 'border-gray-500 bg-gray-500/10 text-gray-800 dark:text-gray-200 font-bold'
-                        : 'border-gray-200 dark:border-[#233550] text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="material-symbols-outlined text-[16px] text-gray-500">person</span>
-                      <span className="truncate">Guest</span>
-                    </div>
-                    {currentUser.role === 'guest' && <span className="text-xs">✓</span>}
-                  </button>
-                )}
-              </div>
             </div>
 
             {/* Staging Access & Review Perspective for Mobile (lawrence) */}

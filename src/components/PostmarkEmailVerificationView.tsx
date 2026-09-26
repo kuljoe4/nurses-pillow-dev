@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { postmarkMail } from '../services/postmarkMail';
 
 interface PostmarkEmailVerificationViewProps {
   isNightShiftMode: boolean;
@@ -19,7 +18,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   const [email, setEmail] = useState(initialEmail || 'sarah.jenkins@travelrn-health.org');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [editEmailInput, setEditEmailInput] = useState(email);
-  const [pin, setPin] = useState(['9', '3', '8', '4', '1', '2']);
+  const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(45);
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -30,7 +29,18 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
 
   // Send transactional email code on mount or email update
   useEffect(() => {
-    void postmarkMail.sendVerificationEmail(email, 'Clinician', '938412');
+    const sendInitialEmail = async () => {
+      try {
+        await fetch('/api/auth/send-verification-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+      } catch (err) {
+        console.error('Failed to send verification email:', err);
+      }
+    };
+    sendInitialEmail();
   }, [email]);
 
   // Countdown timer for code resend
@@ -62,7 +72,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
     }
   };
 
-  const handleSaveEmail = (e: React.FormEvent) => {
+  const handleSaveEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editEmailInput.trim() && editEmailInput.includes('@')) {
       const updated = editEmailInput.trim();
@@ -71,18 +81,35 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
       setCountdown(45);
       setCanResend(false);
       setResendNotification(`New verification code sent to ${updated}`);
-      void postmarkMail.sendVerificationEmail(updated, 'Clinician', '938412');
+      try {
+        await fetch('/api/auth/send-verification-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: updated }),
+        });
+      } catch (err) {
+        console.error('Failed to send verification email:', err);
+      }
       setTimeout(() => setResendNotification(null), 4000);
     }
   };
 
   const handleResend = async () => {
     if (!canResend) return;
-    const res = await postmarkMail.sendVerificationEmail(email, 'Clinician', '938412');
-    setCountdown(60);
-    setCanResend(false);
-    setResendNotification(`Verification code resent to ${email}`);
-    setTimeout(() => setResendNotification(null), 4000);
+    try {
+      await fetch('/api/auth/send-verification-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setCountdown(60);
+      setCanResend(false);
+      setResendNotification(`Verification code resent to ${email}`);
+      setTimeout(() => setResendNotification(null), 4000);
+    } catch (err) {
+      console.error('Failed to resend verification email:', err);
+      setError('Failed to resend verification email. Please try again.');
+    }
   };
 
   const handleVerify = async () => {
@@ -113,15 +140,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
         onProceedToPhoneVerification();
       }, 800);
     } catch (err: any) {
-      // In sandbox mode or if backend was unreachable, allow testing pin 938412
-      if (pinCode === '938412') {
-        setIsVerified(true);
-        setTimeout(() => {
-          onProceedToPhoneVerification();
-        }, 800);
-      } else {
-        setError(err.message || 'Verification could not be completed. Please try again.');
-      }
+      setError(err.message || 'Verification could not be completed. Please try again.');
     } finally {
       setIsVerifying(false);
     }

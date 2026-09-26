@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { twilioVerify, VerifyOtpResult } from '../services/twilioVerify';
-import { OtpErrorCode } from '../services/phoneAuthApi';
+import { twilioVerify, VerifyOtpResult, OtpErrorCode } from '../services/twilioVerify';
 
 interface TwilioPhoneOtpViewProps {
   isNightShiftMode: boolean;
@@ -30,7 +29,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
   const [phoneNumber, setPhoneNumber] = useState(initialPhone || '+1 (919) 555-0198');
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [phoneDraft, setPhoneDraft] = useState(phoneNumber);
-  const [otp, setOtp] = useState(['8', '4', '2', '1', '9', '9']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timeLeft, setTimeLeft] = useState(42);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -168,18 +167,6 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
     void executeVerify(otp.join(''));
   };
 
-  const handleApplyTestScenario = (type: 'valid' | 'invalid' | 'expired' | 'network' | 'ratelimit') => {
-    let testCode: string[] = ['8', '4', '2', '1', '9', '9'];
-    if (type === 'valid') testCode = ['8', '4', '2', '1', '9', '9'];
-    if (type === 'invalid') testCode = ['1', '1', '1', '1', '1', '1'];
-    if (type === 'expired') testCode = ['0', '0', '0', '0', '0', '0'];
-    if (type === 'network') testCode = ['9', '9', '9', '9', '9', '9'];
-    if (type === 'ratelimit') testCode = ['8', '8', '8', '8', '8', '8'];
-
-    setOtp(testCode);
-    setDetailedError(null);
-    void executeVerify(testCode.join(''));
-  };
 
   const timerDashOffset = 100 - (timeLeft / 42) * 100;
   const formattedCountdown = `00:${timeLeft < 10 ? `0${timeLeft}` : timeLeft}`;
@@ -503,16 +490,7 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
                                 <span>Retry</span>
                               </button>
                             )}
-                            {detailedError.code === 'INVALID_CODE' && (
-                              <button
-                                type="button"
-                                onClick={() => handleApplyTestScenario('valid')}
-                                className="px-2.5 py-1 rounded-full bg-white dark:bg-gray-800 text-[#001848] dark:text-white text-xs font-bold shadow-xs hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-700 flex items-center gap-1 cursor-pointer transition-colors"
-                              >
-                                <span className="material-symbols-outlined text-[14px]">check</span>
-                                <span>Fill sample code (842199)</span>
-                              </button>
-                            )}
+
                           </div>
                         </div>
                       </div>

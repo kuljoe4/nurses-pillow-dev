@@ -2,12 +2,42 @@
 // Service SID: VA_test_nurses_pillow_otp_service
 // Endpoint: /api/auth/phone/send-otp & /api/auth/phone/verify-otp
 
-import {
-  phoneAuthStore,
-  VerifyOtpResponse,
-  SendOtpResponse,
-  OtpErrorCode,
-} from './phoneAuthApi';
+export type OtpErrorCode =
+  | 'INVALID_CODE'
+  | 'TOKEN_EXPIRED'
+  | 'RATE_LIMITED'
+  | 'NETWORK_FAILURE'
+  | 'SESSION_NOT_FOUND'
+  | 'INVALID_PHONE'
+  | 'INVALID_REQUEST';
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  status: 'approved' | 'failed' | 'expired' | 'rate_limited' | 'error';
+  message: string;
+  error?: OtpErrorCode;
+  statusCode: number;
+  attemptsRemaining?: number;
+  attemptsUsed?: number;
+  retryAfterSeconds?: number;
+  expiredAt?: string;
+  canResend?: boolean;
+  verifiedAt?: string;
+  diagnosticAdvice?: string;
+}
+
+export interface SendOtpResponse {
+  success: boolean;
+  statusCode: number;
+  sid: string;
+  to: string;
+  status: 'pending';
+  codeSent: string;
+  createdAt: string;
+  expiresInSeconds: number;
+  deliveryTimeMs: number;
+  message: string;
+}
 
 export interface TwilioOtpDispatch {
   sid: string;
@@ -60,40 +90,26 @@ class TwilioVerifyService {
         body: JSON.stringify({ phoneNumber: formattedPhone }),
       });
 
+      const data: SendOtpResponse = await res.json();
+      const dispatch: TwilioOtpDispatch = {
+        sid: data.sid,
+        to: data.to || formattedPhone,
+        channel: 'sms',
+        status: 'pending',
+        valid: false,
+        codeSent: data.codeSent || '',
+        createdAt: data.createdAt || new Date().toISOString(),
+        deliveryTimeMs: data.deliveryTimeMs || 200,
+      };
+
       if (res.ok) {
-        const data: SendOtpResponse = await res.json();
-        const dispatch: TwilioOtpDispatch = {
-          sid: data.sid,
-          to: data.to,
-          channel: 'sms',
-          status: 'pending',
-          valid: false,
-          codeSent: data.codeSent,
-          createdAt: data.createdAt,
-          deliveryTimeMs: data.deliveryTimeMs,
-        };
         this.dispatches.unshift(dispatch);
-        return dispatch;
       }
-    } catch {
-      // If network is offline or server middleware not responding, use local store
+      return dispatch;
+    } catch (err) {
+      console.error("Error sending OTP", err);
+      throw err;
     }
-
-    // Local in-memory session creation
-    const session = phoneAuthStore.createSession(formattedPhone);
-    const dispatch: TwilioOtpDispatch = {
-      sid: session.sid,
-      to: formattedPhone,
-      channel: 'sms',
-      status: 'pending',
-      valid: false,
-      codeSent: session.codeSent,
-      createdAt: new Date(session.createdAt).toISOString(),
-      deliveryTimeMs: Math.floor(200 + Math.random() * 250),
-    };
-
-    this.dispatches.unshift(dispatch);
-    return dispatch;
   }
 
   // Verify OTP code with robust error-handling layer
@@ -202,34 +218,13 @@ class TwilioVerifyService {
         };
       }
 
-      // If backend endpoint is unavailable or fetch threw a TypeError (network offline/failed)
-      // Fallback to local phoneAuthStore engine to ensure seamless execution
-      const localResult = phoneAuthStore.verifyOtp({
-        phoneNumber: formattedPhone,
-        code,
-        simulateError: options?.simulateError,
-      });
-
-      if (localResult.success) {
-        const found = this.dispatches.find((d) => d.to === formattedPhone && d.status === 'pending');
-        if (found) {
-          found.status = 'approved';
-          found.valid = true;
-        }
-      }
-
       return {
-        success: localResult.success,
-        status: localResult.status,
-        statusCode: localResult.statusCode,
-        message: localResult.message,
-        errorCode: localResult.error,
-        attemptsRemaining: localResult.attemptsRemaining,
-        attemptsUsed: localResult.attemptsUsed,
-        retryAfterSeconds: localResult.retryAfterSeconds,
-        canResend: localResult.canResend,
-        diagnosticAdvice: localResult.diagnosticAdvice,
-        rawResponse: localResult,
+        success: false,
+        status: 'error',
+        statusCode: 500,
+        errorCode: 'NETWORK_FAILURE',
+        message: 'Network error or backend unavailable.',
+        canResend: true,
       };
     }
   }
