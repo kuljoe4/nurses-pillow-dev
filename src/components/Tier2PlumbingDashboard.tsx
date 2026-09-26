@@ -3,7 +3,6 @@ import { db, NC_HOSPITAL_SEEDS, NC_LISTING_SEEDS, DbHospital, DbListing } from '
 import { STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, stripeConnect, StripeSplitTransaction } from '../services/stripeConnect';
 import { CancellationRefundEngine, CancellationTier, RefundBreakdown } from '../services/cancellationEngine';
 import { twilioVerify, TwilioOtpDispatch, VerifyOtpResult } from '../services/twilioVerify';
-import { postmarkMail, PostmarkMessage, PostmarkTriggerType } from '../services/postmarkMail';
 
 interface Tier2PlumbingDashboardProps {
   isNightShiftMode: boolean;
@@ -38,8 +37,8 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
   const [testVerifyCode, setTestVerifyCode] = useState('842199');
   const [verifyResult, setVerifyResult] = useState<VerifyOtpResult | null>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [postmarkMessages, setPostmarkMessages] = useState<PostmarkMessage[]>(postmarkMail.getMessages());
-  const [selectedPostmarkMsg, setSelectedPostmarkMsg] = useState<PostmarkMessage | null>(postmarkMail.getMessages()[0] || null);
+  const [postmarkMessages, setPostmarkMessages] = useState<any[]>([]);
+  const [selectedPostmarkMsg, setSelectedPostmarkMsg] = useState<any | null>(null);
 
   const handleTestVerifyOtp = async (codeToUse?: string) => {
     const code = codeToUse || testVerifyCode;
@@ -99,29 +98,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
       });
       setLastTransaction(txn);
 
-      // Auto-dispatch Postmark receipts & notices
-      await postmarkMail.dispatchNotification(
-        'booking_receipt',
-        'sarah.jenkins@travelrn-health.org',
-        {
-          clinicianName: 'Sarah Jenkins, RN',
-          listingTitle: selectedListing.title,
-          hospitalName: selectedHospital.name,
-          amount: selectedListing.monthly_rate + selectedListing.cleaning_fee,
-        }
-      );
-      await postmarkMail.dispatchNotification(
-        'new_booking_request',
-        'sarah.miller@durhamhousing.com',
-        {
-          clinicianName: 'Sarah Jenkins, RN',
-          hostName: 'Sarah Miller',
-          listingTitle: selectedListing.title,
-          hospitalName: selectedHospital.name,
-          amount: selectedListing.monthly_rate + selectedListing.cleaning_fee,
-        }
-      );
-      setPostmarkMessages([...postmarkMail.getMessages()]);
+
     } finally {
       setIsProcessingStripe(false);
     }

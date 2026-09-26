@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HousingListing, BookingRequest } from '../types';
 import { stripeConnect, STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, StripeSplitTransaction } from '../services/stripeConnect';
 import { CancellationRefundEngine, CancellationTier } from '../services/cancellationEngine';
-import { postmarkMail } from '../services/postmarkMail';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ItemizedCheckoutModalProps {
@@ -105,30 +104,6 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         customFeeRateOrPercent: finalFeeRate,
       });
       setLastSplitTxn(splitTxn);
-
-      // Dispatch Postmark transactional email triggers (M1 event: new booking request + receipt)
-      await postmarkMail.dispatchNotification(
-        'new_booking_request',
-        'host-sarah@durhamhousing.com',
-        {
-          clinicianName: 'Sarah Jenkins, RN',
-          hostName: 'Sarah Miller',
-          listingTitle: listing.title,
-          hospitalName: listing.nearestHospital || 'Duke University Hospital',
-          amount: totalInitialCharge,
-        }
-      );
-
-      await postmarkMail.dispatchNotification(
-        'booking_receipt',
-        'sarah.jenkins@travelrn-health.org',
-        {
-          clinicianName: 'Sarah Jenkins, RN',
-          listingTitle: listing.title,
-          hospitalName: listing.nearestHospital || 'Duke University Hospital',
-          amount: totalInitialCharge,
-        }
-      );
 
       const newBooking: BookingRequest = {
         id: `np-book-${Date.now()}`,

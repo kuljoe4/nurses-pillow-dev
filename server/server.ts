@@ -186,6 +186,37 @@ app.get('/api/stripe/status/:hostId', async (req, res) => {
   }
 });
 
+// Endpoint to process a split payment via Stripe
+app.post('/api/stripe/payment-intent', async (req, res) => {
+  try {
+    const { monthlyRent, cleaningFee, securityDeposit, hostConnectedAccountId, platformFeePercent } = req.body;
+
+    // Minimal validation
+    if (!hostConnectedAccountId) {
+      return res.status(400).json({ error: 'Missing host connected account ID' });
+    }
+
+    const grossCharge = monthlyRent + cleaningFee;
+    const platformFee = Math.round(grossCharge * platformFeePercent * 100); // Stripe uses cents
+    const totalAmount = Math.round(grossCharge * 100); // Stripe uses cents
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount,
+      currency: 'usd',
+      application_fee_amount: platformFee,
+      transfer_data: {
+        destination: hostConnectedAccountId,
+      },
+      payment_method_types: ['card'],
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+  } catch (error: any) {
+    console.error('Error creating Stripe Payment Intent:', error);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
 // Stripe Webhook Route
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   let event;
