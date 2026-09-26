@@ -505,18 +505,6 @@ export default function App() {
     }
   };
 
-  if (isAppLoading) {
-    return (
-      <div
-        className={`min-h-screen flex items-center justify-center ${isNightShiftMode ? "bg-[#08101C]" : "bg-[#faf8ff]"}`}
-      >
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-[#aff0db] border-t-transparent animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-200 ${
