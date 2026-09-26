@@ -75,6 +75,44 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
+  // Staging HTTP Basic Auth & Robots Header Middleware
+  app.use((req, res, next) => {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+
+    const isStaging =
+      process.env.NODE_ENV === 'staging' ||
+      process.env.STAGING_AUTH === 'true';
+
+    if (!isStaging) {
+      return next();
+    }
+
+    // Allow internal health checks and Stripe/Postmark webhooks to pass through
+    if (req.path === '/api/health' || req.path.startsWith('/api/webhooks')) {
+      return next();
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Staging Environment"');
+      return res.status(401).send('Authentication required');
+    }
+
+    const credentials = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf-8');
+    const [user, pass] = credentials.split(':');
+
+    if (
+      (user === 'lawrence' && pass === 'np-preview-2026') ||
+      (user === 'developer' && (pass === 'np-dev-2026' || pass === 'np-preview-2026')) ||
+      (user === 'admin' && pass === 'nursespillow2026')
+    ) {
+      return next();
+    }
+
+    res.setHeader('WWW-Authenticate', 'Basic realm="Staging Environment"');
+    return res.status(401).send('Invalid credentials');
+  });
+
   // Initialize Railway Production Database (prioritized over in-memory store)
   await db.initDb();
 

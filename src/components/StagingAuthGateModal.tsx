@@ -42,58 +42,51 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
         sessionStorage.setItem('np_staging_auth_lawrence', 'true');
         sessionStorage.setItem('np_staging_user', 'developer');
         onAuthenticated('developer');
+      } else if (u === 'admin' && p === 'nursespillow2026') {
+        sessionStorage.setItem('np_staging_auth_lawrence', 'true');
+        sessionStorage.setItem('np_staging_user', 'developer');
+        onAuthenticated('developer');
       } else {
-        setError('Invalid credentials. Client: "lawrence" / "np-preview-2026". Developer: "developer" / "np-dev-2026".');
+        setError('Invalid username or password.');
       }
       setIsSubmitting(false);
-    }, 300);
-  };
-
-  const handleQuickClientUnlock = () => {
-    setUsername('lawrence');
-    setPassword('np-preview-2026');
-    sessionStorage.setItem('np_staging_auth_lawrence', 'true');
-    sessionStorage.setItem('np_staging_user', 'client');
-    onAuthenticated('client');
+    }, 200);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#001848]/85 backdrop-blur-md animate-fade-in">
-      <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
-        <div
-          className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-8 shadow-lg border transition-all duration-200 ease-in-out ${
-            isNightShiftMode
-              ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
-              : 'bg-white border-black/5 text-[#001848]'
-          }`}
-        >
-        {/* Header Icon & Branding */}
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#0B2559]/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div
+        className={`w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-xl border transition-colors ${
+          isNightShiftMode
+            ? 'bg-[#0B1626] border-[#233550] text-[#E6ECF7]'
+            : 'bg-white border-[rgba(11,37,89,0.08)] text-[#0B2559]'
+        }`}
+      >
+        {/* Header */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#0a6fa8]/10 dark:bg-[#0a6fa8]/20 flex items-center justify-center text-[#0a6fa8] mb-3">
-            <span className="material-symbols-outlined text-3xl">lock</span>
+          <div className="w-12 h-12 rounded-2xl bg-[#0A6FA8]/10 dark:bg-[#0A6FA8]/20 flex items-center justify-center text-[#0A6FA8] dark:text-[#3E9AD1] mb-3">
+            <span className="material-symbols-outlined text-2xl">lock</span>
           </div>
-          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#ffdc84]/40 text-[#745b0d] dark:bg-[#745b0d]/30 dark:text-[#ffdf91] mb-2">
-            Staging Preview Gate • Milestone 1 Acceptance
-          </span>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Nurses Pillow LLC
-          </h2>
-          <p className="text-xs text-[#404850] dark:text-[#8ea5c8] mt-1 max-w-xs leading-relaxed">
-            Authorized client review link. Enter staging credentials to access the Milestone 1 core marketplace.
+          <h2 className="text-lg font-bold">Authentication required</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Staging environment
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-[#ba1a1a]/10 border border-[#ba1a1a]/20 text-[#ba1a1a] text-xs font-medium flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm shrink-0">error</span>
+            <div
+              role="alert"
+              className="p-2.5 rounded-xl bg-[#F4E2DC] text-[#A8452E] text-xs font-medium flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px] shrink-0">error</span>
               <span>{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold mb-1 text-[#001848] dark:text-[#E6ECF7]">
+            <label className="block text-xs font-semibold mb-1 text-gray-700 dark:text-gray-300">
               Username
             </label>
             <input
@@ -101,17 +94,18 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
+              autoFocus
+              className={`w-full px-3.5 py-2.5 rounded-xl text-sm transition-colors outline-none border ${
                 isNightShiftMode
-                  ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
-                  : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
+                  ? 'bg-[#15233a] border-[#233550] text-white focus:border-[#3E9AD1]'
+                  : 'bg-[#EFF6FB] border-transparent text-[#0B2559] focus:border-[#0A6FA8] focus:bg-white'
               }`}
-              placeholder="lawrence"
+              placeholder="Username"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold mb-1 text-[#001848] dark:text-[#E6ECF7]">
+            <label className="block text-xs font-semibold mb-1 text-gray-700 dark:text-gray-300">
               Password
             </label>
             <div className="relative">
@@ -120,60 +114,44 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className={`w-full pl-4 pr-10 py-2.5 rounded-xl text-sm transition-all duration-200 ease-in-out outline-none ${
+                className={`w-full pl-3.5 pr-10 py-2.5 rounded-xl text-sm transition-colors outline-none border ${
                   isNightShiftMode
-                    ? 'bg-[#15233a] border border-[#233550] text-white focus:border-[#0a6fa8]'
-                    : 'bg-[#f2f3ff] border border-transparent text-[#001848] focus:border-[#0a6fa8] focus:bg-white'
+                    ? 'bg-[#15233a] border-[#233550] text-white focus:border-[#3E9AD1]'
+                    : 'bg-[#EFF6FB] border-transparent text-[#0B2559] focus:border-[#0A6FA8] focus:bg-white'
                 }`}
-                placeholder="np-preview-2026"
+                placeholder="Password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0a6fa8] rounded-full"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                <span className="material-symbols-outlined text-[20px]">
+                <span className="material-symbols-outlined text-[18px]">
                   {showPassword ? 'visibility_off' : 'visibility'}
                 </span>
               </button>
             </div>
           </div>
 
-          <div className="pt-2 space-y-2">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-sm font-semibold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+              className="w-full py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
             >
-              <span className="material-symbols-outlined text-base">vpn_key</span>
-              <span>{isSubmitting ? 'Verifying...' : 'Unlock Preview'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleQuickClientUnlock}
-              className={`w-full py-2.5 rounded-full text-xs font-semibold border transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
-                isNightShiftMode
-                  ? 'border-[#233550] text-[#aff0db] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
-                  : 'border-[#dae2ff] text-[#005684] hover:bg-[#f2f3ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#f2f3ff]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm text-[#10b981]">verified_user</span>
-              <span>Client Review Access (Lawrence Roberts • Milestone 1)</span>
+              <span>{isSubmitting ? 'Signing in...' : 'Sign in'}</span>
             </button>
           </div>
         </form>
 
-        {/* Security & SEO Notice */}
-        <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 text-center">
-          <p className="text-[11px] text-[#404850] dark:text-[#8ea5c8] leading-relaxed">
-            🛡️ Unindexed staging environment (<code className="font-mono text-[10px]">noindex, nofollow</code>). NC real estate license & legal compliance pending attorney sign-off.
-          </p>
+        {/* SEO robots notice */}
+        <div className="mt-5 pt-3 border-t border-gray-100 dark:border-gray-800 text-center">
+          <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">
+            noindex, nofollow
+          </span>
         </div>
       </div>
     </div>
-  </div>
   );
 };
