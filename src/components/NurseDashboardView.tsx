@@ -958,7 +958,6 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               </div>
             </div>
           </div>
-        </div>
       )}
         </>
       )}

@@ -474,9 +474,6 @@ export default function App() {
             onToggleSave={handleToggleSaveListing}
             allListings={MOCK_LISTINGS}
             activeBookings={bookingRequests}
-            m2BypassMode={m2BypassMode}
-            onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
-            isDeveloper={isDeveloper}
           />
         )}
 
@@ -649,9 +646,6 @@ export default function App() {
             initialHospital={searchParamsState.hospital}
             initialDuration={searchParamsState.duration}
             initialRadius={searchParamsState.radius}
-            m2BypassMode={m2BypassMode}
-            onToggleM2Bypass={() => setM2BypassMode(!m2BypassMode)}
-            isDeveloper={isDeveloper}
           />
         )}
 
@@ -818,10 +812,6 @@ export default function App() {
         <ScrollProgressIndicator
           isNightShiftMode={isNightShiftMode}
           currentTab={currentTab}
-          isStagingHidden={isStagingAuthenticated && !isStagingBannerVisible}
-          onShowStagingBanner={() => setIsStagingBannerVisible(true)}
-          stagingClientName="lawrence"
-          isDeveloper={isDeveloper}
         />
       </main>
 
@@ -856,10 +846,6 @@ export default function App() {
             isNightShiftMode={isNightShiftMode}
             onAuthenticated={handleAuthenticated}
             onOpenEmailVerification={() => setCurrentTab('email-verification')}
-            showScreenCodes={showScreenCodes}
-            onToggleScreenCodes={handleToggleScreenCodes}
-            isDeveloper={isDeveloper}
-            onDeveloperSignIn={handleDeveloperSignIn}
           />
         </Suspense>
       )}
