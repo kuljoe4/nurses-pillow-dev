@@ -20,8 +20,8 @@ export const BLANK_VERIFICATION_DATA: VerificationFormData = {
   licenseNumber: '',
   issuingStateBoard: '',
   licenseExpirationDate: '',
-  uploadedDocument: undefined,
-  licenseStatus: 'not_started',
+  uploadedDocument: null,
+  licenseStatus: 'unsubmitted',
 
   // Step 4: Work Contract
   travelAgency: '',

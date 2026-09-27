@@ -65,19 +65,7 @@ export interface VerifyOtpResult {
 }
 
 class TwilioVerifyService {
-  private dispatches: TwilioOtpDispatch[] = [
-    {
-      sid: 'VE_test_init_94821',
-      to: '+1 (919) 555-0198',
-      channel: 'sms',
-      status: 'pending',
-      valid: false,
-      codeSent: '842199',
-      createdAt: new Date().toISOString(),
-      deliveryTimeMs: 412,
-    },
-  ];
-
+  private dispatches: TwilioOtpDispatch[] = [];
   // Send an authentic SMS OTP via Twilio Verify API
   async sendOtp(phoneNumber: string): Promise<TwilioOtpDispatch> {
     const formattedPhone = this.formatE164(phoneNumber);
