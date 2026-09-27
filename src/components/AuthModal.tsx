@@ -784,67 +784,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </p>
             </div>
 
-            {/* Institutional SSO */}
-            <div className="space-y-2.5 mb-5">
-              <button
-                type="button"
-                onClick={() => {
-                  onAuthenticated("nurse", "Sarah Jenkins");
-                  onClose();
-                }}
-                className="w-full py-3 px-4 rounded-2xl bg-[#eaedff] dark:bg-[#15233a] hover:bg-[#dae2ff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dae2ff] text-[#001848] dark:text-white flex items-center justify-between text-xs font-bold transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#005684] text-white flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[18px]">
-                      local_hospital
-                    </span>
-                  </div>
-                  <div className="text-left">
-                    <div>Institutional Hospital SSO</div>
-                    <div className="text-[10px] text-gray-500 font-normal">
-                      Duke Health, UNC, Atrium, Tenet, Kaiser
-                    </div>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined text-sm">
-                  arrow_forward
-                </span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onAuthenticated("nurse", "Sarah Jenkins");
-                    onClose();
-                  }}
-                  className="py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer"
-                >
-                  <span className="font-bold text-[#4285F4]">G</span>
-                  <span>Google Workspace</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onAuthenticated("nurse", "Sarah Jenkins");
-                    onClose();
-                  }}
-                  className="py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer"
-                >
-                  <span> Apple ID</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="relative flex items-center justify-center my-4">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-              <span className="absolute bg-white dark:bg-[#0E1A2E] px-3 text-[11px] text-gray-400">
-                or sign in with password
-              </span>
-            </div>
-
             {/* Form */}
             <form onSubmit={handleSigninSubmit} className="space-y-4 text-xs">
               <div>
