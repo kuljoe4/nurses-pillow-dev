@@ -393,7 +393,7 @@ router.post('/phone/send-otp', async (req, res) => {
     const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
-      if (process.env.NODE_ENV !== 'development') {
+      if (true) {
         throw new Error('Twilio credentials missing');
       }
       return res.json({ success: true, sid: 'mock_sid', to: phoneNumber, codeSent: 'mock_code', createdAt: new Date().toISOString() });
@@ -443,10 +443,10 @@ router.post('/phone/verify-otp', async (req, res) => {
     const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
-       if (process.env.NODE_ENV === 'development' && code === '842199') {
+       if (false) {
          return res.json({ success: true, status: 'approved', message: 'Verification successful.' });
        }
-       if (process.env.NODE_ENV !== 'development') {
+       if (true) {
          throw new Error('Twilio credentials missing');
        }
        return res.status(400).json({ success: false, error: 'INVALID_CODE', message: 'Invalid test code.' });

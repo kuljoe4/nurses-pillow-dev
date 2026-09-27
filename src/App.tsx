@@ -200,7 +200,7 @@ export default function App() {
   const [verificationStep, setVerificationStep] =
     useState<VerificationStepId>(3);
   const [verificationData, setVerificationData] =
-    useState<VerificationFormData>(INITIAL_VERIFICATION_DATA);
+    useState<VerificationFormData>(BLANK_VERIFICATION_DATA);
 
   // Proactive Role-Based Access Navigation Guard
   const handleNavigateTab = useCallback(
@@ -593,7 +593,7 @@ export default function App() {
         legalFirstName: name.split(" ")[0] || "",
         legalLastName: name.split(" ").slice(1).join(" ") || "",
         isContactVerified: isNurseVerified || false,
-        licenseStatus: isNurseVerified ? "verified" : "not_started",
+        licenseStatus: isNurseVerified ? "verified" : "unsubmitted",
       });
     }
 
@@ -654,6 +654,7 @@ export default function App() {
       <Header
         topBanner={null}
         currentTab={currentTab}
+        currentUser={currentUser}
         onSelectTab={handleNavigateTab}
         savedCount={savedListingIds.length}
         onOpenSaved={() => setIsSavedOpen(true)}
@@ -665,7 +666,6 @@ export default function App() {
           setAuthModalMode(mode);
           setIsAuthModalOpen(true);
         }}
-        currentUser={currentUser}
         onLogout={handleInitiateLogout}
         onLockPreview={() => {
           sessionStorage.removeItem("np_staging_auth_lawrence");
@@ -1166,7 +1166,7 @@ export default function App() {
             onClose={() => setIsAuthModalOpen(false)}
             isNightShiftMode={isNightShiftMode}
             onAuthenticated={handleAuthenticated}
-            onOpenEmailVerification={() => setCurrentTab("email-verification")}
+            onOpenEmailVerification={(email) => { if(email) { setVerificationData(prev => ({ ...prev, workEmail: email })); } setCurrentTab("email-verification"); }}
           />
         </Suspense>
       )}
