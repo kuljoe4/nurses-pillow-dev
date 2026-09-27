@@ -118,8 +118,9 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold mb-1">Assistance Category</label>
+              <label htmlFor="assistanceCategory" className="block text-xs font-semibold mb-1">Assistance Category</label>
               <select
+                id="assistanceCategory"
                 value={ticketSubject}
                 onChange={(e) => setTicketSubject(e.target.value)}
                 className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none ${
@@ -137,8 +138,9 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1">Describe your shift requirement</label>
+              <label htmlFor="shiftRequirement" className="block text-xs font-semibold mb-1">Describe your shift requirement</label>
               <textarea
+                id="shiftRequirement"
                 required
                 rows={3}
                 value={message}

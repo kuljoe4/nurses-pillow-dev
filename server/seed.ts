@@ -1,5 +1,6 @@
 import { db } from './db.js';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 import { NC_HOSPITAL_SEEDS, NC_LISTING_SEEDS } from '../src/services/database.js';
 
 dotenv.config();
@@ -8,6 +9,22 @@ async function seed() {
   console.log('Seeding Database with Enterprise Schema...');
 
   try {
+    // Provision super_admin securely using environment variables
+    const adminEmail = process.env.INITIAL_ADMIN_EMAIL;
+    const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
+
+    if (adminEmail && adminPassword) {
+      console.log('Provisioning super_admin account based on environment variables...');
+      const saltRounds = 10;
+      const adminHash = await bcrypt.hash(adminPassword, saltRounds);
+      await db.query(`
+        INSERT INTO users (id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified)
+        VALUES ('admin-root', $1, $2, 'Operations Administrator', 'super_admin', true, true)
+        ON CONFLICT (id) DO UPDATE SET password_hash = $2, email = $1, role = 'super_admin', full_name = 'Operations Administrator'
+      `, [adminEmail.toLowerCase(), adminHash]);
+      console.log('Super admin provisioned successfully.');
+    }
+
     for (const h of NC_HOSPITAL_SEEDS) {
         await db.query(`
           INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)

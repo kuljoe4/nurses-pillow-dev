@@ -1,3 +1,3 @@
-## 2026-09-25 - Component Memoization and useCallback
-**Learning:** Missing `useCallback` around handlers passed from high-level components (like `App.tsx`) to highly optimized leaf components (like `SearchListingCard` wrapped in `React.memo`) defeats the purpose of `React.memo`, causing unnecessary cascading re-renders when parent state changes.
-**Action:** Always verify that handler props passed to memoized components maintain stable references using `useCallback`, especially when they depend on state setters using the functional update form (e.g., `setPrev(prev => ...)`) which allows for empty dependency arrays.
+## 2026-09-27 - Stable References for Memoized Components
+**Learning:** `SearchListingCard` was wrapped in `React.memo` but many of the callback functions it received from `SearchListingsView` and `App.tsx` were re-created on every render, completely breaking the memoization and causing unnecessary re-renders when parent states changed.
+**Action:** When adding `React.memo` to child components, systematically trace all callback props up the component tree to ensure they are wrapped in `useCallback` with stable dependencies (or empty arrays if using functional state updates like `setBookingRequests(prev => ...)`).

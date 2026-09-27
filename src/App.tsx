@@ -528,9 +528,9 @@ export default function App() {
     }
   }, [isNightShiftMode]);
 
-  const handleUpdateVerification = (updates: Partial<VerificationFormData>) => {
+  const handleUpdateVerification = useCallback((updates: Partial<VerificationFormData>) => {
     setVerificationData((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
   // to child components like SearchListingsView and SearchListingCard that use React.memo,
@@ -541,32 +541,32 @@ export default function App() {
     );
   }, []);
 
-  const handleSelectHospitalFromDirectory = () => {
+  const handleSelectHospitalFromDirectory = useCallback(() => {
     setCurrentTab("find-housing");
-  };
+  }, []);
 
-  const handleOpenCheckout = (listing: HousingListing) => {
+  const handleOpenCheckout = useCallback((listing: HousingListing) => {
     setCheckoutListing(listing);
     setIsCheckoutOpen(true);
-  };
+  }, []);
 
-  const handleConfirmCheckout = (booking: BookingRequest) => {
+  const handleConfirmCheckout = useCallback((booking: BookingRequest) => {
     setBookingRequests((prev) => [booking, ...prev]);
     setIsCheckoutOpen(false);
     setCurrentTab("nurse-dashboard");
-  };
+  }, []);
 
-  const handleApproveBooking = (id: string) => {
+  const handleApproveBooking = useCallback((id: string) => {
     setBookingRequests((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status: "approved" } : b)),
     );
-  };
+  }, []);
 
-  const handleDeclineBooking = (id: string) => {
+  const handleDeclineBooking = useCallback((id: string) => {
     setBookingRequests((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status: "declined" } : b)),
     );
-  };
+  }, []);
 
   const handleAuthenticated = (
     role: UserRole,
