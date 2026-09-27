@@ -23,7 +23,7 @@ app.use(
         scriptSrcElem: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com", "https://nurses-pillow-dev-production.up.railway.app"],
+        imgSrc: ["'self'", "data:", "https://maps.gstatic.com", "https://maps.googleapis.com", "https://nurses-pillow-dev-production.up.railway.app", "https://images.unsplash.com"],
         connectSrc: ["'self'", "https://maps.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
@@ -353,6 +353,12 @@ if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../dist');
 
   app.use(express.static(distPath));
+
+  // Explicitly fail for missing static assets (like old Vite chunks) to prevent serving HTML
+  // with a 200 OK which causes MIME type errors and unhandled React Suspense failures
+  app.get('/assets/*', (req, res) => {
+    res.status(404).send('Asset not found');
+  });
 
   app.get('*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
