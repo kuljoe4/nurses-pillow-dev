@@ -695,7 +695,7 @@ export default function App() {
       return next;
     });
     setIsCheckoutOpen(false);
-    setCurrentTab("nurse-dashboard");
+    setCurrentTab("find-housing");
   }, [currentUser]);
 
   const handleApproveBooking = useCallback((id: string) => {
@@ -780,7 +780,7 @@ export default function App() {
       } else if (effectiveRole === "guest") {
         handleNavigateTab("find-housing");
       } else {
-        handleNavigateTab("nurse-dashboard");
+        handleNavigateTab("find-housing");
       }
     },
     [fetchUserProfile, handleNavigateTab]
@@ -986,9 +986,7 @@ export default function App() {
                       type="button"
                       onClick={() =>
                         handleNavigateTab(
-                          currentUser.role === "nurse"
-                            ? "nurse-dashboard"
-                            : "find-housing",
+                          "find-housing",
                         )
                       }
                       className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -1052,8 +1050,6 @@ export default function App() {
                         handleNavigateTab(
                           currentUser.role === "host"
                             ? "host-dashboard"
-                            : currentUser.role === "nurse"
-                            ? "nurse-dashboard"
                             : "find-housing",
                         )
                       }
