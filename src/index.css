@@ -146,9 +146,7 @@
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
-  max-width: 1em;
-  max-height: 1em;
-  overflow: hidden;
+  line-height: 1;
 }
 
 .material-symbols-outlined,
