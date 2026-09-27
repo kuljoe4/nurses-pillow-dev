@@ -111,7 +111,7 @@ export interface VerificationFormData {
     uploadedAt: string;
     fileType: string;
   } | null;
-  licenseStatus: 'pending_review' | 'verified' | 'unsubmitted';
+  licenseStatus: 'pending_review' | 'verified' | 'unsubmitted' | 'not_started';
 
   // Step 4: Work Contract
   travelAgency: string;
