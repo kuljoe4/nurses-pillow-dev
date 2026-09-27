@@ -192,8 +192,10 @@ class RailwayDatabaseManager {
     if (!this.pool || !this.isConnected) return;
 
     try {
-      // 1. Ensure core tables exist
+      // 1. Ensure extensions and core tables exist
       await this.pool.query(`
+        CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
         CREATE TABLE IF NOT EXISTS healthcare_facilities (
           id VARCHAR(255) PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
@@ -284,6 +286,17 @@ class RailwayDatabaseManager {
           actor VARCHAR(255) NOT NULL,
           timestamp TIMESTAMPTZ DEFAULT NOW()
         );
+
+        CREATE TABLE IF NOT EXISTS favorites (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id VARCHAR(255) NOT NULL,
+          listing_id VARCHAR(255) NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          CONSTRAINT uq_favorites_user_listing UNIQUE (user_id, listing_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+        CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
       `);
 
       // 2. Check if facilities table needs initial seeding
@@ -320,13 +333,28 @@ class RailwayDatabaseManager {
   /**
    * Executes a SQL query against Railway with automatic fallback handling
    */
-  public async query<T = any>(text: string, params: any[] = []): Promise<QueryResult<T>> {
+  public async query<T = any>(text: string, params?: any[]): Promise<QueryResult<T>> {
     if (this.isReady()) {
       try {
-        const result = await this.pool.query(text, params);
+        const result = params && params.length > 0
+          ? await this.pool.query(text, params)
+          : await this.pool.query(text);
+
+        if (Array.isArray(result)) {
+          const lastResult = result[result.length - 1];
+          const rows = lastResult?.rows || [];
+          const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+          return {
+            rows,
+            rowCount,
+          };
+        }
+
+        const rows = result?.rows || [];
+        const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
         return {
-          rows: result.rows,
-          rowCount: result.rowCount || result.rows.length,
+          rows,
+          rowCount,
         };
       } catch (err: any) {
         console.warn('[Railway DB] Query execution error:', err.message);

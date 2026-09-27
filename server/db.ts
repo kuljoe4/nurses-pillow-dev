@@ -62,7 +62,7 @@ export const db = {
    * Executes a query against the live PostgreSQL database.
    * STRICT: No in-memory fallback. Throws error if database is unavailable.
    */
-  query: async (text: string, params: any[] = []): Promise<any> => {
+  query: async (text: string, params?: any[]): Promise<any> => {
     // 1. Primary: Railway Database Manager
     if (railwayDb.isReady()) {
       return await railwayDb.query(text, params);
@@ -71,10 +71,28 @@ export const db = {
     // 2. Direct PostgreSQL Pool
     if (pool) {
       try {
-        const result = await pool.query(text, params);
+        const result = params && params.length > 0
+          ? await pool.query(text, params)
+          : await pool.query(text);
         pgConnected = true;
         lastConnectionError = null;
-        return result;
+
+        if (Array.isArray(result)) {
+          const lastResult = result[result.length - 1];
+          const rows = lastResult?.rows || [];
+          const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+          return {
+            rows,
+            rowCount,
+          };
+        }
+
+        const rows = result?.rows || [];
+        const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
+        return {
+          rows,
+          rowCount,
+        };
       } catch (err: any) {
         console.error('[PostgreSQL] Query execution error:', err.message);
         throw err;
@@ -97,11 +115,26 @@ export const db = {
       const railwayOk = await railwayDb.initialize();
       if (railwayOk) {
         console.log('[PostgreSQL] Railway production database initialized and active.');
+        // Ensure extensions exist
+        await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+
         // Ensure reset password columns exist
         await railwayDb.query(`
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+        `);
+        // Ensure favorites table and indexes exist
+        await railwayDb.query(`
+          CREATE TABLE IF NOT EXISTS favorites (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id VARCHAR(255) NOT NULL,
+            listing_id VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            CONSTRAINT uq_favorites_user_listing UNIQUE (user_id, listing_id)
+          );
+          CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+          CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
         `);
         return;
       }
@@ -115,11 +148,26 @@ export const db = {
           console.log('[PostgreSQL] Database schema initialized successfully from schema.sql');
         }
 
+        await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+
         // Ensure reset password columns exist
         await pool.query(`
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+        `);
+
+        // Ensure favorites table and indexes exist
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS favorites (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id VARCHAR(255) NOT NULL,
+            listing_id VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            CONSTRAINT uq_favorites_user_listing UNIQUE (user_id, listing_id)
+          );
+          CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+          CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
         `);
       } else {
         console.warn(`[PostgreSQL] Live database not yet connected: ${lastConnectionError || 'DATABASE_URL pending'}`);

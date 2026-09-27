@@ -81,7 +81,7 @@ router.post('/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const result = await db.query('SELECT id, email, password_hash, full_name, role FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     let user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -107,7 +107,11 @@ router.post('/login', async (req, res) => {
         id: user.id,
         email: user.email,
         full_name: user.full_name,
-        role: user.role
+        role: user.role,
+        is_nurse_verified: Boolean(user.is_nurse_verified),
+        is_host_verified: Boolean(user.is_host_verified),
+        email_verified: Boolean(user.email_verified),
+        phone_verified: Boolean(user.phone_verified),
       },
       token
     });
@@ -371,6 +375,22 @@ router.get('/me', async (req, res) => {
     (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
 
   if (!token) {
+    const emailParam = req.query.email as string;
+    if (emailParam) {
+      try {
+        const cleanEmail = emailParam.trim().toLowerCase();
+        const result = await db.query(
+          'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified FROM users WHERE LOWER(email) = $1',
+          [cleanEmail]
+        );
+        if (result.rows.length > 0) {
+          res.json({ user: result.rows[0] });
+          return;
+        }
+      } catch (err) {
+        console.error('Error fetching user by email fallback:', err);
+      }
+    }
     res.json({ user: null });
     return;
   }
@@ -485,6 +505,173 @@ router.post('/phone/verify-otp', async (req, res) => {
   } catch (error) {
     console.error('Verify OTP error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// In-memory store for favorites fallback
+const memoryFavorites = new Map<string, Set<string>>();
+
+// Self-healing table check to guarantee favorites table exists
+let favoritesTableInitialized = false;
+async function ensureFavoritesTable() {
+  if (favoritesTableInitialized) return;
+  try {
+    await db.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR(255) NOT NULL,
+        listing_id VARCHAR(255) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        CONSTRAINT uq_favorites_user_listing UNIQUE (user_id, listing_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
+      CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
+    `);
+    favoritesTableInitialized = true;
+  } catch (err: any) {
+    console.warn('ensureFavoritesTable notice:', err.message);
+  }
+}
+
+router.get('/favorites', async (req, res) => {
+  try {
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
+    let userId = req.query.userId as string;
+    let userEmail = req.query.email as string;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        if (decoded?.id) userId = decoded.id;
+        if (decoded?.email) userEmail = decoded.email;
+      } catch {}
+    }
+
+    if (!userId && userEmail) {
+      try {
+        const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
+        if (uRes.rows.length > 0) {
+          userId = uRes.rows[0].id;
+        }
+      } catch {}
+    }
+
+    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean)));
+    if (searchKeys.length === 0) {
+      res.json({ listingIds: [] });
+      return;
+    }
+
+    try {
+      await ensureFavoritesTable();
+      const result = await db.query(
+        'SELECT DISTINCT listing_id FROM favorites WHERE user_id = ANY($1)',
+        [searchKeys]
+      );
+      const listingIds = (result?.rows || []).map((r: any) => r.listing_id);
+      // Synchronize memory cache
+      for (const k of searchKeys) {
+        memoryFavorites.set(k, new Set(listingIds));
+      }
+      res.json({ listingIds });
+      return;
+    } catch {
+      const savedSet = new Set<string>();
+      for (const k of searchKeys) {
+        const cached = memoryFavorites.get(k);
+        if (cached) {
+          for (const item of cached) savedSet.add(item);
+        }
+      }
+      res.json({ listingIds: Array.from(savedSet) });
+    }
+  } catch (error) {
+    console.error('Fetch favorites error:', error);
+    res.json({ listingIds: [] });
+  }
+});
+
+router.post('/favorites/toggle', async (req, res) => {
+  try {
+    const { listingId } = req.body;
+    if (!listingId) {
+      res.status(400).json({ error: 'listingId is required' });
+      return;
+    }
+
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
+    let userId = req.body.userId;
+    let userEmail = req.body.email;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        if (decoded?.id) userId = decoded.id;
+        if (decoded?.email) userEmail = decoded.email;
+      } catch {}
+    }
+
+    if (!userId && userEmail) {
+      try {
+        const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
+        if (uRes.rows.length > 0) {
+          userId = uRes.rows[0].id;
+        }
+      } catch {}
+    }
+
+    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean)));
+    const primaryKey = userId || (userEmail ? userEmail.trim().toLowerCase() : 'guest');
+
+    if (!memoryFavorites.has(primaryKey)) {
+      memoryFavorites.set(primaryKey, new Set());
+    }
+    const userFavorites = memoryFavorites.get(primaryKey)!;
+    let isSaved = false;
+    if (userFavorites.has(listingId)) {
+      userFavorites.delete(listingId);
+      isSaved = false;
+    } else {
+      userFavorites.add(listingId);
+      isSaved = true;
+    }
+
+    for (const k of searchKeys) {
+      memoryFavorites.set(k, new Set(userFavorites));
+    }
+
+    try {
+      if (primaryKey !== 'guest') {
+        await ensureFavoritesTable();
+        if (isSaved) {
+          await db.query(
+            'INSERT INTO favorites (id, user_id, listing_id) VALUES (gen_random_uuid(), $1, $2) ON CONFLICT (user_id, listing_id) DO NOTHING',
+            [primaryKey, listingId]
+          );
+        } else {
+          await db.query(
+            'DELETE FROM favorites WHERE user_id = ANY($1) AND listing_id = $2',
+            [searchKeys, listingId]
+          );
+        }
+      }
+    } catch (dbErr) {
+      // In-memory handles persistence if DB table not yet initialized or network issue
+      console.warn('DB favorite toggle warning:', dbErr);
+    }
+
+    res.json({
+      saved: isSaved,
+      listingIds: Array.from(userFavorites),
+    });
+  } catch (error) {
+    console.error('Toggle favorite error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

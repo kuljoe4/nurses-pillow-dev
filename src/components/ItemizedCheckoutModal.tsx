@@ -11,6 +11,13 @@ interface ItemizedCheckoutModalProps {
   listing: HousingListing;
   isNightShiftMode: boolean;
   onBookingSubmitted: (booking: BookingRequest) => void;
+  currentUser?: {
+    id?: string;
+    role: string;
+    name: string;
+    email?: string;
+  };
+  verificationData?: any;
 }
 
 export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
@@ -19,6 +26,8 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   listing,
   isNightShiftMode,
   onBookingSubmitted,
+  currentUser,
+  verificationData,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -107,12 +116,12 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
 
       const newBooking: BookingRequest = {
         id: `np-book-${Date.now()}`,
-        clinicianName: 'Sarah Jenkins',
-        clinicianTitle: 'BSN, RN (PICU / Telemetry)',
-        clinicianAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDq4qMRmWv2abJRAge1U60MiJz3ulOwOef26b8BlXofCKd0UYHmuYFFweYJOfwOhJ_ggE5Ojndfvp_UgeBPscmhcUpTEyosqeYWT0XOxXEVi_tIhHf24J1MSAxhpaGZomPPjhhjxPvZm1hpBWgQ5TLIwGKQPTELer9K4P2fAWRC9iyShXy8d0AFBKFqZndhLwcltJG7FThPWTne1t5lePzE47OauuD_JvjBvlr9Q8OblPNkVH952ytP',
-        clinicianPhone: '+1 (919) 555-0198',
-        hospitalName: listing.nearestHospital || 'Duke University Hospital',
-        unitSpecialty: 'Pediatric Intensive Care Unit (PICU)',
+        clinicianName: currentUser?.name || 'Travel Clinician',
+        clinicianTitle: verificationData?.professionSpecialty || 'BSN, RN (Travel Specialist)',
+        clinicianAvatar: 'https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80',
+        clinicianPhone: verificationData?.mobilePhone || '+1 (919) 555-0198',
+        hospitalName: listing.nearestHospital || 'Assignment Hospital',
+        unitSpecialty: verificationData?.professionSpecialty?.includes('PICU') ? 'Pediatric ICU' : 'Clinical Rotation',
         listingId: listing.id,
         listingTitle: listing.title,
         startDate: '2026-10-01',
@@ -130,7 +139,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         deadlineHoursRemaining: 24,
         specialRequests: specialNote,
         doorCode: '•••• 4821',
-        wifiNetwork: 'SunsetSanctuary-5G',
+        wifiNetwork: 'Sanctuary-Clinician-5G',
       };
 
       setIsSuccess(true);

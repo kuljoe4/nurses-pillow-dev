@@ -32,6 +32,23 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   useBodyScrollLock(!!listing);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+
+  // Synchronize default room on listing change
+  useEffect(() => {
+    if (listing?.rooms && listing.rooms.length > 0) {
+      setSelectedRoomId(listing.rooms[0].id);
+    } else {
+      setSelectedRoomId(null);
+    }
+  }, [listing?.id]);
+
+  const selectedRoom = useMemo(() => {
+    if (!listing?.rooms || !selectedRoomId) return null;
+    return listing.rooms.find((r) => r.id === selectedRoomId) || listing.rooms[0];
+  }, [listing?.rooms, selectedRoomId]);
+
+  const activeMonthlyRate = selectedRoom ? selectedRoom.monthlyRate : (listing?.monthlyRate || 1950);
 
   const commute = useMemo(() => {
     if (!listing) return null;
@@ -202,22 +219,102 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             {/* Unit Overview Stats Pills */}
             <div className="flex flex-wrap gap-2 text-xs">
               <span className="px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#15233a] font-medium flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-[#005684]">home</span>
-                <span>Entire Garden Suite</span>
+                <span className="material-symbols-outlined text-[16px] text-[#005684]">
+                  {listing.rooms && listing.rooms.length > 0 ? 'meeting_room' : 'home'}
+                </span>
+                <span>{listing.propertyType || (listing.rooms ? 'INDIVIDUAL ROOMS' : 'ENTIRE CONDO')}</span>
               </span>
               <span className="px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#15233a] font-medium flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px] text-[#005684]">king_bed</span>
-                <span>1 King Plush Bed</span>
+                <span>{selectedRoom ? selectedRoom.bedType : `${listing.beds || 1} Bed`}</span>
               </span>
               <span className="px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#15233a] font-medium flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px] text-[#005684]">bathtub</span>
-                <span>1 Ensuite Bath</span>
+                <span>{selectedRoom ? selectedRoom.bathType : `${listing.baths || 1} Bath`}</span>
               </span>
               <span className="px-3 py-1.5 rounded-full bg-[#eaedff] dark:bg-[#15233a] font-medium flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px] text-[#005684]">key</span>
                 <span>Keyless Digital PIN</span>
               </span>
             </div>
+
+            {/* Individual Room Pricing & Availability Calendars Section */}
+            {listing.rooms && listing.rooms.length > 0 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#EFF6FB] dark:bg-[#14233a] border border-[#0A6FA8]/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[20px]">
+                      meeting_room
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-bold text-[#0B2559] dark:text-white">
+                        Individual Room Selection &amp; Availability Calendars
+                      </h3>
+                      <p className="text-[11px] text-[#404850] dark:text-[#93ccff]">
+                        Select an individual room to review specific monthly pricing, bathroom access, and calendar windows
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#93ccff]">
+                    {listing.rooms.length} Rooms Available
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {listing.rooms.map((room) => {
+                    const isRoomSelected = selectedRoomId === room.id;
+                    return (
+                      <div
+                        key={room.id}
+                        onClick={() => setSelectedRoomId(room.id)}
+                        className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                          isRoomSelected
+                            ? 'border-[#0A6FA8] bg-white dark:bg-[#0B1626] shadow-sm ring-1 ring-[#0A6FA8]'
+                            : 'border-transparent bg-white/70 dark:bg-[#0B1626]/60 hover:bg-white dark:hover:bg-[#0B1626]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-bold text-xs text-[#0B2559] dark:text-white flex items-center gap-1.5">
+                              <span>{room.name}</span>
+                              {isRoomSelected && (
+                                <span className="material-symbols-outlined text-[15px] text-[#0A6FA8]">
+                                  check_circle
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                              {room.bedType} · {room.bathType} · {room.sqft} sqft
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-sm font-black text-[#0B2559] dark:text-white tabular-nums">
+                              ${room.monthlyRate.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] text-gray-500 block">/month</span>
+                          </div>
+                        </div>
+
+                        {/* Room Specific Calendar Strip */}
+                        <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between text-[11px]">
+                          <span className="flex items-center gap-1 text-[#2F6E5E] dark:text-[#aff0db] font-semibold">
+                            <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                            <span>{room.availableFrom}</span>
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            room.isAvailable
+                              ? 'bg-[#E1EFE9] text-[#2F6E5E]'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {room.isAvailable ? 'Shift Open' : 'Reserved'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Google Maps-Powered Commute to Clinician's Selected Hospital */}
             {commute && (
@@ -385,30 +482,41 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             <div className="rounded-3xl p-5 sm:p-6 bg-white dark:bg-[#0B1626] shadow-md border border-[rgba(11,37,89,0.1)] dark:border-[#233550] space-y-4">
               <div className="flex items-baseline justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
                 <div>
-                  <span className="text-2xl font-black">${(listing.monthlyRate || 1950).toLocaleString()}</span>
+                  <span className="text-2xl font-black tabular-nums">${activeMonthlyRate.toLocaleString()}</span>
                   <span className="text-xs text-gray-500"> / month</span>
+                  {selectedRoom && (
+                    <div className="text-[11px] text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold mt-0.5 truncate max-w-[200px]">
+                      {selectedRoom.name}
+                    </div>
+                  )}
                   <div className="text-[11px] text-[#195b4c] font-semibold flex items-center gap-1 mt-0.5">
                     <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                    <span>Shift-Certified Direct Rate ($65/night)</span>
+                    <span>Shift-Certified Direct Rate</span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-[#195b4c]/10 text-[#195b4c] text-[11px] font-bold">
-                  Direct RN Rate
+                  {selectedRoom ? 'Room Rate' : 'Direct RN Rate'}
                 </span>
               </div>
 
               {/* Assignment Window */}
               <div className="p-3 rounded-xl bg-[#f2f3ff] dark:bg-[#182840] text-xs">
-                <div className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Assignment Window</div>
-                <div className="font-bold">Oct 1, 2024 – Dec 31, 2024</div>
-                <div className="text-[11px] text-gray-500">13 Weeks • Standard Travel Contract</div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">
+                  {selectedRoom ? 'Room Availability & Window' : 'Assignment Window'}
+                </div>
+                <div className="font-bold">
+                  {selectedRoom ? selectedRoom.availableFrom : 'Oct 1, 2024 – Dec 31, 2024'}
+                </div>
+                <div className="text-[11px] text-gray-500">
+                  {selectedRoom ? `${selectedRoom.bedType} · ${selectedRoom.bathType}` : '13 Weeks • Standard Travel Contract'}
+                </div>
               </div>
 
               {/* Fee Breakdown */}
               <div className="space-y-1.5 text-xs text-[#404850] dark:text-[#c0c7d1]">
                 <div className="flex justify-between">
                   <span>Monthly Lodging Rate</span>
-                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${(listing.monthlyRate || 1950).toLocaleString()}.00</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${activeMonthlyRate.toLocaleString()}.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Clinical Sanitization</span>
@@ -428,7 +536,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between font-bold text-sm text-[#001848] dark:text-white">
                   <span>Initial Due at Hold</span>
-                  <span className="text-[#0A6FA8] dark:text-[#93ccff] font-black tabular-nums">${((listing.monthlyRate || 1950) + 400).toLocaleString()}.00</span>
+                  <span className="text-[#0A6FA8] dark:text-[#93ccff] font-black tabular-nums">${(activeMonthlyRate + 400).toLocaleString()}.00</span>
                 </div>
               </div>
 
@@ -438,7 +546,10 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   type="button"
                   onClick={() => {
                     if (onRequestToBook) {
-                      onRequestToBook(listing);
+                      const bookingListing = selectedRoom
+                        ? { ...listing, monthlyRate: activeMonthlyRate, title: `${listing.title} (${selectedRoom.name})` }
+                        : listing;
+                      onRequestToBook(bookingListing);
                     }
                   }}
                   className="w-full py-3.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-xs shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"

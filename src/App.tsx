@@ -321,10 +321,30 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Saved listings state (initialized with 1 saved sanctuary)
-  const [savedListingIds, setSavedListingIds] = useState<string[]>([
-    "nc-duke-condo",
-  ]);
+  // Helper for per-account saved pillows persistence key
+  const getSavedPillowsKey = (email?: string, id?: string) => {
+    const target = email || id || localStorage.getItem("np_user_email");
+    return target ? `np_saved_pillows_${target}` : "np_saved_pillows_guest";
+  };
+
+  // Helper for per-account bookings persistence key
+  const getBookingsKey = (email?: string, id?: string) => {
+    const target = email || id || localStorage.getItem("np_user_email");
+    return target ? `np_bookings_${target}` : "np_bookings_guest";
+  };
+
+  // Saved listings state (persisted per account, zero mock defaults for real accounts)
+  const [savedListingIds, setSavedListingIds] = useState<string[]>(() => {
+    try {
+      const rememberedEmail = localStorage.getItem("np_user_email");
+      const key = rememberedEmail ? `np_saved_pillows_${rememberedEmail}` : "np_saved_pillows_guest";
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
+    } catch {}
+    return [];
+  });
 
   // Night shift mode state
   const [isNightShiftMode, setIsNightShiftMode] = useState<boolean>(false);
@@ -354,10 +374,6 @@ export default function App() {
   >("signup");
   const [resetToken, setResetToken] = useState<string>("");
 
-
-
-
-
   // Initiate Logout confirmation dialog
   const handleInitiateLogout = () => {
     setIsLogoutDialogOpen(true);
@@ -373,14 +389,16 @@ export default function App() {
     sessionStorage.removeItem("np_active_user");
     localStorage.removeItem("np_remembered_user");
     localStorage.removeItem("np_auth_token");
+    localStorage.removeItem("np_user_email");
 
     // Clear backend auth cookie
     fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
 
-    // 2. Reset currentUser state to Guest
+    // 2. Reset currentUser state to Guest and clear active state
     setCurrentUser({ role: "guest", name: "Guest User" });
     setBookingRequests([]);
-    setVerificationData(INITIAL_VERIFICATION_DATA);
+    setSavedListingIds([]);
+    setVerificationData(BLANK_VERIFICATION_DATA);
 
     // 3. Reset developer staging perspective if active
     if (stagingUser === "developer") {
@@ -408,38 +426,157 @@ export default function App() {
     radius: 5,
   });
 
-  // Shared booking requests across Portals A & B
-  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([
-    {
-      id: "req-1",
-      listingId: "sf-dogpatch-studio",
-      listingTitle: "Modern Dogpatch Studio w/ Blackout & Parking",
-      clinicianName: "Sarah Jenkins",
-      clinicianTitle: "BSN, RN — PICU",
-      clinicianAvatar:
-        "https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80",
-      clinicianPhone: "+1 (919) 555-0198",
-      hospitalName: "UCSF Medical Center - Mission Bay",
-      unitSpecialty: "Pediatric ICU",
-      startDate: "Oct 1, 2024",
-      endDate: "Dec 31, 2024",
-      durationWeeks: 13,
-      monthlyRent: 1950,
-      cleaningFee: 150,
-      securityDeposit: 250,
-      petFee: 0,
-      travelerFee: 0,
-      totalInitialCharge: 2350,
-      hostNetPayout: 1852.5,
-      status: "pending_host_approval",
-      submittedAt: "Today, 2:15 PM",
-      deadlineHoursRemaining: 22,
-      specialRequests:
-        "Night shift schedule: 7 PM – 7 AM. 100% quiet daytime requirement.",
-    },
-  ]);
+  // Shared booking requests across Portals A & B (persisted per account)
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>(() => {
+    try {
+      const rememberedEmail = localStorage.getItem("np_user_email");
+      if (rememberedEmail) {
+        const key = `np_bookings_${rememberedEmail}`;
+        const saved = localStorage.getItem(key);
+        if (saved !== null) {
+          return JSON.parse(saved);
+        }
+        // Real registered user with no stored bookings starts with 0 bookings
+        if (!rememberedEmail.includes("demo") && rememberedEmail !== "sarah.jenkins@ucsf.edu") {
+          return [];
+        }
+      }
+    } catch {}
+    return [
+      {
+        id: "req-1",
+        listingId: "sf-dogpatch-studio",
+        listingTitle: "Modern Dogpatch Studio w/ Blackout & Parking",
+        clinicianName: "Sarah Jenkins",
+        clinicianTitle: "BSN, RN — PICU",
+        clinicianAvatar:
+          "https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80",
+        clinicianPhone: "+1 (919) 555-0198",
+        hospitalName: "UCSF Medical Center - Mission Bay",
+        unitSpecialty: "Pediatric ICU",
+        startDate: "Oct 1, 2024",
+        endDate: "Dec 31, 2024",
+        durationWeeks: 13,
+        monthlyRent: 1950,
+        cleaningFee: 150,
+        securityDeposit: 250,
+        petFee: 0,
+        travelerFee: 0,
+        totalInitialCharge: 2350,
+        hostNetPayout: 1852.5,
+        status: "pending_host_approval",
+        submittedAt: "Today, 2:15 PM",
+        deadlineHoursRemaining: 22,
+        specialRequests:
+          "Night shift schedule: 7 PM – 7 AM. 100% quiet daytime requirement.",
+      },
+    ];
+  });
 
-  // Initialize Database state from PostgreSQL
+  // Explicitly fetch and synchronize the current user's profile from the backend
+  // to prevent UI from displaying stale, mocked, or placeholder user data.
+  const fetchUserProfile = useCallback(async (targetEmail?: string) => {
+    try {
+      const token = localStorage.getItem("np_auth_token");
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const emailToQuery = targetEmail || localStorage.getItem("np_user_email") || undefined;
+      const url = emailToQuery
+        ? `/api/auth/me?email=${encodeURIComponent(emailToQuery)}`
+        : "/api/auth/me";
+
+      const res = await fetch(url, {
+        headers,
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          const user = data.user;
+          setCurrentUser({
+            id: user.id,
+            role: user.role,
+            name: user.full_name || user.email,
+            email: user.email,
+            isNurseVerified: Boolean(user.is_nurse_verified),
+            isHostVerified: Boolean(user.is_host_verified),
+          });
+          // Synchronize verified user email into verification workflow
+          setVerificationData((prev) => ({
+            ...prev,
+            workEmail: user.email || prev.workEmail,
+            legalFirstName: (user.full_name || "").split(" ")[0] || prev.legalFirstName,
+            legalLastName: (user.full_name || "").split(" ").slice(1).join(" ") || prev.legalLastName,
+            isContactVerified: Boolean(user.email_verified || prev.isContactVerified),
+            phoneVerified: Boolean(user.phone_verified || prev.phoneVerified),
+            licenseStatus: user.is_nurse_verified ? "verified" : prev.licenseStatus,
+          }));
+          if (user.email) {
+            localStorage.setItem("np_user_email", user.email);
+          }
+
+          const isDemo = Boolean(user.id?.startsWith("usr_demo") || user.email === "sarah.jenkins@ucsf.edu");
+
+          // Load user's persisted bookings
+          const bookingsKey = getBookingsKey(user.email, user.id);
+          const savedBookings = localStorage.getItem(bookingsKey);
+          if (savedBookings !== null) {
+            try {
+              setBookingRequests(JSON.parse(savedBookings));
+            } catch {
+              setBookingRequests([]);
+            }
+          } else if (!isDemo) {
+            setBookingRequests([]);
+          }
+
+          // Load user's persisted saved pillows from localStorage & backend
+          const pillowsKey = getSavedPillowsKey(user.email, user.id);
+          const localPillows = localStorage.getItem(pillowsKey);
+          if (localPillows !== null) {
+            try {
+              setSavedListingIds(JSON.parse(localPillows));
+            } catch {}
+          } else if (!isDemo) {
+            setSavedListingIds([]);
+          }
+
+          // Background sync from backend favorites endpoint
+          try {
+            const favParams = new URLSearchParams();
+            if (user.id) favParams.append("userId", user.id);
+            if (user.email) favParams.append("email", user.email);
+            const favRes = await fetch(`/api/auth/favorites?${favParams.toString()}`, {
+              headers,
+              credentials: "include",
+            });
+            if (favRes.ok) {
+              const favData = await favRes.json();
+              if (Array.isArray(favData.listingIds)) {
+                setSavedListingIds(favData.listingIds);
+                localStorage.setItem(pillowsKey, JSON.stringify(favData.listingIds));
+              }
+            }
+          } catch (favErr) {
+            console.warn("Could not sync backend favorites:", favErr);
+          }
+
+          return user;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to re-fetch user auth profile:", err);
+    }
+    return null;
+  }, []);
+
+  const handleUpdateVerification = useCallback((updates: Partial<VerificationFormData>) => {
+    setVerificationData((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  // Initialize Database state from PostgreSQL & load current authenticated user profile
   useEffect(() => {
     const initializeDb = async () => {
       try {
@@ -461,47 +598,24 @@ export default function App() {
       }
     };
     initializeDb();
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem("np_auth_token");
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-        const res = await fetch("/api/auth/me", { headers });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setCurrentUser({
-              id: data.user.id,
-              role: data.user.role,
-              name: data.user.full_name || data.user.email,
-              email: data.user.email,
-              isNurseVerified: data.user.is_nurse_verified,
-              isHostVerified: data.user.is_host_verified,
-            });
-            // Synchronize verified user email into verification workflow
-            setVerificationData((prev) => ({
-              ...prev,
-              workEmail: data.user.email || prev.workEmail,
-              legalFirstName: (data.user.full_name || "").split(" ")[0] || prev.legalFirstName,
-              legalLastName: (data.user.full_name || "").split(" ").slice(1).join(" ") || prev.legalLastName,
-              isContactVerified: data.user.email_verified || prev.isContactVerified,
-              phoneVerified: data.user.phone_verified || prev.phoneVerified,
-              licenseStatus: data.user.is_nurse_verified ? "verified" : prev.licenseStatus,
-            }));
-            // Clear static mock bookings for real registered user
-            if (data.user.id && !data.user.id.startsWith("usr_demo")) {
-              setBookingRequests([]);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch user auth state", err);
-      }
-    };
-    checkAuth();
-  }, []);
+    fetchUserProfile();
+  }, [fetchUserProfile]);
+
+  // Handle email verification / confirmation query parameters in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailVerified =
+      params.get("email_verified") ||
+      params.get("verified") ||
+      params.get("confirmed");
+    if (emailVerified === "true" || emailVerified === "1") {
+      fetchUserProfile().then(() => {
+        handleUpdateVerification({ isContactVerified: true });
+      });
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [fetchUserProfile, handleUpdateVerification]);
 
   // Handle Password Reset Links
   useEffect(() => {
@@ -528,18 +642,39 @@ export default function App() {
     }
   }, [isNightShiftMode]);
 
-  const handleUpdateVerification = useCallback((updates: Partial<VerificationFormData>) => {
-    setVerificationData((prev) => ({ ...prev, ...updates }));
-  }, []);
-
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
   // to child components like SearchListingsView and SearchListingCard that use React.memo,
   // preventing unnecessary re-renders when App.tsx re-renders.
   const handleToggleSaveListing = useCallback((id: string) => {
-    setSavedListingIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  }, []);
+    setSavedListingIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      const key = getSavedPillowsKey(currentUser?.email, currentUser?.id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch (err) {
+        console.error("Failed to persist saved pillows to localStorage:", err);
+      }
+      return next;
+    });
+
+    // Synchronize to backend favorites
+    const token = localStorage.getItem("np_auth_token");
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    fetch("/api/auth/favorites/toggle", {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({
+        listingId: id,
+        userId: currentUser?.id,
+        email: currentUser?.email || localStorage.getItem("np_user_email"),
+      }),
+    }).catch((err) => {
+      console.warn("Failed to toggle favorite on server:", err);
+    });
+  }, [currentUser]);
 
   const handleSelectHospitalFromDirectory = useCallback(() => {
     setCurrentTab("find-housing");
@@ -551,78 +686,105 @@ export default function App() {
   }, []);
 
   const handleConfirmCheckout = useCallback((booking: BookingRequest) => {
-    setBookingRequests((prev) => [booking, ...prev]);
+    setBookingRequests((prev) => {
+      const next = [booking, ...prev];
+      const key = getBookingsKey(currentUser?.email, currentUser?.id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
     setIsCheckoutOpen(false);
     setCurrentTab("nurse-dashboard");
-  }, []);
+  }, [currentUser]);
 
   const handleApproveBooking = useCallback((id: string) => {
-    setBookingRequests((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: "approved" } : b)),
-    );
-  }, []);
+    setBookingRequests((prev) => {
+      const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
+      const key = getBookingsKey(currentUser?.email, currentUser?.id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, [currentUser]);
 
   const handleDeclineBooking = useCallback((id: string) => {
-    setBookingRequests((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: "declined" } : b)),
-    );
-  }, []);
-
-  const handleAuthenticated = (
-    role: UserRole,
-    name: string,
-    email?: string,
-    id?: string,
-    isNurseVerified?: boolean,
-    isHostVerified?: boolean,
-    skipAutoNavigate?: boolean
-  ) => {
-    setCurrentUser({
-      role,
-      name,
-      email,
-      id,
-      isNurseVerified,
-      isHostVerified,
+    setBookingRequests((prev) => {
+      const next = prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
+      const key = getBookingsKey(currentUser?.email, currentUser?.id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
     });
+  }, [currentUser]);
 
-    if (email) {
-      setVerificationData({
-        ...BLANK_VERIFICATION_DATA,
-        workEmail: email,
-        legalFirstName: name.split(" ")[0] || "",
-        legalLastName: name.split(" ").slice(1).join(" ") || "",
-        isContactVerified: isNurseVerified || false,
-        licenseStatus: isNurseVerified ? "verified" : "unsubmitted",
+  const handleAuthenticated = useCallback(
+    async (
+      role: UserRole,
+      name: string,
+      email?: string,
+      id?: string,
+      isNurseVerified?: boolean,
+      isHostVerified?: boolean,
+      skipAutoNavigate?: boolean
+    ) => {
+      // 1. Optimistic immediate state update to keep UI responsive
+      setCurrentUser({
+        role,
+        name,
+        email,
+        id,
+        isNurseVerified,
+        isHostVerified,
       });
-    }
 
-    // Clear static mock bookings for newly registered user so dashboard starts clean
-    if (id && !id.startsWith("usr_demo")) {
-      setBookingRequests([]);
-    }
+      if (email) {
+        localStorage.setItem("np_user_email", email);
+        setVerificationData((prev) => ({
+          ...prev,
+          workEmail: email,
+          legalFirstName: name.split(" ")[0] || prev.legalFirstName,
+          legalLastName: name.split(" ").slice(1).join(" ") || prev.legalLastName,
+          isContactVerified: Boolean(isNurseVerified || prev.isContactVerified),
+          licenseStatus: isNurseVerified ? "verified" : prev.licenseStatus,
+        }));
+      }
 
-    if (skipAutoNavigate) {
-      return;
-    }
+      // Clear static mock bookings for newly registered user so dashboard starts clean
+      if (id && !id.startsWith("usr_demo")) {
+        setBookingRequests([]);
+      }
 
-    if (role === "host") {
-      setCurrentTab("host-dashboard");
-    } else if (role === "super_admin") {
-      setCurrentTab("admin-portal");
-    } else if (role === "developer") {
-      setCurrentUser((prev) => ({
-        ...prev,
-        role: "super_admin",
-        name: "Operations Administrator",
-      }));
-      handleNavigateTab("admin-portal");
-    } else if (role === "guest") {
-      handleNavigateTab("find-housing");
-    } else {
-      handleNavigateTab("nurse-dashboard");
-    }
-  };
+      // 2. Explicitly trigger a re-fetch of the current user's profile from the backend
+      // to guarantee no stale, mocked, or placeholder user data persists in the UI
+      const freshUser = await fetchUserProfile(email);
+
+      if (skipAutoNavigate) {
+        return;
+      }
+
+      const effectiveRole = freshUser?.role || role;
+      if (effectiveRole === "host") {
+        setCurrentTab("host-dashboard");
+      } else if (effectiveRole === "super_admin") {
+        setCurrentTab("admin-portal");
+      } else if (effectiveRole === "developer") {
+        setCurrentUser((prev) => ({
+          ...prev,
+          role: "super_admin",
+          name: "Operations Administrator",
+        }));
+        handleNavigateTab("admin-portal");
+      } else if (effectiveRole === "guest") {
+        handleNavigateTab("find-housing");
+      } else {
+        handleNavigateTab("nurse-dashboard");
+      }
+    },
+    [fetchUserProfile, handleNavigateTab]
+  );
 
   return (
     <div
@@ -713,6 +875,8 @@ export default function App() {
                 onToggleSave={handleToggleSaveListing}
                 allListings={MOCK_LISTINGS}
                 activeBookings={bookingRequests}
+                currentUser={currentUser}
+                verificationData={verificationData}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
@@ -776,6 +940,7 @@ export default function App() {
                 onDeclineBooking={handleDeclineBooking}
                 onGoToHousing={() => handleNavigateTab("find-housing")}
                 initialTab={currentTab === "host-onboarding" ? "onboarding" : "dashboard"}
+                currentUser={currentUser}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
@@ -1042,11 +1207,16 @@ export default function App() {
             <PostmarkEmailVerificationView
               isNightShiftMode={isNightShiftMode}
               initialEmail={verificationData.workEmail}
-              onProceedToPhoneVerification={() => {
+              onEmailVerified={async () => {
+                await fetchUserProfile(verificationData.workEmail);
+              }}
+              onProceedToPhoneVerification={async () => {
+                await fetchUserProfile(verificationData.workEmail);
                 handleUpdateVerification({ isContactVerified: true });
                 handleNavigateTab("phone-verification");
               }}
-              onProceedToLicenseVerification={() => {
+              onProceedToLicenseVerification={async () => {
+                await fetchUserProfile(verificationData.workEmail);
                 handleUpdateVerification({ isContactVerified: true });
                 handleNavigateTab("verification");
                 setVerificationStep(3);
@@ -1152,6 +1322,8 @@ export default function App() {
             listing={checkoutListing}
             isNightShiftMode={isNightShiftMode}
             onBookingSubmitted={handleConfirmCheckout}
+            currentUser={currentUser}
+            verificationData={verificationData}
           />
         </Suspense>
       )}
@@ -1166,7 +1338,13 @@ export default function App() {
             onClose={() => setIsAuthModalOpen(false)}
             isNightShiftMode={isNightShiftMode}
             onAuthenticated={handleAuthenticated}
-            onOpenEmailVerification={(email) => { if(email) { setVerificationData(prev => ({ ...prev, workEmail: email })); } setCurrentTab("email-verification"); }}
+            onOpenEmailVerification={(email) => {
+              if (email) {
+                localStorage.setItem("np_user_email", email);
+                setVerificationData((prev) => ({ ...prev, workEmail: email }));
+              }
+              setCurrentTab("email-verification");
+            }}
           />
         </Suspense>
       )}
@@ -1205,6 +1383,7 @@ export default function App() {
             isOpen={isSavedOpen}
             onClose={() => setIsSavedOpen(false)}
             savedListingIds={savedListingIds}
+            allListings={appData.listings}
             onToggleSave={handleToggleSaveListing}
             onSelectListing={() => {
               setCurrentTab("find-housing");

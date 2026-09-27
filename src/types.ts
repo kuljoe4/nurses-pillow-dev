@@ -163,6 +163,18 @@ export interface HousingListing {
   depositTermsExplainer?: string;
   customFeeOverridePercent?: number;
   hasFeeOverride?: boolean;
+  minWeeks?: number;
+  maxWeeks?: number;
+  rooms?: Array<{
+    id: string;
+    name: string;
+    monthlyRate: number;
+    bedType: string;
+    bathType: string;
+    isAvailable: boolean;
+    availableFrom: string;
+    sqft: number;
+  }>;
 }
 
 export interface Hospital {

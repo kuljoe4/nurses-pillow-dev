@@ -7,6 +7,7 @@ interface SavedListingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   savedListingIds: string[];
+  allListings?: HousingListing[];
   onToggleSave: (id: string) => void;
   onSelectListing: (listing: HousingListing) => void;
   isNightShiftMode: boolean;
@@ -17,6 +18,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
   isOpen,
   onClose,
   savedListingIds,
+  allListings,
   onToggleSave,
   onSelectListing,
   isNightShiftMode,
@@ -37,7 +39,8 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const savedListings = MOCK_LISTINGS.filter((item) =>
+  const sourceListings = allListings && allListings.length > 0 ? allListings : MOCK_LISTINGS;
+  const savedListings = sourceListings.filter((item) =>
     savedListingIds.includes(item.id)
   );
 

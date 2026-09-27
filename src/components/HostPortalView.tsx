@@ -10,6 +10,12 @@ interface HostPortalViewProps {
   onDeclineBooking: (id: string) => void;
   onGoToHousing: () => void;
   initialTab?: 'dashboard' | 'editor' | 'onboarding';
+  currentUser?: {
+    id?: string;
+    role: string;
+    name: string;
+    email?: string;
+  };
 }
 
 export const HostPortalView: React.FC<HostPortalViewProps> = ({
@@ -19,6 +25,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   onDeclineBooking,
   onGoToHousing,
   initialTab = 'dashboard',
+  currentUser,
 }) => {
   const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>(initialTab);
 
@@ -54,8 +61,8 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [payoutsEnabled, setPayoutsEnabled] = useState(false);
 
-  // Dummy host ID for testing
-  const hostId = 'host-sarah-m';
+  // Host ID from authenticated user or fallback for demo
+  const hostId = currentUser?.id || 'host-sarah-m';
 
   useEffect(() => {
     // Check return status from URL
@@ -193,42 +200,62 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       {activeHostTab === 'dashboard' && (
         <div className="space-y-8">
           {/* Earnings & Payout Summary Metric Bento */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                Gross Booking Value (GBV)
-              </span>
-              <div className="text-2xl font-black text-[#001848] dark:text-white">$7,800.00</div>
-              <div className="text-[11px] text-gray-500 mt-1">4 Active 13-Week Rotations</div>
-            </div>
+          {(() => {
+            const hasRequests = bookingRequests.length > 0;
+            const grossVal = bookingRequests.reduce((acc, b) => acc + (b.monthlyRent || 0), 0);
+            const netPayout = grossVal * 0.95;
+            const appFee = grossVal * 0.05;
+            const activeRotations = bookingRequests.filter(b => b.status === 'approved' || b.status === 'active').length;
 
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                Net Host Payout (~95%)
-              </span>
-              <div className="text-2xl font-black text-[#195b4c] dark:text-[#aff0db]">$7,410.00</div>
-              <div className="text-[11px] text-[#195b4c] font-semibold mt-1">Stripe Connect Express Direct</div>
-            </div>
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                    Gross Booking Value (GBV)
+                  </span>
+                  <div className="text-2xl font-black text-[#001848] dark:text-white tabular-nums">
+                    ${grossVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1">
+                    {activeRotations} Active Rotations ({bookingRequests.length} total)
+                  </div>
+                </div>
 
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                Platform App Fee (5%)
-              </span>
-              <div className="text-2xl font-black text-[#005684] dark:text-[#93ccff]">$390.00</div>
-              <div className="text-[11px] text-gray-500 mt-1">$0 Host Onboarding Fee</div>
-            </div>
+                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                    Net Host Payout (~95%)
+                  </span>
+                  <div className="text-2xl font-black text-[#195b4c] dark:text-[#aff0db] tabular-nums">
+                    ${netPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[11px] text-[#195b4c] font-semibold mt-1">Stripe Connect Express Direct</div>
+                </div>
 
-            <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                Clinician Rating
-              </span>
-              <div className="text-2xl font-black text-[#745b0d] dark:text-[#ffdf91] flex items-center gap-1">
-                <span>4.98</span>
-                <span className="material-symbols-outlined text-xl">star</span>
+                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                    Platform App Fee (5%)
+                  </span>
+                  <div className="text-2xl font-black text-[#005684] dark:text-[#93ccff] tabular-nums">
+                    ${appFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1">$0 Host Onboarding Fee</div>
+                </div>
+
+                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                    Clinician Rating
+                  </span>
+                  <div className="text-2xl font-black text-[#745b0d] dark:text-[#ffdf91] flex items-center gap-1">
+                    <span>{hasRequests ? '4.98' : '5.00'}</span>
+                    <span className="material-symbols-outlined text-xl">star</span>
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1">
+                    {hasRequests ? 'Verified Traveling RN Reviews' : 'New Host Partner'}
+                  </div>
+                </div>
               </div>
-              <div className="text-[11px] text-gray-500 mt-1">19 Verified RN Reviews</div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Pending Booking Requests Approval Queue */}
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
@@ -370,7 +397,8 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               {Array.from({ length: 31 }).map((_, idx) => {
                 const day = idx+ 1;
                 const isBlocked = blockedDays.includes(day);
-                const isOccupied = day >= 1 && day <= 28;
+                const hasActiveBooking = bookingRequests.some(b => b.status === 'approved' || b.status === 'active');
+                const isOccupied = hasActiveBooking && day >= 1 && day <= 28;
 
                 return (
                   <button
@@ -387,7 +415,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   >
                     <span>{day}</span>
                     <span className="text-[9px] font-normal opacity-80">
-                      {isBlocked ? 'Blocked' : isOccupied ? 'UCSF RN' : 'Open'}
+                      {isBlocked ? 'Blocked' : isOccupied ? 'Traveler RN' : 'Open'}
                     </span>
                   </button>
                 );

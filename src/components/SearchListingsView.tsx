@@ -11,6 +11,7 @@ import { SearchListingCard } from './SearchListingCard';
 import { GoogleMapsSplitView } from './GoogleMapsSplitView';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
+import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -206,10 +207,11 @@ useBodyScrollLock(isGsaModalOpen);
   ];
 
   const commuteOptions = [
+    { miles: 1, label: '1 mi', desc: 'Shift walk / immediate' },
     { miles: 3, label: '3 mi', desc: 'Shift walk/bike' },
     { miles: 5, label: '5 mi', desc: 'Quick commute' },
     { miles: 10, label: '10 mi', desc: 'Suburban retreat' },
-    { miles: 15, label: '15 mi', desc: 'Max value radius' },
+    { miles: 15, label: '15+ mi', desc: 'Max value radius' },
   ];
 
   const popularHubs = VERIFIED_HOSPITAL_HUBS;
@@ -240,6 +242,24 @@ useBodyScrollLock(isGsaModalOpen);
       list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
     }
 
+    // Filter by Commute Radius (1-15+ miles)
+    if (commuteBuffer && commuteBuffer < 15) {
+      list = list.filter((l: any) => {
+        const commute = calculateCommuteDuration(l, selectedHospital);
+        return commute.distanceMiles <= commuteBuffer;
+      });
+    }
+
+    // Filter by Assignment Duration (4, 8, 13, 26 weeks)
+    const targetWeeks = selectedDuration === 'custom' ? (customDuration || 13) : parseInt(selectedDuration, 10);
+    if (targetWeeks) {
+      list = list.filter((l: any) => {
+        const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
+        const maxWeeks = l.maxWeeks || 52;
+        return targetWeeks >= minWeeks && targetWeeks <= maxWeeks;
+      });
+    }
+
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
       list = list.filter((l: any) => l.monthlyRate <= maxPrice);
@@ -254,7 +274,7 @@ useBodyScrollLock(isGsaModalOpen);
       list = list.filter((l: any) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
     }
     if (filterQuietDay) {
-      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet')));
+      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')));
     }
     if (filterSoundMachine) {
       list = list.filter((l: any) => l.amenities?.whiteNoiseMachine);
@@ -291,6 +311,10 @@ useBodyScrollLock(isGsaModalOpen);
     filterDedicatedParking,
     filterPetFriendly,
     filterContractFlex,
+    commuteBuffer,
+    selectedDuration,
+    customDuration,
+    selectedHospital,
   ]);
 
   const selectedMapListing = useMemo(() => {

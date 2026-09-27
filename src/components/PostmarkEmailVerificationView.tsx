@@ -6,6 +6,7 @@ interface PostmarkEmailVerificationViewProps {
   onProceedToPhoneVerification: () => void;
   onProceedToLicenseVerification: () => void;
   onBackToOverview?: () => void;
+  onEmailVerified?: () => void | Promise<void>;
 }
 
 export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationViewProps> = ({
@@ -14,6 +15,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   onProceedToPhoneVerification,
   onProceedToLicenseVerification,
   onBackToOverview,
+  onEmailVerified,
 }) => {
   const [email, setEmail] = useState(initialEmail || '');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -179,6 +181,13 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
       }
 
       setIsVerified(true);
+      if (onEmailVerified) {
+        try {
+          await onEmailVerified();
+        } catch (callbackErr) {
+          console.error('[PostmarkEmailVerification] Error executing onEmailVerified callback:', callbackErr);
+        }
+      }
       setTimeout(() => {
         onProceedToPhoneVerification();
       }, 800);

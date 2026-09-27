@@ -16,7 +16,7 @@ interface AuthModalProps {
     isNurseVerified?: boolean,
     isHostVerified?: boolean,
     skipAutoNavigate?: boolean
-  ) => void;
+  ) => void | Promise<void>;
   onOpenEmailVerification?: (email?: string) => void;
 }
 
@@ -103,7 +103,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         localStorage.setItem("np_auth_token", data.token);
       }
 
-      onAuthenticated(
+      await onAuthenticated(
         data.user.role as UserRole,
         data.user.full_name,
         data.user.email,
@@ -226,7 +226,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         localStorage.setItem("np_auth_token", data.token);
       }
 
-      onAuthenticated(
+      await onAuthenticated(
         data.user.role as UserRole,
         data.user.full_name,
         data.user.email,

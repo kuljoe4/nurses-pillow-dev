@@ -8,6 +8,10 @@ interface TrustBreakdownCardProps {
   stateBoard?: string;
   className?: string;
   titleBadge?: string;
+  isVerified?: boolean;
+  identityVerified?: boolean;
+  phoneVerified?: boolean;
+  licenseVerified?: boolean;
 }
 
 export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
@@ -18,7 +22,13 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
   stateBoard = 'State Board of Nursing',
   className = '',
   titleBadge,
+  isVerified = true,
+  identityVerified,
+  phoneVerified,
+  licenseVerified,
 }) => {
+  const isActuallyVerified = isVerified || (identityVerified && phoneVerified && licenseVerified);
+
   return (
     <div
       className={`rounded-2xl p-4 sm:p-5 border transition-all duration-200 ease-in-out ${
@@ -30,14 +40,24 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
       {/* Header: Status Pill Tag + Verification Timestamp */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-black/5 dark:border-white/10">
         <div className="flex items-center gap-2">
-          {/* Status pill tag: "Nurses Pillow Verified" (#2F6E5E on #E1EFE9) */}
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
-            style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
-          >
-            <span className="material-symbols-outlined text-[15px]">verified_user</span>
-            <span>Nurses Pillow Verified</span>
-          </span>
+          {/* Status pill tag */}
+          {isActuallyVerified ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
+              style={{ backgroundColor: '#E1EFE9', color: '#2F6E5E' }}
+            >
+              <span className="material-symbols-outlined text-[15px]">verified_user</span>
+              <span>Nurses Pillow Verified</span>
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight shadow-2xs"
+              style={{ backgroundColor: '#FBF0D6', color: '#B9822E' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B9822E]"></span>
+              <span>Verification in Progress</span>
+            </span>
+          )}
 
           {titleBadge && (
             <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#0a6fa8]/10 text-[#005684] dark:bg-[#0a6fa8]/20 dark:text-[#93ccff]">
@@ -51,7 +71,7 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
           <span className="material-symbols-outlined text-[15px] text-[#0a6fa8] dark:text-[#93ccff]">
             event_available
           </span>
-          <span>Verified: {verificationTimestamp}</span>
+          <span>{isActuallyVerified ? `Verified: ${verificationTimestamp}` : 'Status: In Review'}</span>
         </div>
       </div>
 
@@ -87,9 +107,10 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
             </div>
           </div>
           <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug relative z-10">
-            Government RealID &amp; biometric liveness match verified.
+            {identityVerified || isActuallyVerified
+              ? 'Government RealID & biometric liveness match verified.'
+              : 'Government RealID verification in progress.'}
           </p>
-          {/* subtle trust badge watermark fade in */}
           <div className="absolute right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none transform translate-x-2 translate-y-2">
             <span className="material-symbols-outlined text-[64px] text-[#0a6fa8] dark:text-[#93ccff]">how_to_reg</span>
           </div>
@@ -117,7 +138,9 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
             </div>
           </div>
           <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug">
-            Carrier-authenticated OTP mobile line for shift alerts.
+            {phoneVerified || isActuallyVerified
+              ? 'Carrier-authenticated OTP mobile line for shift alerts.'
+              : 'Carrier mobile line pending OTP verification.'}
           </p>
         </div>
 
@@ -138,14 +161,15 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Credential
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                Official Primary Source Registry &amp; State
+                Primary Source Registry
               </span>
             </div>
           </div>
           <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug relative z-10">
-            Active, unencumbered standing with {stateBoard}.
+            {licenseVerified || isActuallyVerified
+              ? `Active, unencumbered standing with ${stateBoard}.`
+              : `Standing with ${stateBoard} pending verification.`}
           </p>
-          {/* subtle trust badge watermark fade in */}
           <div className="absolute right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none transform translate-x-2 translate-y-2">
             <span className="material-symbols-outlined text-[64px] text-[#2F6E5E] dark:text-[#aff0db]">verified</span>
           </div>
