@@ -84,18 +84,6 @@ router.post('/login', async (req, res) => {
     const result = await db.query('SELECT id, email, password_hash, full_name, role FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     let user = result.rows[0];
 
-    // Standard practice for admin access bootstrap:
-    if (!user && cleanEmail === 'admin@nursespillow.com' && password === 'AdminSecure2026!') {
-      const adminHash = await bcrypt.hash('AdminSecure2026!', SALT_ROUNDS);
-      const insertRes = await db.query(`
-        INSERT INTO users (id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified)
-        VALUES ('admin-root', 'admin@nursespillow.com', $1, 'Operations Administrator', 'super_admin', true, true)
-        ON CONFLICT (id) DO UPDATE SET password_hash = $1, role = 'super_admin', full_name = 'Operations Administrator'
-        RETURNING id, email, password_hash, full_name, role
-      `, [adminHash]);
-      user = insertRes.rows[0];
-    }
-
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       res.status(401).json({ error: 'Invalid email or password.' });
       return;
