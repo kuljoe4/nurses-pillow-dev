@@ -130,9 +130,11 @@ router.post('/forgot-password', async (req, res) => {
       return;
     }
 
-    const userResult = await db.query('SELECT id, full_name FROM users WHERE email = $1', [email]);
+    const cleanEmail = email.trim().toLowerCase();
+    const userResult = await db.query('SELECT id, full_name, email FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (userResult.rows.length === 0) {
       // Return success even if user doesn't exist for security (avoid email enumeration)
+      console.log(`[Forgot Password] Account not found for email: ${cleanEmail}`);
       res.json({ message: 'If an account exists, a password reset link has been sent.' });
       return;
     }
@@ -146,7 +148,9 @@ router.post('/forgot-password', async (req, res) => {
       [token, expires, user.id]
     );
 
-    const postmarkServerToken = process.env.POSTMARK_SERVER_TOKEN;
+    const postmarkServerToken =
+      process.env.POSTMARK_SERVER_TOKEN ||
+      process.env.VITE_POSTMARK_SERVER_TOKEN;
     const origin = req.headers.origin || 'http://localhost:5173';
     const resetUrl = `${origin}/?reset=${token}`;
 
@@ -161,7 +165,7 @@ router.post('/forgot-password', async (req, res) => {
         },
         body: JSON.stringify({
           From: 'support@nursespillow.com',
-          To: email,
+          To: user.email, // Use the correct user email casing
           Subject: 'Reset Your Password - Nurses Pillow',
           TextBody: `Hello ${user.full_name},\n\nYou requested to reset your password. Please click the link below to set a new password:\n${resetUrl}\n\nIf you did not request this, please ignore this email.\n\nThanks,\nThe Nurses Pillow Team`,
           HtmlBody: `<p>Hello ${user.full_name},</p><p>You requested to reset your password. Please click the link below to set a new password:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, please ignore this email.</p><p>Thanks,<br>The Nurses Pillow Team</p>`,
@@ -172,7 +176,7 @@ router.post('/forgot-password', async (req, res) => {
         const errData = await response.text();
         console.error('[Postmark] Error sending reset email:', errData);
       } else {
-        console.log(`[Postmark] Password reset email sent to ${email}`);
+        console.log(`[Postmark] Password reset email sent to ${user.email}`);
       }
     } else {
       console.warn('[Postmark] POSTMARK_SERVER_TOKEN not found. Reset link:', resetUrl);
