@@ -419,6 +419,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                   onClick={handlePrevMonth}
                   className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                   title="Previous month"
+                  aria-label="Previous month"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                 </button>
@@ -427,6 +428,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
                   onClick={handleNextMonth}
                   className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                   title="Next month"
+                  aria-label="Next month"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                 </button>

@@ -48,6 +48,7 @@ export interface BookingRequest {
   specialRequests?: string;
   doorCode?: string;
   wifiNetwork?: string;
+  paymentIntentId?: string;
 }
 
 export interface AdminLicenseReview {
