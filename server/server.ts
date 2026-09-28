@@ -185,6 +185,73 @@ app.post('/api/bookings', authenticateToken, async (req: any, res) => {
       RETURNING *;
     `, [booking.id, booking.listing_id, booking.traveler_id, booking.start_date, booking.end_date, booking.duration_weeks, booking.status, booking.total_traveler_charged, booking.monthly_rent, booking.total_traveler_charged, booking.platform_fee_amount, booking.host_net_payout, 'flexible', booking.host_id]);
 
+    const postmarkServerToken = process.env.POSTMARK_SERVER_TOKEN || process.env.VITE_POSTMARK_SERVER_TOKEN;
+    if (postmarkServerToken) {
+      // Lookup actual host and traveler emails
+      const usersQuery = await db.query(`SELECT id, email, full_name FROM users WHERE id IN ($1, $2)`, [booking.host_id, booking.traveler_id]);
+      let hostEmail = '';
+      let travelerEmail = '';
+      let hostName = '';
+      let travelerName = booking.traveler_name;
+
+      usersQuery.rows.forEach((u: any) => {
+        if (u.id === booking.host_id) {
+          hostEmail = u.email;
+          hostName = u.full_name || 'Host';
+        }
+        if (u.id === booking.traveler_id) {
+          travelerEmail = u.email;
+          travelerName = u.full_name || travelerName;
+        }
+      });
+
+      // Send to host if available
+      if (hostEmail) {
+        try {
+          await fetch('https://api.postmarkapp.com/email', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-Postmark-Server-Token': postmarkServerToken,
+            },
+            body: JSON.stringify({
+              From: process.env.POSTMARK_FROM_EMAIL || 'support@nursespillow.com',
+              To: hostEmail,
+              Subject: 'New Booking Request - Nurses Pillow',
+              TextBody: `Hello ${hostName},\n\nYou have a new booking request from ${travelerName}.\n\nCheck-in: ${booking.start_date}\nCheck-out: ${booking.end_date}\n\nRest Well. Heal Better.\nThe Nurses Pillow Team`,
+            }),
+          });
+          console.log(`[Postmark] new_booking_request sent to ${hostEmail}`);
+        } catch (e) {
+          console.error('[Postmark] error sending to host', e);
+        }
+      }
+
+      // Send to traveler if available
+      if (travelerEmail) {
+        try {
+          await fetch('https://api.postmarkapp.com/email', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-Postmark-Server-Token': postmarkServerToken,
+            },
+            body: JSON.stringify({
+              From: process.env.POSTMARK_FROM_EMAIL || 'support@nursespillow.com',
+              To: travelerEmail,
+              Subject: 'Booking Request Sent - Nurses Pillow',
+              TextBody: `Hello ${travelerName},\n\nYour booking request has been sent to ${hostName}.\n\nAmount: ${booking.total_traveler_charged}\n\nRest Well. Heal Better.\nThe Nurses Pillow Team`,
+            }),
+          });
+          console.log(`[Postmark] booking_receipt sent to ${travelerEmail}`);
+        } catch (e) {
+          console.error('[Postmark] error sending to traveler', e);
+        }
+      }
+    }
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error creating booking:', error);
@@ -329,7 +396,7 @@ app.post('/api/stripe/payment-intent', async (req, res) => {
         destination: hostConnectedAccountId,
       },
       payment_method_types: ['card'],
-      capture_method: 'manual', // Requires host to capture or decline
+      capture_method: 'manual',
     });
 
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });

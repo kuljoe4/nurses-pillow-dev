@@ -81,6 +81,12 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
 
   const isListingOverrideActive = listing.customFeeOverridePercent !== undefined;
 
+  // Verification Checkpoint lock
+  const isIdentityVerified = verificationData?.isIdentityVerified === true;
+  const isPhoneVerified = verificationData?.isPhoneVerified === true;
+  const isLicenseVerified = verificationData?.verificationStatus === 'verified';
+  const isCheckoutLocked = !isIdentityVerified || !isPhoneVerified || !isLicenseVerified;
+
   // Split calculation preview based on final effective fee rate
   const splitPreview = stripeConnect.calculateSplit(
     monthlyRent,
@@ -245,6 +251,10 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                       <span>Cleaning Fee</span>
                       <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toFixed(2)}</span>
                     </div>
+                    <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                      <span>Traveler Platform Fee</span>
+                      <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">$0.00</span>
+                    </div>
 
                     {/* Total Due Now */}
                     <div className="pt-3 border-t border-[rgba(11,37,89,0.1)] dark:border-[#233550]">
@@ -257,12 +267,26 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     </div>
                   </div>
 
+                  {isCheckoutLocked && (
+                    <div className="mb-5 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 flex flex-col gap-2">
+                      <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-bold text-sm">
+                        <span className="material-symbols-outlined text-[18px]">lock</span>
+                        Verification Required
+                      </div>
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        Please complete your clinician identity and license verification before proceeding to checkout.
+                      </p>
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer"
+                    disabled={isCheckoutLocked}
+                    className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer flex justify-center items-center gap-2"
                   >
                     Continue to Payment
+                    {isCheckoutLocked && <span className="material-symbols-outlined text-[18px]">lock</span>}
                   </button>
                 </motion.div>
               ) : (
