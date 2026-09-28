@@ -234,25 +234,14 @@ async function startServer() {
   });
 
   // Bookings Creation
-  app.post('/api/bookings', async (req, res) => {
+  app.post('/api/bookings', authenticateToken, async (req: any, res) => {
     try {
       const booking = req.body;
 
-      await db.query(
-        `
-        INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (id) DO NOTHING;
-      `,
-        [
-          booking.traveler_id,
-          booking.traveler_id + '@example.com',
-          'dummy',
-          'nurse',
-          booking.traveler_name,
-          true,
-        ]
-      );
+      // Verify the authenticated user is the traveler creating the booking
+      if (!req.user || req.user.id !== booking.traveler_id) {
+        return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      }
 
       const result = await db.query(
         `
