@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -264,21 +266,30 @@ async function startServer() {
 
       const booking = validationResult.data;
 
-      await db.query(
-        `
-        INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (id) DO NOTHING;
-      `,
-        [
-          booking.traveler_id,
-          booking.traveler_id + '@example.com',
-          'dummy',
-          'nurse',
-          booking.traveler_name,
-          true,
-        ]
-      );
+      // Check if user exists to avoid unnecessary hashing if possible
+      const userRes = await db.query('SELECT id FROM users WHERE id = $1', [booking.traveler_id]);
+
+      if (userRes.rows.length === 0) {
+        // Generate a secure random password for the placeholder account
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+        const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+        await db.query(
+          `
+          INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (id) DO NOTHING;
+        `,
+          [
+            booking.traveler_id,
+            booking.traveler_id + '@example.com',
+            hashedPassword,
+            'nurse',
+            booking.traveler_name,
+            true,
+          ]
+        );
+      }
 
       const result = await db.query(
         `

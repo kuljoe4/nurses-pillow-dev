@@ -11,7 +11,8 @@
     "lint": "tsc --noEmit",
     "migrate": "tsx server/migrate.ts",
     "start": "tsx server.ts",
-    "seed": "tsx server/seed.ts"
+    "seed": "tsx server/seed.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -48,11 +49,13 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^5.0.2",
     "autoprefixer": "^10.4.21",
     "concurrently": "^10.0.5",
     "esbuild": "^0.28.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
   }
 }
