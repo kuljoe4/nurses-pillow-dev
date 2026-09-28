@@ -140,6 +140,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         specialRequests: specialNote,
         doorCode: '•••• 4821',
         wifiNetwork: 'Sanctuary-Clinician-5G',
+        paymentIntentId: splitTxn.paymentIntentId,
       };
 
       setIsSuccess(true);

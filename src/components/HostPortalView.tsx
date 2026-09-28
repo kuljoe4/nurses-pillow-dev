@@ -6,8 +6,8 @@ import { HostAddressMapping } from './HostAddressMapping';
 interface HostPortalViewProps {
   isNightShiftMode: boolean;
   bookingRequests: BookingRequest[];
-  onApproveBooking: (id: string) => void;
-  onDeclineBooking: (id: string) => void;
+  onApproveBooking: (id: string) => Promise<void> | void;
+  onDeclineBooking: (id: string) => Promise<void> | void;
   onGoToHousing: () => void;
   initialTab?: 'dashboard' | 'editor' | 'onboarding';
   currentUser?: {
@@ -60,6 +60,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   // Stripe Connect State
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [payoutsEnabled, setPayoutsEnabled] = useState(false);
+
+  // Processing States for bookings
+  const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
 
   // Host ID from authenticated user or fallback for demo
   const hostId = currentUser?.id || 'host-sarah-m';
@@ -332,18 +335,40 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => onDeclineBooking(req.id)}
-                              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 cursor-pointer"
+                              disabled={processingBookingId === req.id}
+                              onClick={async () => {
+                                setProcessingBookingId(req.id);
+                                await onDeclineBooking(req.id);
+                                setProcessingBookingId(null);
+                              }}
+                              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              Decline
+                              {processingBookingId === req.id ? 'Processing...' : 'Decline'}
                             </button>
                             <button
                               type="button"
-                              onClick={() => onApproveBooking(req.id)}
-                              className="px-5 py-2 rounded-full bg-[#195b4c] hover:bg-[#14483d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14483d] text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+                              disabled={processingBookingId === req.id}
+                              onClick={async () => {
+                                setProcessingBookingId(req.id);
+                                await onApproveBooking(req.id);
+                                setProcessingBookingId(null);
+                              }}
+                              className="px-5 py-2 rounded-full bg-[#195b4c] hover:bg-[#14483d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14483d] text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <span>Accept Booking</span>
+                              {processingBookingId === req.id ? (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                  Processing...
+                                </span>
+                              ) : (
+                                <span>Accept Booking</span>
+                              )}
                             </button>
+                          </div>
+                        ) : req.status === 'declined' ? (
+                          <div className="px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">cancel</span>
+                            <span>Declined</span>
                           </div>
                         ) : (
                           <div className="px-4 py-1.5 rounded-full bg-[#195b4c]/20 text-[#195b4c] dark:text-[#aff0db] text-xs font-bold flex items-center gap-1">
