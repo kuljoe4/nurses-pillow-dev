@@ -130,6 +130,13 @@ CREATE TABLE users (
     phone_verified BOOLEAN DEFAULT FALSE,
     identity_verified BOOLEAN DEFAULT FALSE, -- Stripe Identity
     is_nurse_verified BOOLEAN DEFAULT FALSE, -- True if active professional license confirmed
+
+    clinical_license_number VARCHAR(100),
+    clinical_state_board VARCHAR(100),
+    profession_specialty VARCHAR(150),
+    clinical_document_url TEXT,
+    verification_status VARCHAR(50) DEFAULT 'unverified',
+
     is_host_verified BOOLEAN DEFAULT FALSE,  -- True if Stripe ID & property authority passed
     is_suspended BOOLEAN DEFAULT FALSE,
     suspension_reason TEXT,

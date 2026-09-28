@@ -1004,6 +1004,7 @@ export default function App() {
           {currentTab === "admin-portal" &&
             (currentUser.role === "super_admin" ? (
               <AdminPortalView
+  currentUser={currentUser}
                 isNightShiftMode={isNightShiftMode}
                 onGoToHousing={() => handleNavigateTab("find-housing")}
                 onOpenGoogleSheets={handleOpenGoogleSheets}

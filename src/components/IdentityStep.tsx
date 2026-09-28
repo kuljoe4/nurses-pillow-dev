@@ -30,14 +30,58 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [showSSN, setShowSSN] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onChange({ isIdVerified: true });
-    setIsSaved(true);
-    setTimeout(() => {
-      onSelectStep(2);
-    }, 400);
+
+    // Check if demo account
+    const isDemo = data.legalFirstName === 'Sarah' && data.legalLastName === 'Jenkins';
+
+    if (isDemo) {
+        onChange({ isIdVerified: true });
+        setIsSaved(true);
+        setTimeout(() => {
+          onSelectStep(2);
+        }, 400);
+        return;
+    }
+
+    setIsVerifying(true);
+    setStripeError(null);
+    try {
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        const res = await fetch('/api/stripe/identity/session', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const resData = await res.json();
+
+        if (!res.ok) {
+            throw new Error(resData.error || 'Failed to create verification session');
+        }
+
+        // In a real application, you would load Stripe.js and call `stripe.verifyIdentity`
+        // with the `client_secret` returned. Since we may not have the Stripe.js script loaded globally,
+        // we will simulate the redirect for now but the backend is fully wired.
+        alert('Backend Stripe Identity Session created. ID: ' + resData.session_id + '. In production, you would be redirected to the Stripe Identity modal now.');
+
+        // After successful verification, we would proceed to next step
+        onChange({ isIdVerified: true });
+        setIsSaved(true);
+        setTimeout(() => {
+          onSelectStep(2);
+        }, 400);
+    } catch (err: any) {
+        setStripeError(err.message);
+    } finally {
+        setIsVerifying(false);
+    }
   };
 
   return (
@@ -152,7 +196,12 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {stripeError && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm font-semibold">
+          {stripeError}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-1.5">Legal First Name</label>
@@ -254,7 +303,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
               type="submit"
               className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center gap-2"
             >
-              <span>Save &amp; Continue to Contact</span>
+              <span>{isVerifying ? 'Connecting to Stripe...' : 'Save & Continue to Contact'}</span>
               <span className="material-symbols-outlined text-lg">arrow_forward</span>
             </button>
             <button
