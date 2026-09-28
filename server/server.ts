@@ -169,7 +169,7 @@ app.get('/api/listings', async (req, res) => {
 });
 
 // Endpoint to create bookings
-app.post('/api/bookings', async (req, res) => {
+app.post('/api/bookings', authenticateToken, async (req: any, res) => {
   try {
     const booking = req.body;
 
@@ -193,7 +193,7 @@ app.post('/api/bookings', async (req, res) => {
 });
 
 // Endpoint to post audit logs
-app.post('/api/audit-logs', async (req, res) => {
+app.post('/api/audit-logs', authenticateToken, async (req: any, res) => {
   try {
     const log = req.body;
     const result = await db.query(`
@@ -209,7 +209,7 @@ app.post('/api/audit-logs', async (req, res) => {
 });
 
 // Endpoint to fetch audit logs
-app.get('/api/audit-logs', async (req, res) => {
+app.get('/api/audit-logs', authenticateToken, async (req: any, res) => {
   try {
     const result = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
     res.json(result.rows);
