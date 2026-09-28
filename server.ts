@@ -14,12 +14,29 @@ import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
 import { authenticateToken } from './server/authMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2025-02-24.acacia' as any,
+});
+
+const BookingSchema = z.object({
+  id: z.string().optional(),
+  traveler_id: z.string().min(1),
+  traveler_name: z.string().min(1),
+  listing_id: z.string().min(1),
+  start_date: z.string().min(1),
+  end_date: z.string().min(1),
+  duration_weeks: z.number().positive(),
+  status: z.string().optional(),
+  total_traveler_charged: z.number().nonnegative(),
+  monthly_rent: z.number().nonnegative(),
+  platform_fee_amount: z.number().nonnegative(),
+  host_net_payout: z.number().nonnegative(),
+  host_id: z.string().min(1),
 });
 
 async function startServer() {
@@ -238,7 +255,16 @@ async function startServer() {
   // Bookings Creation
   app.post('/api/bookings', async (req, res) => {
     try {
-      const booking = req.body;
+      const validationResult = BookingSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: 'Invalid booking data',
+          details: validationResult.error.issues,
+        });
+      }
+
+      const booking = validationResult.data;
 
       // Check if user exists to avoid unnecessary hashing if possible
       const userRes = await db.query('SELECT id FROM users WHERE id = $1', [booking.traveler_id]);
