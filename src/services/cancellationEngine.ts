@@ -1,7 +1,5 @@
 // Nurses Pillow - Cancellation & Automated Refund Policy Engine
 // Implements 3 Contractual Tiers: Flexible (30d), Moderate (60d), Strict (90d)
-// Golden Rule: 100% of cleaning fee auto-refunds if canceled prior to check-in.
-// Deposit hold is released immediately with zero charge.
 
 export type CancellationTier = 'flexible_30d' | 'moderate_60d' | 'strict_90d';
 
@@ -13,10 +11,10 @@ export interface RefundBreakdown {
   grossLodgingPaid: number;
   lodgingRefundAmount: number;
   cleaningFeePaid: number;
-  cleaningFeeRefundAmount: number; // 100% prior to move-in
+  cleaningFeeRefundAmount: number;
   securityDepositHoldAmount: number;
   securityDepositStatus: 'hold_released_zero_charged' | 'no_deposit_required';
-  travelerPlatformFeeRefund: number; // $0 because $0 charged
+  travelerPlatformFeeRefund: number;
   totalRefundAmount: number;
   hostRetainedAmount: number;
   platformFeeRetainedAmount: number;
@@ -71,7 +69,6 @@ export class CancellationRefundEngine {
     }
   }
 
-  // Calculate days difference between cancellation date and check-in date
   static calculateDaysDifference(checkInDate: string, cancellationDate: string = new Date().toISOString()): number {
     const checkIn = new Date(checkInDate).getTime();
     const cancel = new Date(cancellationDate).getTime();
@@ -79,7 +76,6 @@ export class CancellationRefundEngine {
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
   }
 
-  // Execute refund evaluation
   static evaluateRefund(params: {
     tier: CancellationTier;
     monthlyRent: number;
@@ -127,19 +123,15 @@ export class CancellationRefundEngine {
       }
     }
 
-    // Lodging refund calculation
     const lodgingRefundAmount = Number((monthlyRent * (lodgingRefundPercentage / 100)).toFixed(2));
 
-    // Mandatory Rule: 100% of cleaning fee auto-refunds if prior to move-in!
     const cleaningFeeRefundAmount = isPriorToMoveIn ? cleaningFee : 0;
 
-    // Security deposit is a pre-auth hold, so it's released with $0 charged
     const securityDepositStatus =
       securityDeposit > 0 ? 'hold_released_zero_charged' : 'no_deposit_required';
 
     const totalRefundAmount = Number((lodgingRefundAmount + cleaningFeeRefundAmount).toFixed(2));
 
-    // Host retained amount (retained lodging minus 5% platform fee)
     const lodgingRetained = monthlyRent - lodgingRefundAmount;
     const platformFeeRetainedAmount = Number((lodgingRetained * 0.05).toFixed(2));
     const hostRetainedAmount = Number((lodgingRetained - platformFeeRetainedAmount).toFixed(2));
