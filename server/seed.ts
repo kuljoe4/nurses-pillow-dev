@@ -25,12 +25,25 @@ async function seed() {
       console.log('Super admin provisioned successfully.');
     }
 
-    for (const h of NC_HOSPITAL_SEEDS) {
-        await db.query(`
-          INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (id) DO NOTHING;
-        `, [h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score]);
+    if (NC_HOSPITAL_SEEDS.length > 0) {
+      const values = [];
+      const params = [];
+      let paramIndex = 1;
+
+      for (const h of NC_HOSPITAL_SEEDS) {
+        const placeholders = [];
+        for (let i = 0; i < 13; i++) {
+          placeholders.push(`$${paramIndex++}`);
+        }
+        values.push(`(${placeholders.join(', ')})`);
+        params.push(h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score);
+      }
+
+      await db.query(`
+        INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
+        VALUES ${values.join(', ')}
+        ON CONFLICT (id) DO NOTHING;
+      `, params);
     }
 
     await db.query(`
@@ -42,12 +55,25 @@ async function seed() {
       ON CONFLICT (id) DO NOTHING;
     `);
 
-    for (const l of NC_LISTING_SEEDS) {
+    if (NC_LISTING_SEEDS.length > 0) {
+      const values = [];
+      const params = [];
+      let paramIndex = 1;
+
+      for (const l of NC_LISTING_SEEDS) {
+        const placeholders = [];
+        for (let i = 0; i < 16; i++) {
+          placeholders.push(`$${paramIndex++}`);
+        }
+        values.push(`(${placeholders.join(', ')})`);
+        params.push(l.id, l.host_id, l.title, 'A beautiful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true);
+      }
+
       await db.query(`
         INSERT INTO listings (id, host_id, title, description, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published, is_verified_by_admin)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        VALUES ${values.join(', ')}
         ON CONFLICT (id) DO NOTHING;
-      `, [l.id, l.host_id, l.title, 'A beautiful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true]);
+      `, params);
     }
 
     console.log('Seeding Complete');

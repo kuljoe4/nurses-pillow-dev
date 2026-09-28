@@ -4,6 +4,7 @@ import {
   VerificationStepId,
   VerificationFormData,
   HousingListing,
+  Hospital,
   BookingRequest,
   UserRole,
 } from "./types";
@@ -158,7 +159,7 @@ const ModalLoadingFallback = () => (
 export default function App() {
   // Staging Preview Authentication Gate (lawrence / np-preview-2026 or developer / np-dev-2026)
   const [isAppLoading, setIsAppLoading] = useState(true);
-  const [appData, setAppData] = useState<{ hospitals: any[]; listings: any[] }>(
+  const [appData, setAppData] = useState<{ hospitals: Hospital[]; listings: HousingListing[] }>(
     {
       hospitals: [],
       listings: [],
@@ -588,8 +589,8 @@ export default function App() {
           db.fetchAuditLogs(),
         ]);
         setAppData({
-          hospitals: db.getHospitals(),
-          listings: db.getListings(),
+          hospitals: db.getHospitals() as unknown as Hospital[],
+          listings: db.getListings() as unknown as HousingListing[],
         });
         setIsAppLoading(false);
         console.log("PostgreSQL schema synced into in-memory store.");
