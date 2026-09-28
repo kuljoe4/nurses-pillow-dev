@@ -1,4 +1,4 @@
-## 2025-02-25 - Secure Admin Bootstrapping
-**Vulnerability:** A hardcoded backdoor existed in `server/authRoutes.ts` allowing anyone to login as an admin if they knew the specific email (`admin@nursespillow.com`) and password (`AdminSecure2026!`).
-**Learning:** Hardcoding credentials in production code, even for bootstrapping, is a critical security risk because the source code or version control history can be compromised or inadvertently exposed.
-**Prevention:** Always use out-of-band provisioning for initial administrative accounts, such as database seeding scripts (`server/seed.ts`) that read secure credentials from deployment environment variables (`INITIAL_ADMIN_EMAIL`, `INITIAL_ADMIN_PASSWORD`).
+## 2025-03-02 - Sentinel: Added missing authentication to sensitive API endpoints
+**Vulnerability:** Missing authentication on endpoints like POST /api/bookings, POST /api/audit-logs, and GET /api/audit-logs in `server/server.ts`. This allowed arbitrary unauthenticated users to create bookings and write/read sensitive audit logs.
+**Learning:** The `authenticateToken` middleware was defined in `server/authMiddleware.ts` but was not consistently applied to all sensitive endpoints in the main Express router configuration, highlighting a gap in secure-by-default routing practices.
+**Prevention:** Establish a convention to apply authentication globally at the router level for API scopes (e.g., `app.use('/api', authenticateToken)` and selectively disable it, or rigorously code-review all new routes to ensure they have the appropriate auth middleware applied.
