@@ -9,6 +9,7 @@ import { mapDbListingToFrontend } from './mapper.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Response } from 'express';
 
 dotenv.config();
 
@@ -169,28 +170,26 @@ app.get('/api/listings', async (req, res) => {
   }
 });
 
+interface CreateBookingPayload {
+  id: string;
+  traveler_id: string;
+  traveler_name: string;
+  host_id: string;
+  listing_id: string;
+  start_date: string;
+  end_date: string;
+  duration_weeks: number;
+  monthly_rent: number;
+  total_traveler_charged: number;
+  platform_fee_amount: number;
+  host_net_payout: number;
+  status: string;
+}
+
 // Endpoint to create bookings
 app.post('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const booking = req.body as {
-      id: string,
-      traveler_id: string,
-      traveler_name: string,
-      listing_id: string,
-      host_id: string,
-      start_date: string,
-      end_date: string,
-      duration_weeks: number,
-      status: string,
-      total_traveler_charged: number,
-      monthly_rent: number,
-      platform_fee_amount: number,
-      host_net_payout: number,
-      message?: string
-    };
-    if (!booking.traveler_id || !booking.listing_id || !booking.host_id || !booking.id) {
-      return res.status(400).json({ error: 'Missing required booking fields' });
-    }
+    const booking = req.body as CreateBookingPayload;
 
     await db.query(`
       INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
