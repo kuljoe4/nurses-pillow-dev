@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,12 +14,29 @@ import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
 import { authenticateToken } from './server/authMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2025-02-24.acacia' as any,
+});
+
+const BookingSchema = z.object({
+  id: z.string().optional(),
+  traveler_id: z.string().min(1),
+  traveler_name: z.string().min(1),
+  listing_id: z.string().min(1),
+  start_date: z.string().min(1),
+  end_date: z.string().min(1),
+  duration_weeks: z.number().positive(),
+  status: z.string().optional(),
+  total_traveler_charged: z.number().nonnegative(),
+  monthly_rent: z.number().nonnegative(),
+  platform_fee_amount: z.number().nonnegative(),
+  host_net_payout: z.number().nonnegative(),
+  host_id: z.string().min(1),
 });
 
 async function startServer() {
@@ -236,11 +255,43 @@ async function startServer() {
   // Bookings Creation
   app.post('/api/bookings', authenticateToken, async (req: any, res) => {
     try {
-      const booking = req.body;
+      const validationResult = BookingSchema.safeParse(req.body);
 
       // Verify the authenticated user is the traveler creating the booking
       if (!req.user || req.user.id !== booking.traveler_id) {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: 'Invalid booking data',
+          details: validationResult.error.issues,
+        });
+      }
+
+      const booking = validationResult.data;
+
+      // Check if user exists to avoid unnecessary hashing if possible
+      const userRes = await db.query('SELECT id FROM users WHERE id = $1', [booking.traveler_id]);
+
+      if (userRes.rows.length === 0) {
+        // Generate a secure random password for the placeholder account
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+        const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+        await db.query(
+          `
+          INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (id) DO NOTHING;
+        `,
+          [
+            booking.traveler_id,
+            booking.traveler_id + '@example.com',
+            hashedPassword,
+            'nurse',
+            booking.traveler_name,
+            true,
+          ]
+        );
       }
 
       const result = await db.query(
