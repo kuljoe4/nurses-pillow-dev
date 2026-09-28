@@ -21,6 +21,7 @@ import { IdentityStep } from "./components/IdentityStep";
 import { ContactStep } from "./components/ContactStep";
 import { WorkContractStep } from "./components/WorkContractStep";
 import { FindHousingView } from "./components/FindHousingView";
+import { stripeConnect } from "./services/stripeConnect";
 import { StagingAuthGateModal } from "./components/StagingAuthGateModal";
 import { Milestone2ScopeGate } from "./components/Milestone2ScopeGate";
 import { Breadcrumbs } from "./components/Breadcrumbs";
@@ -698,7 +699,18 @@ export default function App() {
     setCurrentTab("find-housing");
   }, [currentUser]);
 
-  const handleApproveBooking = useCallback((id: string) => {
+  const handleApproveBooking = useCallback(async (id: string) => {
+    const booking = bookingRequests.find((b) => b.id === id);
+    if (booking?.paymentIntentId) {
+      try {
+        await stripeConnect.capturePaymentIntent(booking.paymentIntentId);
+      } catch (error) {
+        console.error("Failed to capture payment:", error);
+        alert("Failed to capture payment. Please try again.");
+        return;
+      }
+    }
+
     setBookingRequests((prev) => {
       const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
       const key = getBookingsKey(currentUser?.email, currentUser?.id);
@@ -707,9 +719,20 @@ export default function App() {
       } catch {}
       return next;
     });
-  }, [currentUser]);
+  }, [currentUser, bookingRequests]);
 
-  const handleDeclineBooking = useCallback((id: string) => {
+  const handleDeclineBooking = useCallback(async (id: string) => {
+    const booking = bookingRequests.find((b) => b.id === id);
+    if (booking?.paymentIntentId) {
+      try {
+        await stripeConnect.cancelPaymentIntent(booking.paymentIntentId);
+      } catch (error) {
+        console.error("Failed to cancel payment:", error);
+        alert("Failed to cancel payment. Please try again.");
+        return;
+      }
+    }
+
     setBookingRequests((prev) => {
       const next = prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
       const key = getBookingsKey(currentUser?.email, currentUser?.id);
@@ -718,7 +741,7 @@ export default function App() {
       } catch {}
       return next;
     });
-  }, [currentUser]);
+  }, [currentUser, bookingRequests]);
 
   const handleAuthenticated = useCallback(
     async (

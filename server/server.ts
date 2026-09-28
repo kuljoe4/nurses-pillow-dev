@@ -329,12 +329,35 @@ app.post('/api/stripe/payment-intent', async (req, res) => {
         destination: hostConnectedAccountId,
       },
       payment_method_types: ['card'],
+      capture_method: 'manual', // Requires host to capture or decline
     });
 
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (error: any) {
     console.error('Error creating Stripe Payment Intent:', error);
     res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
+app.post('/api/stripe/payment-intent/:id/capture', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const paymentIntent = await stripe.paymentIntents.capture(id);
+    res.json({ success: true, paymentIntent });
+  } catch (error: any) {
+    console.error('Error capturing Payment Intent:', error);
+    res.status(500).json({ error: error.message || 'Failed to capture payment intent' });
+  }
+});
+
+app.post('/api/stripe/payment-intent/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const paymentIntent = await stripe.paymentIntents.cancel(id);
+    res.json({ success: true, paymentIntent });
+  } catch (error: any) {
+    console.error('Error canceling Payment Intent:', error);
+    res.status(500).json({ error: error.message || 'Failed to cancel payment intent' });
   }
 });
 

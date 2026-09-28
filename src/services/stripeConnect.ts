@@ -509,6 +509,30 @@ class StripeConnectService {
   getTransactionHistory(): StripeSplitTransaction[] {
     return this.transactions;
   }
+
+  async capturePaymentIntent(paymentIntentId: string): Promise<any> {
+    const res = await fetch(`/api/stripe/payment-intent/${paymentIntentId}/capture`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to capture payment intent');
+    }
+    return data;
+  }
+
+  async cancelPaymentIntent(paymentIntentId: string): Promise<any> {
+    const res = await fetch(`/api/stripe/payment-intent/${paymentIntentId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to cancel payment intent');
+    }
+    return data;
+  }
 }
 
 export const stripeConnect = new StripeConnectService();
