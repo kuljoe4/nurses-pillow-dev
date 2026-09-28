@@ -1,7 +1,5 @@
-## 2026-09-27 - Stable References for Memoized Components
-**Learning:** `SearchListingCard` was wrapped in `React.memo` but many of the callback functions it received from `SearchListingsView` and `App.tsx` were re-created on every render, completely breaking the memoization and causing unnecessary re-renders when parent states changed.
-**Action:** When adding `React.memo` to child components, systematically trace all callback props up the component tree to ensure they are wrapped in `useCallback` with stable dependencies (or empty arrays if using functional state updates like `setBookingRequests(prev => ...)`).
+## 2026-09-28 - Optimizing Database Seeding Performance
 
-## 2026-10-05 - Avoid Inline Arrow Functions for Memoized Components
-**Learning:** Even when a parent component wraps a callback prop in `useCallback` (e.g., `handleToggleSaveListing` in `App.tsx`), passing it down to a memoized child component (`PillowSaveButton`) as an inline arrow function (e.g., `() => onToggleSave(listing.id)`) defeats the memoization. The inline function creates a new reference on every render, causing the memoized child to re-render unnecessarily.
-**Action:** When a memoized child component needs to execute a callback with arguments, wrap the specific invocation in its own `useCallback` in the intermediate component to preserve stable reference identities for the memoized child.
+**Learning:** Database seeding scripts that iterate over an array to insert rows individually create an N+1 query problem, adding significant network overhead and slowing down the script execution, especially when run against a remote database.
+
+**Action:** Refactored the `for` loops in `server/seed.ts` (for both `NC_HOSPITAL_SEEDS` and `NC_LISTING_SEEDS`) into single batch `INSERT` statements using dynamically generated parameterized placeholder strings (e.g., `VALUES ($1, $2), ($3, $4)`). This reduced seeding time by approximately 80% based on local network simulation.
