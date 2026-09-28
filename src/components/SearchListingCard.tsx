@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
@@ -30,6 +30,12 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
   isNightShiftMode = false,
 }) => {
 
+
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // to PillowSaveButton which is wrapped in React.memo, preventing unnecessary re-renders.
+  const handleToggleSave = useCallback(() => {
+    onToggleSave(listing.id);
+  }, [onToggleSave, listing.id]);
 
   // Transparent Fee Calculations (per AGENTS.md rule 4.C Transparent Pricing)
   const monthlyRent = listing.monthlyRate || 1950;
@@ -87,7 +93,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
         >
           <PillowSaveButton
             isSaved={isSaved}
-            onToggle={() => onToggleSave(listing.id)}
+            onToggle={handleToggleSave}
             className="w-8 h-8 rounded-full bg-white/95 dark:bg-black/75 backdrop-blur-xs shadow-xs"
             size={17}
           />

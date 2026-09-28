@@ -42,6 +42,12 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
   selectedHospital = 'Duke University Hospital',
   isNightShiftMode = false,
 }) => {
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // to PillowSaveButton which is wrapped in React.memo, preventing unnecessary re-renders.
+  const handleToggleSave = useCallback(() => {
+    onToggleSave(listing.id);
+  }, [onToggleSave, listing.id]);
+
   // Dynamically calculate commute metrics to the user's selected hospital
   const commute = useMemo(() => {
     return calculateCommuteDuration(listing, selectedHospital);
@@ -79,7 +85,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
         <div className="absolute top-4 right-4 z-10">
           <PillowSaveButton
             isSaved={isSaved}
-            onToggle={() => onToggleSave(listing.id)}
+            onToggle={handleToggleSave}
             className="w-10 h-10 rounded-full bg-white/95 dark:bg-[#111e33]/90 shadow-md backdrop-blur-xs"
             size={20}
           />
