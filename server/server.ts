@@ -90,9 +90,7 @@ app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => 
     }
 
     const result = await db.query(`
-      SELECT id, email, full_name, clinical_license_number, clinical_state_board, profession_specialty, clinical_document_url, verification_status
-      FROM users
-      WHERE verification_status = 'pending_review'
+      SELECT id, email, full_name, is_nurse_verified as verification_status FROM users
     `);
 
     res.json(result.rows);
@@ -122,7 +120,7 @@ app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (r
         document_purged = true,
         document_purged_at = NOW(),
         clinical_document_url = NULL,
-        clinical_license_number = NULL -- Purge raw license number for privacy
+        is_nurse_verified = true
       WHERE id = $1
     `, [userId]);
 

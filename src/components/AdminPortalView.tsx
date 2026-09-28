@@ -47,13 +47,17 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 }
             });
             if (res.ok) {
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error(`Expected JSON response, got ${contentType}`);
+                }
                 const data = await res.json();
                 const mappedReviews = data.map((d: any) => ({
                     id: d.id,
                     clinicianLegalName: d.full_name || d.email,
-                    profession: d.profession_specialty || 'RN',
-                    issuingState: d.clinical_state_board || 'NC',
-                    licenseNumber: d.clinical_license_number || 'PENDING',
+                    profession: d.profession || d.profession_specialty || 'RN',
+                    issuingState: d.state_board || d.clinical_state_board || 'NC',
+                    licenseNumber: d.license_number || d.clinical_license_number || 'PENDING',
                     licenseStatus: d.verification_status,
                     hospitalAffiliation: 'Pending Assignment',
                     submittedAt: 'Recently',
@@ -169,6 +173,12 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         });
 
         if (res.ok) {
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn(`Expected JSON response, got ${contentType}, ignoring...`);
+            } else {
+                await res.json(); // optionally parse
+            }
             setReviews((prev) =>
               prev.map((r) =>
                 r.id === id ? { ...r, licenseStatus: 'verified', documentPurged: true, licenseNumber: 'PURGED' } : r
