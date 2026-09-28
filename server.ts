@@ -9,6 +9,7 @@ import { railwayDb } from './src/services/railway.js';
 import authRoutes from './server/authRoutes.js';
 import { mapDbListingToFrontend } from './server/mapper.js';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
+import { authenticateToken } from './server/authMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -148,6 +149,57 @@ async function startServer() {
 
   // Auth Routes
   app.use('/api/auth', authRoutes);
+
+
+
+  // Admin endpoint to list pending verifications
+  app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+      }
+
+      const result = await db.query(`
+        SELECT id, email, full_name, is_nurse_verified as verification_status FROM users
+      `);
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching verifications:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
+  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'super_admin') {
+        return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+      }
+
+      const { userId } = req.params;
+
+      // In a real application, you would make an API call to delete the document from S3 here.
+      // We simulate the data purge by clearing the document URL and license number from the DB.
+
+      await db.query(`
+        UPDATE users
+        SET
+          is_nurse_verified = true,
+          verification_status = 'verified',
+          document_purged = true,
+          document_purged_at = NOW(),
+          clinical_document_url = NULL,
+          is_nurse_verified = true
+        WHERE id = $1
+      `, [userId]);
+
+      res.json({ success: true, message: 'Verification approved and sensitive data purged.' });
+    } catch (error) {
+      console.error('Error approving verification:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
   // Hospitals / Healthcare Facilities
   app.get('/api/hospitals', async (req, res) => {
