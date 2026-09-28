@@ -5,6 +5,7 @@ import { db } from '../services/database';
 import { stripeConnect, HostFeeOverride } from '../services/stripeConnect';
 
 interface AdminPortalViewProps {
+  currentUser?: any;
   isNightShiftMode: boolean;
   onGoToHousing: () => void;
   onOpenGoogleSheets?: (preset?: AdminSheetsPreset) => void;
@@ -15,6 +16,7 @@ interface AdminPortalViewProps {
 }
 
 export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
+  currentUser,
   isNightShiftMode,
   onGoToHousing,
   onOpenGoogleSheets,
@@ -33,56 +35,43 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
 
   // Screen C1 State
 
-  const [reviews, setReviews] = useState<AdminLicenseReview[]>([
-    {
-      id: 'rev-1',
-      clinicianLegalName: 'Sarah E. Jenkins',
-      profession: 'RN',
-      issuingState: 'CA',
-      licenseNumber: 'RN-9482015-CA',
-      licenseStatus: 'verified',
-      hospitalAffiliation: 'Duke University Hospital (Durham)',
-      submittedAt: 'Today 10:14 AM',
-      nursysLookupUrl: 'https://www.nursys.com',
-      documentPurged: true,
-    },
-    {
-      id: 'rev-2',
-      clinicianLegalName: 'Marcus Vance',
-      profession: 'RN',
-      issuingState: 'NC',
-      licenseNumber: 'RN-284910-NC',
-      licenseStatus: 'pending_review',
-      hospitalAffiliation: 'Duke University Hospital (Durham)',
-      submittedAt: 'Today 11:30 AM',
-      nursysLookupUrl: 'https://www.nursys.com',
-      documentPurged: false,
-    },
-    {
-      id: 'rev-3',
-      clinicianLegalName: 'Dr. David Chen',
-      profession: 'MD',
-      issuingState: 'NC',
-      licenseNumber: 'MD-548912-NC',
-      licenseStatus: 'pending_review',
-      hospitalAffiliation: 'UNC Medical Center (Chapel Hill)',
-      submittedAt: 'Yesterday 16:45 PM',
-      nursysLookupUrl: 'https://www.docinfo.org',
-      documentPurged: false,
-    },
-    {
-      id: 'rev-4',
-      clinicianLegalName: 'Elena Rostova',
-      profession: 'CRNA',
-      issuingState: 'NC',
-      licenseNumber: 'CRNA-88190-NC',
-      licenseStatus: 'pending_review',
-      hospitalAffiliation: 'WakeMed Raleigh Campus',
-      submittedAt: '2 days ago',
-      nursysLookupUrl: 'https://www.nursys.com',
-      documentPurged: false,
-    },
-  ]);
+  const [reviews, setReviews] = useState<AdminLicenseReview[]>([]);
+
+  useEffect(() => {
+    const fetchVerifications = async () => {
+        try {
+            const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+            const res = await fetch('/api/admin/verifications', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const mappedReviews = data.map((d: any) => ({
+                    id: d.id,
+                    clinicianLegalName: d.full_name || d.email,
+                    profession: d.profession_specialty || 'RN',
+                    issuingState: d.clinical_state_board || 'NC',
+                    licenseNumber: d.clinical_license_number || 'PENDING',
+                    licenseStatus: d.verification_status,
+                    hospitalAffiliation: 'Pending Assignment',
+                    submittedAt: 'Recently',
+                    nursysLookupUrl: 'https://www.nursys.com',
+                    documentPurged: false
+                }));
+                setReviews(mappedReviews);
+            }
+        } catch (error) {
+            console.error("Failed to fetch pending verifications", error);
+        }
+    };
+
+    // Only fetch if admin
+    if (currentUser?.role === 'super_admin') {
+        fetchVerifications();
+    }
+  }, [currentUser]);
 
   // Screen C2 Fee Slider & Host Management State
   const [platformFeePercent, setPlatformFeePercent] = useState<number>(() => stripeConnect.getGlobalPlatformFeePercent());
@@ -169,16 +158,29 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState(5);
 
-  const handleApprove = (id: string) => {
-    const rev = reviews.find((r) => r.id === id);
-    if (rev) {
-      db.purgeClinicianDocuments(rev.id, rev.clinicianLegalName);
+  const handleApprove = async (id: string) => {
+    try {
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        const res = await fetch(`/api/admin/verifications/${id}/approve`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (res.ok) {
+            setReviews((prev) =>
+              prev.map((r) =>
+                r.id === id ? { ...r, licenseStatus: 'verified', documentPurged: true, licenseNumber: 'PURGED' } : r
+              )
+            );
+            alert('Verification approved and sensitive data purged securely.');
+        } else {
+            alert('Failed to approve verification');
+        }
+    } catch (error) {
+        console.error("Approval error", error);
     }
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === id ? { ...r, licenseStatus: 'verified', documentPurged: true } : r
-      )
-    );
   };
 
   const handleReject = (id: string) => {

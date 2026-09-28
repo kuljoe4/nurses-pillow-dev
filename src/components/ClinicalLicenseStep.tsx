@@ -73,15 +73,50 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
     }, 3500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onChange({ licenseStatus: 'verified' });
-      onOpenSuccessModal();
-    }, 900);
+    // Check if demo account
+    const isDemo = data.legalFirstName === 'Sarah' && data.legalLastName === 'Jenkins';
+
+    if (isDemo) {
+        setTimeout(() => {
+          setIsSubmitting(false);
+          onChange({ licenseStatus: 'verified' });
+          onOpenSuccessModal();
+        }, 900);
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        const res = await fetch('/api/verify/license', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                licenseNumber: data.licenseNumber,
+                stateBoard: data.issuingStateBoard,
+                specialty: data.professionSpecialty,
+                documentName: data.uploadedDocument?.name || 'document.pdf'
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to submit credentials');
+        }
+
+        onChange({ licenseStatus: 'pending_review' }); // Changed to pending for admin review
+        onOpenSuccessModal();
+    } catch (error) {
+        console.error(error);
+        alert('Failed to submit credentials');
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const handleSaveLater = () => {

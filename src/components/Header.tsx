@@ -248,21 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Search &amp; Map</span>
               </button>
 
-              <button
-                onClick={() => onSelectTab('nurse-dashboard')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'nurse-dashboard'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#aff0db] font-bold'
-                      : 'bg-[#E1EFE9] text-[#2F6E5E] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[17px]">inventory_2</span>
-                <span>My Bookings</span>
-              </button>
+
 
               <button
                 onClick={() => onSelectTab('how-it-works')}
@@ -589,25 +575,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Cluster - Desktop Utilities & Mobile/Tablet Unified Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {/* Saved Listings Counter (Desktop only; on mobile/tablet accessible via unified menu with badge counter) */}
-          <button
-            onClick={onOpenSaved}
-            type="button"
-            aria-label="View saved listings"
-            className={`hidden lg:flex relative p-2 sm:p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer ${
-              isNightShiftMode
-                ? 'text-[#9CB3D3] hover:text-white hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
-            }`}
-            title="Saved shift sanctuaries"
-          >
-            <span className="material-symbols-outlined text-[20px]">bed</span>
-            {savedCount > 0 && (
-              <span className="absolute 1 top-1 right-1 w-4 h-4 rounded-full bg-[#005684] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
-                {savedCount}
-              </span>
-            )}
-          </button>
+
 
           {/* Night Shift Mode Toggle (Desktop only; on mobile/tablet accessible via unified menu) */}
           <button
@@ -778,22 +746,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   {/* Primary Workspace Action */}
                   <div className="space-y-1">
-                    {currentUser.role === 'nurse' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSelectTab('nurse-dashboard');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full py-2 px-3 rounded-xl bg-[#195b4c] text-white font-bold flex items-center justify-between hover:bg-[#13493c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#13493c] transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[18px]">clinical_notes</span>
-                          <span>Open Clinician Dashboard</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                      </button>
-                    )}
+
 
                     {currentUser.role === 'host' && (
                       <button
@@ -895,14 +848,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-xs font-bold">
               {isMobileMenuOpen ? 'Close' : 'Menu'}
             </span>
-            {savedCount > 0 && (
-              <span
-                className="px-1.5 py-0.2 rounded-full bg-[#005684] text-white text-[10px] font-bold leading-tight flex items-center justify-center shadow-xs"
-                title={`${savedCount} saved shift sanctuaries`}
-              >
-                {savedCount}
-              </span>
-            )}
+
           </button>
         </div>
       </div>
@@ -1018,7 +964,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (currentUser.role === 'nurse') onSelectTab('nurse-dashboard');
+                    if (currentUser.role === 'nurse') onSelectTab('find-housing');
                     else if (currentUser.role === 'host') onSelectTab('host-dashboard');
                     else if (currentUser.role === 'super_admin') onSelectTab('admin-portal');
                     setIsMobileMenuOpen(false);
@@ -1080,25 +1026,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('nurse-dashboard');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      currentTab === 'nurse-dashboard'
-                        ? 'bg-[#E1EFE9] dark:bg-[#182840] text-[#2F6E5E] dark:text-[#aff0db] shadow-2xs'
-                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`material-symbols-outlined text-[20px] ${
-                        currentTab === 'nurse-dashboard' ? 'text-[#2F6E5E] dark:text-[#aff0db]' : 'text-gray-500 dark:text-gray-400'
-                      }`}>inventory_2</span>
-                      <span>My Bookings</span>
-                    </div>
-                  </button>
+
 
                   <button
                     type="button"
@@ -1428,27 +1356,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
-            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenSaved();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] bg-gray-50 dark:bg-[#15233a] flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#1c2e4c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1c2e4c] cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">bed</span>
-                  <span>Saved Stays</span>
-                </div>
-                {savedCount > 0 ? (
-                  <span className="px-1.5 py-0.5 rounded-full bg-[#005684] text-white text-[10px] font-bold">
-                    {savedCount}
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-gray-400">0</span>
-                )}
-              </button>
+            <div className="pt-2 border-t border-gray-100 dark:border-[#233550] grid grid-cols-1 gap-2">
+
 
               <button
                 type="button"

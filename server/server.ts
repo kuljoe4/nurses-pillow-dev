@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import authRoutes from './authRoutes.js';
+import { authenticateToken, AuthenticatedRequest } from './authMiddleware.js';
 import { mapDbListingToFrontend } from './mapper.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
@@ -39,10 +40,99 @@ app.use(cookieParser());
 // Auth Routes
 app.use('/api/auth', authRoutes);
 
+
+
+// Endpoint to upload clinical credentials
+app.post('/api/verify/license', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    // In a real application, you'd handle multipart/form-data with a library like multer
+    // and upload the PDF to AWS S3. For this implementation, we will accept a JSON payload
+    // and store the information in the database.
+    const { licenseNumber, stateBoard, specialty, documentName } = req.body;
+
+    if (!licenseNumber || !stateBoard) {
+        return res.status(400).json({ error: 'License number and state board are required' });
+    }
+
+    // We update the user record to indicate verification is pending
+    await db.query(`
+      UPDATE users
+      SET
+        clinical_license_number = $1,
+        clinical_state_board = $2,
+        profession_specialty = $3,
+        clinical_document_url = $4,
+        is_nurse_verified = false,
+        verification_status = 'pending_review'
+      WHERE id = $5
+    `, [licenseNumber, stateBoard, specialty, documentName || 'uploaded_document.pdf', userId]);
+
+    res.json({ success: true, message: 'Credentials submitted for admin review.' });
+  } catch (error) {
+    console.error('Error submitting clinical credentials:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Basic health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Nurses Pillow API is running' });
 });
+
+
+
+// Admin endpoint to list pending verifications
+app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+
+    const result = await db.query(`
+      SELECT id, email, full_name, clinical_license_number, clinical_state_board, profession_specialty, clinical_document_url, verification_status
+      FROM users
+      WHERE verification_status = 'pending_review'
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching verifications:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
+app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Forbidden. Admin access required.' });
+    }
+
+    const { userId } = req.params;
+
+    // In a real application, you would make an API call to delete the document from S3 here.
+    // We simulate the data purge by clearing the document URL and license number from the DB.
+
+    await db.query(`
+      UPDATE users
+      SET
+        is_nurse_verified = true,
+        verification_status = 'verified',
+        document_purged = true,
+        document_purged_at = NOW(),
+        clinical_document_url = NULL,
+        clinical_license_number = NULL -- Purge raw license number for privacy
+      WHERE id = $1
+    `, [userId]);
+
+    res.json({ success: true, message: 'Verification approved and sensitive data purged.' });
+  } catch (error) {
+    console.error('Error approving verification:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // Endpoint to fetch hospitals
 app.get('/api/hospitals', async (req, res) => {
@@ -136,6 +226,37 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 });
 
 // Stripe Connect Onboarding Link
+
+
+// Endpoint to create a Stripe Identity Verification Session
+app.post('/api/stripe/identity/session', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const userRes = await db.query('SELECT stripe_customer_id FROM users WHERE id = $1', [userId]);
+
+    // Create VerificationSession
+    const verificationSession = await stripe.identity.verificationSessions.create({
+      type: 'document',
+      metadata: {
+        userId: userId
+      },
+      options: {
+        document: {
+          require_matching_selfie: true
+        }
+      }
+    });
+
+    res.json({
+      client_secret: verificationSession.client_secret,
+      session_id: verificationSession.id
+    });
+  } catch (error) {
+    console.error('Error creating Stripe Identity Session:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/api/stripe/account-link', async (req, res) => {
   try {
     const { hostId, returnUrl, refreshUrl } = req.body;
@@ -237,6 +358,16 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
 
   try {
     switch (event.type) {
+      case 'identity.verification_session.verified': {
+        const session = event.data.object;
+        const userId = session.metadata.userId;
+        if (userId) {
+          console.log(`[Stripe Webhook] Identity verified for user: ${userId}`);
+          await db.query('UPDATE users SET identity_verified = true WHERE id = $1', [userId]);
+        }
+        break;
+      }
+
       case 'account.updated': {
         const account = event.data.object;
         if (account.payouts_enabled) {
