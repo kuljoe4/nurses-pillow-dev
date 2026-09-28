@@ -1,3 +1,10 @@
+## 2025-02-28 - Secure Booking Creation Endpoint
+
+**Vulnerability:** The `/api/bookings` endpoint lacked authentication and allowed anyone to create unverified bookings. It also had a dangerous `INSERT INTO users` fallback that created dummy users on the fly. This could lead to Insecure Direct Object Reference (IDOR) and unauthorized data insertion.
+
+**Learning:** Always require authentication on API endpoints that mutate or access user-owned records. Never rely on request body parameters (like `traveler_id`) without verifying them against the authenticated session (`req.user.id`).
+
+**Prevention:** Apply `authenticateToken` middleware to protected routes. Enforce strict authorization checks to ensure the authenticated user owns the resource they are attempting to modify or create.
 ## 2025-03-02 - Sentinel: Added missing authentication to sensitive API endpoints
 **Vulnerability:** Missing authentication on endpoints like POST /api/bookings, POST /api/audit-logs, and GET /api/audit-logs in `server/server.ts`. This allowed arbitrary unauthenticated users to create bookings and write/read sensitive audit logs.
 **Learning:** The `authenticateToken` middleware was defined in `server/authMiddleware.ts` but was not consistently applied to all sensitive endpoints in the main Express router configuration, highlighting a gap in secure-by-default routing practices.

@@ -253,10 +253,13 @@ async function startServer() {
   });
 
   // Bookings Creation
-  app.post('/api/bookings', async (req, res) => {
+  app.post('/api/bookings', authenticateToken, async (req: any, res) => {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
 
+      // Verify the authenticated user is the traveler creating the booking
+      if (!req.user || req.user.id !== booking.traveler_id) {
+        return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
       if (!validationResult.success) {
         return res.status(400).json({
           error: 'Invalid booking data',
