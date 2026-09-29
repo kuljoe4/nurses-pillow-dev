@@ -306,21 +306,35 @@ class RailwayDatabaseManager {
       if (count === 0) {
         console.log('[Railway DB] Seeding initial North Carolina hospital facilities and listings into Railway...');
 
-        for (const h of NC_HOSPITAL_SEEDS) {
+        if (NC_HOSPITAL_SEEDS.length > 0) {
+          const hParams: any[] = [];
+          const hValues = NC_HOSPITAL_SEEDS.map((h, i) => {
+            const offset = i * 13;
+            hParams.push(h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score);
+            return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13})`;
+          }).join(', ');
+
           await this.pool.query(
             `INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             VALUES ${hValues}
              ON CONFLICT (id) DO NOTHING;`,
-            [h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score]
+            hParams
           );
         }
 
-        for (const l of NC_LISTING_SEEDS) {
+        if (NC_LISTING_SEEDS.length > 0) {
+          const lParams: any[] = [];
+          const lValues = NC_LISTING_SEEDS.map((l, i) => {
+            const offset = i * 16;
+            lParams.push(l.id, l.host_id, l.title, 'Curated peaceful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true);
+            return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16})`;
+          }).join(', ');
+
           await this.pool.query(
             `INSERT INTO listings (id, host_id, title, description, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_active, is_verified_by_admin)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+             VALUES ${lValues}
              ON CONFLICT (id) DO NOTHING;`,
-            [l.id, l.host_id, l.title, 'Curated peaceful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true]
+            lParams
           );
         }
         console.log('[Railway DB] ✅ Initial seed sync to Railway complete.');
