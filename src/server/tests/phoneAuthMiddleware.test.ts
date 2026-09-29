@@ -32,7 +32,7 @@ describe('phoneAuthMiddleware', () => {
   it('should return 405 when method is not POST or OPTIONS', async () => {
     req.method = 'GET';
 
-    await middleware(req as IncomingMessage, res as ServerResponse, next);
+    await middleware(req as IncomingMessage, res as ServerResponse, next as unknown as () => void);
 
     expect(res.statusCode).toBe(405);
     expect(endMock).toHaveBeenCalledWith(
