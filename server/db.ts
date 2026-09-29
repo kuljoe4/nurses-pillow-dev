@@ -43,7 +43,6 @@ if (process.env.DATABASE_URL) {
       .then((res) => {
         pgConnected = true;
         lastConnectionError = null;
-        console.log(`[PostgreSQL] ✅ Connected to live database at ${res.rows[0]?.current_time}`);
       })
       .catch((err) => {
         pgConnected = false;
