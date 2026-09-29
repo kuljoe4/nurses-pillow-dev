@@ -154,7 +154,7 @@ export const LISTING_GEO_MAP: Record<string, ListingCoordinates> = {
 /**
  * Calculates Haversine distance in statute miles between two coordinate pairs.
  */
-function calculateHaversineDistance(
+export function calculateHaversineDistance(
   lat1: number,
   lon1: number,
   lat2: number,
