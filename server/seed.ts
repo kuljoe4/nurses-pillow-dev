@@ -25,12 +25,25 @@ async function seed() {
       console.log('Super admin provisioned successfully.');
     }
 
-    for (const h of NC_HOSPITAL_SEEDS) {
-        await db.query(`
-          INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (id) DO NOTHING;
-        `, [h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score]);
+    if (NC_HOSPITAL_SEEDS.length > 0) {
+      const values = [];
+      const params = [];
+      let paramIndex = 1;
+
+      for (const h of NC_HOSPITAL_SEEDS) {
+        const placeholders = [];
+        for (let i = 0; i < 13; i++) {
+          placeholders.push(`$${paramIndex++}`);
+        }
+        values.push(`(${placeholders.join(', ')})`);
+        params.push(h.id, h.name, h.health_system, h.address, h.city, h.state, h.zip, h.latitude, h.longitude, h.trauma_level, h.teaching_hospital, h.parking_type, h.nurse_feedback_score);
+      }
+
+      await db.query(`
+        INSERT INTO healthcare_facilities (id, name, health_system, address_line1, city, state, postal_code, latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score)
+        VALUES ${values.join(', ')}
+        ON CONFLICT (id) DO NOTHING;
+      `, params);
     }
 
     await db.query(`
