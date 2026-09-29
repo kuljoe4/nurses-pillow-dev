@@ -257,9 +257,6 @@ async function startServer() {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
 
-      // Verify the authenticated user is the traveler creating the booking
-      if (!req.user || req.user.id !== booking.traveler_id) {
-        return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
       if (!validationResult.success) {
         return res.status(400).json({
           error: 'Invalid booking data',
@@ -268,6 +265,11 @@ async function startServer() {
       }
 
       const booking = validationResult.data;
+
+      // Verify the authenticated user is the traveler creating the booking
+      if (!req.user || req.user.id !== booking.traveler_id) {
+        return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      }
 
       // Check if user exists to avoid unnecessary hashing if possible
       const userRes = await db.query('SELECT id FROM users WHERE id = $1', [booking.traveler_id]);
