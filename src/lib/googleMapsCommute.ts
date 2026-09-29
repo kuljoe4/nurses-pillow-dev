@@ -154,7 +154,7 @@ export const LISTING_GEO_MAP: Record<string, ListingCoordinates> = {
 /**
  * Calculates Haversine distance in statute miles between two coordinate pairs.
  */
-function calculateHaversineDistance(
+export function calculateHaversineDistance(
   lat1: number,
   lon1: number,
   lat2: number,
@@ -176,41 +176,63 @@ function calculateHaversineDistance(
 /**
  * Finds the closest matched hospital from the hospital directory.
  */
+// ⚡ Bolt Performance Optimization: Cache hospital coordinate lookups
+// String matching in resolveHospitalCoordinates was executing O(N) string comparisons
+// multiple times during list rendering and filtering loops. By caching the results,
+// we reduce this to O(1) for repeated lookups of the same hospital query.
+const resolveHospitalCache = new Map<string, HospitalCoordinates>();
+const MAX_CACHE_SIZE = 1000;
+
 export function resolveHospitalCoordinates(query: string): HospitalCoordinates {
   if (!query) return HOSPITAL_GEO_DIRECTORY['Duke University Hospital'];
 
   const normalized = query.toLowerCase();
+
+  if (resolveHospitalCache.has(normalized)) {
+    return resolveHospitalCache.get(normalized)!;
+  }
+
+  let result: HospitalCoordinates | undefined;
 
   for (const [key, hospital] of Object.entries(HOSPITAL_GEO_DIRECTORY)) {
     if (
       normalized.includes(key.toLowerCase()) ||
       normalized.includes(hospital.shortName.toLowerCase()) ||
       hospital.name.toLowerCase().includes(normalized) ||
-      (hospital.address && normalized.includes(hospital.address.toLowerCase()))
+      (hospital.address && hospital.address.toLowerCase().includes(normalized))
     ) {
-      return hospital;
+      result = hospital;
+      break;
     }
   }
 
-  // Check state or city matches
-  if (normalized.includes('chapel hill') || normalized.includes('unc')) {
-    return HOSPITAL_GEO_DIRECTORY['UNC Medical Center'];
-  }
-  if (normalized.includes('raleigh') || normalized.includes('wakemed')) {
-    return HOSPITAL_GEO_DIRECTORY['WakeMed Raleigh Campus'];
-  }
-  if (normalized.includes('charlotte') || normalized.includes('atrium')) {
-    return HOSPITAL_GEO_DIRECTORY['Atrium Health Carolinas Medical Center'];
-  }
-  if (normalized.includes('san francisco') || normalized.includes('ucsf')) {
-    return HOSPITAL_GEO_DIRECTORY['UCSF Medical Center'];
-  }
-  if (normalized.includes('stanford') || normalized.includes('palo alto')) {
-    return HOSPITAL_GEO_DIRECTORY['Stanford Health Care'];
+  if (!result) {
+    // Check state or city matches
+    if (normalized.includes('chapel hill') || normalized.includes('unc')) {
+      result = HOSPITAL_GEO_DIRECTORY['UNC Medical Center'];
+    } else if (normalized.includes('raleigh') || normalized.includes('wakemed')) {
+      result = HOSPITAL_GEO_DIRECTORY['WakeMed Raleigh Campus'];
+    } else if (normalized.includes('charlotte') || normalized.includes('atrium')) {
+      result = HOSPITAL_GEO_DIRECTORY['Atrium Health Carolinas Medical Center'];
+    } else if (normalized.includes('san francisco') || normalized.includes('ucsf')) {
+      result = HOSPITAL_GEO_DIRECTORY['UCSF Medical Center'];
+    } else if (normalized.includes('stanford') || normalized.includes('palo alto')) {
+      result = HOSPITAL_GEO_DIRECTORY['Stanford Health Care'];
+    }
   }
 
-  // Default to primary Duke hub if unmatched
-  return HOSPITAL_GEO_DIRECTORY['Duke University Hospital'];
+  const finalResult = result || HOSPITAL_GEO_DIRECTORY['Duke University Hospital'];
+
+  // Keep cache size bounded to prevent memory leaks from arbitrary user input
+  if (resolveHospitalCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = resolveHospitalCache.keys().next().value;
+    if (firstKey !== undefined) {
+      resolveHospitalCache.delete(firstKey);
+    }
+  }
+
+  resolveHospitalCache.set(normalized, finalResult);
+  return finalResult;
 }
 
 /**
