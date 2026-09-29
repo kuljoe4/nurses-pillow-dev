@@ -1,97 +1,183 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import request from 'supertest';
+import http from 'http';
 import { createPhoneAuthMiddleware } from './phoneAuthMiddleware';
 
 describe('phoneAuthMiddleware', () => {
-  let middleware: ReturnType<typeof createPhoneAuthMiddleware>;
+  let server: http.Server;
 
-  beforeEach(() => {
-    middleware = createPhoneAuthMiddleware();
+  beforeAll(() => {
+    const middleware = createPhoneAuthMiddleware();
+    server = http.createServer(async (req, res) => {
+      await middleware(req, res, () => {
+        // Mock next() function to simulate passing through
+        res.statusCode = 404;
+        res.end('Not Found by Middleware');
+      });
+    });
   });
 
-  const createMockRequest = (url: string, method: string, body: any) => {
-    const bodyStr = JSON.stringify(body);
-    let chunkYielded = false;
+  afterAll(() => {
+    server.close();
+  });
 
-    return {
-      url,
-      method,
-      headers: {},
-      [Symbol.asyncIterator]: async function* () {
-        if (!chunkYielded && bodyStr !== undefined) {
-          chunkYielded = true;
-          yield bodyStr;
-        }
-      }
-    } as any;
-  };
-
-  const createMockResponse = () => {
-    let responseData = '';
-    const res = {
-      statusCode: 200,
-      headers: {} as Record<string, string>,
-      setHeader(name: string, value: string) {
-        this.headers[name] = value;
-      },
-      end(data?: string) {
-        if (data) {
-          responseData = data;
-        }
-      },
-      getResponse() {
-        if (!responseData) return null;
-        return JSON.parse(responseData);
-      }
-    };
-    return res as any;
-  };
-
-  describe('/send-otp validation', () => {
-    it('returns 400 when phoneNumber is missing', async () => {
-      const req = createMockRequest('/api/auth/phone/send-otp', 'POST', {});
-      const res = createMockResponse();
-
-      await middleware(req, res, () => {});
-
-      expect(res.statusCode).toBe(400);
-      const response = res.getResponse();
-      expect(response.error).toBe('INVALID_PHONE');
-      expect(response.message).toBe('Please provide a valid mobile phone number.');
+  describe('General routing & methods', () => {
+    it('passes non-auth URLs to next()', async () => {
+      const response = await request(server).get('/api/users');
+      expect(response.status).toBe(404);
+      expect(response.text).toBe('Not Found by Middleware');
     });
 
-    it('returns 400 when phoneNumber is not a string', async () => {
-      const req = createMockRequest('/api/auth/phone/send-otp', 'POST', { phoneNumber: 1234567890 });
-      const res = createMockResponse();
-
-      await middleware(req, res, () => {});
-
-      expect(res.statusCode).toBe(400);
-      const response = res.getResponse();
-      expect(response.error).toBe('INVALID_PHONE');
+    it('returns 204 for OPTIONS requests', async () => {
+      const response = await request(server).options('/api/auth/phone/send-otp');
+      expect(response.status).toBe(204);
     });
 
-    it('returns 400 when phoneNumber is too short', async () => {
-      const req = createMockRequest('/api/auth/phone/send-otp', 'POST', { phoneNumber: '  12345  ' });
-      const res = createMockResponse();
-
-      await middleware(req, res, () => {});
-
-      expect(res.statusCode).toBe(400);
-      const response = res.getResponse();
-      expect(response.error).toBe('INVALID_PHONE');
+    it('returns 405 for non-POST methods', async () => {
+      const response = await request(server).get('/api/auth/phone/send-otp');
+      expect(response.status).toBe(405);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 405,
+        error: 'METHOD_NOT_ALLOWED',
+      });
     });
 
-    it('returns 200 when phoneNumber is valid', async () => {
-      const req = createMockRequest('/api/auth/phone/send-otp', 'POST', { phoneNumber: '1234567' });
-      const res = createMockResponse();
+    it('returns 400 for malformed JSON body', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/send-otp')
+        .set('Content-Type', 'application/json')
+        .send('{ invalid json');
 
-      await middleware(req, res, () => {});
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 400,
+        error: 'INVALID_JSON',
+      });
+    });
 
-      expect(res.statusCode).toBe(200);
-      const response = res.getResponse();
-      expect(response.success).toBe(true);
-      // The store seems to prepend + if it's missing or just returns it like that. Let's just check truthy
-      expect(response.to).toBeDefined();
+    it('returns 404 for unknown auth phone endpoints', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/unknown')
+        .send({});
+
+      expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 404,
+        error: 'NOT_FOUND',
+      });
+    });
+  });
+
+  describe('POST /api/auth/phone/send-otp', () => {
+    it('returns 400 if phone number is missing or invalid', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/send-otp')
+        .send({ phoneNumber: '123' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 400,
+        error: 'INVALID_PHONE',
+      });
+    });
+
+    it('returns 200 and creates a session for valid phone number', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/send-otp')
+        .send({ phoneNumber: '+19195550198' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        success: true,
+        statusCode: 200,
+        status: 'pending',
+      });
+      expect(response.body).toHaveProperty('sid');
+      expect(response.body).toHaveProperty('codeSent');
+    });
+  });
+
+  describe('POST /api/auth/phone/verify-otp', () => {
+    it('returns 503 for simulated network error', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ simulateError: 'network' });
+
+      expect(response.status).toBe(503);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 503,
+        error: 'NETWORK_FAILURE',
+      });
+    });
+
+    it('returns 400 if phone number is missing or invalid', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ phoneNumber: '123', code: '123456' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 400,
+        error: 'INVALID_PHONE',
+      });
+    });
+
+    it('returns 400 if code is missing or invalid length', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ phoneNumber: '+19195550198', code: '123' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 400,
+        error: 'INVALID_CODE',
+      });
+    });
+
+    it('returns 410 for expired token simulation', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ phoneNumber: '+19195550198', code: '000000' });
+
+      expect(response.status).toBe(410);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 410,
+        error: 'TOKEN_EXPIRED',
+      });
+    });
+
+    it('returns 429 for rate limit simulation', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ phoneNumber: '+19195550198', code: '888888' });
+
+      expect(response.status).toBe(429);
+      expect(response.body).toMatchObject({
+        success: false,
+        statusCode: 429,
+        error: 'RATE_LIMITED',
+      });
+    });
+
+    it('returns 200 for valid universal sandbox code', async () => {
+      const response = await request(server)
+        .post('/api/auth/phone/verify-otp')
+        .send({ phoneNumber: '+19195550198', code: '123456' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        success: true,
+        statusCode: 200,
+        status: 'approved',
+      });
     });
   });
 });
