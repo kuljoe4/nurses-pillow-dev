@@ -7,12 +7,14 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development') {
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_only';
 
+export interface TokenPayload {
+  id: string;
+  role: string;
+  email: string;
+}
+
 export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    email: string;
-  };
+  user?: TokenPayload;
 }
 
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -25,7 +27,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     req.user = {
       id: decoded.id,
       role: decoded.role,
