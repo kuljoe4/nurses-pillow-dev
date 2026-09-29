@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
+export interface UserJwtPayload extends JwtPayload {
+  id: string;
+  role: string;
+  email: string;
+}
 
 if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development') {
   console.error('FATAL ERROR: JWT_SECRET environment variable is not set in ' + process.env.NODE_ENV + '.');
@@ -25,7 +31,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as UserJwtPayload;
     req.user = {
       id: decoded.id,
       role: decoded.role,

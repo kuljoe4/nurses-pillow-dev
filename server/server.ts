@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { db } from './db.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -9,6 +9,7 @@ import { mapDbListingToFrontend } from './mapper.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Response } from 'express';
 
 dotenv.config();
 
@@ -43,8 +44,11 @@ app.use('/api/auth', authRoutes);
 
 
 // Endpoint to upload clinical credentials
-app.post('/api/verify/license', authenticateToken, async (req: any, res) => {
+app.post('/api/verify/license', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const userId = req.user.id;
     // In a real application, you'd handle multipart/form-data with a library like multer
     // and upload the PDF to AWS S3. For this implementation, we will accept a JSON payload
@@ -83,9 +87,9 @@ app.get('/api/health', (req, res) => {
 
 
 // Admin endpoint to list pending verifications
-app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+app.get('/api/admin/verifications', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (req.user.role !== 'super_admin') {
+    if (!req.user || req.user.role !== 'super_admin') {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
 
@@ -101,9 +105,9 @@ app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => 
 });
 
 // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
-app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (req.user.role !== 'super_admin') {
+    if (!req.user || req.user.role !== 'super_admin') {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
 
@@ -166,10 +170,26 @@ app.get('/api/listings', async (req, res) => {
   }
 });
 
+interface CreateBookingPayload {
+  id: string;
+  traveler_id: string;
+  traveler_name: string;
+  host_id: string;
+  listing_id: string;
+  start_date: string;
+  end_date: string;
+  duration_weeks: number;
+  monthly_rent: number;
+  total_traveler_charged: number;
+  platform_fee_amount: number;
+  host_net_payout: number;
+  status: string;
+}
+
 // Endpoint to create bookings
-app.post('/api/bookings', authenticateToken, async (req: any, res) => {
+app.post('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const booking = req.body;
+    const booking = req.body as CreateBookingPayload;
 
     await db.query(`
       INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
@@ -258,9 +278,12 @@ app.post('/api/bookings', authenticateToken, async (req: any, res) => {
 });
 
 // Endpoint to post audit logs
-app.post('/api/audit-logs', authenticateToken, async (req: any, res) => {
+app.post('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const log = req.body;
+    const log = req.body as { id: string, event_type: string, record_id: string, details: string, actor: string };
+    if (!log.id || !log.event_type || !log.record_id || !log.actor) {
+      return res.status(400).json({ error: 'Missing required audit log fields' });
+    }
     const result = await db.query(`
       INSERT INTO audit_logs (id, event_type, record_id, details, actor)
       VALUES ($1, $2, $3, $4, $5)
@@ -274,7 +297,7 @@ app.post('/api/audit-logs', authenticateToken, async (req: any, res) => {
 });
 
 // Endpoint to fetch audit logs
-app.get('/api/audit-logs', authenticateToken, async (req: any, res) => {
+app.get('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const result = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
     res.json(result.rows);
@@ -294,8 +317,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 
 
 // Endpoint to create a Stripe Identity Verification Session
-app.post('/api/stripe/identity/session', authenticateToken, async (req: any, res) => {
+app.post('/api/stripe/identity/session', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const userId = req.user.id;
     const userRes = await db.query('SELECT stripe_customer_id FROM users WHERE id = $1', [userId]);
 
