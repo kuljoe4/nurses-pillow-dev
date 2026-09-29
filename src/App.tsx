@@ -1030,7 +1030,6 @@ export default function App() {
               <AdminPortalView
   currentUser={currentUser}
                 isNightShiftMode={isNightShiftMode}
-                onGoToHousing={() => handleNavigateTab("find-housing")}
                 onOpenGoogleSheets={handleOpenGoogleSheets}
                 onGoToTier2Plumbing={() => handleNavigateTab("tier2-plumbing")}
                 bookingRequests={bookingRequests}
