@@ -1,5 +1,26 @@
+export interface DbListingRow {
+  id: string;
+  host_id?: string;
+  title: string;
+  property_type?: string;
+  address?: string;
+  city: string;
+  state: string;
+  zip?: string;
+  latitude: number | string;
+  longitude: number | string;
+  nearest_hospital_id?: string;
+  monthly_rate: number | string;
+  security_deposit?: number | string;
+  cleaning_fee?: number | string;
+  is_active?: boolean;
+  cancellation_tier?: string;
+  pet_fee: number | string;
+}
+
 // Maps enterprise DB schema formats to the `HousingListing` format the frontend expects.
-export function mapDbListingToFrontend(dbRow: any) {
+export function mapDbListingToFrontend(dbRow: DbListingRow) {
+
   return {
     id: dbRow.id,
     title: dbRow.title,

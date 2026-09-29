@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { UserJwtPayload } from './authMiddleware.js';
 import crypto from 'crypto';
 import { db } from './db.js';
 import { v4 as uuidv4 } from 'uuid';

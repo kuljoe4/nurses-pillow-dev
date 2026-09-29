@@ -4,6 +4,8 @@ import { STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, stripeConnect, StripeSplitTra
 import { CancellationRefundEngine, CancellationTier, RefundBreakdown } from '../services/cancellationEngine';
 import { twilioVerify, TwilioOtpDispatch, VerifyOtpResult } from '../services/twilioVerify';
 
+const hospitalMap = new Map(NC_HOSPITAL_SEEDS.map((h) => [h.id, h]));
+
 interface Tier2PlumbingDashboardProps {
   isNightShiftMode: boolean;
   onNavigateTab?: (tab: string) => void;
@@ -674,7 +676,7 @@ export const Tier2PlumbingDashboard: React.FC<Tier2PlumbingDashboardProps> = ({
               </h2>
               <div className="space-y-3">
                 {NC_LISTING_SEEDS.map((l) => {
-                  const hospital = NC_HOSPITAL_SEEDS.find((h) => h.id === l.nearest_hospital_id);
+                  const hospital = hospitalMap.get(l.nearest_hospital_id);
                   const proximity = db.calculateListingProximity(l.id, l.nearest_hospital_id);
                   return (
                     <div
