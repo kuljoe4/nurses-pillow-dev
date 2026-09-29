@@ -341,13 +341,40 @@ async function startServer() {
   app.post('/api/audit-logs', authenticateToken, async (req, res) => {
     try {
       const log = req.body;
+
+      // Input Validation
+      if (!log || typeof log !== 'object') {
+        return res.status(400).json({ error: 'Invalid request body' });
+      }
+
+      const eventType = typeof log.event_type === 'string' ? log.event_type.trim() : '';
+      const recordId = typeof log.record_id === 'string' ? log.record_id.trim() : '';
+      const details = typeof log.details === 'string' ? log.details.trim() : typeof log.details === 'object' ? JSON.stringify(log.details) : String(log.details || '');
+      const actor = typeof log.actor === 'string' ? log.actor.trim() : '';
+
+      if (!eventType || eventType.length > 100) {
+        return res.status(400).json({ error: 'event_type is required and must be <= 100 characters' });
+      }
+
+      if (!recordId || recordId.length > 255) {
+        return res.status(400).json({ error: 'record_id is required and must be <= 255 characters' });
+      }
+
+      if (!details) {
+         return res.status(400).json({ error: 'details are required' });
+      }
+
+      if (!actor || actor.length > 255) {
+        return res.status(400).json({ error: 'actor is required and must be <= 255 characters' });
+      }
+
       const result = await db.query(
         `
         INSERT INTO audit_logs (id, event_type, record_id, details, actor)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
       `,
-        [log.id || `log-${Date.now()}`, log.event_type, log.record_id, log.details, log.actor]
+        [log.id || `log-${Date.now()}`, eventType, recordId, details, actor]
       );
       res.json(result.rows[0]);
     } catch (error) {
