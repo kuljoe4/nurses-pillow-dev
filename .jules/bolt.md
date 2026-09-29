@@ -1,7 +1,3 @@
-## 2026-09-27 - Stable References for Memoized Components
-**Learning:** `SearchListingCard` was wrapped in `React.memo` but many of the callback functions it received from `SearchListingsView` and `App.tsx` were re-created on every render, completely breaking the memoization and causing unnecessary re-renders when parent states changed.
-**Action:** When adding `React.memo` to child components, systematically trace all callback props up the component tree to ensure they are wrapped in `useCallback` with stable dependencies (or empty arrays if using functional state updates like `setBookingRequests(prev => ...)`).
-
-## 2026-10-05 - Avoid Inline Arrow Functions for Memoized Components
-**Learning:** Even when a parent component wraps a callback prop in `useCallback` (e.g., `handleToggleSaveListing` in `App.tsx`), passing it down to a memoized child component (`PillowSaveButton`) as an inline arrow function (e.g., `() => onToggleSave(listing.id)`) defeats the memoization. The inline function creates a new reference on every render, causing the memoized child to re-render unnecessarily.
-**Action:** When a memoized child component needs to execute a callback with arguments, wrap the specific invocation in its own `useCallback` in the intermediate component to preserve stable reference identities for the memoized child.
+## 2024-05-18 - Optimized Array Lookups in Render Loops
+ **Learning:** Using `Array.prototype.find` inside a `.map` loop creates a nested loop scenario ($O(N \times M)$) which can severely impact rendering performance, especially for larger arrays.
+ **Action:** We mapped the source array (e.g. `NC_HOSPITAL_SEEDS`) to a `Map` structure upfront (outside the component) allowing for rapid $O(1)$ constant-time lookups using `.get()` during the render loop.
