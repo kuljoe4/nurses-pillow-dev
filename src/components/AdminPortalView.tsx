@@ -7,7 +7,6 @@ import { stripeConnect, HostFeeOverride } from '../services/stripeConnect';
 interface AdminPortalViewProps {
   currentUser?: any;
   isNightShiftMode: boolean;
-  onGoToHousing: () => void;
   onOpenGoogleSheets?: (preset?: AdminSheetsPreset) => void;
   onGoToTier2Plumbing?: () => void;
   bookingRequests?: BookingRequest[];
@@ -18,7 +17,6 @@ interface AdminPortalViewProps {
 export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   currentUser,
   isNightShiftMode,
-  onGoToHousing,
   onOpenGoogleSheets,
   onGoToTier2Plumbing,
   bookingRequests = [],
