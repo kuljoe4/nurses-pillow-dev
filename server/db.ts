@@ -113,7 +113,6 @@ export const db = {
       // 1. Try Railway initialization
       const railwayOk = await railwayDb.initialize();
       if (railwayOk) {
-        console.log('[PostgreSQL] Railway production database initialized and active.');
         // Ensure extensions exist
         await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
 
