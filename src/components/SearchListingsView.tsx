@@ -290,13 +290,18 @@ useBodyScrollLock(isGsaModalOpen);
     }
 
     // Sort listings
-    if (sortOption === 'closest') {
-      list.sort((a: any, b: any) => a.driveTimeMinutes - b.driveTimeMinutes);
-    } else if (sortOption === 'price_low') {
-      list.sort((a: any, b: any) => a.monthlyRate - b.monthlyRate);
-    } else if (sortOption === 'quiet_score') {
-      list.sort((a: any, b: any) => b.nurseRating - a.nurseRating);
-    }
+    list.sort((a: any, b: any) => {
+      switch (sortOption) {
+        case 'closest':
+          return a.driveTimeMinutes - b.driveTimeMinutes;
+        case 'price_low':
+          return a.monthlyRate - b.monthlyRate;
+        case 'quiet_score':
+          return b.nurseRating - a.nurseRating;
+        default:
+          return 0;
+      }
+    });
 
     return list;
   }, [
