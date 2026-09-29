@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -50,7 +50,7 @@ async function startServer() {
   app.post(
     '/api/webhooks/stripe',
     express.raw({ type: 'application/json' }),
-    async (req, res) => {
+    async (req: Request, res: Response) => {
       let event;
       const signature = req.headers['stripe-signature'];
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -96,7 +96,7 @@ async function startServer() {
   app.use(cookieParser());
 
   // Staging HTTP Basic Auth & Robots Header Middleware
-  app.use((req, res, next) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
 
     const isStaging =
@@ -138,7 +138,7 @@ async function startServer() {
 
   // 4. API Endpoints
   // Health Check
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', (req: Request, res: Response) => {
     res.json({
       status: 'ok',
       message: 'Nurses Pillow API is running smoothly',
@@ -147,7 +147,7 @@ async function startServer() {
   });
 
   // Railway PostgreSQL Status & Diagnostics
-  app.get('/api/railway/status', async (req, res) => {
+  app.get('/api/railway/status', async (req: Request, res: Response) => {
     try {
       const status = await railwayDb.getStatus();
       res.json(status);
@@ -156,7 +156,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/railway/reconnect', async (req, res) => {
+  app.post('/api/railway/reconnect', async (req: Request, res: Response) => {
     try {
       await railwayDb.initialize();
       const status = await railwayDb.getStatus();
@@ -221,7 +221,7 @@ async function startServer() {
   });
 
   // Hospitals / Healthcare Facilities
-  app.get('/api/hospitals', async (req, res) => {
+  app.get('/api/hospitals', async (req: Request, res: Response) => {
     try {
       const result = await db.query(`
         SELECT id, name, health_system, address_line1 as address, city, state, postal_code as zip,
@@ -236,7 +236,7 @@ async function startServer() {
   });
 
   // Housing Listings
-  app.get('/api/listings', async (req, res) => {
+  app.get('/api/listings', async (req: Request, res: Response) => {
     try {
       const result = await db.query(`
         SELECT id, host_id, title, property_type, address_line1 as address, city, state, postal_code as zip,
@@ -328,7 +328,7 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', authenticateToken, async (req, res) => {
+  app.get('/api/audit-logs', authenticateToken, async (req: Request, res: Response) => {
     try {
       const result = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
       res.json(result.rows);
@@ -338,7 +338,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', authenticateToken, async (req, res) => {
+  app.post('/api/audit-logs', authenticateToken, async (req: Request, res: Response) => {
     try {
       const log = req.body;
 
@@ -384,7 +384,7 @@ async function startServer() {
   });
 
   // Stripe Account Link
-  app.post('/api/stripe/account-link', async (req, res) => {
+  app.post('/api/stripe/account-link', async (req: Request, res: Response) => {
     try {
       const { hostId, returnUrl, refreshUrl } = req.body;
       if (!hostId) {
@@ -426,7 +426,7 @@ async function startServer() {
   });
 
   // Stripe Payout Status
-  app.get('/api/stripe/status/:hostId', async (req, res) => {
+  app.get('/api/stripe/status/:hostId', async (req: Request, res: Response) => {
     try {
       const { hostId } = req.params;
       const userRes = await db.query(
@@ -446,7 +446,7 @@ async function startServer() {
   });
 
   // Stripe Payment Intent (Split Payment & Escrow Hold)
-  app.post('/api/stripe/payment-intent', async (req, res) => {
+  app.post('/api/stripe/payment-intent', async (req: Request, res: Response) => {
     try {
       const { monthlyRent, cleaningFee, securityDeposit, hostConnectedAccountId, platformFeePercent } = req.body;
       const grossCharge = (Number(monthlyRent) || 0) + (Number(cleaningFee) || 0);
@@ -488,7 +488,7 @@ async function startServer() {
   });
 
   // Postmark Webhook Route
-  app.post('/api/webhooks/postmark', async (req, res) => {
+  app.post('/api/webhooks/postmark', async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers['x-postmark-secret'];
       if (process.env.POSTMARK_WEBHOOK_SECRET && authHeader !== process.env.POSTMARK_WEBHOOK_SECRET) {
@@ -525,7 +525,7 @@ async function startServer() {
   } else {
     const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (req: Request, res: Response) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
     });
     console.log('[Nurses Pillow] Serving static production build from dist');
