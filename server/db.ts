@@ -43,7 +43,6 @@ if (process.env.DATABASE_URL) {
       .then((res) => {
         pgConnected = true;
         lastConnectionError = null;
-        console.log(`[PostgreSQL] ✅ Connected to live database at ${res.rows[0]?.current_time}`);
       })
       .catch((err) => {
         pgConnected = false;
@@ -114,7 +113,6 @@ export const db = {
       // 1. Try Railway initialization
       const railwayOk = await railwayDb.initialize();
       if (railwayOk) {
-        console.log('[PostgreSQL] Railway production database initialized and active.');
         // Ensure extensions exist
         await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
 
