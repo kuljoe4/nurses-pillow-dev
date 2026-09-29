@@ -231,20 +231,20 @@ useBodyScrollLock(isGsaModalOpen);
 
     // Filter by quick chip
     if (activeFilterChip === 'entire') {
-      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
+      list = list.filter((l: HousingListing) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
     } else if (activeFilterChip === 'private') {
-      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
+      list = list.filter((l: HousingListing) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
     } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
+      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
     } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
+      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
     } else if (activeFilterChip === 'parking') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
+      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
     }
 
     // Filter by Commute Radius (1-15+ miles)
     if (commuteBuffer && commuteBuffer < 15) {
-      list = list.filter((l: any) => {
+      list = list.filter((l: HousingListing) => {
         const commute = calculateCommuteDuration(l, selectedHospital);
         return commute.distanceMiles <= commuteBuffer;
       });
@@ -253,7 +253,7 @@ useBodyScrollLock(isGsaModalOpen);
     // Filter by Assignment Duration (4, 8, 13, 26 weeks)
     const targetWeeks = selectedDuration === 'custom' ? (customDuration || 13) : parseInt(selectedDuration, 10);
     if (targetWeeks) {
-      list = list.filter((l: any) => {
+      list = list.filter((l: HousingListing) => {
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
         return targetWeeks >= minWeeks && targetWeeks <= maxWeeks;
@@ -262,40 +262,40 @@ useBodyScrollLock(isGsaModalOpen);
 
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
-      list = list.filter((l: any) => l.monthlyRate <= maxPrice);
+      list = list.filter((l: HousingListing) => l.monthlyRate <= maxPrice);
     }
     if (minRating > 0) {
-      list = list.filter((l: any) => l.nurseRating >= minRating);
+      list = list.filter((l: HousingListing) => l.nurseRating >= minRating);
     }
     if (filterBlackout) {
-      list = list.filter((l: any) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')));
+      list = list.filter((l: HousingListing) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')));
     }
     if (filterScrubWasher) {
-      list = list.filter((l: any) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
+      list = list.filter((l: HousingListing) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
     }
     if (filterQuietDay) {
-      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')));
+      list = list.filter((l: HousingListing) => l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')));
     }
     if (filterSoundMachine) {
-      list = list.filter((l: any) => l.amenities?.whiteNoiseMachine);
+      list = list.filter((l: HousingListing) => l.amenities?.whiteNoiseMachine);
     }
     if (filterDedicatedParking) {
-      list = list.filter((l: any) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')));
+      list = list.filter((l: HousingListing) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')));
     }
     if (filterPetFriendly) {
-      list = list.filter((l: any) => l.amenities?.petFriendly);
+      list = list.filter((l: HousingListing) => l.amenities?.petFriendly);
     }
     if (filterContractFlex) {
-      list = list.filter((l: any) => l.contractFlexProtection);
+      list = list.filter((l: HousingListing) => l.contractFlexProtection);
     }
 
     // Sort listings
     if (sortOption === 'closest') {
-      list.sort((a: any, b: any) => a.driveTimeMinutes - b.driveTimeMinutes);
+      list.sort((a: HousingListing, b: HousingListing) => a.driveTimeMinutes - b.driveTimeMinutes);
     } else if (sortOption === 'price_low') {
-      list.sort((a: any, b: any) => a.monthlyRate - b.monthlyRate);
+      list.sort((a: HousingListing, b: HousingListing) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {
-      list.sort((a: any, b: any) => b.nurseRating - a.nurseRating);
+      list.sort((a: HousingListing, b: HousingListing) => b.nurseRating - a.nurseRating);
     }
 
     return list;
@@ -318,7 +318,7 @@ useBodyScrollLock(isGsaModalOpen);
   ]);
 
   const selectedMapListing = useMemo(() => {
-    return MOCK_LISTINGS.find((l: any) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
+    return MOCK_LISTINGS.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
   }, [selectedMapListingId, filteredListings]);
 
   return (
@@ -673,7 +673,7 @@ useBodyScrollLock(isGsaModalOpen);
                   <button
                     key={chip.id}
                     type="button"
-                    onClick={() => setActiveFilterChip(chip.id as any)}
+                    onClick={() => setActiveFilterChip(chip.id as 'all' | 'entire' | 'private' | 'blackout' | 'laundry' | 'parking')}
                     className={`px-3 py-1 rounded-full whitespace-nowrap font-medium text-xs transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-[#0B2559] text-white shadow-2xs'
@@ -1016,7 +1016,7 @@ useBodyScrollLock(isGsaModalOpen);
                   <select
                     id="search-sort-select"
                     value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value as any)}
+                    onChange={(e) => setSortOption(e.target.value as 'closest' | 'price_low' | 'quiet_score')}
                     className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
                   >
                     <option value="closest">Closest</option>
@@ -1114,7 +1114,7 @@ useBodyScrollLock(isGsaModalOpen);
                   isNightShiftMode={isNightShiftMode}
                   listings={filteredListings}
                   selectedListingId={selectedMapListingId}
-                  onSelectListing={(listing: any) => {
+                  onSelectListing={(listing: HousingListing) => {
                     setSelectedMapListingId(listing.id);
                     setActiveDetailListing(listing);
                   }}
@@ -1179,7 +1179,7 @@ useBodyScrollLock(isGsaModalOpen);
                 <select
                   id="grid-sort-select"
                   value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value as any)}
+                  onChange={(e) => setSortOption(e.target.value as 'closest' | 'price_low' | 'quiet_score')}
                   className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
                 >
                   <option value="closest">Closest</option>
