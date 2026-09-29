@@ -484,7 +484,13 @@ class DatabaseService {
 
   async fetchAuditLogs(): Promise<DbAuditLog[]> {
     try {
-      const response = await fetch('/api/audit-logs');
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/audit-logs', { headers });
       if (response.ok) {
         this.auditLogs = await response.json();
       } else {
@@ -585,11 +591,17 @@ class DatabaseService {
     };
 
     try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch('/api/audit-logs', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(entry),
       });
 

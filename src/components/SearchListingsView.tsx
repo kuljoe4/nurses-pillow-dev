@@ -226,7 +226,7 @@ useBodyScrollLock(isGsaModalOpen);
   const filteredListings = useMemo(() => {
     // In a real app we would receive real properties from App via context/props.
     // For now we map to the existing mock to preserve the component.
-    let dbListings = db.getListings() || [];
+    const dbListings = db.getListings() || [];
     let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
 
     // Filter by quick chip
@@ -256,9 +256,8 @@ useBodyScrollLock(isGsaModalOpen);
       list = list.filter((l: HousingListing) => {
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
-        return targetWeeks >= minWeeks && targetWeeks <= maxWeeks;
-      });
-    }
+        if (targetWeeks < minWeeks || targetWeeks > maxWeeks) return false;
+      }
 
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
