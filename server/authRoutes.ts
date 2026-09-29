@@ -1,9 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { UserJwtPayload } from './authMiddleware.js';
 import crypto from 'crypto';
 import { db } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
+import { TokenPayload } from './authMiddleware.js';
 
 const router = express.Router();
 
@@ -396,7 +398,7 @@ router.get('/me', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     const result = await db.query(
       'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified FROM users WHERE id = $1',
       [decoded.id]
@@ -544,7 +546,7 @@ router.get('/favorites', async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
         if (decoded?.id) userId = decoded.id;
         if (decoded?.email) userEmail = decoded.email;
       } catch {}
@@ -610,7 +612,7 @@ router.post('/favorites/toggle', async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
         if (decoded?.id) userId = decoded.id;
         if (decoded?.email) userEmail = decoded.email;
       } catch {}
