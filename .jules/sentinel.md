@@ -1,4 +1,4 @@
-## 2025-03-02 - Sentinel: Added missing authentication to sensitive API endpoints
-**Vulnerability:** Missing authentication on endpoints like POST /api/bookings, POST /api/audit-logs, and GET /api/audit-logs in `server/server.ts`. This allowed arbitrary unauthenticated users to create bookings and write/read sensitive audit logs.
-**Learning:** The `authenticateToken` middleware was defined in `server/authMiddleware.ts` but was not consistently applied to all sensitive endpoints in the main Express router configuration, highlighting a gap in secure-by-default routing practices.
-**Prevention:** Establish a convention to apply authentication globally at the router level for API scopes (e.g., `app.use('/api', authenticateToken)` and selectively disable it, or rigorously code-review all new routes to ensure they have the appropriate auth middleware applied.
+## 2025-02-18 - Fix Unauthenticated Audit Logs Access
+ **Vulnerability:** Unauthenticated access to GET and POST `/api/audit-logs` endpoints allowing potential data leaks and log tampering.
+ **Learning:** Ensure all sensitive endpoints, particularly internal logging and administrative APIs, enforce authentication at the route level using middleware like `authenticateToken`.
+ **Prevention:** Implement comprehensive route audits and consistently apply authentication middleware to all non-public APIs.

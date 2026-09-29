@@ -286,7 +286,7 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', async (req, res) => {
+  app.get('/api/audit-logs', authenticateToken, async (req, res) => {
     try {
       const result = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
       res.json(result.rows);
@@ -296,7 +296,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', async (req, res) => {
+  app.post('/api/audit-logs', authenticateToken, async (req, res) => {
     try {
       const log = req.body;
       const result = await db.query(
