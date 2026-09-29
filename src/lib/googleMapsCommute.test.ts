@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeAll, afterAll } from 'bun:test';
+import { expect, test, describe, beforeAll, afterAll } from 'vitest';
 import {
   calculateCommuteDuration,
   HOSPITAL_GEO_DIRECTORY,

@@ -257,7 +257,9 @@ useBodyScrollLock(isGsaModalOpen);
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
         if (targetWeeks < minWeeks || targetWeeks > maxWeeks) return false;
-      }
+        return true;
+      });
+    }
 
     // Extended filter criteria from panel
     if (maxPrice < 3500) {
