@@ -10,12 +10,10 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "vitest",
-    "test:run": "vitest run",
     "migrate": "tsx server/migrate.ts",
     "start": "tsx server.ts",
     "seed": "tsx server/seed.ts",
-    "test": "vitest run"
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
