@@ -186,7 +186,7 @@ export function resolveHospitalCoordinates(query: string): HospitalCoordinates {
       normalized.includes(key.toLowerCase()) ||
       normalized.includes(hospital.shortName.toLowerCase()) ||
       hospital.name.toLowerCase().includes(normalized) ||
-      (hospital.address && normalized.includes(hospital.address.toLowerCase()))
+      (hospital.address && hospital.address.toLowerCase().includes(normalized))
     ) {
       return hospital;
     }
