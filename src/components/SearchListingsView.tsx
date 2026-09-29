@@ -226,76 +226,61 @@ useBodyScrollLock(isGsaModalOpen);
   const filteredListings = useMemo(() => {
     // In a real app we would receive real properties from App via context/props.
     // For now we map to the existing mock to preserve the component.
-    let dbListings = db.getListings() || [];
+    const dbListings = db.getListings() || [];
     let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
 
-    // Filter by quick chip
-    if (activeFilterChip === 'entire') {
-      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
-    } else if (activeFilterChip === 'private') {
-      list = list.filter((l: any) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
-    } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
-    } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
-    } else if (activeFilterChip === 'parking') {
-      list = list.filter((l: any) => l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
-    }
-
-    // Filter by Commute Radius (1-15+ miles)
-    if (commuteBuffer && commuteBuffer < 15) {
-      list = list.filter((l: any) => {
-        const commute = calculateCommuteDuration(l, selectedHospital);
-        return commute.distanceMiles <= commuteBuffer;
-      });
-    }
-
-    // Filter by Assignment Duration (4, 8, 13, 26 weeks)
     const targetWeeks = selectedDuration === 'custom' ? (customDuration || 13) : parseInt(selectedDuration, 10);
-    if (targetWeeks) {
-      list = list.filter((l: any) => {
+
+    // Apply all filters in a single pass to improve performance and code health
+    list = list.filter((l: HousingListing) => {
+      // 1. Filter by quick chip
+      if (activeFilterChip === 'entire') {
+        if (!l.propertyType?.toLowerCase().includes('entire') && !l.propertyType?.toLowerCase().includes('condo')) return false;
+      } else if (activeFilterChip === 'private') {
+        if (!l.propertyType?.toLowerCase().includes('room') && !l.propertyType?.toLowerCase().includes('suite') && !l.propertyType?.toLowerCase().includes('studio')) return false;
+      } else if (activeFilterChip === 'blackout') {
+        if (!l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) && !l.amenities?.blackoutCurtains) return false;
+      } else if (activeFilterChip === 'laundry') {
+        if (!l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) && !l.amenities?.washerDryerInUnit) return false;
+      } else if (activeFilterChip === 'parking') {
+        if (!l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) && !l.amenities?.dedicatedParking) return false;
+      }
+
+      // 2. Filter by Assignment Duration (4, 8, 13, 26 weeks)
+      if (targetWeeks) {
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
-        return targetWeeks >= minWeeks && targetWeeks <= maxWeeks;
-      });
-    }
+        if (targetWeeks < minWeeks || targetWeeks > maxWeeks) return false;
+      }
 
-    // Extended filter criteria from panel
-    if (maxPrice < 3500) {
-      list = list.filter((l: any) => l.monthlyRate <= maxPrice);
-    }
-    if (minRating > 0) {
-      list = list.filter((l: any) => l.nurseRating >= minRating);
-    }
-    if (filterBlackout) {
-      list = list.filter((l: any) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('blackout')));
-    }
-    if (filterScrubWasher) {
-      list = list.filter((l: any) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
-    }
-    if (filterQuietDay) {
-      list = list.filter((l: any) => l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')));
-    }
-    if (filterSoundMachine) {
-      list = list.filter((l: any) => l.amenities?.whiteNoiseMachine);
-    }
-    if (filterDedicatedParking) {
-      list = list.filter((l: any) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: any) => b.toLowerCase().includes('parking')));
-    }
-    if (filterPetFriendly) {
-      list = list.filter((l: any) => l.amenities?.petFriendly);
-    }
-    if (filterContractFlex) {
-      list = list.filter((l: any) => l.contractFlexProtection);
-    }
+      // 3. Extended filter criteria from panel
+      if (maxPrice < 3500 && l.monthlyRate > maxPrice) return false;
+      if (minRating > 0 && l.nurseRating < minRating) return false;
+      if (filterBlackout && !l.amenities?.blackoutCurtains && !l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout'))) return false;
+      if (filterScrubWasher && !l.amenities?.washerDryerInUnit && !l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry'))) return false;
+      if (filterQuietDay && l.amenities?.daySleeperQuietHours !== true && !l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper'))) return false;
+      if (filterSoundMachine && !l.amenities?.whiteNoiseMachine) return false;
+      if (filterDedicatedParking && !l.amenities?.dedicatedParking && !l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking'))) return false;
+      if (filterPetFriendly && !l.amenities?.petFriendly) return false;
+      if (filterContractFlex && !l.contractFlexProtection) return false;
+
+      // 4. Filter by Commute Radius (1-15+ miles)
+      // Done last as it involves calculateCommuteDuration which might be slightly more expensive
+      if (commuteBuffer && commuteBuffer < 15) {
+        const commute = calculateCommuteDuration(l, selectedHospital);
+        if (commute.distanceMiles > commuteBuffer) return false;
+      }
+
+      return true;
+    });
 
     // Sort listings
     if (sortOption === 'closest') {
-      list.sort((a: any, b: any) => a.driveTimeMinutes - b.driveTimeMinutes);
+      list.sort((a: HousingListing, b: HousingListing) => a.driveTimeMinutes - b.driveTimeMinutes);
     } else if (sortOption === 'price_low') {
-      list.sort((a: any, b: any) => a.monthlyRate - b.monthlyRate);
+      list.sort((a: HousingListing, b: HousingListing) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {
-      list.sort((a: any, b: any) => b.nurseRating - a.nurseRating);
+      list.sort((a: HousingListing, b: HousingListing) => b.nurseRating - a.nurseRating);
     }
 
     return list;
