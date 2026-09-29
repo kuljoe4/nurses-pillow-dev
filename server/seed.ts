@@ -42,12 +42,20 @@ async function seed() {
       ON CONFLICT (id) DO NOTHING;
     `);
 
-    for (const l of NC_LISTING_SEEDS) {
+    if (NC_LISTING_SEEDS.length > 0) {
+      const values = [];
+      const placeholders = [];
+      let i = 1;
+      for (const l of NC_LISTING_SEEDS) {
+        placeholders.push(`($${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++}, $${i++})`);
+        values.push(l.id, l.host_id, l.title, 'A beautiful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true);
+      }
+
       await db.query(`
         INSERT INTO listings (id, host_id, title, description, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published, is_verified_by_admin)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        VALUES ${placeholders.join(', ')}
         ON CONFLICT (id) DO NOTHING;
-      `, [l.id, l.host_id, l.title, 'A beautiful sanctuary for clinicians.', l.address, l.city, l.state, l.zip, l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rate, l.security_deposit, l.cleaning_fee, l.is_active, true]);
+      `, values);
     }
 
     console.log('Seeding Complete');
