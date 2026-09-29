@@ -14,8 +14,8 @@ const catchAsync = (fn: AsyncRequestHandler) => {
        if (req.path.startsWith('/phone/')) {
           return res.status(500).json({ success: false, message: 'Internal server error' });
        }
-       if (req.path === '/favorites' || req.path === '/favorites/toggle') {
-          return res.status(500).json({ error: 'Internal server error' }); // toggle does this, get handles differently below
+       if (req.path === '/favorites') {
+          return res.json({ listingIds: [] });
        }
        if (req.path === '/verify-email') {
           return res.status(500).json({ error: 'Verification failed. Please try again.' });
@@ -543,7 +543,6 @@ async function ensureFavoritesTable() {
 }
 
 router.get('/favorites', catchAsync(async (req, res, next) => {
-  try {
     const { userId, userEmail, searchKeys } = await resolveUserIdentity(
       req,
       req.query.userId as string,
@@ -577,10 +576,6 @@ router.get('/favorites', catchAsync(async (req, res, next) => {
       }
       res.json({ listingIds: Array.from(savedSet) });
     }
-  } catch (error) {
-    console.error('Fetch favorites error:', error);
-    res.json({ listingIds: [] });
-  }
 }));
 
 router.post('/favorites/toggle', catchAsync(async (req, res, next) => {
