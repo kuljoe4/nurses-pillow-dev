@@ -143,11 +143,12 @@ export const ContactStep: React.FC<ContactStepProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold mb-1.5">
+            <label htmlFor="workEmail" className="block text-sm font-semibold mb-1.5">
               Work / Health System Email
             </label>
             <div className="relative">
               <input
+                id="workEmail"
                 type="email"
                 value={data.workEmail}
                 onChange={(e) => onChange({ workEmail: e.target.value })}
@@ -164,9 +165,10 @@ export const ContactStep: React.FC<ContactStepProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1.5">Mobile Phone (SMS Enabled)</label>
+            <label htmlFor="mobilePhone" className="block text-sm font-semibold mb-1.5">Mobile Phone (SMS Enabled)</label>
             <div className="relative">
               <input
+                id="mobilePhone"
                 type="tel"
                 value={data.mobilePhone}
                 onChange={(e) => onChange({ mobilePhone: e.target.value })}
