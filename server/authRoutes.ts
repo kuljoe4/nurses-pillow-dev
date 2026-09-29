@@ -1,9 +1,31 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { UserJwtPayload } from './authMiddleware.js';
 import crypto from 'crypto';
 import { db } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
+import { TokenPayload } from './authMiddleware.js';
+
+type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<any>;
+
+const catchAsync = (fn: AsyncRequestHandler) => {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    fn(req, res, next).catch((error) => {
+       console.error(`[${req.method} ${req.path}] error:`, error);
+       if (req.path.startsWith('/phone/')) {
+          return res.status(500).json({ success: false, message: 'Internal server error' });
+       }
+       if (req.path === '/favorites') {
+          return res.json({ listingIds: [] });
+       }
+       if (req.path === '/verify-email') {
+          return res.status(500).json({ error: 'Verification failed. Please try again.' });
+       }
+       res.status(500).json({ error: 'Internal server error' });
+    });
+  };
+};
 
 const router = express.Router();
 
@@ -15,8 +37,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_on
 
 const SALT_ROUNDS = 12;
 
-router.post('/register', async (req, res) => {
-  try {
+router.post('/register', catchAsync(async (req, res, next) => {
     const { email, password, fullName, role } = req.body;
 
     if (!email || !password || !fullName || !role) {
@@ -65,14 +86,9 @@ router.post('/register', async (req, res) => {
     });
 
     res.status(201).json({ user, token });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
-router.post('/login', async (req, res) => {
-  try {
+router.post('/login', catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -115,19 +131,14 @@ router.post('/login', async (req, res) => {
       },
       token
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
 router.post('/logout', (req, res) => {
   res.clearCookie('auth_token');
   res.json({ message: 'Logged out successfully' });
 });
 
-router.post('/forgot-password', async (req, res) => {
-  try {
+router.post('/forgot-password', catchAsync(async (req, res, next) => {
     const { email } = req.body;
     if (!email) {
       res.status(400).json({ error: 'Email is required' });
@@ -187,14 +198,9 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     res.json({ message: 'If an account exists, a password reset link has been sent.' });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
-router.post('/reset-password', async (req, res) => {
-  try {
+router.post('/reset-password', catchAsync(async (req, res, next) => {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
       res.status(400).json({ error: 'Token and new password are required' });
@@ -220,17 +226,12 @@ router.post('/reset-password', async (req, res) => {
     );
 
     res.json({ message: 'Password has been reset successfully' });
-  } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
 // Ephemeral store for pending email verifications
 const pendingEmailVerifications = new Map<string, { pin: string; expires: number }>();
 
-router.post('/send-verification-email', async (req, res) => {
-  try {
+router.post('/send-verification-email', catchAsync(async (req, res, next) => {
     const { email } = req.body;
     if (!email) {
       res.status(400).json({ error: 'Email is required' });
@@ -311,14 +312,9 @@ router.post('/send-verification-email', async (req, res) => {
     }
 
     res.json({ message: 'Verification email sent successfully' });
-  } catch (error) {
-    console.error('Send verification email error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
-router.post('/verify-email', async (req, res) => {
-  try {
+router.post('/verify-email', catchAsync(async (req, res, next) => {
     const { email, pin } = req.body;
     if (!email || !pin) {
       res.status(400).json({ error: 'Email and 6-digit PIN are required.' });
@@ -363,13 +359,9 @@ router.post('/verify-email', async (req, res) => {
       verified: true,
       message: 'Email verified successfully.',
     });
-  } catch (error) {
-    console.error('Email verification error:', error);
-    res.status(500).json({ error: 'Verification failed. Please try again.' });
-  }
-});
+}));
 
-router.get('/me', async (req, res) => {
+router.get('/me', catchAsync(async (req, res, next) => {
   const token =
     req.cookies?.auth_token ||
     (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
@@ -396,7 +388,7 @@ router.get('/me', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     const result = await db.query(
       'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified FROM users WHERE id = $1',
       [decoded.id]
@@ -405,10 +397,9 @@ router.get('/me', async (req, res) => {
   } catch {
     res.json({ user: null });
   }
-});
+}));
 
-router.post('/phone/send-otp', async (req, res) => {
-  try {
+router.post('/phone/send-otp', catchAsync(async (req, res, next) => {
     const { phoneNumber } = req.body;
     if (!phoneNumber) {
       return res.status(400).json({ success: false, message: 'Phone number is required.' });
@@ -451,14 +442,9 @@ router.post('/phone/send-otp', async (req, res) => {
       status: data.status,
       createdAt: data.date_created,
     });
-  } catch (error) {
-    console.error('Send OTP error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-});
+}));
 
-router.post('/phone/verify-otp', async (req, res) => {
-  try {
+router.post('/phone/verify-otp', catchAsync(async (req, res, next) => {
     const { phoneNumber, code } = req.body;
     if (!phoneNumber || !code) {
       return res.status(400).json({ success: false, message: 'Phone number and code are required.' });
@@ -502,11 +488,35 @@ router.post('/phone/verify-otp', async (req, res) => {
     } else {
        res.status(400).json({ success: false, status: data.status, error: 'INVALID_CODE', message: 'Verification failed.' });
     }
-  } catch (error) {
-    console.error('Verify OTP error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+}));
+
+async function resolveUserIdentity(req: express.Request, initialUserId?: string, initialUserEmail?: string) {
+  const token =
+    req.cookies?.auth_token ||
+    (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
+  let userId = initialUserId;
+  let userEmail = initialUserEmail;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded?.id) userId = decoded.id;
+      if (decoded?.email) userEmail = decoded.email;
+    } catch {}
   }
-});
+
+  if (!userId && userEmail) {
+    try {
+      const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
+      if (uRes.rows.length > 0) {
+        userId = uRes.rows[0].id;
+      }
+    } catch {}
+  }
+
+  const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean))) as string[];
+  return { userId, userEmail, searchKeys };
+}
 
 // In-memory store for favorites fallback
 const memoryFavorites = new Map<string, Set<string>>();
@@ -534,32 +544,12 @@ async function ensureFavoritesTable() {
   }
 }
 
-router.get('/favorites', async (req, res) => {
-  try {
-    const token =
-      req.cookies?.auth_token ||
-      (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
-    let userId = req.query.userId as string;
-    let userEmail = req.query.email as string;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        if (decoded?.id) userId = decoded.id;
-        if (decoded?.email) userEmail = decoded.email;
-      } catch {}
-    }
-
-    if (!userId && userEmail) {
-      try {
-        const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
-        if (uRes.rows.length > 0) {
-          userId = uRes.rows[0].id;
-        }
-      } catch {}
-    }
-
-    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean)));
+router.get('/favorites', catchAsync(async (req, res, next) => {
+    const { userId, userEmail, searchKeys } = await resolveUserIdentity(
+      req,
+      req.query.userId as string,
+      req.query.email as string
+    );
     if (searchKeys.length === 0) {
       res.json({ listingIds: [] });
       return;
@@ -588,44 +578,20 @@ router.get('/favorites', async (req, res) => {
       }
       res.json({ listingIds: Array.from(savedSet) });
     }
-  } catch (error) {
-    console.error('Fetch favorites error:', error);
-    res.json({ listingIds: [] });
-  }
-});
+}));
 
-router.post('/favorites/toggle', async (req, res) => {
-  try {
+router.post('/favorites/toggle', catchAsync(async (req, res, next) => {
     const { listingId } = req.body;
     if (!listingId) {
       res.status(400).json({ error: 'listingId is required' });
       return;
     }
 
-    const token =
-      req.cookies?.auth_token ||
-      (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
-    let userId = req.body.userId;
-    let userEmail = req.body.email;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        if (decoded?.id) userId = decoded.id;
-        if (decoded?.email) userEmail = decoded.email;
-      } catch {}
-    }
-
-    if (!userId && userEmail) {
-      try {
-        const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
-        if (uRes.rows.length > 0) {
-          userId = uRes.rows[0].id;
-        }
-      } catch {}
-    }
-
-    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean)));
+    const { userId, userEmail, searchKeys } = await resolveUserIdentity(
+      req,
+      req.body.userId,
+      req.body.email
+    );
     const primaryKey = userId || (userEmail ? userEmail.trim().toLowerCase() : 'guest');
 
     if (!memoryFavorites.has(primaryKey)) {
@@ -669,10 +635,6 @@ router.post('/favorites/toggle', async (req, res) => {
       saved: isSaved,
       listingIds: Array.from(userFavorites),
     });
-  } catch (error) {
-    console.error('Toggle favorite error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
 export default router;
