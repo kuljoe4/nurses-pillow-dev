@@ -95,6 +95,24 @@ async function startServer() {
 
       try {
         switch (event.type) {
+          case 'identity.verification_session.verified': {
+            const session = event.data.object;
+            const userId = session.metadata?.userId;
+            if (userId) {
+              console.log(`[Stripe Webhook] Identity verified for user: ${userId}`);
+              await db.query("UPDATE users SET identity_verified = true WHERE id = $1", [userId]);
+            }
+            break;
+          }
+          case 'identity.verification_session.requires_input': {
+            const session = event.data.object;
+            const userId = session.metadata?.userId;
+            if (userId) {
+              console.log(`[Stripe Webhook] Identity verification requires input for user: ${userId}`);
+              // In a real application, you might notify the user to retry or update DB state
+            }
+            break;
+          }
           case 'account.updated': {
             const account = event.data.object;
             if (account.payouts_enabled) {
@@ -106,15 +124,37 @@ async function startServer() {
             }
             break;
           }
+          case 'payment_intent.amount_capturable_updated':
+          case 'payment_intent.created': {
+             const paymentIntent = event.data.object;
+             console.log(`[Stripe Webhook] PaymentIntent pre-authorized (created/capturable_updated): ${paymentIntent.id}`);
+             break;
+          }
           case 'payment_intent.succeeded': {
             const paymentIntent = event.data.object;
-            console.log(`[Stripe Webhook] PaymentIntent succeeded: ${paymentIntent.id}`);
+            console.log(`[Stripe Webhook] PaymentIntent succeeded (captured): ${paymentIntent.id}`);
             // Update booking status from pending_payment to pending_host_approval
             await db.query(
               "UPDATE bookings SET status = 'pending_host_approval' WHERE id = (SELECT id FROM bookings WHERE stripe_payment_intent_id = $1 LIMIT 1)",
               [paymentIntent.id]
             );
             break;
+          }
+          case 'payment_intent.canceled': {
+             const paymentIntent = event.data.object;
+             console.log(`[Stripe Webhook] PaymentIntent canceled (hold released): ${paymentIntent.id}`);
+             // If a payment intent is canceled, the booking should be marked as canceled or declined.
+             await db.query(
+               "UPDATE bookings SET status = 'canceled' WHERE stripe_payment_intent_id = $1",
+               [paymentIntent.id]
+             );
+             break;
+          }
+          case 'charge.dispute.created': {
+             const dispute = event.data.object;
+             console.log(`[Stripe Webhook] Charge dispute created: ${dispute.id}`);
+             // In a robust implementation, you might route to an admin dispute queue and suspend host payouts.
+             break;
           }
           default:
             console.log(`Unhandled Stripe event type: ${event.type}`);
@@ -681,7 +721,52 @@ async function startServer() {
         return res.status(400).json({ error: 'Invalid payload' });
       }
 
-      console.log(`[Postmark Webhook] Received ${payload.RecordType} for ${payload.Recipient}`);
+      const eventRecordType = payload.RecordType;
+      const recipientEmail = payload.Recipient;
+
+      switch (eventRecordType) {
+        case 'Delivery': {
+          const messageId = payload.MessageID;
+          console.log(`[Postmark Webhook] Email successfully delivered to: ${recipientEmail} (ID: ${messageId})`);
+
+          const userRes = await db.query(`SELECT id FROM users WHERE email = $1`, [recipientEmail]);
+          if (userRes.rows.length > 0) {
+            const userId = userRes.rows[0].id;
+            await db.query(
+              `INSERT INTO audit_logs (id, event_type, record_id, details, actor) VALUES ($1, $2, $3, $4, $5)`,
+              [uuidv4(), 'email_delivery', messageId, `Email delivered. Postmark MessageID: ${messageId}`, userId]
+            );
+          }
+          break;
+        }
+        case 'Bounce': {
+          const bounceType = payload.Type;
+          const description = payload.Description;
+          console.warn(`[Postmark Webhook] Email bounced for ${recipientEmail}: ${bounceType} - ${description}`);
+
+          if (payload.TypeCode === 1) { // 1 = Hard bounce
+            await db.query(`UPDATE users SET email_verified = false WHERE email = $1`, [recipientEmail]);
+          }
+          break;
+        }
+        case 'SpamComplaint': {
+          console.warn(`[Postmark Webhook] Spam complaint recorded from: ${recipientEmail}`);
+
+          const userRes = await db.query(`SELECT id FROM users WHERE email = $1`, [recipientEmail]);
+          if (userRes.rows.length > 0) {
+            const userId = userRes.rows[0].id;
+            await db.query(
+              `INSERT INTO audit_logs (id, event_type, record_id, details, actor) VALUES ($1, $2, $3, $4, $5)`,
+              [uuidv4(), 'spam_complaint', userId, `Spam complaint received for ${recipientEmail}. Notification preferences paused.`, 'system']
+            );
+          }
+          break;
+        }
+        default:
+          console.log(`[Postmark Webhook] Unhandled event type: ${eventRecordType} for ${recipientEmail}`);
+          break;
+      }
+
       return res.status(200).json({ received: true });
     } catch (err: any) {
       console.error('Postmark webhook error:', err.message);
