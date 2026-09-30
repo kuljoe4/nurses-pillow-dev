@@ -7,7 +7,7 @@ export interface UserJwtPayload extends JwtPayload {
   email: string;
 }
 
-if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development') {
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
   console.error('FATAL ERROR: JWT_SECRET environment variable is not set in ' + process.env.NODE_ENV + '.');
   process.exit(1);
 }
