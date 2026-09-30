@@ -34,6 +34,14 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
+  // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
+  // to PillowSaveButton which is wrapped in React.memo, preventing unnecessary re-renders.
+  const handleToggleSave = React.useCallback(() => {
+    if (listing) {
+      onToggleSave(listing.id);
+    }
+  }, [onToggleSave, listing]);
+
   // Synchronize default room on listing change
   useEffect(() => {
     if (listing?.rooms && listing.rooms.length > 0) {
@@ -560,7 +568,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
                 <PillowSaveButton
                   isSaved={isSaved}
-                  onToggle={() => onToggleSave(listing.id)}
+                  onToggle={handleToggleSave}
                   showLabel={true}
                   size={18}
                   className={`w-full py-2.5 rounded-full border text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-200 ease-in-out cursor-pointer ${
