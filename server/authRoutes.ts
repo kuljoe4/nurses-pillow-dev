@@ -45,6 +45,8 @@ router.post('/register', catchAsync(async (req, res, next) => {
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     // Role security: public registration is strictly limited to clinicians and property hosts
     const allowedRegistrationRoles = ['nurse', 'host'];
     if (!allowedRegistrationRoles.includes(role)) {
@@ -55,7 +57,7 @@ router.post('/register', catchAsync(async (req, res, next) => {
     }
 
     // Check if user exists
-    const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    const existingUser = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (existingUser.rows.length > 0) {
       res.status(409).json({ error: 'Email already registered' });
       return;
@@ -68,7 +70,7 @@ router.post('/register', catchAsync(async (req, res, next) => {
       INSERT INTO users (id, email, password_hash, full_name, role)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING id, email, full_name, role
-    `, [userId, email, passwordHash, fullName, role]);
+    `, [userId, cleanEmail, passwordHash, fullName, role]);
 
     const user = result.rows[0];
 
@@ -252,12 +254,7 @@ router.post('/send-verification-email', catchAsync(async (req, res, next) => {
 
     pendingEmailVerifications.set(cleanEmail, { pin, expires: expires.getTime() });
 
-    if (userResult.rows.length > 0) {
-      await db.query(
-        'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE LOWER(email) = $3',
-        [pin, expires, cleanEmail]
-      );
-    }
+
 
     if (postmarkServerToken) {
       try {
@@ -309,7 +306,8 @@ router.post('/send-verification-email', catchAsync(async (req, res, next) => {
         return;
       }
     } else {
-      console.log(`[Postmark Mock] Verification PIN for ${cleanEmail} is: ${pin}`);
+      res.status(500).json({ error: 'Email service configuration missing.' });
+      return;
     }
 
     res.json({ message: 'Verification email sent successfully' });
@@ -329,16 +327,9 @@ router.post('/verify-email', catchAsync(async (req, res, next) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const result = await db.query(
-      'SELECT id FROM users WHERE LOWER(email) = $1 AND reset_password_token = $2 AND reset_password_expires > NOW()',
-      [cleanEmail, cleanPin]
-    );
-
     const pending = pendingEmailVerifications.get(cleanEmail);
     const isPendingValid = pending && pending.pin === cleanPin && pending.expires > Date.now();
-    const isTestPin = cleanPin === '938412';
-
-    if (result.rows.length === 0 && !isPendingValid && !isTestPin) {
+    if (!isPendingValid) {
       res.status(400).json({ error: 'Invalid or expired verification PIN. Please check your inbox or request a new code.' });
       return;
     }
@@ -349,7 +340,7 @@ router.post('/verify-email', catchAsync(async (req, res, next) => {
 
     try {
       await db.query(
-        'UPDATE users SET email_verified = true, reset_password_token = NULL, reset_password_expires = NULL WHERE LOWER(email) = $1',
+        'UPDATE users SET email_verified = true WHERE LOWER(email) = $1',
         [cleanEmail]
       );
     } catch (dbErr: any) {
@@ -412,7 +403,7 @@ router.post('/phone/send-otp', catchAsync(async (req, res, next) => {
     const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
-      return res.json({ success: true, sid: 'mock_sid', to: cleanPhone, codeSent: 'mock_code', createdAt: new Date().toISOString() });
+      return res.status(500).json({ success: false, message: 'SMS verification service is not configured.' });
     }
 
     const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
@@ -460,23 +451,7 @@ router.post('/phone/verify-otp', catchAsync(async (req, res, next) => {
     const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
 
     if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
-       // Mock verification check for test suite / sandbox
-       const isAcceptable = cleanCode === '849201' || cleanCode === '123456' || cleanCode.length === 6;
-       if (isAcceptable) {
-         const { userId, userEmail } = await resolveUserIdentity(req, req.body.userId, req.body.email);
-         if (userId || userEmail) {
-           try {
-             await db.query(
-               'UPDATE users SET phone_verified = true, phone_number = COALESCE($1, phone_number) WHERE id = $2 OR LOWER(email) = LOWER($3)',
-               [cleanPhone, userId || '', (userEmail || '').toLowerCase()]
-             );
-           } catch (dbErr: any) {
-             console.error('[AuthRoutes] DB update error on phone verify:', dbErr.message);
-           }
-         }
-         return res.json({ success: true, status: 'approved', phone_verified: true, message: 'Verification successful.' });
-       }
-       return res.status(400).json({ success: false, error: 'INVALID_CODE', message: 'Invalid verification code.' });
+      return res.status(500).json({ success: false, message: 'SMS verification service is not configured.' });
     }
 
     const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
@@ -522,23 +497,14 @@ async function resolveUserIdentity(req: express.Request, initialUserId?: string,
   const token =
     req.cookies?.auth_token ||
     (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
-  let userId = initialUserId;
-  let userEmail = initialUserEmail;
+  let userId = undefined;
+  let userEmail = undefined;
 
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       if (decoded?.id) userId = decoded.id;
       if (decoded?.email) userEmail = decoded.email;
-    } catch {}
-  }
-
-  if (!userId && userEmail) {
-    try {
-      const uRes = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [userEmail.trim().toLowerCase()]);
-      if (uRes.rows.length > 0) {
-        userId = uRes.rows[0].id;
-      }
     } catch {}
   }
 
