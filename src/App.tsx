@@ -95,11 +95,6 @@ const MobileParityView = React.lazy(() =>
     default: m.MobileParityView,
   })),
 );
-const Tier2PlumbingDashboard = React.lazy(() =>
-  import("./components/Tier2PlumbingDashboard").then((m) => ({
-    default: m.Tier2PlumbingDashboard,
-  })),
-);
 
 // Modals lazy-loaded on demand (prevents heavy modules like Firebase from loading during initial page render)
 const GoogleSheetsSyncModal = React.lazy(() =>
@@ -133,6 +128,11 @@ const AuthModal = React.lazy(() =>
 const LogoutConfirmationModal = React.lazy(() =>
   import("./components/LogoutConfirmationModal").then((m) => ({
     default: m.LogoutConfirmationModal,
+  })),
+);
+const BookingDetailModal = React.lazy(() =>
+  import("./components/BookingDetailModal").then((m) => ({
+    default: m.BookingDetailModal,
   })),
 );
 
@@ -218,7 +218,7 @@ export default function App() {
       if (tab === currentTab) return;
 
       // 2. Super Admin restricted routes
-      if (tab === "admin-portal" || tab === "tier2-plumbing") {
+      if (tab === "admin-portal") {
         if (currentUser.role !== "super_admin") {
           setAccessNotice({
             title: "Administrator Access Required",
@@ -475,6 +475,33 @@ export default function App() {
     ];
   });
 
+  const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRequest | null>(null);
+  const [isBookingDetailOpen, setIsBookingDetailOpen] = useState(false);
+
+  const handleCancelBooking = useCallback((bookingId: string) => {
+    setBookingRequests((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status: "declined" } : b))
+    );
+    try {
+      const email = currentUser.email || localStorage.getItem("np_user_email");
+      if (email) {
+        const key = `np_bookings_${email}`;
+        const current = JSON.parse(localStorage.getItem(key) || "[]");
+        const updated = current.map((b: any) =>
+          b.id === bookingId ? { ...b, status: "declined" } : b
+        );
+        localStorage.setItem(key, JSON.stringify(updated));
+      }
+    } catch {}
+  }, [currentUser.email]);
+
+  const activeNurseBooking =
+    currentUser.role === "nurse"
+      ? bookingRequests.find((b) => b.status === "pending_host_approval" || b.status === "approved" || b.status === "active") ||
+        bookingRequests[0] ||
+        null
+      : null;
+
   // Explicitly fetch and synchronize the current user's profile from the backend
   // to prevent UI from displaying stale, mocked, or placeholder user data.
   const fetchUserProfile = useCallback(async (targetEmail?: string) => {
@@ -505,14 +532,16 @@ export default function App() {
             isNurseVerified: Boolean(user.is_nurse_verified),
             isHostVerified: Boolean(user.is_host_verified),
           });
-          // Synchronize verified user email into verification workflow
+          // Synchronize verified database state into verification workflow
           setVerificationData((prev) => ({
             ...prev,
             workEmail: user.email || prev.workEmail,
             legalFirstName: (user.full_name || "").split(" ")[0] || prev.legalFirstName,
             legalLastName: (user.full_name || "").split(" ").slice(1).join(" ") || prev.legalLastName,
-            isContactVerified: Boolean(user.email_verified || prev.isContactVerified),
-            phoneVerified: Boolean(user.phone_verified || prev.phoneVerified),
+            isIdVerified: Boolean(user.identity_verified),
+            isContactVerified: Boolean(user.email_verified),
+            phoneVerified: Boolean(user.phone_verified),
+            mobilePhone: user.phone_number || prev.mobilePhone,
             licenseStatus: user.is_nurse_verified ? "verified" : prev.licenseStatus,
           }));
           if (user.email) {
@@ -838,7 +867,59 @@ export default function App() {
 
       {/* Sticky Navigation Header */}
       <Header
-        topBanner={null}
+        topBanner={
+          currentUser.role === "nurse" && activeNurseBooking ? (
+            <div className="bg-[#FBF0D6] dark:bg-[#20190d] border-b border-[#B9822E]/25 text-[#0B2559] dark:text-[#FBF0D6] px-3 sm:px-6 py-2 text-xs transition-colors">
+              <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{
+                      backgroundColor:
+                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                          ? "#2F6E5E"
+                          : activeNurseBooking.status === "declined"
+                          ? "#A8452E"
+                          : "#B9822E",
+                    }}
+                  />
+                  <span className="font-medium truncate">
+                    {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                      ? "Confirmed Sanctuary: "
+                      : "Pending Request: "}
+                    <strong className="font-bold text-[#0B2559] dark:text-white">
+                      {activeNurseBooking.listingTitle}
+                    </strong>
+                  </span>
+                  <span className="hidden md:inline text-gray-400 dark:text-gray-500">•</span>
+                  <span
+                    className="hidden md:inline font-semibold"
+                    style={{
+                      color:
+                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                          ? "#2F6E5E"
+                          : activeNurseBooking.status === "declined"
+                          ? "#A8452E"
+                          : "#B9822E",
+                    }}
+                  >
+                    Status: {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active" ? "Accepted & Secured" : "Awaiting Host Response"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBookingDetail(activeNurseBooking);
+                    setIsBookingDetailOpen(true);
+                  }}
+                  className="shrink-0 px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  View request details
+                </button>
+              </div>
+            </div>
+          ) : null
+        }
         currentTab={currentTab}
         currentUser={currentUser}
         onSelectTab={handleNavigateTab}
@@ -857,6 +938,11 @@ export default function App() {
           sessionStorage.removeItem("np_staging_auth_lawrence");
           sessionStorage.removeItem("np_staging_user");
           setIsStagingAuthenticated(false);
+        }}
+        activeBooking={activeNurseBooking}
+        onOpenBookingDetail={(b) => {
+          setSelectedBookingDetail(b);
+          setIsBookingDetailOpen(true);
         }}
       />
 
@@ -1028,10 +1114,9 @@ export default function App() {
           {currentTab === "admin-portal" &&
             (currentUser.role === "super_admin" ? (
               <AdminPortalView
-  currentUser={currentUser}
+                currentUser={currentUser}
                 isNightShiftMode={isNightShiftMode}
                 onOpenGoogleSheets={handleOpenGoogleSheets}
-                onGoToTier2Plumbing={() => handleNavigateTab("tier2-plumbing")}
                 bookingRequests={bookingRequests}
                 listings={MOCK_LISTINGS}
                 isDeveloper={false}
@@ -1080,43 +1165,6 @@ export default function App() {
                       className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                     >
                       Return to My Workspace
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-          {/* Tier 2 Backend & Plumbing Console: Super-Admin Only */}
-          {currentTab === "tier2-plumbing" &&
-            (currentUser.role === "super_admin" ? (
-              <Tier2PlumbingDashboard
-                isNightShiftMode={isNightShiftMode}
-                onNavigateTab={(tab) => handleNavigateTab(tab as NavigationTab)}
-                onOpenCheckoutDemo={() => {
-                  handleOpenCheckout(MOCK_LISTINGS[0]);
-                }}
-              />
-            ) : (
-              <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
-                <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl">lock</span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                      Restricted Console
-                    </span>
-                    <h2 className="text-xl font-bold text-[#001848] dark:text-white">
-                      Administrator Access Required
-                    </h2>
-                  </div>
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigateTab("find-housing")}
-                      className="w-full py-2.5 px-4 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
-                    >
-                      Return to Housing Search
                     </button>
                   </div>
                 </div>
@@ -1442,6 +1490,24 @@ export default function App() {
             onConfirmLogout={handleConfirmLogout}
             currentUser={currentUser}
             isNightShiftMode={isNightShiftMode}
+          />
+        </Suspense>
+      )}
+
+      {/* Booking Detail Modal (NB-05 / NB-06) */}
+      {isBookingDetailOpen && selectedBookingDetail && (
+        <Suspense fallback={<ModalLoadingFallback />}>
+          <BookingDetailModal
+            isOpen={isBookingDetailOpen}
+            onClose={() => setIsBookingDetailOpen(false)}
+            booking={selectedBookingDetail}
+            listing={appData.listings.find((l) => l.id === selectedBookingDetail.listingId)}
+            isNightShiftMode={isNightShiftMode}
+            onCancelBooking={handleCancelBooking}
+            onGoToHousing={() => {
+              setIsBookingDetailOpen(false);
+              setCurrentTab("find-housing");
+            }}
           />
         </Suspense>
       )}

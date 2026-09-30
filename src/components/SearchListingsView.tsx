@@ -1046,7 +1046,7 @@ useBodyScrollLock(isGsaModalOpen);
                   <button
                     type="button"
                     onClick={handleResetAllFilters}
-                    className="mt-2 px-4 py-2 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#001848] transition-colors shadow-xs cursor-pointer"
+                    className="mt-2 px-4 py-2 rounded-xl bg-[#0A6FA8] text-white text-xs font-bold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors shadow-xs cursor-pointer"
                   >
                     Reset All Filters
                   </button>
@@ -1208,7 +1208,7 @@ useBodyScrollLock(isGsaModalOpen);
                 <button
                   type="button"
                   onClick={handleResetAllFilters}
-                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#005684] text-white text-xs font-bold hover:bg-[#001848] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#001848] transition-colors shadow-xs cursor-pointer"
+                  className="mt-2 px-5 py-2.5 rounded-xl bg-[#0A6FA8] text-white text-xs font-bold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors shadow-xs cursor-pointer"
                 >
                   Reset All Filters
                 </button>

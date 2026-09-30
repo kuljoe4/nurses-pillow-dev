@@ -162,7 +162,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
             </button>
             <button
               onClick={onGoToHousing}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-current text-sm font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-current text-sm font-semibold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer"
             >
               Browse Housing Sanctuaries
             </button>

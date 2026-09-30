@@ -62,12 +62,12 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   if (!isOpen) return null;
 
   const monthlyRent = listing.monthlyRate || 1950;
-  const hostRequiresDeposit = listing.requiresSecurityDeposit ?? (listing.securityDeposit !== undefined ? listing.securityDeposit > 0 : true);
-  const securityDeposit = hostRequiresDeposit ? (listing.securityDeposit ?? 250) : 0;
+  // Strict Platform-Wide Policy: Zero Security Deposit Holds for Clinicians
+  const securityDeposit = 0;
   const cleaningFee = 150;
   const petFee = 0;
   const travelerFee = 0;
-  // Upfront charge includes initial month lodging and cleaning fee. Security deposit is a Stripe auth hold only.
+  // Upfront charge includes initial month lodging and cleaning fee. Zero security deposit hold.
   const totalInitialCharge = monthlyRent + cleaningFee + petFee + travelerFee;
 
   // Effective host fee lookup (checks for custom fee override vs global rate)
@@ -193,7 +193,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
           }}
           type="button"
           aria-label={step === 2 && !isSuccess ? "Go back" : "Close checkout modal"}
-          className="absolute top-5 left-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] cursor-pointer transition-colors z-10"
+          className="absolute top-5 left-5 w-9 h-9 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] cursor-pointer transition-colors z-10"
         >
           <span className="material-symbols-outlined text-lg">
             {step === 2 && !isSuccess ? 'arrow_back' : 'close'}
@@ -241,10 +241,13 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     </div>
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                       <span className="flex items-center gap-1.5">
-                        <span>Security Deposit</span>
+                        <span>Security Deposit Hold</span>
+                        <span className="text-[10px] font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#E1EFE9] dark:bg-[#142823] px-2 py-0.5 rounded-full">
+                          $0 Policy
+                        </span>
                       </span>
-                      <span className="font-bold tabular-nums text-[#001848] dark:text-white">
-                        {securityDeposit > 0 ? `$${securityDeposit.toFixed(2)} Hold` : '$0.00'}
+                      <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        $0.00 (No Card Hold)
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">

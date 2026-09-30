@@ -8,7 +8,6 @@ export type NavigationTab =
   | 'host-dashboard'
   | 'host-onboarding'
   | 'admin-portal'
-  | 'tier2-plumbing'
   | 'how-it-works'
   | 'for-hosts'
   | 'nurse-support'
@@ -159,6 +158,8 @@ export interface HousingListing {
   hostName?: string;
   highlightBadges?: string[];
   distanceBadge?: string;
+  verified?: boolean;
+  isVerifiedByAdmin?: boolean;
   requiresSecurityDeposit?: boolean;
   securityDeposit?: number;
   depositTermsExplainer?: string;

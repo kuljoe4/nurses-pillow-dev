@@ -65,7 +65,7 @@ export const Phase1InventoryOutOfScopeTab: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
               {OUT_OF_PHASE_1_ITEMS.map((item, idx) => (
-                <tr key={idx} className="hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors">
+                <tr key={idx} className="hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors">
                   <td className="p-4 font-bold text-sm text-[#001848] dark:text-[#E6ECF7]">
                     {item.item}
                   </td>

@@ -22,12 +22,12 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
   stateBoard = 'State Board of Nursing',
   className = '',
   titleBadge,
-  isVerified = true,
-  identityVerified,
-  phoneVerified,
-  licenseVerified,
+  isVerified,
+  identityVerified = false,
+  phoneVerified = false,
+  licenseVerified = false,
 }) => {
-  const isActuallyVerified = isVerified || (identityVerified && phoneVerified && licenseVerified);
+  const isActuallyVerified = isVerified ?? (Boolean(identityVerified) && Boolean(phoneVerified) && Boolean(licenseVerified));
 
   return (
     <div
@@ -102,12 +102,12 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Identity
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                Stripe Identity
+                Government RealID
               </span>
             </div>
           </div>
           <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug relative z-10">
-            {identityVerified || isActuallyVerified
+            {identityVerified
               ? 'Government RealID & biometric liveness match verified.'
               : 'Government RealID verification in progress.'}
           </p>
@@ -138,7 +138,7 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
             </div>
           </div>
           <p className="text-[11px] text-[#404850] dark:text-[#9bb3d3] leading-snug">
-            {phoneVerified || isActuallyVerified
+            {phoneVerified
               ? 'Carrier-authenticated OTP mobile line for shift alerts.'
               : 'Carrier mobile line pending OTP verification.'}
           </p>

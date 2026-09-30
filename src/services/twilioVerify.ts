@@ -142,16 +142,25 @@ class TwilioVerifyService {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), options?.timeoutMs || 7000);
 
+    const token = typeof window !== 'undefined'
+      ? localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token')
+      : null;
+    const userEmail = typeof window !== 'undefined'
+      ? localStorage.getItem('np_user_email')
+      : null;
+
     try {
       const res = await fetch('/api/auth/phone/verify-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...(options?.simulateError ? { 'x-simulate-error': options.simulateError } : {}),
         },
         body: JSON.stringify({
           phoneNumber: formattedPhone,
           code,
+          email: userEmail,
           simulateError: options?.simulateError,
         }),
         signal: controller.signal,

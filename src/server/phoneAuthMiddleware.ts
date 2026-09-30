@@ -190,8 +190,46 @@ export function createPhoneAuthMiddleware() {
 
         // 5. Verify against session store
         const verificationResult = phoneAuthStore.verifyOtp(body, headers);
+        if (verificationResult.success) {
+          try {
+            const { db } = await import('../../server/db.js');
+            const cleanPhone = (body.phoneNumber || '').toString().trim();
+            let userId = body.userId;
+            let userEmail = body.email;
+
+            // Extract user identity from auth header or cookie if present
+            const authHeader = (headers['authorization'] as string) || '';
+            const cookieHeader = (headers['cookie'] as string) || '';
+            let token = authHeader.replace(/^Bearer\s+/i, '');
+            if (!token && cookieHeader) {
+              const match = cookieHeader.match(/auth_token=([^;]+)/);
+              if (match) token = match[1];
+            }
+            if (token) {
+              try {
+                const jwt = (await import('jsonwebtoken')).default;
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nurses_pillow_secret_2026') as any;
+                if (decoded?.id) userId = decoded.id;
+                if (decoded?.email) userEmail = decoded.email;
+              } catch {}
+            }
+
+            if (userId || userEmail) {
+              await db.query(
+                `UPDATE users
+                 SET phone_verified = true,
+                     phone_number = COALESCE($1, phone_number)
+                 WHERE id = $2 OR LOWER(email) = LOWER($3)`,
+                [cleanPhone, userId || '', userEmail || '']
+              );
+            }
+          } catch (dbErr: any) {
+            console.error('[Phone Middleware] Database sync error:', dbErr.message);
+          }
+        }
+
         res.statusCode = verificationResult.statusCode || (verificationResult.success ? 200 : 400);
-        res.end(JSON.stringify(verificationResult));
+        res.end(JSON.stringify({ ...verificationResult, phone_verified: verificationResult.success }));
         return;
       }
 

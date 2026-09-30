@@ -50,13 +50,6 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [hasFiberWifi, setHasFiberWifi] = useState(true);
   const [isSavedEditor, setIsSavedEditor] = useState(false);
 
-  // Screen B1 Onboarding State
-  const [idUploaded, setIdUploaded] = useState(true);
-  const [authorityUploaded, setAuthorityUploaded] = useState(true);
-
-  // Calendar blocked dates
-  const [blockedDays, setBlockedDays] = useState<number[]>([12, 13]);
-
   // Stripe Connect State
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [payoutsEnabled, setPayoutsEnabled] = useState(false);
@@ -68,27 +61,21 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const hostId = currentUser?.id || 'host-sarah-m';
 
   useEffect(() => {
-    // Check return status from URL
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.get('stripe_return') === 'true') {
       setActiveHostTab('onboarding');
-      // Set to true immediately for UI simulation purposes (webhook may be delayed)
-      // and poll the backend.
       setPayoutsEnabled(true);
 
-      // Attempt to fetch true status from DB after a delay to allow webhook to process
       setTimeout(() => {
         fetchPayoutStatus();
       }, 2500);
 
-      // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (urlParams.get('stripe_refresh') === 'true') {
-       setActiveHostTab('onboarding');
-       // Auto-retrigger if they abandoned and clicked refresh
-       window.history.replaceState({}, document.title, window.location.pathname);
-       fetchPayoutStatus();
+      setActiveHostTab('onboarding');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      fetchPayoutStatus();
     } else {
       fetchPayoutStatus();
     }
@@ -130,57 +117,65 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const toggleBlockDay = (day: number) => {
-    setBlockedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
   const handleSaveListing = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavedEditor(true);
     setTimeout(() => setIsSavedEditor(false), 3000);
   };
 
+  const pendingBookings = bookingRequests.filter((b) => b.status === 'pending_host_approval');
+  const confirmedBookings = bookingRequests.filter((b) => b.status === 'approved' || b.status === 'active');
+  const totalMonthlyNet = bookingRequests
+    .filter((b) => b.status !== 'declined')
+    .reduce((sum, b) => sum + (b.hostNetPayout || 0), 0);
+
   return (
-    <div className={`w-full py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-colors ${
-      isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#001848]'
-    }`}>
-      {/* Host Portal Navigation Strip */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div
+      className={`w-full py-5 sm:py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4 sm:space-y-5 transition-colors ${
+        isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#0B2559]'
+      }`}
+    >
+      {/* Host Portal Top Bar - Streamlined Header & Capsule Segment */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#005684] dark:text-[#93ccff]">
-              Portal B • Host &amp; Property Management
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0A6FA8] dark:text-[#3E9AD1]">
+              Portal B • Host Console
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] text-[11px] font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[10px] font-bold">
               ~95% Net Payout Partner
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0B2559] dark:text-white">
             Host Sanctuary Control Console
           </h1>
         </div>
 
-        <div className="bg-white dark:bg-[#0B1626] p-1.5 rounded-2xl shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center gap-1">
+        {/* Capsule Segment Switcher */}
+        <div className="inline-flex p-1 rounded-full bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shrink-0">
           <button
             type="button"
             onClick={() => setActiveHostTab('dashboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeHostTab === 'dashboard'
-                ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white'
             }`}
           >
-            Host Dashboard
+            <span>Requests</span>
+            {pendingBookings.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-[#A8452E] text-white text-[10px] font-bold tabular-nums">
+                {pendingBookings.length}
+              </span>
+            )}
           </button>
           <button
             type="button"
             onClick={() => setActiveHostTab('editor')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeHostTab === 'editor'
-                ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white'
             }`}
           >
             Listing &amp; Rooms
@@ -188,125 +183,111 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveHostTab('onboarding')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeHostTab === 'onboarding'
-                ? 'bg-[#001848] text-white shadow-xs'
-                : 'text-[#404850] dark:text-[#c0c7d1] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white'
             }`}
           >
-            Host Verification
+            Verification
           </button>
         </div>
       </div>
 
-      {/* SCREEN B3: Host Dashboard */}
+      {/* SCREEN B3: Host Booking Requests Approval Queue */}
       {activeHostTab === 'dashboard' && (
-        <div className="space-y-8">
-          {/* Earnings & Payout Summary Metric Bento */}
-          {(() => {
-            const hasRequests = bookingRequests.length > 0;
-            const grossVal = bookingRequests.reduce((acc, b) => acc + (b.monthlyRent || 0), 0);
-            const netPayout = grossVal * 0.95;
-            const appFee = grossVal * 0.05;
-            const activeRotations = bookingRequests.filter(b => b.status === 'approved' || b.status === 'active').length;
-
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                    Gross Booking Value (GBV)
-                  </span>
-                  <div className="text-2xl font-black text-[#001848] dark:text-white tabular-nums">
-                    ${grossVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-1">
-                    {activeRotations} Active Rotations ({bookingRequests.length} total)
-                  </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                    Net Host Payout (~95%)
-                  </span>
-                  <div className="text-2xl font-black text-[#195b4c] dark:text-[#aff0db] tabular-nums">
-                    ${netPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-[11px] text-[#195b4c] font-semibold mt-1">Stripe Connect Express Direct</div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                    Platform App Fee (5%)
-                  </span>
-                  <div className="text-2xl font-black text-[#005684] dark:text-[#93ccff] tabular-nums">
-                    ${appFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-1">$0 Host Onboarding Fee</div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#0B1626] shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                    Clinician Rating
-                  </span>
-                  <div className="text-2xl font-black text-[#745b0d] dark:text-[#ffdf91] flex items-center gap-1">
-                    <span>{hasRequests ? '4.98' : '5.00'}</span>
-                    <span className="material-symbols-outlined text-xl">star</span>
-                  </div>
-                  <div className="text-[11px] text-gray-500 mt-1">
-                    {hasRequests ? 'Verified Traveling RN Reviews' : 'New Host Partner'}
-                  </div>
-                </div>
+        <div className="space-y-4">
+          {/* Quick Metrics 4-Card Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500 block">Pending Review</span>
+              <div>
+                <span className="text-xl sm:text-2xl font-bold text-[#A8452E] dark:text-[#F4E2DC] tabular-nums">
+                  {pendingBookings.length}
+                </span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">24-hr SLA window</span>
               </div>
-            );
-          })()}
+            </div>
+
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500 block">Active Stays</span>
+              <div>
+                <span className="text-xl sm:text-2xl font-bold text-[#0B2559] dark:text-white tabular-nums">
+                  {confirmedBookings.length}
+                </span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">Confirmed rotations</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500 block">Est. Net Payout</span>
+              <div>
+                <span className="text-xl sm:text-2xl font-bold text-[#2F6E5E] dark:text-[#aff0db] tabular-nums">
+                  ${Math.round(totalMonthlyNet).toLocaleString()}
+                </span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">~95% split / mo</span>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500 block">Direct Payouts</span>
+              <div>
+                <span className="text-xs sm:text-sm font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span>{payoutsEnabled ? 'Direct Active' : 'Connected'}</span>
+                </span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">Automated direct deposit</span>
+              </div>
+            </div>
+          </div>
 
           {/* Pending Booking Requests Approval Queue */}
-          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#005684]/15 text-[#005684] flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]">pending_actions</span>
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold">Booking Requests Approval Queue</h2>
-                  <p className="text-xs text-gray-500">Review traveling nurse contract credentials before 24-hr SLA expiry</p>
-                </div>
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#0A6FA8] text-[20px]">pending_actions</span>
+                <h2 className="text-base font-bold text-[#0B2559] dark:text-white">
+                  Booking Requests Queue
+                </h2>
               </div>
-              <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-rose-600"></span>
-                <span>{bookingRequests.filter(b => b.status === 'pending_host_approval').length} Pending Approval</span>
-              </span>
+              {pendingBookings.length > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-[#F4E2DC] text-[#A8452E] dark:bg-[#F4E2DC]/20 dark:text-[#F4E2DC] text-[11px] font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#A8452E]"></span>
+                  <span>{pendingBookings.length} Awaiting Decision</span>
+                </span>
+              )}
             </div>
 
             {bookingRequests.length === 0 ? (
-              <div className="py-8 text-center text-xs text-gray-400">
-                No pending requests. New clinician bids will appear here with instant alerts.
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-8 text-center text-xs text-gray-400 shadow-[0_2px_12px_rgba(11,37,89,0.06)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                No pending requests. Incoming traveling clinician bids will appear here with instant alerts.
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-3.5">
                 {bookingRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="p-5 sm:p-6 rounded-3xl bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4 shadow-xs"
+                    className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4"
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                      <div className="flex items-start gap-4">
+                    {/* Header & Clinician Identity */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
                         <img
                           src={req.clinicianAvatar}
                           alt={req.clinicianName}
-                          className="w-14 h-14 rounded-2xl object-cover ring-2 ring-[#005684] shrink-0"
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-[#0A6FA8]/20 shrink-0"
                         />
                         <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h3 className="text-base font-bold text-[#001848] dark:text-white">
+                          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                            <h3 className="text-base font-bold text-[#0B2559] dark:text-white">
                               {req.clinicianName}
                             </h3>
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#0a6fa8]/10 text-[#005684] dark:bg-[#0a6fa8]/20 dark:text-[#93ccff] text-[11px] font-bold">
+                            <span className="px-2 py-0.5 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[10px] font-bold">
                               {req.clinicianTitle}
                             </span>
-                            <span className="text-xs text-gray-500">({req.clinicianPhone})</span>
+                            <span className="text-[11px] text-gray-400">({req.clinicianPhone})</span>
                           </div>
-                          <div className="text-xs text-[#404850] dark:text-[#c0c7d1] space-y-0.5">
+                          <div className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
                             <p>
                               <strong>Hospital Assignment:</strong> {req.hospitalName} • {req.unitSpecialty}
                             </p>
@@ -314,7 +295,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                               <strong>Duration:</strong> {req.startDate} to {req.endDate} ({req.durationWeeks} Weeks)
                             </p>
                             {req.specialRequests && (
-                              <p className="italic text-gray-500 mt-1 bg-white/60 dark:bg-black/20 p-2 rounded-lg">
+                              <p className="italic text-gray-500 mt-1 bg-[#EFF6FB] dark:bg-[#0E1A2E] p-2 rounded-lg text-[11px]">
                                 “{req.specialRequests}”
                               </p>
                             )}
@@ -322,13 +303,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                         </div>
                       </div>
 
+                      {/* Net Payout & Action Buttons */}
                       <div className="flex flex-col sm:flex-row lg:flex-col items-end justify-between gap-3 shrink-0">
                         <div className="text-right">
-                          <div className="text-xs text-gray-500">Monthly Net Payout:</div>
-                          <div className="text-lg font-black text-[#195b4c] dark:text-[#aff0db]">
+                          <div className="text-[11px] text-gray-500">Monthly Net Payout:</div>
+                          <div className="text-lg font-bold text-[#2F6E5E] dark:text-[#aff0db] tabular-nums">
                             ${req.hostNetPayout.toFixed(2)} / mo
                           </div>
-                          <div className="text-[10px] text-gray-400">Total hold: ${req.totalInitialCharge.toLocaleString()}</div>
+                          <div className="text-[10px] text-gray-400 tabular-nums">Total pre-auth hold: ${req.totalInitialCharge.toLocaleString()}</div>
                         </div>
 
                         {req.status === 'pending_host_approval' ? (
@@ -341,7 +323,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                                 await onDeclineBooking(req.id);
                                 setProcessingBookingId(null);
                               }}
-                              className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-3.5 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {processingBookingId === req.id ? 'Processing...' : 'Decline'}
                             </button>
@@ -353,7 +335,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                                 await onApproveBooking(req.id);
                                 setProcessingBookingId(null);
                               }}
-                              className="px-5 py-2 rounded-full bg-[#195b4c] hover:bg-[#14483d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#14483d] text-white text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-4 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {processingBookingId === req.id ? (
                                 <span className="flex items-center gap-1.5">
@@ -366,402 +348,349 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                             </button>
                           </div>
                         ) : req.status === 'declined' ? (
-                          <div className="px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">cancel</span>
+                          <div className="px-3 py-1 rounded-sm bg-[#F4E2DC] text-[#A8452E] dark:bg-[#F4E2DC]/20 dark:text-[#F4E2DC] text-[11px] font-bold flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[15px]">cancel</span>
                             <span>Declined</span>
                           </div>
                         ) : (
-                          <div className="px-4 py-1.5 rounded-full bg-[#195b4c]/20 text-[#195b4c] dark:text-[#aff0db] text-xs font-bold flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">task_alt</span>
+                          <div className="px-3 py-1 rounded-sm bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[11px] font-bold flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[15px]">task_alt</span>
                             <span>Accepted &amp; Confirmed</span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Expanded Trust Breakdown Card */}
-                    <div className="pt-2">
-                      <TrustBreakdownCard
-                        isNightShiftMode={isNightShiftMode}
-                        clinicianName={req.clinicianName}
-                        clinicianTitle={req.clinicianTitle}
-                        verificationTimestamp="September 2026"
-                        stateBoard="State Board of Nursing"
-                        titleBadge="Verified Clinician Audit"
-                      />
+                    {/* Compact Clinician Verification Badges */}
+                    <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[11px] font-bold">
+                        <span className="material-symbols-outlined text-[13px]">verified</span>
+                        <span>Active State Nursing License</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[11px] font-semibold">
+                        <span className="material-symbols-outlined text-[13px]">badge</span>
+                        <span>Government RealID Verified</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[11px] font-semibold">
+                        <span className="material-symbols-outlined text-[13px]">phonelink_ring</span>
+                        <span>Mobile Confirmed</span>
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-
-          {/* Calendar & Availability Management */}
-          <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-base font-bold">Interactive Room Calendar</h3>
-                <p className="text-xs text-gray-500">Click dates to toggle availability or block maintenance days</p>
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded bg-[#005684]"></span>
-                  <span>Active Clinician Stay</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded bg-rose-500"></span>
-                  <span>Blocked</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-7 gap-2 text-center text-xs">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                <div key={d} className="font-bold text-gray-400 py-1">{d}</div>
-              ))}
-              {Array.from({ length: 31 }).map((_, idx) => {
-                const day = idx+ 1;
-                const isBlocked = blockedDays.includes(day);
-                const hasActiveBooking = bookingRequests.some(b => b.status === 'approved' || b.status === 'active');
-                const isOccupied = hasActiveBooking && day >= 1 && day <= 28;
-
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => toggleBlockDay(day)}
-                    className={`h-12 rounded-xl font-bold flex flex-col items-center justify-center transition-all duration-200 ease-in-out cursor-pointer ${
-                      isBlocked
-                        ? 'bg-rose-500 text-white'
-                        : isOccupied
-                        ? 'bg-[#005684] text-white'
-                        : 'bg-[#f2f3ff] dark:bg-[#182840] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
-                    }`}
-                  >
-                    <span>{day}</span>
-                    <span className="text-[9px] font-normal opacity-80">
-                      {isBlocked ? 'Blocked' : isOccupied ? 'Traveler RN' : 'Open'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
       )}
 
-      {/* Listing & Room Calendar Editor */}
+      {/* Listing & Room Calendar Editor - Responsive Card Grid Layout */}
       {activeHostTab === 'editor' && (
-        <form onSubmit={handleSaveListing} className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-6">
-          <div className="flex items-center justify-between border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] pb-4">
+        <form onSubmit={handleSaveListing} className="space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider">
-                Listing &amp; Room Calendar Editor
+              <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase tracking-wider">
+                Listing &amp; Multi-Room Setup
               </span>
-              <h2 className="text-xl font-bold">Listing &amp; Multi-Room Setup</h2>
+              <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Listing Configuration &amp; Healthcare Amenities</h2>
             </div>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-full bg-[#001848] hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] text-white text-xs font-bold shadow-xs cursor-pointer"
+              className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all"
             >
               Save Configuration
             </button>
           </div>
 
           {isSavedEditor && (
-            <div className="p-3.5 rounded-xl bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db] text-xs font-semibold flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-xs font-semibold flex items-center gap-2">
               <span className="material-symbols-outlined text-[18px]">verified</span>
               <span>Listing changes saved and synchronized with the search index!</span>
             </div>
           )}
 
-          {/* HL-02: Google Maps Address Entry & Location Proximity */}
-          <HostAddressMapping isNightShiftMode={isNightShiftMode} />
-
-          {/* Property Type Selector */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-              Property Configuration Type
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setPropertyType('entire_property')}
-                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
-                  propertyType === 'entire_property'
-                    ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
-                    : 'border-gray-200 dark:border-gray-700'
-                }`}
-              >
-                <div className="font-bold text-sm">Entire Property</div>
-                <div className="text-xs text-gray-500 mt-1">Single nurse or clinician family occupies whole unit</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPropertyType('individual_rooms')}
-                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
-                  propertyType === 'individual_rooms'
-                    ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
-                    : 'border-gray-200 dark:border-gray-700'
-                }`}
-              >
-                <div className="font-bold text-sm">Individual Room Units</div>
-                <div className="text-xs text-gray-500 mt-1">Independent rooms (Room A, Room B) with private locks &amp; rates</div>
-              </button>
-            </div>
-          </div>
-
-          {/* Multi-Room Setup */}
-          {propertyType === 'individual_rooms' && (
-            <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] space-y-4">
-              <div className="font-bold text-xs text-[#005684] dark:text-[#93ccff] uppercase">
-                Multi-Room Profile Rates
+          {/* 2-Column Responsive Card-Based Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            {/* Left Column (7 cols): Address & Property Configuration */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Card 1: Google Maps Address & Hospital Distance Mapping */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                <HostAddressMapping isNightShiftMode={isNightShiftMode} />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-xl bg-white dark:bg-[#111e33] space-y-2">
-                  <div className="font-bold text-xs">Room A (Master w/ Ensuite)</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">$</span>
-                    <input
-                      type="number"
-                      value={roomAPrice}
-                      onChange={(e) => setRoomAPrice(Number(e.target.value))}
-                      className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none"
-                    />
-                    <span className="text-xs text-gray-400">/mo</span>
-                  </div>
-                </div>
 
-                <div className="p-3.5 rounded-xl bg-white dark:bg-[#111e33] space-y-2">
-                  <div className="font-bold text-xs">Room B (Garden View w/ Private Bath)</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">$</span>
-                    <input
-                      type="number"
-                      value={roomBPrice}
-                      onChange={(e) => setRoomBPrice(Number(e.target.value))}
-                      className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none"
-                    />
-                    <span className="text-xs text-gray-400">/mo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Host Pricing & Security Deposit Control */}
-          <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#005684] dark:text-[#93ccff]">
-                  Pricing &amp; Security Deposit Controls
-                </span>
-                <h3 className="text-sm font-bold text-[#001848] dark:text-white">
-                  Security Deposit (Stripe Authorization Hold)
-                </h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={requiresSecurityDeposit}
-                    onChange={(e) => setRequiresSecurityDeposit(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all duration-200 ease-in-out dark:border-gray-600 peer-checked:bg-[#005684]"></div>
+              {/* Card 2: Property Configuration & Room Pricing */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                <label className="block text-xs font-bold text-gray-500 uppercase">
+                  Property Configuration Type
                 </label>
-                <span className="text-xs font-semibold">
-                  {requiresSecurityDeposit ? 'Host Deposit Enabled' : 'No Deposit ($0 Free Hold)'}
-                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setPropertyType('entire_property')}
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                      propertyType === 'entire_property'
+                        ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="font-bold text-xs text-[#0B2559] dark:text-white">Entire Property</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">Clinician or couple occupies whole unit</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPropertyType('individual_rooms')}
+                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                      propertyType === 'individual_rooms'
+                        ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="font-bold text-xs text-[#0B2559] dark:text-white">Individual Room Units</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">Independent rooms (Room A, Room B) w/ private locks</div>
+                  </button>
+                </div>
+
+                {propertyType === 'individual_rooms' && (
+                  <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550] space-y-2.5">
+                    <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase block">
+                      Multi-Room Monthly Rates
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] space-y-1.5">
+                        <div className="font-bold text-xs text-[#0B2559] dark:text-white">Room A (Master Suite)</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-400">$</span>
+                          <input
+                            type="number"
+                            value={roomAPrice}
+                            onChange={(e) => setRoomAPrice(Number(e.target.value))}
+                            className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none tabular-nums"
+                          />
+                          <span className="text-xs text-gray-400">/mo</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] space-y-1.5">
+                        <div className="font-bold text-xs text-[#0B2559] dark:text-white">Room B (Private Bath)</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-400">$</span>
+                          <input
+                            type="number"
+                            value={roomBPrice}
+                            onChange={(e) => setRoomBPrice(Number(e.target.value))}
+                            className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none tabular-nums"
+                          />
+                          <span className="text-xs text-gray-400">/mo</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {requiresSecurityDeposit ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                    Authorization Hold Amount ($)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-500">$</span>
+            {/* Right Column (5 cols): Deposit Controls, Shift Amenities, Cancellation Tier */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Card 3: $0 Security Deposit Platform Guarantee */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2F6E5E] dark:text-[#aff0db]">
+                      Clinician Protection
+                    </span>
+                    <h3 className="text-xs font-bold text-[#0B2559] dark:text-white">
+                      Zero Security Deposit Hold
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]">verified</span>
+                    $0 Hold
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] text-xs text-[#0B2559] dark:text-[#c0c7d1] space-y-1.5 leading-relaxed">
+                  <p className="font-semibold text-[11px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    Strict Platform-Wide Zero Hold Rule
+                  </p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Traveling clinicians complete 12-hour shifts and are never inconvenienced with security deposit card holds or pre-authorization freezes.
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4: Healthcare Shift Amenities */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2.5">
+                <label className="block text-xs font-bold text-gray-500 uppercase">
+                  Shift Clinician Amenities
+                </label>
+                <div className="space-y-1.5 text-xs">
+                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
                     <input
-                      type="number"
-                      min={50}
-                      max={500}
-                      step={25}
-                      value={securityDepositAmount}
-                      onChange={(e) => setSecurityDepositAmount(Number(e.target.value))}
-                      className="w-32 rounded-xl p-2.5 text-sm font-bold bg-white dark:bg-[#111e33] border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                      type="checkbox"
+                      checked={hasBlackout}
+                      onChange={(e) => setHasBlackout(e.target.checked)}
+                      className="rounded accent-[#0A6FA8]"
                     />
-                    <span className="text-xs text-gray-500">recommended: $250</span>
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-white/70 dark:bg-[#111e33]/70 text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                  <strong>Stripe Pre-Auth Hold Rule:</strong> This amount is <em>never collected as upfront cash</em>. Stripe holds funds 48 hours prior to check-in and releases them automatically 7 days after checkout if no damage claim is filed.
+                    <span>100% Blackout Drapes (Zero Bleed)</span>
+                  </label>
+                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={hasQuietHours}
+                      onChange={(e) => setHasQuietHours(e.target.checked)}
+                      className="rounded accent-[#0A6FA8]"
+                    />
+                    <span>Enforced Quiet Hours (08:00–17:00)</span>
+                  </label>
+                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={hasScrubWasher}
+                      onChange={(e) => setHasScrubWasher(e.target.checked)}
+                      className="rounded accent-[#0A6FA8]"
+                    />
+                    <span>In-Unit Scrub Sanitizing Washer</span>
+                  </label>
+                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={hasDedicatedParking}
+                      onChange={(e) => setHasDedicatedParking(e.target.checked)}
+                      className="rounded accent-[#0A6FA8]"
+                    />
+                    <span>Dedicated Off-Street Parking Space</span>
+                  </label>
+                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={hasFiberWifi}
+                      onChange={(e) => setHasFiberWifi(e.target.checked)}
+                      className="rounded accent-[#0A6FA8]"
+                    />
+                    <span>500+ Mbps Fiber Wi-Fi (Epic Charting)</span>
+                  </label>
                 </div>
               </div>
-            ) : (
-              <div className="p-3 rounded-xl bg-[#aff0db]/20 text-[11px] text-[#195b4c] dark:text-[#aff0db] flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">verified</span>
-                <span><strong>Clinician Attraction Perk:</strong> Offering a $0 deposit requirement displays a verified"Zero Deposit Hold" badge on search cards to boost occupancy.</span>
+
+              {/* Card 5: Cancellation Tier Selection */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2">
+                <label className="block text-xs font-bold text-gray-500 uppercase">
+                  Cancellation Policy
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['Flexible', 'Moderate', 'Strict'] as const).map((tier) => (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => setCancellationTier(tier)}
+                      className={`p-2 rounded-xl border text-center cursor-pointer transition-all ${
+                        cancellationTier === tier
+                          ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a] font-bold text-[#0A6FA8]'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                      }`}
+                    >
+                      <div className="text-xs">{tier}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="text-[10px] text-gray-400 mt-1">
+                  {cancellationTier === 'Flexible'
+                    ? '100% refund up to 14 days prior to rotation'
+                    : cancellationTier === 'Moderate'
+                    ? '100% refund up to 30 days prior to rotation'
+                    : '50% refund up to 30 days prior to rotation'}
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* Healthcare Amenity Checklist */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-3">
-              Healthcare Shift Amenities
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-              <label className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasBlackout}
-                  onChange={(e) => setHasBlackout(e.target.checked)}
-                  className="rounded accent-[#005684]"
-                />
-                <span>100% Blackout Drapes (Zero Bleed)</span>
-              </label>
-              <label className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasQuietHours}
-                  onChange={(e) => setHasQuietHours(e.target.checked)}
-                  className="rounded accent-[#005684]"
-                />
-                <span>Enforced Quiet Hours (08:00–17:00)</span>
-              </label>
-              <label className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasScrubWasher}
-                  onChange={(e) => setHasScrubWasher(e.target.checked)}
-                  className="rounded accent-[#005684]"
-                />
-                <span>In-Unit Scrub Sanitizing Washer</span>
-              </label>
-              <label className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasDedicatedParking}
-                  onChange={(e) => setHasDedicatedParking(e.target.checked)}
-                  className="rounded accent-[#005684]"
-                />
-                <span>Dedicated Off-Street Parking Space</span>
-              </label>
-              <label className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasFiberWifi}
-                  onChange={(e) => setHasFiberWifi(e.target.checked)}
-                  className="rounded accent-[#005684]"
-                />
-                <span>500+ Mbps Fiber Wi-Fi (Epic Charting)</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Cancellation Tier Selection */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-              Preferred Cancellation Policy Tier
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {(['Flexible', 'Moderate', 'Strict'] as const).map((tier) => (
-                <button
-                  key={tier}
-                  type="button"
-                  onClick={() => setCancellationTier(tier)}
-                  className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 ease-in-out ${
-                    cancellationTier === tier
-                      ? 'border-[#005684] bg-[#eaedff]/50 dark:bg-[#15233a]'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  <div className="font-bold text-xs">{tier} Tier</div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">
-                    {tier === 'Flexible'
-                      ? '100% refund up to 14 days prior'
-                      : tier === 'Moderate'
-                      ? '100% refund up to 30 days prior'
-                      : '50% refund up to 30 days prior'}
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
         </form>
       )}
 
-      {/* Host Onboarding & Identity Verification */}
+      {/* Host Onboarding & Identity Verification - 3-Card Responsive Grid */}
       {activeHostTab === 'onboarding' && (
-        <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-6">
+        <div className="space-y-4">
           <div>
-            <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase tracking-wider">
               Host Onboarding &amp; Verification
             </span>
-            <h2 className="text-xl font-bold">Host Identity &amp; Authority to List</h2>
-            <p className="text-xs text-gray-500">Required prior to publishing units on the traveling clinician map</p>
+            <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Host Identity &amp; Authority to List</h2>
+            <p className="text-xs text-gray-500">Required prior to publishing units on the traveling clinician search map</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#005684]">badge</span>
-                <h3 className="font-bold text-sm">1. Government Photo ID &amp; Selfie</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {/* Card 1 */}
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">badge</span>
+                  </div>
+                  <h3 className="font-bold text-xs text-[#0B2559] dark:text-white">1. Photo ID &amp; Biometrics</h3>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Government photo identification and facial liveness match for host authenticity.
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                Processed via Stripe Identity UI. Checks government database for host authenticity.
-              </p>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#195b4c] dark:text-[#aff0db]">
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
                 <span>Verified RealID</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#005684]">description</span>
-                <h3 className="font-bold text-sm">2. Authority to List Verification</h3>
+            {/* Card 2 */}
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">description</span>
+                  </div>
+                  <h3 className="font-bold text-xs text-[#0B2559] dark:text-white">2. Authority to List</h3>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Property deed, property tax receipt, or master lease sublease authorization.
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                Property deed, property tax receipt, or master lease sublease authorization.
-              </p>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#195b4c] dark:text-[#aff0db]">
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
                 <span>Deed Verified on File</span>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] space-y-3 col-span-1 sm:col-span-2 mt-2">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#005684]">account_balance</span>
-                <h3 className="font-bold text-sm">3. Payout Account Setup</h3>
+            {/* Card 3 */}
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">account_balance</span>
+                  </div>
+                  <h3 className="font-bold text-xs text-[#0B2559] dark:text-white">3. Payout Account</h3>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Direct deposit routing to receive automatic monthly disbursements on booking acceptance.
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                Connect your bank account or debit card via Stripe Connect Express to receive automatic direct deposits. We do not store your financial details.
-              </p>
-              {isConnectingStripe ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-[#005684] dark:text-[#93ccff]">
-                  <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                  <span>Redirecting to Stripe...</span>
-                </div>
-              ) : payoutsEnabled ? (
-                <div className="flex items-center gap-2 text-xs font-bold text-[#195b4c] dark:text-[#aff0db]">
-                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                  <span>Stripe Connect Express Direct</span>
-                </div>
-              ) : (
-                <button
-                  onClick={handleConnectStripe}
-                  className="mt-2 bg-[#005684] hover:bg-[#004368] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004368] text-white text-xs font-bold py-2 px-4 rounded-xl transition-all duration-200 ease-in-out w-fit cursor-pointer flex items-center gap-2 shadow-sm"
-                >
-                  <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
-                  Connect Bank Account for Payouts
-                </button>
-              )}
+              <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                {isConnectingStripe ? (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                    <span>Connecting bank routing...</span>
+                  </div>
+                ) : payoutsEnabled ? (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db]">
+                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>Direct Payouts Active</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnectStripe}
+                    className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
+                    <span>Connect Payouts</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

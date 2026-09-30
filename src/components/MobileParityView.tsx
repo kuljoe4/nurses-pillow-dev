@@ -57,7 +57,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
 
         <button
           onClick={onNavigateHome}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out self-start sm:self-auto"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Return to Marketplace

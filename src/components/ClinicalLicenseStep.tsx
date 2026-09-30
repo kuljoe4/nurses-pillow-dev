@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { PROFESSION_OPTIONS, STATE_BOARDS } from '../data/mockData';
+import { VerificationStepperNav } from './VerificationStepperNav';
 
 interface ClinicalLicenseStepProps {
   data: VerificationFormData;
@@ -20,6 +21,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
   onOpenSuccessModal,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [savedNotification, setSavedNotification] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +38,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           fileType: file.type || 'application/pdf',
         },
       });
-      showTemporaryNotice(`Attached"${file.name}"`);
+      showTemporaryNotice(`Attached "${file.name}"`);
     }
   };
 
@@ -54,7 +56,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           fileType: file.type || 'application/pdf',
         },
       });
-      showTemporaryNotice(`Attached"${file.name}"`);
+      showTemporaryNotice(`Attached "${file.name}"`);
     }
   };
 
@@ -76,219 +78,131 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
     // Check if demo account
     const isDemo = data.legalFirstName === 'Sarah' && data.legalLastName === 'Jenkins';
 
     if (isDemo) {
-        setTimeout(() => {
-          setIsSubmitting(false);
-          onChange({ licenseStatus: 'verified' });
-          onOpenSuccessModal();
-        }, 900);
-        return;
+      setTimeout(() => {
+        setIsSubmitting(false);
+        onChange({ licenseStatus: 'verified' });
+        onOpenSuccessModal();
+      }, 500);
+      return;
     }
 
     try {
-        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
-        const res = await fetch('/api/verify/license', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                licenseNumber: data.licenseNumber,
-                stateBoard: data.issuingStateBoard,
-                specialty: data.professionSpecialty,
-                documentName: data.uploadedDocument?.name || 'document.pdf'
-            })
-        });
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const res = await fetch('/api/verify/license', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          licenseNumber: data.licenseNumber,
+          stateBoard: data.issuingStateBoard,
+          specialty: data.professionSpecialty,
+          documentName: data.uploadedDocument?.name || 'document.pdf',
+        }),
+      });
 
-        if (!res.ok) {
-            throw new Error('Failed to submit credentials');
-        }
+      if (!res.ok) {
+        throw new Error('Verification service temporarily unavailable.');
+      }
 
-        onChange({ licenseStatus: 'pending_review' }); // Changed to pending for admin review
-        onOpenSuccessModal();
-    } catch (error) {
-        console.error(error);
-        alert('Failed to submit credentials');
+      onChange({ licenseStatus: 'pending_review' });
+      onOpenSuccessModal();
+    } catch (error: any) {
+      setSubmitError(error.message || 'Verification could not be processed. Please check your details.');
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleSaveLater = () => {
-    showTemporaryNotice('Progress saved! You can resume credentialing anytime.');
+    showTemporaryNotice('Progress saved.');
   };
 
   return (
     <div
       className={`w-full py-8 sm:py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
-        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#f2f3ff]'
+        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#EFF6FB]'
       }`}
     >
       {/* Stepper Navigation Bar */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div
-          className={`rounded-full p-2 sm:p-3 shadow-md transition-colors ${
-            isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550]' : 'bg-white'
-          }`}
-        >
-          <div className="grid grid-cols-4 items-center gap-2">
-            {/* Step 1: Identity Verified */}
-            <button
-              onClick={() => onSelectStep(1)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out cursor-pointer"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 1</p>
-                <p className="text-[11px] truncate opacity-85">Identity Verified</p>
-              </div>
-            </button>
-
-            {/* Step 2: Email & Phone */}
-            <button
-              onClick={() => onSelectStep(2)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out cursor-pointer"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 2</p>
-                <p className="text-[11px] truncate opacity-85">Email &amp; Phone</p>
-              </div>
-            </button>
-
-            {/* Step 3: Clinical License (Active) */}
-            <button
-              onClick={() => onSelectStep(3)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#0a6fa8] text-white shadow-sm text-left cursor-default"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#005684] font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
-                3
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 3</p>
-                <p className="text-[11px] text-[#dcecff] truncate">Clinical License</p>
-              </div>
-            </button>
-
-            {/* Step 4: Work Contract */}
-            <button
-              onClick={() => onSelectStep(4)}
-              type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out cursor-pointer ${
-                isNightShiftMode
-                  ? 'bg-[#15233a] text-[#8ea5c8] hover:bg-[#1a2d4b] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1a2d4b]'
-                  : 'bg-[#eaedff] text-[#707881] hover:bg-[#dfe4fc] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#dfe4fc]'
-              }`}
-            >
-              <span
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full font-medium text-sm flex items-center justify-center shrink-0 ${
-                  isNightShiftMode ? 'bg-[#233550] text-[#8ea5c8]' : 'bg-[#707881]/20 text-[#404850]'
-                }`}
-              >
-                4
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-medium truncate leading-tight">Step 4</p>
-                <p className="text-[11px] truncate opacity-85">Work Contract</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
+      <VerificationStepperNav
+        currentStep={3}
+        data={data}
+        onSelectStep={onSelectStep}
+        isNightShiftMode={isNightShiftMode}
+      />
 
       {/* Floating Notification Toast */}
       {savedNotification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#001848] text-white px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3 border border-white/20 animate-fade-in">
-          <span className="material-symbols-outlined text-[#aff0db] text-xl">info</span>
-          <span className="text-sm font-medium">{savedNotification}</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0B2559] text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2.5 border border-white/20 text-xs font-medium">
+          <span className="material-symbols-outlined text-[#aff0db] text-[18px]">check_circle</span>
+          <span>{savedNotification}</span>
         </div>
       )}
 
       {/* Main Form Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-8 shadow-sm transition-all ${
           isNightShiftMode
-            ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]'
-            : 'bg-white text-[#001848]'
+            ? 'bg-[#0B1626] border border-[#233550] text-[#E6ECF7]'
+            : 'bg-white border border-[rgba(11,37,89,0.06)] text-[#0B2559]'
         }`}
       >
         {/* Header section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between gap-4 mb-2.5">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isNightShiftMode
-                  ? 'bg-[#3E9AD1]/20 text-[#93ccff]'
-                  : 'bg-[#cde5ff] text-[#005684]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">verified_user</span>
-              Clinical Credentialing Portal
+        <div className="mb-5">
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
+              <span className="material-symbols-outlined text-[15px]">verified_user</span>
+              Step 3 of 4 • Clinical License
             </span>
-            <span
-              className={`text-xs font-medium ${
-                isNightShiftMode ? 'text-[#8ea5c8]' : 'text-[#404850]'
-              }`}
-            >
-              Estimated: 2 mins
+            <span className="text-xs font-medium text-gray-500">
+              ~2 min
             </span>
           </div>
 
-          <h1
-            className={`text-2xl sm:text-[32px] font-bold tracking-tight mb-2 leading-tight ${
-              isNightShiftMode ? 'text-white' : 'text-[#001848]'
-            }`}
-          >
-            Verify your nursing credentials
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-[#0B2559] dark:text-white">
+            Verify nursing credentials
           </h1>
-          <p
-            className={`text-sm sm:text-base leading-relaxed ${
-              isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'
-            }`}
-          >
-            To unlock nurse-only housing rates and connect with vetted hosts who respect 12–hour shifts, verify your active healthcare license.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            Confirms active healthcare standing to unlock clinician rates and priority host booking.
           </p>
         </div>
 
+        {submitError && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
+            {submitError}
+          </div>
+        )}
+
         {/* Status Callout Banner */}
         <div
-          className={`mb-6 rounded-2xl p-4 transition-colors ${
-            isNightShiftMode
-              ? 'bg-[#745b0d]/25 border border-[#745b0d]/40'
-              : 'bg-[#ffdc84]/40 border border-[#ffdc84]/60'
+          className={`mb-5 rounded-2xl p-3.5 transition-colors ${
+            data.licenseStatus === 'verified'
+              ? 'bg-[#E1EFE9] dark:bg-[#142823] text-[#2F6E5E] dark:text-[#aff0db]'
+              : 'bg-[#FBF0D6] dark:bg-[#2e2311] text-[#795f12] dark:text-[#ffdf91]'
           }`}
         >
-          <div className="flex items-start gap-3">
-            <span className="relative flex h-2.5 w-2.5 mt-1.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-[#745b0d] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#745b0d]"></span>
+          <div className="flex items-start gap-2.5">
+            <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5">
+              {data.licenseStatus === 'verified' ? 'check_circle' : 'hourglass_top'}
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#795f12] dark:text-[#ffdf91]">
+              <p className="text-xs font-bold">
                 {data.licenseStatus === 'verified'
-                  ? 'Status: Verified by Clinical Nurse Team'
-                  : 'Preview: Pending Review'}
+                  ? 'Status: Verified with State Board'
+                  : 'Status: Awaiting Verification Review'}
               </p>
-              <p
-                className={`text-xs leading-snug mt-0.5 ${
-                  isNightShiftMode ? 'text-[#e4c36d]' : 'text-[#745b0d]'
-                }`}
-              >
+              <p className="text-[11px] leading-snug mt-0.5 opacity-90">
                 {data.licenseStatus === 'verified'
-                  ? 'Your active license standing is confirmed with the California BRN. Nurse-only rates unlocked!'
-                  : 'Verifications are reviewed within 2 hours by our licensed nurse support team prior to assignment matching.'}
+                  ? 'Active license verified. Clinician discounts and instant booking enabled.'
+                  : 'State board verifications are verified against primary source registries.'}
               </p>
             </div>
           </div>
@@ -339,24 +253,37 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                   isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#001848]'
                 }`}
               >
-                License Number
+                {data.professionSpecialty?.includes('CNA')
+                  ? 'Nurse Aide Registry / Certification Number'
+                  : 'License Number'}
               </label>
               <div className="relative">
                 <input
                   type="text"
                   value={data.licenseNumber}
                   onChange={(e) => onChange({ licenseNumber: e.target.value })}
-                  placeholder="e.g. RN-9482015-CA"
+                  placeholder={
+                    data.professionSpecialty?.includes('CNA')
+                      ? 'e.g. NA-109482-NC or Registry ID'
+                      : 'e.g. RN-9482015-NC'
+                  }
                   className={`w-full rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs ${
                     isNightShiftMode
                       ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                       : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
                   }`}
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#195b4c] dark:text-[#aff0db]">
-                  <span className="material-symbols-outlined text-xl">check_circle</span>
-                </div>
+                {data.licenseStatus === 'verified' && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#195b4c] dark:text-[#aff0db]">
+                    <span className="material-symbols-outlined text-xl">check_circle</span>
+                  </div>
+                )}
               </div>
+              {data.professionSpecialty?.includes('CNA') && (
+                <p className="text-[11px] text-[#0A6FA8] dark:text-[#3E9AD1] mt-1 font-medium">
+                  Verified through State Nurse Aide Registry records.
+                </p>
+              )}
             </div>
 
             <div>
@@ -365,7 +292,9 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                   isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#001848]'
                 }`}
               >
-                Issuing State / Board
+                {data.professionSpecialty?.includes('CNA')
+                  ? 'State Registry / Department of Health'
+                  : 'Issuing State / Board'}
               </label>
               <div className="relative">
                 <select
@@ -563,10 +492,10 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] active:bg-[#085885] text-white text-base font-semibold transition-all duration-200 ease-in-out shadow-md hover:shadow-lg flex items-center justify-center gap-2 group cursor-pointer disabled:opacity-75"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <span>{isSubmitting ? 'Verifying with BRN...' : 'Submit for review'}</span>
-              <span className="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">
+              <span>{isSubmitting ? 'Verifying credentials...' : 'Save & continue'}</span>
+              <span className="material-symbols-outlined text-[16px]">
                 arrow_forward
               </span>
             </button>
@@ -574,13 +503,9 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             <button
               type="button"
               onClick={handleSaveLater}
-              className={`w-full sm:w-auto px-6 py-3 rounded-full text-sm font-semibold transition-colors text-center cursor-pointer ${
-                isNightShiftMode
-                  ? 'text-[#E6ECF7] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a]'
-                  : 'text-[#001848] hover:bg-[#eaedff] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#eaedff]'
-              }`}
+              className="w-full sm:w-auto px-4 py-2 rounded-full text-xs font-semibold text-gray-500 hover:text-[#0B2559] dark:hover:text-white transition-colors text-center cursor-pointer"
             >
-              Save and continue later
+              Save progress
             </button>
           </div>
         </form>

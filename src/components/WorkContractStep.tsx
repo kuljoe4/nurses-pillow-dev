@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
+import { VerificationStepperNav } from './VerificationStepperNav';
 
 interface WorkContractStepProps {
   data: VerificationFormData;
@@ -34,110 +35,39 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
   return (
     <div
       className={`w-full py-8 sm:py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
-        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#f2f3ff]'
+        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#EFF6FB]'
       }`}
     >
       {/* Stepper Navigation Bar */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div
-          className={`rounded-full p-2 sm:p-3 shadow-md transition-colors ${
-            isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550]' : 'bg-white'
-          }`}
-        >
-          <div className="grid grid-cols-4 items-center gap-2">
-            <button
-              onClick={() => onSelectStep(1)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 1</p>
-                <p className="text-[11px] truncate opacity-85">Identity Verified</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(2)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 2</p>
-                <p className="text-[11px] truncate opacity-85">Email &amp; Phone</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(3)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 3</p>
-                <p className="text-[11px] truncate opacity-85">Clinical License</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(4)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#0a6fa8] text-white shadow-sm text-left"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#005684] font-bold text-sm flex items-center justify-center shrink-0">
-                4
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 4</p>
-                <p className="text-[11px] text-[#dcecff] truncate">Work Contract</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
+      <VerificationStepperNav
+        currentStep={4}
+        data={data}
+        onSelectStep={onSelectStep}
+        isNightShiftMode={isNightShiftMode}
+      />
 
       {/* Main Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
-          isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]' : 'bg-white text-[#001848]'
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-8 shadow-sm transition-all ${
+          isNightShiftMode ? 'bg-[#0B1626] border border-[#233550] text-[#E6ECF7]' : 'bg-white border border-[rgba(11,37,89,0.06)] text-[#0B2559]'
         }`}
       >
-        <div className="mb-6">
-          <div className="flex items-center justify-between gap-4 mb-2.5">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isNightShiftMode ? 'bg-[#3E9AD1]/20 text-[#93ccff]' : 'bg-[#cde5ff] text-[#005684]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
-              Final Step: Travel Contract Matching
+        <div className="mb-5">
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
+              <span className="material-symbols-outlined text-[15px]">assignment_turned_in</span>
+              Step 4 of 4 • Assignment Contract
             </span>
-            <span
-              className={`text-xs font-medium ${
-                isNightShiftMode ? 'text-[#8ea5c8]' : 'text-[#404850]'
-              }`}
-            >
-              Estimated: 1 min
+            <span className="text-xs font-medium text-gray-500">
+              ~1 min
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-[30px] font-bold tracking-tight mb-2 leading-tight">
-            Verify your hospital assignment contract
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-[#0B2559] dark:text-white">
+            Hospital assignment contract
           </h1>
-          <p
-            className={`text-sm sm:text-base leading-relaxed ${
-              isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'
-            }`}
-          >
-            Uploading your travel contract or hospital confirmation unlocks <strong>Contract Flex Protection</strong>—if your hospital assignment gets called off or rescheduled, your lease cancels penalty-free.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            Attaches <strong>Contract Flex Protection</strong>: if your facility shift gets cancelled or rescheduled, your booking cancels penalty-free.
           </p>
         </div>
 
@@ -234,17 +164,17 @@ export const WorkContractStep: React.FC<WorkContractStepProps> = ({
             <button
               type="submit"
               disabled={isFinishing}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
             >
-              <span>{isFinishing ? 'Activating Credentials...' : 'Complete All Verification'}</span>
-              <span className="material-symbols-outlined text-lg">check</span>
+              <span>{isFinishing ? 'Saving credentials...' : 'Complete verification'}</span>
+              <span className="material-symbols-outlined text-[16px]">check</span>
             </button>
             <button
               type="button"
               onClick={() => onSelectStep(3)}
-              className="px-4 py-2 text-sm text-[#005684] dark:text-[#3E9AD1] font-semibold hover:underline"
+              className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
             >
-              Back to Step 3: Clinical License
+              Back to Clinical License
             </button>
           </div>
         </form>

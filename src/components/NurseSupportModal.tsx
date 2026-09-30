@@ -61,7 +61,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/10 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/10 transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors"
           aria-label="Close"
         >
           <span className="material-symbols-outlined text-xl">close</span>
@@ -83,32 +83,32 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div
             className={`p-3 rounded-2xl border text-center ${
-              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#f2f3ff] border-[#eaedff]'
+              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.08)]'
             }`}
           >
             <span className="text-[11px] font-semibold opacity-75 block mb-1">
               Urgent Shift Dispatch
             </span>
-            <span className="text-sm font-bold text-[#0a6fa8] dark:text-[#3E9AD1]">
+            <span className="text-sm font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
               (800) 594-REST
             </span>
           </div>
           <div
             className={`p-3 rounded-2xl border text-center ${
-              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#f2f3ff] border-[#eaedff]'
+              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.08)]'
             }`}
           >
             <span className="text-[11px] font-semibold opacity-75 block mb-1">
               Quiet Hours Hotline
             </span>
-            <span className="text-sm font-bold text-[#195b4c] dark:text-[#aff0db]">
+            <span className="text-sm font-bold text-[#2F6E5E] dark:text-[#aff0db]">
               Direct Text Support
             </span>
           </div>
         </div>
 
         {isSubmitted ? (
-          <div className="p-6 rounded-2xl bg-[#195b4c]/20 text-[#195b4c] dark:text-[#aff0db] text-center">
+          <div className="p-6 rounded-2xl bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#2F6E5E]/20 dark:text-[#aff0db] text-center">
             <span className="material-symbols-outlined text-3xl mb-1">check_circle</span>
             <p className="text-sm font-bold">Message Dispatched to Support Team</p>
             <p className="text-xs mt-1">
@@ -126,7 +126,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
                 className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
+                    : 'bg-[#EFF6FB] text-[#0B2559] border border-transparent focus:border-[#0A6FA8]'
                 }`}
               >
                 <option value="quiet_hours">Daytime Noise / Quiet Hours Report</option>
@@ -149,16 +149,16 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
                 className={`w-full rounded-xl p-3 text-xs font-medium focus:outline-none resize-none ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
+                    : 'bg-[#EFF6FB] text-[#0B2559] border border-transparent focus:border-[#0A6FA8]'
                 }`}
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-semibold shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <span>Connect with On-Duty Nurse Specialist</span>
+              <span>Send support request</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </form>

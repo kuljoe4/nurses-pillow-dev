@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { NavigationTab, UserRole } from '../types';
+import { NavigationTab, UserRole, BookingRequest } from '../types';
 import { NursesPillowLogo } from './NursesPillowLogo';
 
 interface HeaderProps {
@@ -17,6 +17,8 @@ interface HeaderProps {
   isDeveloper?: boolean;
   onLogout?: () => void;
   onLockPreview?: () => void;
+  activeBooking?: BookingRequest | null;
+  onOpenBookingDetail?: (booking: BookingRequest) => void;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.png';
@@ -36,6 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   isDeveloper = false,
   onLogout,
   onLockPreview,
+  activeBooking,
+  onOpenBookingDetail,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -584,8 +588,8 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label="Toggle Night Shift Mode"
             className={`hidden lg:flex p-1.5 sm:p-2.5 rounded-xl transition-all duration-200 ease-in-out cursor-pointer shrink-0 ${
               isNightShiftMode
-                ? 'text-[#ffdf91] hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5'
-                : 'text-[#001848] hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100'
+                ? 'text-[#F1CF78] hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
+                : 'text-[#0B2559] hover:bg-[#EFF6FB] hover:text-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
             }`}
             title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode (Day-Sleeper Dark)'}
           >
@@ -624,18 +628,21 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsProfileMenuOpen(!isProfileMenuOpen);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`flex items-center gap-1.5 sm:gap-2 p-1 sm:pl-2 sm:pr-3 sm:py-1.5 rounded-2xl border transition-all duration-200 ease-in-out cursor-pointer shadow-xs ${
+                className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full border transition-all duration-200 ease-in-out cursor-pointer shadow-[0_1px_3px_rgba(11,37,89,0.06)] hover:shadow-[0_2px_8px_rgba(11,37,89,0.1)] ${
                   isProfileMenuOpen
                     ? isNightShiftMode
-                      ? 'bg-[#182840] border-[#005684]'
-                      : 'bg-white border-[#005684]'
+                      ? 'bg-[#182840] border-[#0A6FA8] text-white ring-2 ring-[#0A6FA8]/30'
+                      : 'bg-[#EFF6FB] border-[#0A6FA8] text-[#0B2559] ring-2 ring-[#0A6FA8]/20'
                     : isNightShiftMode
-                    ? 'bg-[#0E1A2E] border-[#233550] hover:border-[#385175]'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
+                    ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7] hover:border-[#385175]'
+                    : 'bg-white border-[rgba(11,37,89,0.12)] text-[#0B2559] hover:border-[#0A6FA8]/50 hover:bg-[#EFF6FB]/40'
                 }`}
+                aria-expanded={isProfileMenuOpen}
+                aria-haspopup="true"
+                aria-label="User profile and account settings"
               >
                 {/* Avatar with Verified checkmark */}
-                <div className="relative">
+                <div className="relative shrink-0">
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs tracking-tight ${roleStyles.avatar}`}
                   >
@@ -653,10 +660,10 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Identity Details (Desktop) */}
                 <div className="hidden sm:flex flex-col text-left">
-                  <span className="text-xs font-bold leading-tight max-w-[120px] truncate text-[#001848] dark:text-white">
+                  <span className="text-xs font-semibold leading-tight max-w-[120px] truncate text-[#0B2559] dark:text-white">
                     {currentUser.name}
                   </span>
-                  <span className="text-[10px] font-semibold opacity-70 leading-none flex items-center gap-1">
+                  <span className="text-[10px] font-medium opacity-70 leading-none flex items-center gap-1">
                     <span>{getRoleLabel(currentUser.role)}</span>
                     {isVerified && (
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[9px]">✓</span>
@@ -664,37 +671,29 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </div>
 
-                <span className="material-symbols-outlined text-[16px] opacity-60">
-                  {isProfileMenuOpen ? 'expand_less' : 'expand_more'}
+                <span className={`material-symbols-outlined text-[18px] opacity-60 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
+                  expand_more
                 </span>
               </button>
 
               {/* Profile & Perspective Switcher Popover */}
               {isProfileMenuOpen && (
                 <>
-                  {/* Mobile Backdrop for Profile Popover */}
                   <div
-                    className="sm:hidden fixed inset-0 bg-black/40 backdrop-blur-2xs z-40"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    aria-hidden="true"
-                  />
-
-                  <div
-                    className="fixed left-3 right-3 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 rounded-3xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-4 z-50 text-xs space-y-3 overflow-y-auto custom-scrollbar"
+                    className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-white dark:bg-[#0B1626] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-[0_12px_36px_rgba(11,37,89,0.12)] p-4 z-50 text-xs space-y-3 overflow-y-auto custom-scrollbar origin-top-right transition-all"
                     style={{
                       maxHeight: 'min(500px, calc(100vh - 5.5rem))',
-                      top: typeof window !== 'undefined' && window.innerWidth < 640 ? `${headerHeight+ 8}px` : undefined,
                       WebkitOverflowScrolling: 'touch',
                     }}
                     onWheel={(e) => e.stopPropagation()}
                   >
                   {/* Account Card */}
-                  <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#15233a] border border-gray-200/80 dark:border-[#233550] flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
+                  <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${roleStyles.avatar}`}>
                       {getRoleInitials(currentUser.role)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-sm truncate text-[#001848] dark:text-white flex items-center gap-1.5">
+                      <div className="font-bold text-sm truncate text-[#0B2559] dark:text-white flex items-center gap-1.5">
                         <span className="truncate">{currentUser.name}</span>
                         {isVerified && (
                           <span
@@ -726,27 +725,28 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* Clean Session Control if staging locked preview is supported */}
-                  {onLockPreview && (
-                    <div className="pt-1 flex justify-end">
+                  {/* Primary Workspace Action */}
+                  <div className="space-y-1.5 pt-0.5">
+                    {currentUser.role === 'nurse' && (
                       <button
                         type="button"
                         onClick={() => {
-                          onLockPreview();
+                          if (activeBooking && onOpenBookingDetail) {
+                            onOpenBookingDetail(activeBooking);
+                          } else {
+                            onSelectTab('nurse-dashboard');
+                          }
                           setIsProfileMenuOpen(false);
                         }}
-                        className="py-1 px-2.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                        title="Lock preview session"
+                        className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
-                        <span className="material-symbols-outlined text-[13px]">lock</span>
-                        <span>Lock Preview</span>
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
+                          <span>{activeBooking ? 'View active stay request' : 'Open Clinician Dashboard'}</span>
+                        </div>
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
-                    </div>
-                  )}
-
-                  {/* Primary Workspace Action */}
-                  <div className="space-y-1">
-
+                    )}
 
                     {currentUser.role === 'host' && (
                       <button
@@ -755,13 +755,13 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('host-dashboard');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-[#005684] text-white font-bold flex items-center justify-between hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] transition-colors cursor-pointer"
+                        className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[18px]">real_estate_agent</span>
+                          <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
                           <span>Open Host Portal</span>
                         </div>
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
                     )}
 
@@ -772,50 +772,92 @@ export const Header: React.FC<HeaderProps> = ({
                           onSelectTab('admin-portal');
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2 px-3 rounded-xl bg-amber-600 text-white font-bold flex items-center justify-between hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-amber-700 transition-colors cursor-pointer"
+                        className="w-full py-2 px-3.5 rounded-full bg-[#0B2559] dark:bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#12357a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                          <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
                           <span>Open Admin Operations Hub</span>
                         </div>
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
                     )}
                   </div>
 
-                  {/* Support */}
-                  <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048] flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onOpenSupport();
-                        setIsProfileMenuOpen(false);
-                      }}
-                      className="text-xs opacity-75 hover:opacity-100 flex items-center gap-1 cursor-pointer group"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">help_outline</span>
-                      <span className="group-hover:underline">Support</span>
-                    </button>
-                  </div>
+                  {/* Active Clinician Reservation Status (Not Gated for M1) */}
+                  {currentUser.role === 'nurse' && activeBooking && (
+                    <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                          Active Request Status
+                        </span>
+                        <span
+                          className="px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider"
+                          style={
+                            activeBooking.status === 'approved' || activeBooking.status === 'active'
+                              ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' }
+                              : activeBooking.status === 'declined'
+                              ? { backgroundColor: '#F4E2DC', color: '#A8452E' }
+                              : { backgroundColor: '#FBF0D6', color: '#B9822E' }
+                          }
+                        >
+                          {activeBooking.status === 'approved' || activeBooking.status === 'active'
+                            ? 'Accepted'
+                            : activeBooking.status === 'declined'
+                            ? 'Declined'
+                            : 'Requested'}
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
+                        {activeBooking.listingTitle}
+                      </div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                        {activeBooking.hospitalName} • {activeBooking.durationWeeks || 13} wks
+                      </div>
+                      {onOpenBookingDetail && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenBookingDetail(activeBooking);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="w-full mt-1 py-1.5 px-2.5 rounded-lg bg-white dark:bg-[#0E1A2E] hover:bg-[#0A6FA8] hover:text-white border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] transition-colors cursor-pointer flex items-center justify-between"
+                        >
+                          <span>Review stay details</span>
+                          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Dedicated Log Out Button */}
-                  {onLogout && (
-                    <div className="pt-2 border-t border-gray-100 dark:border-[#1e3048]">
+                  {/* Unified Footer: Support & Log Out Aligned */}
+                  <div className="pt-2.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between">
+                    {onOpenSupport && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenSupport();
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px] text-gray-500">help_outline</span>
+                        <span>Support</span>
+                      </button>
+                    )}
+                    {onLogout && (
                       <button
                         type="button"
                         onClick={() => {
                           onLogout();
                           setIsProfileMenuOpen(false);
                         }}
-                        className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center justify-between hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-100 dark:hover:bg-rose-900 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-900/50 transition-colors cursor-pointer"
+                        className="text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-[#A8452E] dark:hover:text-[#F4E2DC] flex items-center gap-1.5 py-1 px-2.5 rounded-lg hover:bg-[#F4E2DC]/30 dark:hover:bg-[#15233a] transition-colors cursor-pointer"
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[17px]">logout</span>
-                          <span>Log Out</span>
-                        </div>
+                        <span className="material-symbols-outlined text-[16px]">logout</span>
+                        <span>Log out</span>
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -1414,10 +1456,10 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsMobileMenuOpen(false);
                     onLogout();
                   }}
-                  className="w-full py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-100 dark:hover:bg-rose-900 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-rose-900/50"
+                  className="w-full py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] text-gray-600 dark:text-gray-300 hover:text-[#A8452E] dark:hover:text-[#F4E2DC] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
                 >
                   <span className="material-symbols-outlined text-[18px]">logout</span>
-                  <span>Log Out</span>
+                  <span>Log out</span>
                 </button>
               ) : onOpenAuth ? (
                 <div className="flex items-center gap-2">

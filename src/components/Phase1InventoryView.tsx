@@ -104,7 +104,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-2 ${
             activeMainTab === 'screens'
               ? 'bg-[#005684] text-white shadow-md'
-              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/10'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">grid_view</span>
@@ -116,7 +116,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-2 ${
             activeMainTab === 'flows'
               ? 'bg-[#005684] text-white shadow-md'
-              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/10'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">account_tree</span>
@@ -128,7 +128,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-2 ${
             activeMainTab === 'notifications'
               ? 'bg-[#005684] text-white shadow-md'
-              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/10'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">notifications_active</span>
@@ -140,7 +140,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-2 ${
             activeMainTab === 'states'
               ? 'bg-[#005684] text-white shadow-md'
-              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/10'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">design_services</span>
@@ -152,7 +152,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
           className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ease-in-out flex items-center gap-2 ${
             activeMainTab === 'summary'
               ? 'bg-[#005684] text-white shadow-md'
-              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+              : 'bg-black/5 dark:bg-white/5 opacity-70 hover:opacity-100 hover:bg-[#EFF6FB] dark:hover:bg-[#182840]/10 dark:hover:bg-white/10'
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">query_stats</span>

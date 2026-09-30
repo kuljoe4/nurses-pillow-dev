@@ -19,7 +19,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
 
   const services = [
     {
-      name: 'Nursys & State Nursing Board Verification API',
+      name: 'Nursys & State Nursing Board Primary Source Registry',
       category: 'Clinical Credentialing',
       status: 'Operational',
       latency: '18ms',
@@ -151,7 +151,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               <button
                 type="button"
                 onClick={onNavigateHome}
-                className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-semibold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out cursor-pointer"
               >
                 Back to Marketplace
               </button>
@@ -209,7 +209,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               {services.map((svc, idx) => (
                 <div
                   key={idx}
-                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs sm:text-sm hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/[0.02] dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/[0.02] transition-colors"
+                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs sm:text-sm hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors"
                 >
                   <div className="space-y-1 max-w-lg">
                     <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
             </button>
             <button
               onClick={onOpenSupport}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out cursor-pointer"
             >
               Contact Support Desk
             </button>
@@ -333,7 +333,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
             </button>
             <button
               onClick={onNavigateHome}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out cursor-pointer"
             >
               Back to Home
             </button>
@@ -409,7 +409,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
             </button>
             <button
               onClick={onNavigateHome}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(11,37,89,0.2)] dark:border-[#233550] text-xs font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out cursor-pointer"
             >
               Return to Public Site
             </button>

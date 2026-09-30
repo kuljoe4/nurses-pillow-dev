@@ -76,22 +76,36 @@ export const PROFESSION_OPTIONS = [
   'Registered Nurse (RN) - Medical-Surgical (Med/Surg)',
   'Registered Nurse (RN) - Operating Room (OR/PACU)',
   'Registered Nurse (RN) - Pediatric Intensive Care (PICU)',
+  'Licensed Practical Nurse (LPN / LVN)',
+  'Certified Nursing Assistant (CNA) / Nurse Aide Registry',
   'Nurse Practitioner (NP) - Acute Care',
   'Certified Registered Nurse Anesthetist (CRNA)',
   'Certified Nurse-Midwife (CNM)',
 ];
 
 export const STATE_BOARDS = [
+  'North Carolina (NCBON - Compact)',
+  'Maryland (MBON - Compact)',
+  'Connecticut (CT DPH)',
+  'North Dakota (NDBON - Compact)',
+  'Kansas (KSBN - Compact)',
   'California (BRN)',
   'Texas (BON - Compact)',
   'New York (NYSED)',
   'Florida (FBN - Compact)',
   'Washington (NCQAC)',
-  'North Carolina (BON - Compact)',
   'Illinois (IDFPR)',
   'Massachusetts (BORN)',
   'Colorado (DORA - Compact)',
   'Arizona (AZBN - Compact)',
+];
+
+export const ACTIVE_CLEARED_STATES = [
+  { code: 'NC', name: 'North Carolina', capital: 'Raleigh', hospitalsCount: '110+', status: 'Primary Launch Hub' },
+  { code: 'MD', name: 'Maryland', capital: 'Annapolis', hospitalsCount: '45+', status: 'Cleared & Active' },
+  { code: 'CT', name: 'Connecticut', capital: 'Hartford', hospitalsCount: '32+', status: 'Cleared & Active' },
+  { code: 'ND', name: 'North Dakota', capital: 'Bismarck', hospitalsCount: '28+', status: 'Cleared & Active' },
+  { code: 'KS', name: 'Kansas', capital: 'Topeka', hospitalsCount: '50+', status: 'Cleared & Active' },
 ];
 
 export const MOCK_LISTINGS: HousingListing[] = [

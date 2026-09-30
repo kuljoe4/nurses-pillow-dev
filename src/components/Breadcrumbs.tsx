@@ -140,14 +140,17 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     setIsEllipsisOpen(false);
   }, [currentTab, verificationStep]);
 
-  // If at top-level navigation pages already directly in the primary menu,
-  // hide the breadcrumbs to avoid redundancy and reclaim prime vertical space for listings
+  // Hide breadcrumbs on top-level pages and during verification stepper
+  // to avoid redundancy and reclaim prime vertical space
   const isTopLevelPage =
     currentTab === 'find-housing' ||
     currentTab === 'search-listings' ||
     currentTab === 'how-it-works' ||
     currentTab === 'for-hosts' ||
-    currentTab === 'nurse-dashboard';
+    currentTab === 'nurse-dashboard' ||
+    currentTab === 'verification' ||
+    currentTab === 'email-verification' ||
+    currentTab === 'phone-verification';
 
   if (isTopLevelPage) {
     return null;
@@ -837,23 +840,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               })}
             </ol>
           </nav>
-        </div>
-
-        {/* Right Side: Quick Marketplace Shortcut */}
-        <div className="hidden md:flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => navigateTo('find-housing')}
-            className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1.5 cursor-pointer ${
-              isNightShiftMode
-                ? 'border-[#233550] text-[#a1b5d8] hover:bg-[#15233a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#15233a] hover:text-white focus-visible:text-white'
-                : 'border-gray-200 text-gray-600 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 hover:text-[#001848] focus-visible:text-[#001848]'
-            }`}
-            title="Return to Sanitized Housing Marketplace"
-          >
-            <span className="material-symbols-outlined text-[14px]">storefront</span>
-            <span>Marketplace Home</span>
-          </button>
         </div>
       </div>
     </div>

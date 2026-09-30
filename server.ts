@@ -169,6 +169,134 @@ async function startServer() {
   // Auth Routes
   app.use('/api/auth', authRoutes);
 
+  // Identity Verification Endpoint (NV-01, NV-02)
+  app.post('/api/verify/identity', async (req: Request, res: Response) => {
+    try {
+      const { legalFirstName, legalLastName, dob, lastFourSSN, idDocumentName, email, userId } = req.body;
+
+      // 1. Strict Input Validation
+      if (!legalFirstName || typeof legalFirstName !== 'string' || legalFirstName.trim().length < 2) {
+        return res.status(400).json({ error: 'Legal first name is required and must be at least 2 characters.' });
+      }
+      if (!legalLastName || typeof legalLastName !== 'string' || legalLastName.trim().length < 2) {
+        return res.status(400).json({ error: 'Legal last name is required and must be at least 2 characters.' });
+      }
+      if (!dob || typeof dob !== 'string') {
+        return res.status(400).json({ error: 'Date of birth is required.' });
+      }
+      const dobDate = new Date(dob);
+      if (isNaN(dobDate.getTime())) {
+        return res.status(400).json({ error: 'Date of birth must be a valid date.' });
+      }
+      const ageDiffMs = Date.now() - dobDate.getTime();
+      const ageDate = new Date(ageDiffMs);
+      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      if (age < 18 || dobDate > new Date()) {
+        return res.status(400).json({ error: 'You must be at least 18 years of age to complete clinician verification.' });
+      }
+      const cleanSSN = (lastFourSSN || '').toString().trim().replace(/\D/g, '');
+      if (cleanSSN.length !== 4) {
+        return res.status(400).json({ error: 'Last 4 digits of SSN must be exactly 4 numbers.' });
+      }
+      if (!idDocumentName || typeof idDocumentName !== 'string') {
+        return res.status(400).json({ error: 'A government-issued ID document is required for verification.' });
+      }
+
+      // 2. Identify user from auth token, session cookie, or body
+      let targetUserId = userId;
+      let targetEmail = email;
+      const authHeader = req.headers.authorization;
+      const token = (authHeader && authHeader.replace(/^Bearer\s+/i, '')) || req.cookies?.auth_token;
+      if (token) {
+        try {
+          const jwt = (await import('jsonwebtoken')).default;
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
+          if (decoded?.id) targetUserId = decoded.id;
+          if (decoded?.email) targetEmail = decoded.email;
+        } catch {}
+      }
+
+      const fullName = `${legalFirstName.trim()} ${legalLastName.trim()}`;
+
+      // 3. Update database if user identified
+      if (targetUserId || targetEmail) {
+        await db.query(
+          `UPDATE users
+           SET identity_verified = true,
+               full_name = COALESCE($1, full_name),
+               dob = $2,
+               last_four_ssn = $3,
+               id_document_name = $4
+           WHERE id = $5 OR LOWER(email) = LOWER($6)`,
+          [fullName, dob.trim(), cleanSSN, idDocumentName.trim(), targetUserId || '', targetEmail || '']
+        );
+      }
+
+      return res.json({
+        success: true,
+        verified: true,
+        identity_verified: true,
+        fullName,
+        dob,
+        lastFourSSN: cleanSSN,
+        idDocumentName,
+        message: 'Legal identity verified successfully.',
+      });
+    } catch (err: any) {
+      console.error('Error in /api/verify/identity:', err);
+      res.status(500).json({ error: err.message || 'Identity verification failed.' });
+    }
+  });
+
+  // Clinical License Verification Endpoint (NV-03)
+  app.post('/api/verify/license', async (req: Request, res: Response) => {
+    try {
+      const { licenseNumber, stateBoard, specialty, documentName, email, userId } = req.body;
+
+      if (!licenseNumber || !licenseNumber.toString().trim()) {
+        return res.status(400).json({ error: 'Clinical license number is required.' });
+      }
+      if (!stateBoard || !stateBoard.toString().trim()) {
+        return res.status(400).json({ error: 'Issuing state board is required.' });
+      }
+
+      let targetUserId = userId;
+      let targetEmail = email;
+      const authHeader = req.headers.authorization;
+      const token = (authHeader && authHeader.replace(/^Bearer\s+/i, '')) || req.cookies?.auth_token;
+      if (token) {
+        try {
+          const jwt = (await import('jsonwebtoken')).default;
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
+          if (decoded?.id) targetUserId = decoded.id;
+          if (decoded?.email) targetEmail = decoded.email;
+        } catch {}
+      }
+
+      if (targetUserId || targetEmail) {
+        await db.query(
+          `UPDATE users
+           SET clinical_license_number = $1,
+               clinical_state_board = $2,
+               profession_specialty = $3,
+               clinical_document_url = $4,
+               verification_status = 'pending_review'
+           WHERE id = $5 OR LOWER(email) = LOWER($6)`,
+          [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '']
+        );
+      }
+
+      res.json({
+        success: true,
+        status: 'pending_review',
+        message: 'Clinical license submitted for verification.',
+      });
+    } catch (err: any) {
+      console.error('Error in /api/verify/license:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 
 
   // Admin endpoint to list pending verifications

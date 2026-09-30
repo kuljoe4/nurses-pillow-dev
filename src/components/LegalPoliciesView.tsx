@@ -131,7 +131,7 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={onNavigateHome}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-all duration-200 ease-in-out self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border border-[rgba(11,37,89,0.15)] dark:border-[#233550] hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-all duration-200 ease-in-out self-start sm:self-auto"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Return to Marketplace
@@ -142,22 +142,22 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
       <div className="flex flex-wrap gap-2 mb-8 bg-white dark:bg-[#0B1626] p-1.5 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
         <button
           onClick={() => setActiveTab('cancellation')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out cursor-pointer ${
             activeTab === 'cancellation'
-              ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
+              ? 'bg-[#0A6FA8] text-white shadow-sm'
+              : 'hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] text-[#0B2559] dark:text-[#E6ECF7]'
           }`}
         >
           <span>Cancellation &amp; Refund Policy</span>
-          <span className="text-[9px] bg-emerald-500/30 text-emerald-100 px-1.5 py-0.5 rounded">Active</span>
+          <span className="text-[9px] bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded">Active</span>
         </button>
 
         <button
           onClick={() => setActiveTab('terms')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out cursor-pointer ${
             activeTab === 'terms'
-              ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
+              ? 'bg-[#0A6FA8] text-white shadow-sm'
+              : 'hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] text-[#0B2559] dark:text-[#E6ECF7]'
           }`}
         >
           <span>Terms of Service</span>
@@ -166,10 +166,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('privacy')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out cursor-pointer ${
             activeTab === 'privacy'
-              ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
+              ? 'bg-[#0A6FA8] text-white shadow-sm'
+              : 'hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] text-[#0B2559] dark:text-[#E6ECF7]'
           }`}
         >
           <span>Privacy Policy</span>
@@ -178,10 +178,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('host-agreement')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out cursor-pointer ${
             activeTab === 'host-agreement'
-              ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
+              ? 'bg-[#0A6FA8] text-white shadow-sm'
+              : 'hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] text-[#0B2559] dark:text-[#E6ECF7]'
           }`}
         >
           <span>Host Agreement &amp; Standards</span>
@@ -190,10 +190,10 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
 
         <button
           onClick={() => setActiveTab('nc-disclosures')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ease-in-out cursor-pointer ${
             activeTab === 'nc-disclosures'
-              ? 'bg-[#005684] text-white shadow-sm'
-              : 'hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 opacity-80'
+              ? 'bg-[#0A6FA8] text-white shadow-sm'
+              : 'hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] text-[#0B2559] dark:text-[#E6ECF7]'
           }`}
         >
           <span>NC State Disclosures (G.S. § 42A)</span>

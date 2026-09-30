@@ -264,7 +264,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           onClick={onClose}
           type="button"
           aria-label="Close modal"
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/10 cursor-pointer"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center text-gray-500 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] cursor-pointer"
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>

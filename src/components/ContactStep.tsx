@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
+import { VerificationStepperNav } from './VerificationStepperNav';
 
 interface ContactStepProps {
   data: VerificationFormData;
@@ -20,230 +21,314 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   onOpenPostmarkEmail,
   onOpenTwilioOtp,
 }) => {
-  const [verificationCode, setVerificationCode] = useState('8492');
-  const [isCodeSent, setIsCodeSent] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const formatPhoneNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 10);
+    if (cleaned.length >= 6) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    } else if (cleaned.length >= 3) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    }
+    return cleaned;
+  };
+
+  const validateInputs = (): string | null => {
+    const email = (data.workEmail || '').trim();
+    if (!email) {
+      return 'Please enter your hospital or work email.';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address (e.g. name@hospital.org).';
+    }
+
+    const rawPhone = (data.mobilePhone || '').replace(/\D/g, '');
+    if (!rawPhone || rawPhone.length !== 10) {
+      return 'Please enter a valid 10-digit mobile phone number.';
+    }
+
+    return null;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onChange({ isContactVerified: true, phoneVerified: true });
+    const error = validateInputs();
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+
+    setErrorMessage(null);
+
+    // Save entered contact values without forging false verification
+    onChange({
+      workEmail: data.workEmail.trim(),
+      mobilePhone: data.mobilePhone.trim(),
+    });
+
     setTimeout(() => {
       onSelectStep(3);
-    }, 400);
+    }, 300);
   };
+
+  const isBothVerified = Boolean(data.isContactVerified && data.phoneVerified);
+  const isPartiallyVerified = Boolean(data.isContactVerified || data.phoneVerified);
 
   return (
     <div
       className={`w-full py-8 sm:py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
-        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#f2f3ff]'
+        isNightShiftMode ? 'bg-[#08101C]' : 'bg-[#EFF6FB]'
       }`}
     >
       {/* Stepper Navigation Bar */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div
-          className={`rounded-full p-2 sm:p-3 shadow-md transition-colors ${
-            isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550]' : 'bg-white'
-          }`}
-        >
-          <div className="grid grid-cols-4 items-center gap-2">
-            <button
-              onClick={() => onSelectStep(1)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#aff0db]/30 text-[#195b4c] text-left hover:bg-[#aff0db] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#aff0db]/50 transition-all duration-200 ease-in-out"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#195b4c] text-white flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-base font-bold">check</span>
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 1</p>
-                <p className="text-[11px] truncate opacity-85">Identity Verified</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(2)}
-              type="button"
-              className="flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full bg-[#0a6fa8] text-white shadow-sm text-left"
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-[#005684] font-bold text-sm flex items-center justify-center shrink-0">
-                2
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-bold truncate leading-tight">Step 2</p>
-                <p className="text-[11px] text-[#dcecff] truncate">Email &amp; Phone</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(3)}
-              type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
-                isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
-              }`}
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#707881]/20 text-[#404850] dark:text-[#8ea5c8] font-medium text-sm flex items-center justify-center shrink-0">
-                3
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-medium truncate leading-tight">Step 3</p>
-                <p className="text-[11px] truncate opacity-85">Clinical License</p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => onSelectStep(4)}
-              type="button"
-              className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-full text-left transition-all duration-200 ease-in-out ${
-                isNightShiftMode ? 'bg-[#15233a] text-[#8ea5c8]' : 'bg-[#eaedff] text-[#707881]'
-              }`}
-            >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#707881]/20 text-[#404850] dark:text-[#8ea5c8] font-medium text-sm flex items-center justify-center shrink-0">
-                4
-              </span>
-              <div className="min-w-0 hidden md:block">
-                <p className="text-xs font-medium truncate leading-tight">Step 4</p>
-                <p className="text-[11px] truncate opacity-85">Work Contract</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
+      <VerificationStepperNav
+        currentStep={2}
+        data={data}
+        onSelectStep={onSelectStep}
+        isNightShiftMode={isNightShiftMode}
+      />
 
       {/* Main Card */}
       <div
-        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-10 shadow-md transition-all duration-200 ease-in-out ${
-          isNightShiftMode ? 'bg-[#0E1A2E] border border-[#233550] text-[#E6ECF7]' : 'bg-white text-[#001848]'
+        className={`max-w-2xl mx-auto rounded-3xl p-6 sm:p-8 shadow-sm transition-all ${
+          isNightShiftMode
+            ? 'bg-[#0B1626] border border-[#233550] text-[#E6ECF7]'
+            : 'bg-white border border-[rgba(11,37,89,0.06)] text-[#0B2559]'
         }`}
       >
         <div className="mb-6">
-          <div className="flex items-center justify-between gap-4 mb-2.5">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                isNightShiftMode ? 'bg-[#3E9AD1]/20 text-[#93ccff]' : 'bg-[#cde5ff] text-[#005684]'
-              }`}
-            >
-              <span className="material-symbols-outlined text-sm">mark_email_read</span>
-              Step 2: Contact &amp; Shift Dispatch
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
+              <span className="material-symbols-outlined text-[15px]">mark_email_read</span>
+              Step 2 of 4 • Contact Information
             </span>
-            <span className="text-xs font-medium text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">check_circle</span> Verified
-            </span>
+
+            {isBothVerified ? (
+              <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
+                <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                Verified
+              </span>
+            ) : isPartiallyVerified ? (
+              <span className="text-xs font-bold text-[#B9822E] dark:text-[#F1CF78] flex items-center gap-1">
+                <span className="material-symbols-outlined text-[15px]">schedule</span>
+                Partially Verified
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[15px]">pending</span>
+                Pending Verification
+              </span>
+            )}
           </div>
 
-          <h1 className="text-2xl sm:text-[30px] font-bold tracking-tight mb-2 leading-tight">
-            Email &amp; Direct Phone Line
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-[#0B2559] dark:text-white">
+            Hospital email &amp; direct mobile
           </h1>
-          <p
-            className={`text-sm sm:text-base leading-relaxed ${
-              isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'
-            }`}
-          >
-            We coordinate quiet-hours check-ins and emergency hospital shift notices directly with your confirmed contact details.
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            Used strictly for check-in access, emergency shift notifications, and direct messaging with hosts.
           </p>
         </div>
 
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm shrink-0">error</span>
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="workEmail" className="block text-sm font-semibold mb-1.5">
-              Work / Health System Email
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="workEmail" className="block text-sm font-semibold">
+                Work / Health System Email *
+              </label>
+              {data.isContactVerified ? (
+                <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                  Verified
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenPostmarkEmail}
+                  className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
+                >
+                  Verify Email
+                </button>
+              )}
+            </div>
             <div className="relative">
               <input
                 id="workEmail"
                 type="email"
+                required
                 value={data.workEmail}
-                onChange={(e) => onChange({ workEmail: e.target.value })}
-                className={`w-full rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none ${
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  onChange({ workEmail: e.target.value });
+                }}
+                placeholder="name@hospital.org"
+                className={`w-full rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
+                    : 'bg-[#EFF6FB] text-[#0B2559]'
                 }`}
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#195b4c] dark:text-[#aff0db]">
-                <span className="material-symbols-outlined text-xl">check_circle</span>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3.5">
+                {data.isContactVerified ? (
+                  <span className="material-symbols-outlined text-xl text-[#2F6E5E] dark:text-[#aff0db]">
+                    check_circle
+                  </span>
+                ) : (
+                  <span className="material-symbols-outlined text-xl text-gray-400">
+                    mail
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           <div>
-            <label htmlFor="mobilePhone" className="block text-sm font-semibold mb-1.5">Mobile Phone (SMS Enabled)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="mobilePhone" className="block text-sm font-semibold">
+                Mobile Phone (SMS Enabled) *
+              </label>
+              {data.phoneVerified ? (
+                <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                  Verified
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenTwilioOtp}
+                  className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
+                >
+                  Verify Phone
+                </button>
+              )}
+            </div>
             <div className="relative">
               <input
                 id="mobilePhone"
                 type="tel"
+                required
                 value={data.mobilePhone}
-                onChange={(e) => onChange({ mobilePhone: e.target.value })}
-                className={`w-full rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none ${
+                onChange={(e) => {
+                  setErrorMessage(null);
+                  onChange({ mobilePhone: formatPhoneNumber(e.target.value) });
+                }}
+                placeholder="(555) 000-0000"
+                className={`w-full rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] tabular-nums ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550]'
-                    : 'bg-[#f2f3ff] text-[#001848]'
+                    : 'bg-[#EFF6FB] text-[#0B2559]'
                 }`}
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#195b4c] dark:text-[#aff0db]">
-                <span className="material-symbols-outlined text-xl">check_circle</span>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3.5">
+                {data.phoneVerified ? (
+                  <span className="material-symbols-outlined text-xl text-[#2F6E5E] dark:text-[#aff0db]">
+                    check_circle
+                  </span>
+                ) : (
+                  <span className="material-symbols-outlined text-xl text-gray-400">
+                    smartphone
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Real Status Card */}
           <div
-            className={`p-4 rounded-2xl flex items-center justify-between gap-3 border ${
-              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#aff0db]/20 border-[#aff0db]/60'
+            className={`p-4 rounded-2xl flex items-center justify-between gap-3 border transition-colors ${
+              data.phoneVerified
+                ? isNightShiftMode
+                  ? 'bg-[#15233a] border-[#233550]'
+                  : 'bg-[#E1EFE9] border-[#2F6E5E]/20 text-[#0B2559]'
+                : isNightShiftMode
+                ? 'bg-[#15233a] border-[#3E9AD1]/30'
+                : 'bg-[#EFF6FB] border-[#0A6FA8]/20'
             }`}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#aff0db] text-[#195b4c] flex items-center justify-center">
-                <span className="material-symbols-outlined">lock</span>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  data.phoneVerified
+                    ? 'bg-[#2F6E5E] text-white'
+                    : 'bg-[#0A6FA8] text-white'
+                }`}
+              >
+                <span className="material-symbols-outlined">
+                  {data.phoneVerified ? 'verified_user' : 'sms'}
+                </span>
               </div>
               <div>
                 <div className="text-sm font-bold flex items-center gap-1.5">
-                  Two-Factor Authentication Confirmed
+                  {data.phoneVerified
+                    ? 'Mobile SMS Authentication Confirmed'
+                    : 'Mobile SMS Verification Pending'}
                 </div>
-                <div className="text-xs text-[#195b4c] dark:text-[#aff0db] font-medium">
-                  Verified via SMS code 8492
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  {data.phoneVerified
+                    ? 'Your phone number is authenticated for check-in codes.'
+                    : 'Verify via 6-digit SMS code to enable direct host messaging.'}
                 </div>
               </div>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#195b4c] text-white">
-              Active
-            </span>
+            {data.phoneVerified ? (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#2F6E5E] text-white shrink-0">
+                Verified
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenTwilioOtp}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white shrink-0 cursor-pointer"
+              >
+                Send Code
+              </button>
+            )}
           </div>
 
-          {/* Interactive Protocol Verification Flow Launchers */}
+          {/* Interactive Verification Flow Launchers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <button
               type="button"
               onClick={onOpenPostmarkEmail}
-              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all duration-200 ease-in-out group cursor-pointer"
+              className="p-3.5 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] bg-white/60 dark:bg-[#15233a] text-left transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">mark_email_read</span>
-                  Postmark Email Screen
+                  Hospital Email Verification
                 </span>
-                <span className="material-symbols-outlined text-xs text-[#005684] dark:text-[#93ccff] group-hover:translate-x-0.5 transition-transform">
+                <span className="material-symbols-outlined text-xs text-[#0A6FA8] dark:text-[#3E9AD1] group-hover:translate-x-0.5 transition-transform">
                   arrow_forward
                 </span>
               </div>
-              <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">
-                Launch 6-digit hospital email PIN &amp; institution domain verification UI.
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                {data.isContactVerified ? 'Email confirmed. Click to change.' : 'Confirm your hospital email with a 6-digit PIN.'}
               </p>
             </button>
 
             <button
               type="button"
               onClick={onOpenTwilioOtp}
-              className="p-3.5 rounded-xl border border-[#005684]/20 hover:border-[#005684] bg-white/60 dark:bg-[#15233a] text-left transition-all duration-200 ease-in-out group cursor-pointer"
+              className="p-3.5 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] bg-white/60 dark:bg-[#15233a] text-left transition-all cursor-pointer group"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">sms</span>
                   Mobile Phone Verification
                 </span>
-                <span className="material-symbols-outlined text-xs text-[#005684] dark:text-[#93ccff] group-hover:translate-x-0.5 transition-transform">
+                <span className="material-symbols-outlined text-xs text-[#0A6FA8] dark:text-[#3E9AD1] group-hover:translate-x-0.5 transition-transform">
                   arrow_forward
                 </span>
               </div>
-              <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">
-                Launch mobile carrier token dispatch &amp; shift communications timer UI.
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                {data.phoneVerified ? 'Phone confirmed. Click to change.' : 'Verify your mobile line for check-in codes.'}
               </p>
             </button>
           </div>
@@ -251,17 +336,17 @@ export const ContactStep: React.FC<ContactStepProps> = ({
           <div className="pt-4 flex items-center justify-between gap-3">
             <button
               type="submit"
-              className="px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold flex items-center gap-2"
+              className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
             >
-              <span>Continue to Step 3: Clinical License</span>
-              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+              <span>Save &amp; continue</span>
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
             <button
               type="button"
               onClick={() => onSelectStep(1)}
-              className="px-4 py-2 text-sm text-[#005684] dark:text-[#3E9AD1] font-semibold hover:underline"
+              className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
             >
-              Back to Step 1
+              Back to Identity
             </button>
           </div>
         </form>

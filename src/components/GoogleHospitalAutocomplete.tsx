@@ -302,7 +302,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-1 rounded-lg hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors cursor-pointer text-[#0B2559]/70 dark:text-[#E6ECF7]/70"
+            className="p-1 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-[#0B2559]/70 dark:text-[#E6ECF7]/70"
             aria-label="Toggle hospital search options"
           >
             <span className="material-symbols-outlined text-[20px]">

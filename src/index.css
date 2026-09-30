@@ -15,6 +15,15 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     overflow-x: hidden;
   }
+  ::selection {
+    background-color: #cde5ff;
+    color: #0B2559;
+  }
+}
+
+.dark ::selection {
+  background-color: #0A6FA8;
+  color: #ffffff;
 }
 
 .font-script {

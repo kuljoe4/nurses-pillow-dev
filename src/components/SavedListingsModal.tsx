@@ -76,7 +76,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
             <button
               onClick={onClose}
               type="button"
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors"
               aria-label="Close saved listings modal"
             >
               <span className="material-symbols-outlined text-lg">close</span>
@@ -163,7 +163,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-full border border-current text-xs font-semibold hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 transition-colors text-center"
+            className="w-full py-2.5 rounded-full border border-current text-xs font-semibold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors text-center"
           >
             Close Panel
           </button>

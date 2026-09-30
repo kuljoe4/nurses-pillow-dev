@@ -83,7 +83,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             <button
               type="button"
               onClick={onGoToHousing}
-              className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 text-xs sm:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
+              className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] text-xs sm:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
             >
               Explore Existing Sanctuary Listings
             </button>
@@ -362,7 +362,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             <button
               type="button"
               onClick={onGoToHousing}
-              className="px-6 py-4 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-black focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-black/5 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
+              className="px-6 py-4 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
             >
               Back to Main Marketplace
             </button>

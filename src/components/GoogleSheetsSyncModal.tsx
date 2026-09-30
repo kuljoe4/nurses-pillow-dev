@@ -803,7 +803,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
         {/* Explicit User Confirmation Dialog (MANDATORY per Workspace guidelines) */}
         {showConfirmModal && (
           <div
-            className="fixed inset-0 z-60 bg-black/70 backdrop-blur-xs overflow-y-auto p-4 sm:p-6 flex justify-center items-start"
+            className="fixed inset-0 z-60 bg-black/50 backdrop-blur-xs overflow-y-auto p-4 flex justify-center items-center"
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
@@ -815,47 +815,53 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
             }}
           >
             <div
-              className={`w-full max-w-md my-auto rounded-3xl p-6 sm:p-7 shadow-lg border ${
+              className={`w-full max-w-sm my-auto rounded-[24px] p-6 shadow-[0_12px_32px_rgba(11,37,89,0.12)] border transition-colors ${
                 isNightShiftMode
-                  ? 'bg-[#0E1A2E] text-[#E6ECF7] border-[#233550]'
-                  : 'bg-white text-[#001848] border-gray-200'
+                  ? 'bg-[#0B1626] text-[#E6ECF7] border-[#233550]'
+                  : 'bg-white text-[#0B2559] border-[rgba(11,37,89,0.08)]'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-12 rounded-2xl bg-[#0F9D58]/20 text-[#0F9D58] flex items-center justify-center mb-3.5">
-                <span className="material-symbols-outlined text-[26px]">contactless</span>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">table_chart</span>
+                </div>
+                <div>
+                  <h3 id="confirm-dialog-title" className="text-base font-semibold leading-tight">
+                    Confirm export
+                  </h3>
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Google Sheets sync
+                  </span>
+                </div>
               </div>
-              <h3 id="confirm-dialog-title" className="text-lg font-bold tracking-tight">
-                Confirm Google Sheets Export
-              </h3>
-              <p id="confirm-dialog-desc" className="text-xs text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
+
+              <p id="confirm-dialog-desc" className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                 {targetMode === 'new' ? (
                   <>
-                    Are you sure you want to create a new spreadsheet named{' '}
-                    <span className="font-bold text-[#0F9D58]">"{newSheetTitle}"</span> in your Google Drive and populate it with{' '}
-                    <span className="font-bold">{currentPayload.rows.length}</span> records ({currentPayload.headers.length} columns)?
+                    Create <span className="font-semibold text-[#0B2559] dark:text-white">"{newSheetTitle}"</span> in your Google Drive with {currentPayload.rows.length} records?
                   </>
                 ) : (
                   <>
-                    Are you sure you want to append <span className="font-bold">{currentPayload.rows.length}</span> records to your existing Google Sheet?
+                    Append {currentPayload.rows.length} records to your selected Google Sheet?
                   </>
                 )}
               </p>
 
-              <div className="mt-6 flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/5 cursor-pointer"
+                  className="px-4 py-2 rounded-full border border-gray-200 dark:border-[#233550] text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleExecuteSync}
-                  className="px-5 py-2.5 rounded-xl bg-[#0F9D58] hover:bg-[#0c8047] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0c8047] text-white text-xs font-bold shadow-md cursor-pointer transition-all duration-200 ease-in-out"
+                  className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-semibold shadow-xs cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
                 >
-                  Yes, Proceed &amp; Sync
+                  Sync sheet
                 </button>
               </div>
             </div>

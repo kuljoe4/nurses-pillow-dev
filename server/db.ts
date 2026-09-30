@@ -116,11 +116,20 @@ export const db = {
         // Ensure extensions exist
         await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
 
-        // Ensure reset password columns exist
+        // Ensure reset password & verification columns exist
         await railwayDb.query(`
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
-          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
+          ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS dob VARCHAR(20),
+          ADD COLUMN IF NOT EXISTS last_four_ssn VARCHAR(4),
+          ADD COLUMN IF NOT EXISTS id_document_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
+          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
         `);
         // Ensure favorites table and indexes exist
         await railwayDb.query(`
@@ -148,11 +157,20 @@ export const db = {
 
         await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
 
-        // Ensure reset password columns exist
+        // Ensure reset password & verification columns exist
         await pool.query(`
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
-          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+          ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
+          ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS dob VARCHAR(20),
+          ADD COLUMN IF NOT EXISTS last_four_ssn VARCHAR(4),
+          ADD COLUMN IF NOT EXISTS id_document_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
+          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
         `);
 
         // Ensure favorites table and indexes exist
