@@ -2,6 +2,8 @@ import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import express, { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -40,8 +42,32 @@ const BookingSchema = z.object({
 });
 
 async function startServer() {
+  const isProductionMode = process.env.NODE_ENV === 'production';
+  if (isProductionMode) {
+    const requiredEnvVars = ['JWT_SECRET', 'STRIPE_SECRET_KEY', 'DATABASE_URL', 'STRIPE_WEBHOOK_SECRET', 'POSTMARK_WEBHOOK_SECRET'];
+    for (const envVar of requiredEnvVars) {
+      if (!process.env[envVar]) {
+        console.error(`FATAL ERROR: ${envVar} environment variable is required in production.`);
+        process.exit(1);
+      }
+    }
+  }
+
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
+
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https://images.unsplash.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        connectSrc: ["'self'", "https://maps.googleapis.com"]
+      },
+    },
+  }));
+  app.use(cors({ origin: process.env.APP_URL || 'http://localhost:3000', credentials: true }));
 
   // 1. Phone Auth Raw-Body Middleware (Must precede express.json)
   app.use(createPhoneAuthMiddleware());
@@ -55,15 +81,16 @@ async function startServer() {
       const signature = req.headers['stripe-signature'];
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-      if (endpointSecret && signature) {
-        try {
-          event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
-        } catch (err: any) {
-          console.warn(`⚠️ Webhook signature verification failed:`, err.message);
-          return res.sendStatus(400);
-        }
-      } else {
-        event = req.body;
+      if (!endpointSecret || !signature) {
+        console.error('Webhook Error: Missing secret or signature');
+        return res.status(400).send('Webhook Error: Missing secret or signature');
+      }
+
+      try {
+        event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+      } catch (err: any) {
+        console.warn(`⚠️ Webhook signature verification failed:`, err.message);
+        return res.sendStatus(400);
       }
 
       try {
@@ -79,6 +106,16 @@ async function startServer() {
             }
             break;
           }
+          case 'payment_intent.succeeded': {
+            const paymentIntent = event.data.object;
+            console.log(`[Stripe Webhook] PaymentIntent succeeded: ${paymentIntent.id}`);
+            // Update booking status from pending_payment to pending_host_approval
+            await db.query(
+              "UPDATE bookings SET status = 'pending_host_approval' WHERE id = (SELECT id FROM bookings WHERE stripe_payment_intent_id = $1 LIMIT 1)",
+              [paymentIntent.id]
+            );
+            break;
+          }
           default:
             console.log(`Unhandled Stripe event type: ${event.type}`);
         }
@@ -91,7 +128,7 @@ async function startServer() {
   );
 
   // 3. Body Parsers & Cookie Parser
-  app.use(express.json());
+  app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
@@ -121,11 +158,14 @@ async function startServer() {
     const credentials = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf-8');
     const [user, pass] = credentials.split(':');
 
-    if (
-      (user === 'lawrence' && pass === 'np-preview-2026') ||
-      (user === 'developer' && (pass === 'np-dev-2026' || pass === 'np-preview-2026')) ||
-      (user === 'admin' && pass === 'nursespillow2026')
-    ) {
+    const stagingUsers = process.env.STAGING_USERS ? process.env.STAGING_USERS.split(',') : [];
+    let isAuthenticated = false;
+    for (const stagingUser of stagingUsers) {
+        const [expectedUser, expectedPass] = stagingUser.split(':');
+        if (user === expectedUser && pass === expectedPass) isAuthenticated = true;
+    }
+
+    if (isAuthenticated) {
       return next();
     }
 
@@ -170,9 +210,14 @@ async function startServer() {
   app.use('/api/auth', authRoutes);
 
   // Identity Verification Endpoint (NV-01, NV-02)
-  app.post('/api/verify/identity', async (req: Request, res: Response) => {
+  app.post('/api/verify/identity', authenticateToken, async (req: any, res: Response) => {
     try {
-      const { legalFirstName, legalLastName, dob, lastFourSSN, idDocumentName, email, userId } = req.body;
+      const { legalFirstName, legalLastName, dob, lastFourSSN, idDocumentName } = req.body;
+      const userId = req.user?.id;
+      const email = req.user?.email;
+      if (!userId || !email) {
+        return res.status(401).json({ error: 'Unauthorized: Missing user context' });
+      }
 
       // 1. Strict Input Validation
       if (!legalFirstName || typeof legalFirstName !== 'string' || legalFirstName.trim().length < 2) {
@@ -205,16 +250,6 @@ async function startServer() {
       // 2. Identify user from auth token, session cookie, or body
       let targetUserId = userId;
       let targetEmail = email;
-      const authHeader = req.headers.authorization;
-      const token = (authHeader && authHeader.replace(/^Bearer\s+/i, '')) || req.cookies?.auth_token;
-      if (token) {
-        try {
-          const jwt = (await import('jsonwebtoken')).default;
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
-          if (decoded?.id) targetUserId = decoded.id;
-          if (decoded?.email) targetEmail = decoded.email;
-        } catch {}
-      }
 
       const fullName = `${legalFirstName.trim()} ${legalLastName.trim()}`;
 
@@ -249,9 +284,14 @@ async function startServer() {
   });
 
   // Clinical License Verification Endpoint (NV-03)
-  app.post('/api/verify/license', async (req: Request, res: Response) => {
+  app.post('/api/verify/license', authenticateToken, async (req: any, res: Response) => {
     try {
-      const { licenseNumber, stateBoard, specialty, documentName, email, userId } = req.body;
+      const { licenseNumber, stateBoard, specialty, documentName } = req.body;
+      const userId = req.user?.id;
+      const email = req.user?.email;
+      if (!userId || !email) {
+        return res.status(401).json({ error: 'Unauthorized: Missing user context' });
+      }
 
       if (!licenseNumber || !licenseNumber.toString().trim()) {
         return res.status(400).json({ error: 'Clinical license number is required.' });
@@ -262,16 +302,6 @@ async function startServer() {
 
       let targetUserId = userId;
       let targetEmail = email;
-      const authHeader = req.headers.authorization;
-      const token = (authHeader && authHeader.replace(/^Bearer\s+/i, '')) || req.cookies?.auth_token;
-      if (token) {
-        try {
-          const jwt = (await import('jsonwebtoken')).default;
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
-          if (decoded?.id) targetUserId = decoded.id;
-          if (decoded?.email) targetEmail = decoded.email;
-        } catch {}
-      }
 
       if (targetUserId || targetEmail) {
         await db.query(
@@ -367,10 +397,10 @@ async function startServer() {
   app.get('/api/listings', async (req: Request, res: Response) => {
     try {
       const result = await db.query(`
-        SELECT id, host_id, title, property_type, address_line1 as address, city, state, postal_code as zip,
+        SELECT id, host_id, title, property_type, city, state, postal_code as zip,
         latitude, longitude, nearest_hospital_id, monthly_rent as monthly_rate, security_deposit_amount as security_deposit,
         cleaning_fee, is_published as is_active, cancellation_policy as cancellation_tier, pet_fee
-        FROM listings
+        FROM listings WHERE is_published = true
       `);
       const mapped = result.rows.map(mapDbListingToFrontend);
       res.json(mapped);
@@ -398,6 +428,28 @@ async function startServer() {
       if (!req.user || req.user.id !== booking.traveler_id) {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
       }
+
+      // Calculate pricing server-side
+      const listingRes = await db.query('SELECT monthly_rent, cleaning_fee, security_deposit_amount, host_id FROM listings WHERE id = $1', [booking.listing_id]);
+      if (listingRes.rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
+
+      const listing = listingRes.rows[0];
+      const monthlyRent = Number(listing.monthly_rent) || 0;
+      const cleaningFee = Number(listing.cleaning_fee) || 0;
+
+      const grossCharge = monthlyRent + cleaningFee;
+      const feeRate = 0.05;
+      const platformFeeAmount = Number((grossCharge * feeRate).toFixed(2));
+      const hostNetPayout = Number((grossCharge * (1 - feeRate)).toFixed(2));
+
+      // Overwrite with server-side calculated values
+      booking.monthly_rent = monthlyRent;
+      booking.total_traveler_charged = grossCharge;
+      booking.platform_fee_amount = platformFeeAmount;
+      booking.host_net_payout = hostNetPayout;
+      booking.host_id = listing.host_id;
+      // Force booking to initially be pending
+      booking.status = 'pending_payment';
 
       // Check if user exists to avoid unnecessary hashing if possible
       const userRes = await db.query('SELECT id FROM users WHERE id = $1', [booking.traveler_id]);
@@ -456,7 +508,10 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', authenticateToken, async (req: Request, res: Response) => {
+  app.get('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
       const result = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC');
       res.json(result.rows);
@@ -466,7 +521,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', authenticateToken, async (req: Request, res: Response) => {
+  app.post('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
     try {
       const log = req.body;
 
@@ -478,7 +533,7 @@ async function startServer() {
       const eventType = typeof log.event_type === 'string' ? log.event_type.trim() : '';
       const recordId = typeof log.record_id === 'string' ? log.record_id.trim() : '';
       const details = typeof log.details === 'string' ? log.details.trim() : typeof log.details === 'object' ? JSON.stringify(log.details) : String(log.details || '');
-      const actor = typeof log.actor === 'string' ? log.actor.trim() : '';
+      const actor = req.user?.id || 'system';
 
       if (!eventType || eventType.length > 100) {
         return res.status(400).json({ error: 'event_type is required and must be <= 100 characters' });
@@ -512,7 +567,7 @@ async function startServer() {
   });
 
   // Stripe Account Link
-  app.post('/api/stripe/account-link', async (req: Request, res: Response) => {
+  app.post('/api/stripe/account-link', authenticateToken, async (req: Request, res: Response) => {
     try {
       const { hostId, returnUrl, refreshUrl } = req.body;
       if (!hostId) {
@@ -544,12 +599,9 @@ async function startServer() {
       });
 
       res.json({ url: accountLink.url });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating Stripe Account Link:', error);
-      // Fallback sandbox simulation URL
-      res.json({
-        url: `https://connect.stripe.com/express/onboarding/test_${encodeURIComponent(req.body.hostId || 'sarah')}`,
-      });
+      res.status(500).json({ error: error.message || 'Internal Server Error' });
     }
   });
 
@@ -563,22 +615,31 @@ async function startServer() {
       );
 
       if (userRes.rows.length === 0) {
-        return res.json({ payouts_enabled: true });
+        return res.status(404).json({ error: 'User not found' });
       }
 
-      res.json({ payouts_enabled: userRes.rows[0].stripe_payouts_enabled ?? true });
+      res.json({ payouts_enabled: userRes.rows[0].stripe_payouts_enabled ?? false });
     } catch (error) {
       console.error('Error fetching Stripe status:', error);
-      res.json({ payouts_enabled: true });
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   });
 
   // Stripe Payment Intent (Split Payment & Escrow Hold)
-  app.post('/api/stripe/payment-intent', async (req: Request, res: Response) => {
+  app.post('/api/stripe/payment-intent', authenticateToken, async (req: any, res: Response) => {
     try {
-      const { monthlyRent, cleaningFee, securityDeposit, hostConnectedAccountId, platformFeePercent } = req.body;
-      const grossCharge = (Number(monthlyRent) || 0) + (Number(cleaningFee) || 0);
-      const feeRate = Number(platformFeePercent) || 0.05;
+      const { listingId } = req.body;
+      if (!listingId) return res.status(400).json({ error: 'Missing listingId' });
+
+      const listingRes = await db.query('SELECT monthly_rent, cleaning_fee, security_deposit_amount, host_id FROM listings WHERE id = $1', [listingId]);
+      if (listingRes.rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
+
+      const listing = listingRes.rows[0];
+      const hostRes = await db.query('SELECT stripe_connected_account_id FROM users WHERE id = $1', [listing.host_id]);
+      const hostConnectedAccountId = hostRes.rows[0]?.stripe_connected_account_id;
+
+      const grossCharge = (Number(listing.monthly_rent) || 0) + (Number(listing.cleaning_fee) || 0);
+      const feeRate = 0.05; // Enforce platform fee server-side
       const platformFee = Math.round(grossCharge * feeRate * 100);
       const totalAmount = Math.round(grossCharge * 100);
 
@@ -595,20 +656,12 @@ async function startServer() {
           });
           return res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
         } catch (stripeErr: any) {
-          console.warn('[Stripe] Live payment intent creation failed, falling back to sandbox response:', stripeErr.message);
+          console.error('[Stripe] Live payment intent creation failed:', stripeErr.message);
+          return res.status(500).json({ error: 'Payment processing failed.' });
         }
+      } else {
+        return res.status(500).json({ error: 'Payment processing is not configured correctly.' });
       }
-
-      // Seamless sandbox authorization response
-      const mockIntentId = `pi_test_${Date.now()}`;
-      res.json({
-        clientSecret: `${mockIntentId}_secret_${Math.random().toString(36).substring(2, 9)}`,
-        paymentIntentId: mockIntentId,
-        grossAmount: grossCharge,
-        platformFeeAmount: Number((grossCharge * feeRate).toFixed(2)),
-        hostPayoutAmount: Number((grossCharge * (1 - feeRate)).toFixed(2)),
-        status: 'succeeded',
-      });
     } catch (error: any) {
       console.error('Error creating Stripe Payment Intent:', error);
       res.status(500).json({ error: error.message || 'Internal Server Error' });
@@ -619,7 +672,7 @@ async function startServer() {
   app.post('/api/webhooks/postmark', async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers['x-postmark-secret'];
-      if (process.env.POSTMARK_WEBHOOK_SECRET && authHeader !== process.env.POSTMARK_WEBHOOK_SECRET) {
+      if (!process.env.POSTMARK_WEBHOOK_SECRET || authHeader !== process.env.POSTMARK_WEBHOOK_SECRET) {
         return res.status(401).json({ error: 'Unauthorized webhook call' });
       }
 
