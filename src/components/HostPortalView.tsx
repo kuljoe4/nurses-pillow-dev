@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
@@ -28,6 +28,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   currentUser,
 }) => {
   const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>(initialTab);
+  const [editorStep, setEditorStep] = useState<1 | 2 | 3>(1);
 
   useEffect(() => {
     if (initialTab) {
@@ -35,13 +36,93 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   }, [initialTab]);
 
+  // Note: For prototype purposes we use a fixed listing ID, or would extract it from context.
+
+  const [editingListingId, setEditingListingId] = useState<string | null>(null);
+
+  // Fetch host's listing on load to get the ID
+  useEffect(() => {
+    if (activeHostTab === 'editor') {
+      const fetchListing = async () => {
+        try {
+          const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+          const res = await fetch('/api/listings/my-listing', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.listingId) {
+              setEditingListingId(data.listingId);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch host listing:", err);
+        }
+      };
+      fetchListing();
+    }
+  }, [activeHostTab]);
+
+
+  // Fetch photos on load
+  useEffect(() => {
+    if (activeHostTab === 'editor' && editingListingId) {
+      const fetchPhotos = async () => {
+        try {
+          const res = await fetch(`/api/listings/${editingListingId}/photos`);
+          if (res.ok) {
+            const data = await res.json();
+            setListingPhotos(data.photos.map((p: any) => ({
+              id: p.id,
+              url: p.url
+            })));
+          }
+        } catch (err) {
+          console.error("Failed to load listing photos:", err);
+        }
+      };
+      fetchPhotos();
+    }
+  }, [activeHostTab, editingListingId]);
+
   // Screen B2 Editor Form State
   const [propertyType, setPropertyType] = useState<'entire_property' | 'individual_rooms'>('individual_rooms');
   const [roomCount, setRoomCount] = useState<number>(2);
   const [roomAPrice, setRoomAPrice] = useState<number>(1950);
   const [roomBPrice, setRoomBPrice] = useState<number>(1850);
-  const [requiresSecurityDeposit, setRequiresSecurityDeposit] = useState<boolean>(true);
-  const [securityDepositAmount, setSecurityDepositAmount] = useState<number>(250);
+
+  const [listingPhotos, setListingPhotos] = useState<{ id?: string, url: string, file?: File }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+  const removePhoto = (indexToRemove: number) => {
+    setListingPhotos((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newPhotos = Array.from(files).map((file) => ({
+      url: URL.createObjectURL(file),
+      file,
+    }));
+
+    setListingPhotos((prev) => [...prev, ...newPhotos]);
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setListingPhotos((prev) => {
+      const updated = [...prev];
+      if (updated[index].url.startsWith("blob:")) {
+        URL.revokeObjectURL(updated[index].url);
+      }
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+
   const [cancellationTier, setCancellationTier] = useState<'Flexible' | 'Moderate' | 'Strict'>('Flexible');
   const [hasBlackout, setHasBlackout] = useState(true);
   const [hasQuietHours, setHasQuietHours] = useState(true);
@@ -117,10 +198,96 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const handleSaveListing = (e: React.FormEvent) => {
+
+  const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSavedEditor(true);
-    setTimeout(() => setIsSavedEditor(false), 3000);
+    setIsUploading(true);
+
+    try {
+      // Create listing update payload
+      const listingPayload = {
+        propertyType,
+        roomCount,
+        roomAPrice,
+        roomBPrice,
+        cancellationTier,
+        amenities: {
+          hasBlackout,
+          hasQuietHours,
+          hasScrubWasher,
+          hasDedicatedParking,
+          hasFiberWifi
+        }
+      };
+
+      console.log('Saving listing...', listingPayload);
+
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+
+      // Save listing payload
+      let currentListingId = editingListingId;
+      const listingRes = await fetch('/api/listings/my-listing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(listingPayload)
+      });
+
+      if (listingRes.ok) {
+        const listingData = await listingRes.json();
+        currentListingId = listingData.listingId;
+        if (!editingListingId) {
+          setEditingListingId(currentListingId);
+        }
+      }
+
+      // Handle photos - process the new files
+      const newPhotosToUpload = listingPhotos.filter(p => p.file);
+
+      if (newPhotosToUpload.length > 0) {
+        // In a real app, this would be a multipart/form-data POST request
+        // or getting presigned S3 urls. Here we simulate it.
+        const photosPayload = await Promise.all(
+          newPhotosToUpload.map(async (photo, index) => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                resolve({
+                  name: photo.file?.name,
+                  type: photo.file?.type,
+                  size: photo.file?.size,
+                  data: reader.result,
+                  displayOrder: index
+                });
+              };
+              if (photo.file) reader.readAsDataURL(photo.file);
+            });
+          })
+        );
+
+
+        console.log('Uploading photos...', photosPayload);
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        await fetch(`/api/listings/${currentListingId}/photos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ photos: photosPayload })
+        });
+
+      }
+
+      setIsSavedEditor(true);
+      setTimeout(() => setIsSavedEditor(false), 3000);
+    } catch (err) {
+      console.error("Error saving listing:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const pendingBookings = bookingRequests.filter((b) => b.status === 'pending_host_approval');
@@ -386,7 +553,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       {/* Listing & Room Calendar Editor - Responsive Card Grid Layout */}
       {activeHostTab === 'editor' && (
-        <form onSubmit={handleSaveListing} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); if (editorStep === 3) handleSaveListing(e); else setEditorStep(prev => (prev + 1) as 1 | 2 | 3); }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase tracking-wider">
@@ -394,12 +561,29 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               </span>
               <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Listing Configuration &amp; Healthcare Amenities</h2>
             </div>
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all"
-            >
-              Save Configuration
-            </button>
+          </div>
+
+          {/* Stepper Navigation */}
+          <div className="flex items-center gap-2 mb-6">
+            {[1, 2, 3].map((step) => (
+              <React.Fragment key={step}>
+                <div
+                  onClick={() => setEditorStep(step as 1 | 2 | 3)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer transition-colors ${
+                    editorStep === step
+                      ? 'bg-[#0A6FA8] text-white'
+                      : editorStep > step
+                      ? 'bg-[#2F6E5E] text-white'
+                      : 'bg-[#EFF6FB] text-gray-400 dark:bg-[#15233a] dark:text-gray-500'
+                  }`}
+                >
+                  {editorStep > step ? <span className="material-symbols-outlined text-[16px]">check</span> : step}
+                </div>
+                {step < 3 && (
+                  <div className={`h-1 flex-1 rounded-full ${editorStep > step ? 'bg-[#2F6E5E]' : 'bg-[#EFF6FB] dark:bg-[#15233a]'}`} />
+                )}
+              </React.Fragment>
+            ))}
           </div>
 
           {isSavedEditor && (
@@ -409,208 +593,347 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             </div>
           )}
 
-          {/* 2-Column Responsive Card-Based Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-            {/* Left Column (7 cols): Address & Property Configuration */}
-            <div className="lg:col-span-7 space-y-4">
-              {/* Photo Upload Hint */}
-              <div className="bg-[#EFF6FB] dark:bg-[#0B1626]/50 rounded-xl p-3 border border-[#0A6FA8]/20 flex items-start gap-2.5 shadow-xs">
-                <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1] mt-0.5 shrink-0">info</span>
-                <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
-                  <strong>Photo Uploads:</strong> High-resolution property photography and visual amenity drag-and-drop ordering occurs in <strong>Step 3 (Media Hub)</strong> of the configuration stepper after initial property details are securely saved.
-                </p>
-              </div>
+          <div className="space-y-4">
+            {/* Step 1: Property Basics */}
+            {editorStep === 1 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {/* Card 1: Setup Topology */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Step 1: Property Topology
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPropertyType('entire_property')}
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                        propertyType === 'entire_property'
+                          ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
+                          : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`material-symbols-outlined text-[20px] ${propertyType === 'entire_property' ? 'text-[#0A6FA8]' : 'text-gray-400'}`}>
+                          real_estate_agent
+                        </span>
+                        <span className={`text-sm font-bold ${propertyType === 'entire_property' ? 'text-[#0A6FA8] dark:text-[#3E9AD1]' : 'text-gray-600 dark:text-gray-300'}`}>
+                          Entire Property
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-500">Rent the entire unshared unit to a single traveling clinician.</p>
+                    </button>
 
-              {/* Card 1: Google Maps Address & Hospital Distance Mapping */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                <HostAddressMapping isNightShiftMode={isNightShiftMode} />
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setPropertyType('individual_rooms')}
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                        propertyType === 'individual_rooms'
+                          ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
+                          : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`material-symbols-outlined text-[20px] ${propertyType === 'individual_rooms' ? 'text-[#0A6FA8]' : 'text-gray-400'}`}>
+                          meeting_room
+                        </span>
+                        <span className={`text-sm font-bold ${propertyType === 'individual_rooms' ? 'text-[#0A6FA8] dark:text-[#3E9AD1]' : 'text-gray-600 dark:text-gray-300'}`}>
+                          Individual Rooms
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-500">Rent multiple bedrooms to different clinicians (shared common areas).</p>
+                    </button>
+                  </div>
 
-              {/* Card 2: Property Configuration & Room Pricing */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
-                <label className="block text-xs font-bold text-gray-500 uppercase">
-                  Property Configuration Type
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setPropertyType('entire_property')}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                      propertyType === 'entire_property'
-                        ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
-                        : 'border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    <div className="font-bold text-xs text-[#0B2559] dark:text-white">Entire Property</div>
-                    <div className="text-[11px] text-gray-500 mt-0.5">Clinician or couple occupies whole unit</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPropertyType('individual_rooms')}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                      propertyType === 'individual_rooms'
-                        ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a]'
-                        : 'border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    <div className="font-bold text-xs text-[#0B2559] dark:text-white">Individual Room Units</div>
-                    <div className="text-[11px] text-gray-500 mt-0.5">Independent rooms (Room A, Room B) w/ private locks</div>
-                  </button>
+                  {propertyType === 'individual_rooms' && (
+                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-2">
+                        Number of Leasable Rooms
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setRoomCount(Math.max(2, roomCount - 1))}
+                          className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#0B2559] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">remove</span>
+                        </button>
+                        <span className="text-lg font-bold w-4 text-center text-[#0A6FA8] dark:text-[#3E9AD1]">{roomCount}</span>
+                        <button
+                          type="button"
+                          onClick={() => setRoomCount(Math.min(5, roomCount + 1))}
+                          className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#0B2559] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">add</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {propertyType === 'individual_rooms' && (
-                  <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550] space-y-2.5">
-                    <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase block">
-                      Multi-Room Monthly Rates
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] space-y-1.5">
-                        <div className="font-bold text-xs text-[#0B2559] dark:text-white">Room A (Master Suite)</div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-400">$</span>
+                {/* Navigation Buttons */}
+                <div className="flex justify-end pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditorStep(2)}
+                    className="px-6 py-2.5 rounded-full bg-[#0B2559] text-white text-sm font-bold hover:bg-[#113274] transition-colors flex items-center gap-2"
+                  >
+                    Next: Pricing & Amenities <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Pricing & Amenities */}
+            {editorStep === 2 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {/* Card 2: Pricing Base */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Step 2: Base Monthly Rates
+                  </label>
+
+                  {propertyType === 'entire_property' ? (
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                        Monthly Rent (Entire Property)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                        <input
+                          type="number"
+                          value={roomAPrice}
+                          onChange={(e) => setRoomAPrice(Number(e.target.value))}
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                          Room A Monthly Rate
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                           <input
                             type="number"
                             value={roomAPrice}
                             onChange={(e) => setRoomAPrice(Number(e.target.value))}
-                            className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none tabular-nums"
+                            className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
                           />
-                          <span className="text-xs text-gray-400">/mo</span>
                         </div>
                       </div>
-
-                      <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] space-y-1.5">
-                        <div className="font-bold text-xs text-[#0B2559] dark:text-white">Room B (Private Bath)</div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-400">$</span>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                          Room B Monthly Rate
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                           <input
                             type="number"
                             value={roomBPrice}
                             onChange={(e) => setRoomBPrice(Number(e.target.value))}
-                            className="w-full text-sm font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none tabular-nums"
+                            className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
                           />
-                          <span className="text-xs text-gray-400">/mo</span>
                         </div>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Card 4: Specialized Healthcare Amenities */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Specialized Healthcare Amenities
+                  </label>
+                  <div className="space-y-1 text-sm text-[#0B2559] dark:text-gray-300 font-medium">
+                    <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={hasBlackout}
+                        onChange={(e) => setHasBlackout(e.target.checked)}
+                        className="rounded accent-[#0A6FA8]"
+                      />
+                      <span>100% Blackout Drapes (Zero Bleed)</span>
+                    </label>
+                    <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={hasQuietHours}
+                        onChange={(e) => setHasQuietHours(e.target.checked)}
+                        className="rounded accent-[#0A6FA8]"
+                      />
+                      <span>Enforced Quiet Hours (08:00–17:00)</span>
+                    </label>
+                    <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={hasScrubWasher}
+                        onChange={(e) => setHasScrubWasher(e.target.checked)}
+                        className="rounded accent-[#0A6FA8]"
+                      />
+                      <span>In-Unit Scrub Sanitizing Washer</span>
+                    </label>
+                    <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={hasDedicatedParking}
+                        onChange={(e) => setHasDedicatedParking(e.target.checked)}
+                        className="rounded accent-[#0A6FA8]"
+                      />
+                      <span>Dedicated Off-Street Parking Space</span>
+                    </label>
+                    <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={hasFiberWifi}
+                        onChange={(e) => setHasFiberWifi(e.target.checked)}
+                        className="rounded accent-[#0A6FA8]"
+                      />
+                      <span>500+ Mbps Fiber Wi-Fi (Epic Charting)</span>
+                    </label>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {/* Right Column (5 cols): Deposit Controls, Shift Amenities, Cancellation Tier */}
-            <div className="lg:col-span-5 space-y-4">
-              {/* Card 3: $0 Security Deposit Platform Guarantee */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2F6E5E] dark:text-[#aff0db]">
-                      Clinician Protection
-                    </span>
-                    <h3 className="text-xs font-bold text-[#0B2559] dark:text-white">
-                      Zero Security Deposit Hold
-                    </h3>
+                {/* Card 5: Cancellation Tier Selection */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Cancellation Policy
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['Flexible', 'Moderate', 'Strict'] as const).map((tier) => (
+                      <button
+                        key={tier}
+                        type="button"
+                        onClick={() => setCancellationTier(tier)}
+                        className={`p-2 rounded-xl border text-center cursor-pointer transition-all ${
+                          cancellationTier === tier
+                            ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a] font-bold text-[#0A6FA8]'
+                            : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                        }`}
+                      >
+                        <div className="text-xs">{tier}</div>
+                      </button>
+                    ))}
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[13px]">verified</span>
-                    $0 Hold
-                  </span>
+                  <div className="text-[10px] text-gray-400 mt-1">
+                    {cancellationTier === 'Flexible'
+                      ? '100% refund up to 14 days prior to rotation'
+                      : cancellationTier === 'Moderate'
+                      ? '100% refund up to 30 days prior to rotation'
+                      : '50% refund up to 30 days prior to rotation'}
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] text-xs text-[#0B2559] dark:text-[#c0c7d1] space-y-1.5 leading-relaxed">
-                  <p className="font-semibold text-[11px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    Strict Platform-Wide Zero Hold Rule
-                  </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    Traveling clinicians complete 12-hour shifts and are never inconvenienced with security deposit card holds or pre-authorization freezes.
-                  </p>
-                </div>
-              </div>
-
-              {/* Card 4: Healthcare Shift Amenities */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2.5">
-                <label className="block text-xs font-bold text-gray-500 uppercase">
-                  Shift Clinician Amenities
-                </label>
-                <div className="space-y-1.5 text-xs">
-                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={hasBlackout}
-                      onChange={(e) => setHasBlackout(e.target.checked)}
-                      className="rounded accent-[#0A6FA8]"
-                    />
-                    <span>100% Blackout Drapes (Zero Bleed)</span>
-                  </label>
-                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={hasQuietHours}
-                      onChange={(e) => setHasQuietHours(e.target.checked)}
-                      className="rounded accent-[#0A6FA8]"
-                    />
-                    <span>Enforced Quiet Hours (08:00–17:00)</span>
-                  </label>
-                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={hasScrubWasher}
-                      onChange={(e) => setHasScrubWasher(e.target.checked)}
-                      className="rounded accent-[#0A6FA8]"
-                    />
-                    <span>In-Unit Scrub Sanitizing Washer</span>
-                  </label>
-                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={hasDedicatedParking}
-                      onChange={(e) => setHasDedicatedParking(e.target.checked)}
-                      className="rounded accent-[#0A6FA8]"
-                    />
-                    <span>Dedicated Off-Street Parking Space</span>
-                  </label>
-                  <label className="p-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#0E1A2E] flex items-center gap-2 cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={hasFiberWifi}
-                      onChange={(e) => setHasFiberWifi(e.target.checked)}
-                      className="rounded accent-[#0A6FA8]"
-                    />
-                    <span>500+ Mbps Fiber Wi-Fi (Epic Charting)</span>
-                  </label>
+                {/* Navigation Buttons */}
+                <div className="flex justify-between pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditorStep(1)}
+                    className="px-6 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditorStep(3)}
+                    className="px-6 py-2.5 rounded-full bg-[#0B2559] text-white text-sm font-bold hover:bg-[#113274] transition-colors flex items-center gap-2"
+                  >
+                    Next: Media Hub <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </button>
                 </div>
               </div>
+            )}
 
-              {/* Card 5: Cancellation Tier Selection */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2">
-                <label className="block text-xs font-bold text-gray-500 uppercase">
-                  Cancellation Policy
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['Flexible', 'Moderate', 'Strict'] as const).map((tier) => (
-                    <button
-                      key={tier}
-                      type="button"
-                      onClick={() => setCancellationTier(tier)}
-                      className={`p-2 rounded-xl border text-center cursor-pointer transition-all ${
-                        cancellationTier === tier
-                          ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#15233a] font-bold text-[#0A6FA8]'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-500'
-                      }`}
+            {/* Step 3: Media Hub */}
+            {editorStep === 3 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {/* Media Hub: Photo Uploads */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-[#0B2559] dark:text-white uppercase tracking-wider">
+                      Step 3: Media Hub (Photos)
+                    </label>
+                    <span className="text-[10px] text-gray-500">{listingPhotos.length} / 10 photos</span>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    id="photo-upload"
+                    onChange={handlePhotoUpload}
+                  />
+
+                  {listingPhotos.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {listingPhotos.map((photo, index) => (
+                        <div key={index} className="relative aspect-square rounded-xl overflow-hidden group">
+                          <img
+                            src={photo.url}
+                            alt={`Listing photo ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index)}
+                            className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">close</span>
+                          </button>
+                          {index === 0 && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] font-bold text-center py-1">
+                              Cover Photo
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {listingPhotos.length < 10 && (
+                        <label
+                          htmlFor="photo-upload"
+                          className="aspect-square rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all"
+                        >
+                          <span className="material-symbols-outlined text-2xl mb-1">add_a_photo</span>
+                          <span className="text-xs font-medium">Add More</span>
+                        </label>
+                      )}
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="photo-upload"
+                      className="w-full h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all"
                     >
-                      <div className="text-xs">{tier}</div>
-                    </button>
-                  ))}
+                      <span className="material-symbols-outlined text-3xl mb-2">cloud_upload</span>
+                      <span className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-1">Click to upload photos</span>
+                      <span className="text-xs text-gray-400">Drag and drop supported</span>
+                    </label>
+                  )}
                 </div>
-                <div className="text-[10px] text-gray-400 mt-1">
-                  {cancellationTier === 'Flexible'
-                    ? '100% refund up to 14 days prior to rotation'
-                    : cancellationTier === 'Moderate'
-                    ? '100% refund up to 30 days prior to rotation'
-                    : '50% refund up to 30 days prior to rotation'}
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditorStep(2)}
+                    className="px-6 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUploading}
+                    className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isUploading ? (
+                      <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+                    ) : (
+                      <><span className="material-symbols-outlined text-[18px]">publish</span> Publish Listing</>
+                    )}
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </form>
       )}

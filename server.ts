@@ -13,7 +13,7 @@ import { railwayDb } from './src/services/railway.js';
 import authRoutes from './server/authRoutes.js';
 import { mapDbListingToFrontend } from './server/mapper.js';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
-import { authenticateToken } from './server/authMiddleware.js';
+import { authenticateToken, AuthenticatedRequest } from './server/authMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -773,6 +773,233 @@ async function startServer() {
       return res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
+
+  // Endpoint to upload listing photos
+  app.post(
+    "/api/listings/:id/photos",
+    authenticateToken,
+    express.json({ limit: "50mb" }),
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const listingId = req.params.id;
+        const { photos } = req.body;
+
+        if (!photos || !Array.isArray(photos)) {
+          return res.status(400).json({ error: "Invalid photos payload" });
+        }
+
+        const listingRes = await db.query(
+          "SELECT id FROM listings WHERE id = $1 AND host_id = $2",
+          [listingId, req.user.id]
+        );
+
+        if (listingRes.rows.length === 0) {
+          return res.status(403).json({ error: "Unauthorized or listing not found" });
+        }
+
+        const uploadedPhotos = [];
+
+        for (const photo of photos) {
+          const result = await db.query(
+            `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+             VALUES ($1, $2, $3, $4) RETURNING id, photo_url, display_order, is_cover`,
+            [
+              listingId,
+              photo.data,
+              photo.displayOrder || 0,
+              photo.displayOrder === 0 ? true : false
+            ]
+          );
+          uploadedPhotos.push(result.rows[0]);
+        }
+
+        res.status(201).json({ photos: uploadedPhotos });
+      } catch (error: any) {
+        console.error("Error uploading photos:", error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+      }
+    }
+  );
+
+  // Endpoint to get listing photos
+  app.get("/api/listings/:id/photos", async (req, res) => {
+    try {
+      const listingId = req.params.id;
+
+      const result = await db.query(
+        `SELECT id, photo_url as url, display_order as "displayOrder", is_cover as "isCover"
+         FROM listing_photos
+         WHERE listing_id = $1
+         ORDER BY display_order ASC`,
+        [listingId]
+      );
+
+      res.json({ photos: result.rows });
+    } catch (error: any) {
+      console.error("Error fetching photos:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Endpoint to save/upsert a listing for the current user
+  app.post(
+    "/api/listings/my-listing",
+    authenticateToken,
+    express.json(),
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const existingRes = await db.query(
+          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+          [req.user.id]
+        );
+
+        let listingId;
+        if (existingRes.rows.length > 0) {
+          listingId = existingRes.rows[0].id;
+          await db.query(
+            "UPDATE listings SET property_type = $1, monthly_rent = $2, cleaning_fee = $3 WHERE id = $4",
+            [req.body.propertyType, req.body.roomAPrice || req.body.monthlyRate, 150, listingId]
+          );
+        } else {
+          const newListingRes = await db.query(
+            `INSERT INTO listings (host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+            [
+              req.user.id,
+              "New Sanctuary Stay",
+              req.body.propertyType || "individual_rooms",
+              "123 Healing Way",
+              "Durham",
+              "NC",
+              "27705",
+              36.0,
+              -78.9,
+              "hosp-duke",
+              req.body.roomAPrice || 1950,
+              0,
+              150,
+              true
+            ]
+          );
+          listingId = newListingRes.rows[0].id;
+        }
+
+        res.json({ listingId });
+      } catch (error: any) {
+        console.error("Error saving listing:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  // Endpoint to fetch current user's listing
+  app.get(
+    "/api/listings/my-listing",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const existingRes = await db.query(
+          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+          [req.user.id]
+        );
+
+        if (existingRes.rows.length > 0) {
+          res.json({ listingId: existingRes.rows[0].id });
+        } else {
+          res.json({ listingId: null });
+        }
+      } catch (error: any) {
+        console.error("Error fetching my listing:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  // Stripe Identity Verification Session
+  app.post(
+    "/api/stripe/identity/session",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const userId = req.user.id;
+        const verificationSession =
+          await stripe.identity.verificationSessions.create({
+            type: "document",
+            metadata: {
+              userId: userId,
+            },
+            options: {
+              document: {
+                require_matching_selfie: true,
+              },
+            },
+          });
+
+        res.json({
+          client_secret: verificationSession.client_secret,
+          session_id: verificationSession.id,
+        });
+      } catch (error) {
+        console.error("Error creating Stripe Identity Session:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/stripe/payment-intent/:id/capture",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { id } = req.params;
+        const paymentIntent = await stripe.paymentIntents.capture(id);
+        res.json({ success: true, paymentIntent });
+      } catch (error: any) {
+        console.error("Error capturing Payment Intent:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to capture payment intent" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/stripe/payment-intent/:id/cancel",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { id } = req.params;
+        const paymentIntent = await stripe.paymentIntents.cancel(id);
+        res.json({ success: true, paymentIntent });
+      } catch (error: any) {
+        console.error("Error canceling Payment Intent:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to cancel payment intent" });
+      }
+    },
+  );
 
   // 5. Mount Vite Dev Middleware in Dev Mode, or Serve Static in Production
   const isProduction = process.env.NODE_ENV === 'production';
