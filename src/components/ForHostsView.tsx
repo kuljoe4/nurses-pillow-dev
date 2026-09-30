@@ -1,4 +1,19 @@
 import React, { useState } from 'react';
+import {
+  Building2,
+  Home,
+  ShieldCheck,
+  CheckCircle2,
+  Calendar,
+  DollarSign,
+  Shield,
+  Calculator,
+  Moon,
+  WashingMachine,
+  Key,
+  VolumeX,
+  ChevronDown,
+} from 'lucide-react';
 
 interface ForHostsViewProps {
   isNightShiftMode: boolean;
@@ -52,7 +67,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
         {/* HERO SECTION */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db]">
-            <span className="material-symbols-outlined text-[15px]">real_estate_agent</span>
+            <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
             Property Host Sanctuary Community
           </span>
           <h1
@@ -76,7 +91,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
                 onClick={onGoToHostPortal}
                 className="px-7 py-3.5 rounded-full bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs sm:text-sm font-bold shadow-md transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]">add_home</span>
+                <Home className="w-4 h-4" aria-hidden="true" />
                 <span>Enter Host Portal &amp; List Property</span>
               </button>
             )}
@@ -101,7 +116,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
           >
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-[#aff0db]/25 text-[#195b4c] dark:text-[#aff0db] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">verified</span>
+                <ShieldCheck className="w-6 h-6" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold">100% Verified Clinician Guests</h3>
               <p className="text-sm opacity-80 leading-relaxed">
@@ -109,7 +124,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 text-xs font-semibold text-[#195b4c] dark:text-[#aff0db] flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
               Nursys Primary Source Board Checked
             </div>
           </div>
@@ -123,7 +138,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
           >
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-[#005684]/15 text-[#005684] dark:text-[#93ccff] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">calendar_month</span>
+                <Calendar className="w-6 h-6" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold">30–90 Day Mid-Term Stability</h3>
               <p className="text-sm opacity-80 leading-relaxed">
@@ -131,7 +146,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 text-xs font-semibold text-[#005684] dark:text-[#93ccff] flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">payments</span>
+              <DollarSign className="w-4 h-4" aria-hidden="true" />
               Direct Stripe Bank Payouts • Flat 5% Fee
             </div>
           </div>
@@ -145,7 +160,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
           >
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-[#ffdf91]/25 text-[#745b0d] dark:text-[#ffdf91] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[26px]">shield</span>
+                <Shield className="w-6 h-6" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-bold">Contract Flex Vacancy Guarantee</h3>
               <p className="text-sm opacity-80 leading-relaxed">
@@ -153,7 +168,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/10 text-xs font-semibold text-[#745b0d] dark:text-[#ffdf91] flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">gavel</span>
+              <ShieldCheck className="w-4 h-4" aria-hidden="true" />
               14-Day Vacancy Stipend Protection
             </div>
           </div>
@@ -170,7 +185,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-5">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#005684]/10 text-[#005684] dark:text-[#93ccff]">
-                <span className="material-symbols-outlined text-[14px]">calculate</span>
+                <Calculator className="w-3.5 h-3.5" aria-hidden="true" />
                 Host Earnings Estimator
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold">
@@ -267,7 +282,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="p-5 rounded-2xl bg-[#f4f6fb] dark:bg-[#15233a] border border-black/5 dark:border-white/5 space-y-2">
               <div className="font-bold flex items-center gap-2 text-[#005684] dark:text-[#93ccff]">
-                <span className="material-symbols-outlined text-[20px]">bedtime</span>
+                <Moon className="w-5 h-5" aria-hidden="true" />
                 <span>Day-Sleeper Blackout Curtains</span>
               </div>
               <p className="text-xs opacity-80 leading-relaxed">
@@ -277,7 +292,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
 
             <div className="p-5 rounded-2xl bg-[#f4f6fb] dark:bg-[#15233a] border border-black/5 dark:border-white/5 space-y-2">
               <div className="font-bold flex items-center gap-2 text-[#195b4c] dark:text-[#aff0db]">
-                <span className="material-symbols-outlined text-[20px]">local_laundry_service</span>
+                <WashingMachine className="w-5 h-5" aria-hidden="true" />
                 <span>In-Unit Scrub Washer &amp; Dryer</span>
               </div>
               <p className="text-xs opacity-80 leading-relaxed">
@@ -287,7 +302,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
 
             <div className="p-5 rounded-2xl bg-[#f4f6fb] dark:bg-[#15233a] border border-black/5 dark:border-white/5 space-y-2">
               <div className="font-bold flex items-center gap-2 text-[#745b0d] dark:text-[#ffdf91]">
-                <span className="material-symbols-outlined text-[20px]">key</span>
+                <Key className="w-5 h-5" aria-hidden="true" />
                 <span>24/7 Keyless Smart Check-In</span>
               </div>
               <p className="text-xs opacity-80 leading-relaxed">
@@ -297,7 +312,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
 
             <div className="p-5 rounded-2xl bg-[#f4f6fb] dark:bg-[#15233a] border border-black/5 dark:border-white/5 space-y-2">
               <div className="font-bold flex items-center gap-2 text-[#005684] dark:text-[#93ccff]">
-                <span className="material-symbols-outlined text-[20px]">volume_off</span>
+                <VolumeX className="w-5 h-5" aria-hidden="true" />
                 <span>Enforced Quiet Hours Policy</span>
               </div>
               <p className="text-xs opacity-80 leading-relaxed">
@@ -332,9 +347,12 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
                   className="w-full text-left p-5 flex items-center justify-between gap-4 font-bold text-sm cursor-pointer"
                 >
                   <span>{faq.q}</span>
-                  <span className="material-symbols-outlined text-[20px] transition-transform duration-200 shrink-0">
-                    {activeFaq === idx ? 'expand_less' : 'expand_more'}
-                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 transition-transform duration-200 shrink-0 ${
+                      activeFaq === idx ? 'rotate-180' : ''
+                    }`}
+                    aria-hidden="true"
+                  />
                 </button>
                 {activeFaq === idx && (
                   <div className="px-5 pb-5 text-xs sm:text-sm opacity-80 leading-relaxed border-t border-black/5 dark:border-white/5 pt-3">
@@ -355,7 +373,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
                 onClick={onGoToHostPortal}
                 className="px-8 py-4 rounded-full bg-[#001848] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-sm font-bold shadow-lg transition-all duration-200 ease-in-out cursor-pointer flex items-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]">add_business</span>
+                <Building2 className="w-4 h-4" aria-hidden="true" />
                 <span>Open Host Workspace &amp; Add Listing</span>
               </button>
             )}

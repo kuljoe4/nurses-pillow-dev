@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface PostmarkEmailVerificationViewProps {
   isNightShiftMode: boolean;
@@ -220,10 +221,10 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               <button
                 type="button"
                 onClick={onBackToOverview}
-                className="text-gray-400 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white transition-colors p-1"
+                className="text-gray-400 hover:text-[#0B2559] focus-visible:text-[#0B2559] dark:hover:text-white focus-visible:text-white transition-colors p-1 cursor-pointer"
                 aria-label="Back to overview"
               >
-                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                <ArrowLeft className="w-5 h-5" aria-hidden="true" />
               </button>
             )}
             <div>
@@ -309,9 +310,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="material-symbols-outlined text-[#0A6FA8] text-[20px] shrink-0">
-                    mail
-                  </span>
+                  <Mail className="w-5 h-5 text-[#0A6FA8] shrink-0" aria-hidden="true" />
                   <div className="min-w-0">
                     <span className="text-xs font-bold text-[#0B2559] dark:text-white truncate block">
                       {email}
@@ -336,7 +335,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               role="alert"
               className="mb-4 p-3 rounded-xl bg-[#F4E2DC] text-[#A8452E] text-xs font-medium flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[16px] shrink-0">error</span>
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{error}</span>
             </div>
           )}
@@ -346,7 +345,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               role="status"
               className="mb-4 p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] text-xs font-medium flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[16px] shrink-0">check_circle</span>
+              <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>{resendNotification}</span>
             </div>
           )}
@@ -403,7 +402,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
               </>
             ) : isVerified ? (
               <>
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>Verified! Proceeding to phone verification...</span>
               </>
             ) : (

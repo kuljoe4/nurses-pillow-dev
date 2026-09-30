@@ -1,5 +1,6 @@
 import React from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
+import { Check } from 'lucide-react';
 
 interface VerificationStepperNavProps {
   currentStep: VerificationStepId;
@@ -72,7 +73,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
                   className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-left cursor-pointer transition-colors"
                 >
                   <span className="w-6 h-6 rounded-full bg-[#2F6E5E] text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[14px]">check</span>
+                    <Check className="w-3.5 h-3.5" aria-hidden="true" />
                   </span>
                   <span className="text-xs font-bold truncate hidden sm:inline">{step.label}</span>
                 </button>

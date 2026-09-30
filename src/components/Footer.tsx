@@ -1,12 +1,20 @@
 import React from 'react';
 import { NursesPillowLogo } from './NursesPillowLogo';
-import { ACTIVE_CLEARED_STATES } from '../data/mockData';
+import { InteractiveUSMap } from './InteractiveUSMap';
+import { HousingListing, Hospital } from '../types';
+import { ClearedStateData } from '../services/coverageService';
+import { Headphones, ArrowRight, ShieldCheck, MapPin } from 'lucide-react';
 
 interface FooterProps {
   isNightShiftMode: boolean;
   onOpenSupport: () => void;
   onSelectTab: (tab: any) => void;
   isDeveloper?: boolean;
+  onSelectState?: (stateCode: string) => void;
+  selectedStateCode?: string;
+  listings?: HousingListing[];
+  hospitals?: Hospital[];
+  clearedStates?: ClearedStateData[];
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -14,7 +22,20 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenSupport,
   onSelectTab,
   isDeveloper = false,
+  onSelectState,
+  selectedStateCode = 'NC',
+  listings = [],
+  hospitals = [],
+  clearedStates,
 }) => {
+  const handleStateClick = (stateCode: string) => {
+    if (onSelectState) {
+      onSelectState(stateCode);
+    } else {
+      onSelectTab('find-housing');
+    }
+  };
+
   return (
     <footer
       className={`w-full border-t transition-colors mt-auto ${
@@ -41,19 +62,19 @@ export const Footer: React.FC<FooterProps> = ({
               Sanctuary-grade housing built exclusively for traveling clinicians navigating grueling shifts.
             </p>
 
-            {/* 24/7 Clinician Support badge */}
+            {/* 24/7 Clinician Support badge with zero-flash SVG icon */}
             <button
               onClick={onOpenSupport}
               type="button"
-              className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-left transition-all duration-200 ease-in-out ${
+              className={`inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-left transition-all duration-200 ease-in-out cursor-pointer ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] shadow-md hover:border-[#3E9AD1]'
                   : 'bg-white border-[rgba(11,37,89,0.08)] shadow-[0_4px_20px_rgba(11,37,89,0.06)] hover:border-[#0a6fa8]'
               }`}
             >
-              <span className="material-symbols-outlined text-[#005684] dark:text-[#3E9AD1] text-[22px]">
-                support_agent
-              </span>
+              <div className="w-8 h-8 rounded-lg bg-[#EFF6FB] dark:bg-[#1a2b42] flex items-center justify-center text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0">
+                <Headphones className="w-4 h-4" />
+              </div>
               <div>
                 <div
                   className={`text-xs font-semibold ${
@@ -82,7 +103,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('find-housing')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Hospital Proximity Search
                 </button>
@@ -90,7 +111,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Stipend &amp; Per Diem Guides
                 </button>
@@ -98,7 +119,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('find-housing')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Shift-Friendly Housing
                 </button>
@@ -106,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Blackout Curtains Guarantee
                 </button>
@@ -114,7 +135,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Quiet Hours Certification
                 </button>
@@ -135,7 +156,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Host a Nurse
                 </button>
@@ -143,7 +164,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Furnishing Standards Guide
                 </button>
@@ -151,7 +172,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('verification')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Safety &amp; ID Verification
                 </button>
@@ -159,7 +180,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Contract Flex Protection
                 </button>
@@ -167,7 +188,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('for-hosts')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Host Resource Center
                 </button>
@@ -188,7 +209,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('how-it-works')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Safety Protocols
                 </button>
@@ -196,7 +217,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('verified-hospitals')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] transition-colors text-left cursor-pointer"
                 >
                   Hospital Safe Badges
                 </button>
@@ -204,7 +225,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('legal-policies')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left cursor-pointer"
                 >
                   Cancellation &amp; Refund Policy
                 </button>
@@ -212,7 +233,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('legal-policies')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left cursor-pointer"
                 >
                   Privacy Policy &amp; Terms
                 </button>
@@ -220,7 +241,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   onClick={() => onSelectTab('system-status')}
-                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left"
+                  className="hover:text-[#005684] focus-visible:text-[#005684] dark:hover:text-[#93ccff] focus-visible:text-[#93ccff] transition-colors text-left cursor-pointer"
                 >
                   Platform Reliability &amp; Status
                 </button>
@@ -237,69 +258,16 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* Multi-State Active Expansion Indicator (NC, MD, CT, ND, KS) */}
-        <div
-          className={`p-5 rounded-2xl border mb-10 transition-colors ${
-            isNightShiftMode
-              ? 'bg-[#0E1A2E] border-[#233550]'
-              : 'bg-white border-[rgba(11,37,89,0.08)] shadow-[0_2px_12px_rgba(11,37,89,0.04)]'
-          }`}
-        >
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#2F6E5E] animate-pulse" />
-                <h4
-                  className={`text-xs font-bold uppercase tracking-wider ${
-                    isNightShiftMode ? 'text-white' : 'text-[#001848]'
-                  }`}
-                >
-                  Active State Coverage • Cleared for Immediate Clinical Housing
-                </h4>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Hospital assignment search, nurse licensing/registry verification, and $0-hold furnished listings are currently live in 5 cleared states.
-              </p>
-            </div>
-            <button
-              onClick={() => onSelectTab('verified-hospitals')}
-              type="button"
-              className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
-            >
-              <span>View All 265+ Cleared Hospitals</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-            {ACTIVE_CLEARED_STATES.map((st) => (
-              <button
-                key={st.code}
-                onClick={() => onSelectTab('find-housing')}
-                type="button"
-                className={`p-3 rounded-xl border text-left transition-all hover:scale-[1.02] cursor-pointer ${
-                  isNightShiftMode
-                    ? 'bg-[#15233a] border-[#233550] hover:border-[#3E9AD1]'
-                    : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.06)] hover:border-[#0A6FA8]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-extrabold text-sm text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    {st.code}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db]">
-                    Live
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
-                  {st.name}
-                </div>
-                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                  {st.status}
-                </div>
-              </button>
-            ))}
-          </div>
+        {/* Multi-State Interactive US Map Component (NC, MD, CT, ND, KS) */}
+        <div className="mb-10">
+          <InteractiveUSMap
+            isNightShiftMode={isNightShiftMode}
+            selectedStateCode={selectedStateCode}
+            onSelectState={handleStateClick}
+            listings={listings}
+            hospitals={hospitals}
+            clearedStates={clearedStates}
+          />
         </div>
 
         {/* Bottom bar */}
@@ -309,7 +277,7 @@ export const Footer: React.FC<FooterProps> = ({
           }`}
         >
           <div className="text-sm">
-            © 2026 Nurses Pillow Inc. All clinical housing verified.
+            © 2026 Nurses Pillow Inc. All clinical housing verified. Zero card deposit holds for clinicians.
           </div>
           <div
             className="text-[#745b0d] dark:text-[#E4C36D] text-[20px]"

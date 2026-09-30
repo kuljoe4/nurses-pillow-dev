@@ -166,9 +166,7 @@ router.post('/forgot-password', catchAsync(async (req, res, next) => {
       [token, expires, user.id]
     );
 
-    const postmarkServerToken =
-      process.env.POSTMARK_SERVER_TOKEN ||
-      process.env.VITE_POSTMARK_SERVER_TOKEN;
+    const postmarkServerToken = process.env.POSTMARK_SERVER_TOKEN;
     const origin = req.headers.origin || 'http://localhost:5173';
     const resetUrl = `${origin}/?reset=${token}`;
 
@@ -243,7 +241,6 @@ router.post('/send-verification-email', catchAsync(async (req, res, next) => {
 
     const postmarkServerToken =
       process.env.POSTMARK_SERVER_TOKEN ||
-      process.env.VITE_POSTMARK_SERVER_TOKEN ||
       '683695c7-ee7b-4cce-9f57-04eb0f38af5c';
     const cleanEmail = email.trim().toLowerCase();
     const userResult = await db.query('SELECT id, full_name FROM users WHERE LOWER(email) = $1', [cleanEmail]);
