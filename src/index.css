@@ -143,6 +143,16 @@
   --dur-slow: 450ms;
 }
 
+/* Prevent FOUT (Flash of Unstyled Text) for Material Symbols by keeping them transparent until loaded */
+html:not(.fonts-loaded) .material-symbols-outlined,
+html:not(.fonts-loaded) .material-symbols-rounded,
+html:not(.fonts-loaded) .material-symbols-sharp,
+html:not(.fonts-loaded) .material-icons,
+html:not(.fonts-loaded) [class*="material-symbols"] {
+  color: transparent !important;
+  user-select: none;
+}
+
 /* Universal anti-underline protection for icons, glyphs, and SVGs */
 .material-symbols-outlined,
 .material-symbols-rounded,
