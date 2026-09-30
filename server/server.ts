@@ -192,7 +192,94 @@ app.get("/api/hospitals", async (req, res) => {
   }
 });
 
+
+// Endpoint to save/upsert a listing for the current user
+app.post(
+  "/api/listings/my-listing",
+  authenticateToken,
+  express.json(),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // Check if host already has a listing
+      const existingRes = await db.query(
+        "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+        [req.user.id]
+      );
+
+      let listingId;
+      if (existingRes.rows.length > 0) {
+        listingId = existingRes.rows[0].id;
+        // Update existing listing (simplified for prototype)
+        await db.query(
+          "UPDATE listings SET property_type = $1, monthly_rent = $2, cleaning_fee = $3 WHERE id = $4",
+          [req.body.propertyType, req.body.roomAPrice || req.body.monthlyRate, 150, listingId]
+        );
+      } else {
+        // Create new listing
+        const newListingRes = await db.query(
+          `INSERT INTO listings (host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+          [
+            req.user.id,
+            "New Sanctuary Stay",
+            req.body.propertyType || "individual_rooms",
+            "123 Healing Way",
+            "Durham",
+            "NC",
+            "27705",
+            36.0,
+            -78.9,
+            "hosp-duke",
+            req.body.roomAPrice || 1950,
+            0,
+            150,
+            true
+          ]
+        );
+        listingId = newListingRes.rows[0].id;
+      }
+
+      res.json({ listingId });
+    } catch (error: any) {
+      console.error("Error saving listing:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+// Endpoint to fetch current user's listing
+app.get(
+  "/api/listings/my-listing",
+  authenticateToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const existingRes = await db.query(
+        "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+        [req.user.id]
+      );
+
+      if (existingRes.rows.length > 0) {
+        res.json({ listingId: existingRes.rows[0].id });
+      } else {
+        res.json({ listingId: null });
+      }
+    } catch (error: any) {
+      console.error("Error fetching my listing:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
 // Endpoint to fetch listings
+
 app.get("/api/listings", async (req, res) => {
   try {
     const result = await db.query(`
