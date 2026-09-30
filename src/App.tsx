@@ -1267,6 +1267,7 @@ export default function App() {
               onGoToSearchListings={(params) => {
                 if (params) {
                   setSearchParamsState((prev) => ({
+                    ...prev,
                     hospital: params.hospital || prev.hospital,
                     duration: params.duration || prev.duration,
                     radius: params.radius ?? prev.radius,
