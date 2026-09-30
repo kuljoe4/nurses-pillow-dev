@@ -34,5 +34,17 @@
   <body class="bg-[#faf8ff] text-[#001848] antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        if (/eruda=true/.test(window.location.search)) {
+          var script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+          document.body.appendChild(script);
+          script.onload = function () {
+            eruda.init();
+          }
+        }
+      })();
+    </script>
   </body>
 </html>
