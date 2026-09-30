@@ -3,6 +3,25 @@ import { HousingListing, BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { PillowSaveButton } from './PillowSaveButton';
 
+
+// ⚡ Bolt Performance Optimization: Extracted wrapper to prevent inline arrow functions
+// from breaking PillowSaveButton's memoization in lists.
+const PillowSaveButtonWrapper = React.memo(({ listingId, isSaved, onToggleSave, size, className }: { listingId: string, isSaved: boolean, onToggleSave: (id: string) => void, size?: number, className?: string }) => {
+  const handleToggle = React.useCallback(() => {
+    onToggleSave(listingId);
+  }, [onToggleSave, listingId]);
+
+  return (
+    <PillowSaveButton
+      isSaved={isSaved}
+      onToggle={handleToggle}
+      size={size}
+      className={className}
+    />
+  );
+});
+
+
 interface NurseDashboardViewProps {
   isNightShiftMode: boolean;
   savedListingIds: string[];
@@ -411,9 +430,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2 right-2">
-                        <PillowSaveButton
+                        <PillowSaveButtonWrapper
+                          listingId={listing.id}
                           isSaved={true}
-                          onToggle={() => onToggleSave(listing.id)}
+                          onToggleSave={onToggleSave}
                           size={15}
                           className="w-7 h-7 rounded-full bg-white/95 dark:bg-black/80 flex items-center justify-center shadow-xs cursor-pointer"
                         />

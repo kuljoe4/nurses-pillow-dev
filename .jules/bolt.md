@@ -22,3 +22,7 @@
 ## 2024-11-20 - Memoizing Hospital Commute Calculations
 **Learning:** `calculateCommuteDuration` invokes `resolveHospitalCoordinates` repeatedly for listings in render cycles (O(N) operations per render iteration over the list of properties). Inside `resolveHospitalCoordinates` there is an O(M) loop looking for hospital names matching the string query. This takes about 326ms for 100,000 queries.
 **Action:** Implemented an in-memory `Map` inside `resolveHospitalCoordinates` to cache the calculated `HospitalCoordinates` result for a given normalized query. This drops the time to 21ms for 100,000 queries and speeds up the UI significantly for large lists.
+
+## 2026-10-06 - Avoid Inline Arrow Functions for Memoized Components inside Maps
+**Learning:** Passing an inline arrow function to a memoized child component inside a `map` loop defeats memoization and causes unnecessary re-renders. A stable reference cannot easily be provided using `useCallback` inside a `map` without introducing a new hook dependency for each iteration.
+**Action:** Extract a memoized wrapper component to handle the mapping iteration context and internally manage the `useCallback` hook, providing a stable reference to the underlying child component (e.g. `PillowSaveButtonWrapper`).
