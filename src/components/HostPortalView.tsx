@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
@@ -35,13 +35,63 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   }, [initialTab]);
 
+  // Note: For prototype purposes we use a fixed listing ID, or would extract it from context.
+  const editingListingId = 'nc-duke-condo';
+
+  // Fetch photos on load
+  useEffect(() => {
+    if (activeHostTab === 'editor') {
+      const fetchPhotos = async () => {
+        try {
+          const res = await fetch(`/api/listings/${editingListingId}/photos`);
+          if (res.ok) {
+            const data = await res.json();
+            setListingPhotos(data.photos.map((p: any) => ({
+              id: p.id,
+              url: p.url
+            })));
+          }
+        } catch (err) {
+          console.error("Failed to load listing photos:", err);
+        }
+      };
+      fetchPhotos();
+    }
+  }, [activeHostTab, editingListingId]);
+
   // Screen B2 Editor Form State
   const [propertyType, setPropertyType] = useState<'entire_property' | 'individual_rooms'>('individual_rooms');
   const [roomCount, setRoomCount] = useState<number>(2);
   const [roomAPrice, setRoomAPrice] = useState<number>(1950);
   const [roomBPrice, setRoomBPrice] = useState<number>(1850);
-  const [requiresSecurityDeposit, setRequiresSecurityDeposit] = useState<boolean>(true);
-  const [securityDepositAmount, setSecurityDepositAmount] = useState<number>(250);
+
+  const [listingPhotos, setListingPhotos] = useState<{ id?: string, url: string, file?: File }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newPhotos = Array.from(files).map((file) => ({
+      url: URL.createObjectURL(file),
+      file,
+    }));
+
+    setListingPhotos((prev) => [...prev, ...newPhotos]);
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setListingPhotos((prev) => {
+      const updated = [...prev];
+      if (updated[index].url.startsWith("blob:")) {
+        URL.revokeObjectURL(updated[index].url);
+      }
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+
   const [cancellationTier, setCancellationTier] = useState<'Flexible' | 'Moderate' | 'Strict'>('Flexible');
   const [hasBlackout, setHasBlackout] = useState(true);
   const [hasQuietHours, setHasQuietHours] = useState(true);
@@ -117,10 +167,75 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const handleSaveListing = (e: React.FormEvent) => {
+
+  const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSavedEditor(true);
-    setTimeout(() => setIsSavedEditor(false), 3000);
+    setIsUploading(true);
+
+    try {
+      // Create listing update payload
+      const listingPayload = {
+        propertyType,
+        roomCount,
+        roomAPrice,
+        roomBPrice,
+        cancellationTier,
+        amenities: {
+          hasBlackout,
+          hasQuietHours,
+          hasScrubWasher,
+          hasDedicatedParking,
+          hasFiberWifi
+        }
+      };
+
+      console.log('Saving listing...', listingPayload);
+
+      // Handle photos - process the new files
+      const newPhotosToUpload = listingPhotos.filter(p => p.file);
+
+      if (newPhotosToUpload.length > 0) {
+        // In a real app, this would be a multipart/form-data POST request
+        // or getting presigned S3 urls. Here we simulate it.
+        const photosPayload = await Promise.all(
+          newPhotosToUpload.map(async (photo, index) => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                resolve({
+                  name: photo.file?.name,
+                  type: photo.file?.type,
+                  size: photo.file?.size,
+                  data: reader.result,
+                  displayOrder: index
+                });
+              };
+              if (photo.file) reader.readAsDataURL(photo.file);
+            });
+          })
+        );
+
+
+        console.log('Uploading photos...', photosPayload);
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        await fetch(`/api/listings/${editingListingId}/photos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ photos: photosPayload })
+        });
+
+      }
+
+      setIsSavedEditor(true);
+      setTimeout(() => setIsSavedEditor(false), 3000);
+    } catch (err) {
+      console.error("Error saving listing:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const pendingBookings = bookingRequests.filter((b) => b.status === 'pending_host_approval');
@@ -396,9 +511,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             </div>
             <button
               type="submit"
-              className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all"
+              disabled={isUploading}
+              className="px-5 py-2 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              Save Configuration
+              {isUploading ? (
+                <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+              ) : (
+                'Save Configuration'
+              )}
             </button>
           </div>
 
@@ -413,12 +533,65 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* Left Column (7 cols): Address & Property Configuration */}
             <div className="lg:col-span-7 space-y-4">
-              {/* Photo Upload Hint */}
-              <div className="bg-[#EFF6FB] dark:bg-[#0B1626]/50 rounded-xl p-3 border border-[#0A6FA8]/20 flex items-start gap-2.5 shadow-xs">
-                <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1] mt-0.5 shrink-0">info</span>
-                <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
-                  <strong>Photo Uploads:</strong> High-resolution property photography and visual amenity drag-and-drop ordering occurs in <strong>Step 3 (Media Hub)</strong> of the configuration stepper after initial property details are securely saved.
-                </p>
+
+              {/* Media Hub: Photo Uploads */}
+              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-[#0B2559] dark:text-white uppercase tracking-wider">
+                    Step 3: Media Hub (Photos)
+                  </label>
+                  <span className="text-[10px] text-gray-500">{listingPhotos.length} / 10 photos</span>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpload}
+                  multiple
+                  accept="image/jpeg, image/png, image/webp"
+                  className="hidden"
+                />
+
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-[#0A6FA8]/30 dark:border-[#3E9AD1]/30 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#EFF6FB]/50 dark:hover:bg-[#15233a]/50 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#EFF6FB] dark:bg-[#182840] flex items-center justify-center text-[#0A6FA8] dark:text-[#3E9AD1] mb-3">
+                    <span className="material-symbols-outlined text-2xl">add_photo_alternate</span>
+                  </div>
+                  <p className="text-sm font-bold text-[#0B2559] dark:text-white mb-1">
+                    Click to upload property photos
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    High-resolution JPEG, PNG, or WEBP (Max 5MB each)
+                  </p>
+                </div>
+
+                {listingPhotos.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                    {listingPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-[rgba(11,37,89,0.1)] dark:border-[#233550]">
+                        <img
+                          src={photo.url}
+                          alt={`Upload preview ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(idx)}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                        {idx === 0 && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-[#0A6FA8] text-white text-[10px] font-bold text-center py-1">
+                            Cover Photo
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Card 1: Google Maps Address & Hospital Distance Mapping */}
@@ -500,33 +673,6 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
             {/* Right Column (5 cols): Deposit Controls, Shift Amenities, Cancellation Tier */}
             <div className="lg:col-span-5 space-y-4">
-              {/* Card 3: $0 Security Deposit Platform Guarantee */}
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2F6E5E] dark:text-[#aff0db]">
-                      Clinician Protection
-                    </span>
-                    <h3 className="text-xs font-bold text-[#0B2559] dark:text-white">
-                      Zero Security Deposit Hold
-                    </h3>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[13px]">verified</span>
-                    $0 Hold
-                  </span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] text-xs text-[#0B2559] dark:text-[#c0c7d1] space-y-1.5 leading-relaxed">
-                  <p className="font-semibold text-[11px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    Strict Platform-Wide Zero Hold Rule
-                  </p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                    Traveling clinicians complete 12-hour shifts and are never inconvenienced with security deposit card holds or pre-authorization freezes.
-                  </p>
-                </div>
-              </div>
-
               {/* Card 4: Healthcare Shift Amenities */}
               <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-2.5">
                 <label className="block text-xs font-bold text-gray-500 uppercase">

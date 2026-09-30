@@ -414,6 +414,80 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock", {
   apiVersion: "2025-02-24.acacia" as any,
 });
 
+
+// Endpoint to upload listing photos
+app.post(
+  "/api/listings/:id/photos",
+  authenticateToken,
+  express.json({ limit: "50mb" }),
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const listingId = req.params.id;
+      const { photos } = req.body;
+
+      if (!photos || !Array.isArray(photos)) {
+        return res.status(400).json({ error: "Invalid photos payload" });
+      }
+
+      // Check if user owns the listing
+      const listingRes = await db.query(
+        "SELECT id FROM listings WHERE id = $1 AND host_id = $2",
+        [listingId, req.user.id]
+      );
+
+      if (listingRes.rows.length === 0) {
+        return res.status(403).json({ error: "Unauthorized or listing not found" });
+      }
+
+      // In a real app we'd upload to S3 here. We are storing base64 for the prototype.
+      const uploadedPhotos = [];
+
+      for (const photo of photos) {
+        const result = await db.query(
+          `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+           VALUES ($1, $2, $3, $4) RETURNING id, photo_url, display_order, is_cover`,
+          [
+            listingId,
+            photo.data, // Storing base64 as URL
+            photo.displayOrder || 0,
+            photo.displayOrder === 0 ? true : false
+          ]
+        );
+        uploadedPhotos.push(result.rows[0]);
+      }
+
+      res.status(201).json({ photos: uploadedPhotos });
+    } catch (error: any) {
+      console.error("Error uploading photos:", error);
+      res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+  }
+);
+
+// Endpoint to get listing photos
+app.get("/api/listings/:id/photos", async (req, res) => {
+  try {
+    const listingId = req.params.id;
+
+    const result = await db.query(
+      `SELECT id, photo_url as url, display_order as "displayOrder", is_cover as "isCover"
+       FROM listing_photos
+       WHERE listing_id = $1
+       ORDER BY display_order ASC`,
+      [listingId]
+    );
+
+    res.json({ photos: result.rows });
+  } catch (error: any) {
+    console.error("Error fetching photos:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Stripe Connect Onboarding Link
 
 // Endpoint to create a Stripe Identity Verification Session
