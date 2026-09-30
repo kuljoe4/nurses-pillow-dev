@@ -13,6 +13,28 @@ import {
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
+import {
+  Car,
+  Star,
+  Home,
+  ArrowRight,
+  Building2,
+  Calendar,
+  ChevronDown,
+  CheckCircle2,
+  Moon,
+  ShieldCheck,
+  BadgePercent,
+  Award,
+  SlidersHorizontal,
+  FilterX,
+  Map,
+  PlusCircle,
+  Building,
+  Footprints,
+  WashingMachine,
+  Dog,
+} from 'lucide-react';
 
 interface ObservedListingCardProps {
   listing: HousingListing;
@@ -77,7 +99,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
         />
         {/* Dynamic Google Maps Commute Badge on Image */}
         <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-xs font-semibold shadow-md">
-          <span className="material-symbols-outlined text-[14px] text-[#aff0db]">directions_car</span>
+          <Car className="w-3.5 h-3.5 text-[#aff0db]" />
           <span className="tabular-nums">{commute.driveMinutes} min drive</span>
           <span className="opacity-60">·</span>
           <span className="tabular-nums opacity-90">{commute.distanceMiles} mi</span>
@@ -98,7 +120,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
           <div className="flex items-center justify-between text-xs text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider">
             <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
             <div className="flex items-center gap-1 text-amber-500">
-              <span className="material-symbols-outlined text-[16px]">star</span>
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="text-[#001848] dark:text-white font-bold">{listing.nurseRating}</span>
               <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
             </div>
@@ -333,7 +355,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           {userRole === 'host' && (
             <div className="mb-6 w-full max-w-2xl px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-lg">home</span>
+                <Home className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span className="font-bold">Active Perspective: Property Host ({userName || 'Michael Vance'})</span>
               </div>
               {onGoToHostPortal && (
@@ -343,7 +365,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-amber-700 text-white font-bold transition-all duration-200 ease-in-out shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
                 >
                   <span>Go to Host Portal</span>
-                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -391,7 +413,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             <div className="flex flex-wrap items-center justify-between pb-4 mb-5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-lg bg-[#EFF6FB] dark:bg-[#182840] flex items-center justify-center text-[#0A6FA8] dark:text-[#3E9AD1]">
-                  <span className="material-symbols-outlined text-[20px]">local_hospital</span>
+                  <Building2 className="w-5 h-5" />
                 </span>
                 <div>
                   <h3 className="text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider">
@@ -444,9 +466,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
                     {formatDateFriendly(earliestCheckIn)}
                   </span>
-                  <span className="material-symbols-outlined text-[15px] text-[#0A6FA8] dark:text-[#3E9AD1] opacity-70 group-hover:opacity-100 transition-opacity">
-                    edit_calendar
-                  </span>
+                  <Calendar className="w-3.5 h-3.5 text-[#0A6FA8] dark:text-[#3E9AD1] opacity-70 group-hover:opacity-100 transition-opacity" />
                 </button>
                 <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
                 <button
@@ -478,12 +498,10 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 className="inline-flex items-center gap-1 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors self-start sm:self-auto group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
               >
                 <span className="group-hover:underline">{isCustomizingAssignment ? 'Fewer options' : 'Customize dates & radius'}</span>
-                <span
-                  className="material-symbols-outlined text-[16px] transition-transform duration-200"
+                <ChevronDown
+                  className="w-4 h-4 transition-transform duration-200"
                   style={{ transform: isCustomizingAssignment ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
-                  expand_more
-                </span>
+                />
               </button>
             </div>
 
@@ -598,24 +616,22 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 className="w-full h-14 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-base font-bold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>Search housing near assignment</span>
-                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
             </motion.div>
 
             {/* Micro Escrow Trust Strip */}
             <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[#0B2559]/70 dark:text-[#E6ECF7]/70 text-center">
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#2F6E5E] dark:text-[#aff0db]">check_circle</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#2F6E5E] dark:text-[#aff0db]" />
                 <span>$0 traveler booking fee</span>
               </span>
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1]">bedtime</span>
+                <Moon className="w-3.5 h-3.5 text-[#0A6FA8] dark:text-[#3E9AD1]" />
                 <span>Daytime quiet guarantee (&lt;35 dB)</span>
               </span>
               <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#2F6E5E] dark:text-[#aff0db]">verified_user</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#2F6E5E] dark:text-[#aff0db]" />
                 <span>24h host response SLA</span>
               </span>
             </div>
@@ -660,7 +676,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
               <div className="w-12 h-12 rounded-xl bg-[#cde5ff] dark:bg-[#005684]/40 flex items-center justify-center text-[#001d32] dark:text-[#93ccff] shrink-0">
-                <span className="material-symbols-outlined text-[24px]">verified_user</span>
+                <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[#0B2559] dark:text-white">License-Verified Nurses</h4>
@@ -680,7 +696,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
               <div className="w-12 h-12 rounded-xl bg-[#aff0db]/50 dark:bg-[#195b4c]/40 flex items-center justify-center text-[#195b4c] dark:text-[#aff0db] shrink-0">
-                <span className="material-symbols-outlined text-[24px]">bedtime</span>
+                <Moon className="w-6 h-6" />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[#0B2559] dark:text-white">Daytime Quiet Guarantee</h4>
@@ -700,7 +716,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               className="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-xs"
             >
               <div className="w-12 h-12 rounded-xl bg-[#ffdc84]/50 dark:bg-[#745b0d]/40 flex items-center justify-center text-[#745b0d] dark:text-[#ffdc84] shrink-0">
-                <span className="material-symbols-outlined text-[24px]">price_check</span>
+                <BadgePercent className="w-6 h-6" />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[#0B2559] dark:text-white">Zero Hidden Fees</h4>
@@ -718,7 +734,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] mb-2 border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-              <span className="material-symbols-outlined text-[14px]">hotel_class</span>
+              <Award className="w-3.5 h-3.5" />
               <span>Curated by Nurses Pillow</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2559] dark:text-white tracking-tight">
@@ -735,7 +751,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             className="inline-flex items-center gap-1 text-sm font-bold text-[#0A6FA8] dark:text-[#3E9AD1] cursor-pointer self-start md:self-auto group"
           >
             <span className="group-hover:underline">Explore all 28 stays in Interactive Map</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -743,7 +759,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 shadow-xs">
           <div className="flex items-center gap-2.5 text-xs">
             <span className="w-7 h-7 rounded-xl bg-[#0A6FA8] text-white flex items-center justify-center shrink-0 shadow-xs">
-              <span className="material-symbols-outlined text-[16px]">directions_car</span>
+              <Car className="w-4 h-4" />
             </span>
             <div>
               <span className="text-[#0B2559]/70 dark:text-[#c0c7d1] block text-[11px]">
@@ -770,17 +786,18 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 custom-scrollbar"
         >
           <span className="text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 whitespace-nowrap mr-1 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">tune</span>
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#0A6FA8] dark:text-[#3E9AD1]" />
             <span>Filters:</span>
           </span>
           {[
-            { id: 'all', label: `All Stays (${featuredListings.length})`, icon: 'apartment' },
-            { id: 'close', label: '< 1 mi to Hospital', icon: 'directions_walk' },
-            { id: 'quiet', label: 'Day-Sleep Quiet (<28 dB)', icon: 'bedtime' },
-            { id: 'laundry', label: 'In-Unit Scrub Laundry', icon: 'local_laundry_service' },
-            { id: 'pets', label: 'Pet Friendly', icon: 'pets' },
+            { id: 'all', label: `All Stays (${featuredListings.length})`, icon: Building },
+            { id: 'close', label: '< 1 mi to Hospital', icon: Footprints },
+            { id: 'quiet', label: 'Day-Sleep Quiet (<28 dB)', icon: Moon },
+            { id: 'laundry', label: 'In-Unit Scrub Laundry', icon: WashingMachine },
+            { id: 'pets', label: 'Pet Friendly', icon: Dog },
           ].map((pill, idx) => {
             const isSelected = activeListingFilter === pill.id;
+            const PillIcon = pill.icon;
             return (
               <motion.button
                 key={pill.id}
@@ -800,7 +817,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                     : 'bg-white dark:bg-[#15233a] text-[#0B2559]/80 dark:text-[#E6ECF7]/80 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8]'
                 }`}
               >
-                <span className="material-symbols-outlined text-[15px]">{pill.icon}</span>
+                <PillIcon className="w-3.5 h-3.5" />
                 <span className="tabular-nums">{pill.label}</span>
               </motion.button>
             );
@@ -810,7 +827,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         {/* 3-Column Grid of Featured Listings with Staggered Viewport Entrance */}
         {displayedFeaturedListings.length === 0 ? (
           <div className="text-center py-12 px-4 rounded-3xl bg-white dark:bg-[#111e33] border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-            <span className="material-symbols-outlined text-4xl text-[#0A6FA8] mb-2">filter_alt_off</span>
+            <FilterX className="w-10 h-10 text-[#0A6FA8] mx-auto mb-2" />
             <h4 className="text-base font-bold text-[#0B2559] dark:text-white mb-1">No Sanctuaries Match Filter</h4>
             <p className="text-xs text-[#404850] dark:text-[#c0c7d1] mb-4">
               Try choosing another clinical amenity or view all curated hospital stays.
@@ -848,8 +865,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         {/* View All Stays Navigation Banner */}
         <div className="mt-12 p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111e33] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-3">
-            <span className="w-12 h-12 rounded-2xl bg-[#005684]/10 text-[#005684] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[24px]">map</span>
+            <span className="w-12 h-12 rounded-2xl bg-[#005684]/10 text-[#005684] flex items-center justify-center shrink-0">
+              <Map className="w-6 h-6" />
             </span>
             <div>
               <h3 className="font-bold text-base text-[#001848] dark:text-white">
@@ -1032,7 +1049,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       onClick={onGoToHostPortal}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 ease-in-out cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[18px]">add_home</span>
+                      <PlusCircle className="w-4 h-4" />
                       <span>Enter Host Workspace &amp; Add Sanctuary Listing →</span>
                     </button>
                   </div>
@@ -1057,7 +1074,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         >
           <div className="max-w-3xl relative z-10">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/15 dark:text-[#aff0db] mb-4">
-              <span className="material-symbols-outlined text-[14px]">home_work</span>
+              <Building className="w-3.5 h-3.5" />
               <span>Host Partner Network</span>
             </div>
 
@@ -1079,8 +1096,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   Enter Host Portal
                 </button>
               )}
-              <div className="flex items-center gap-2 text-xs text-[#195b4c] font-bold">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <div className="flex items-center gap-2 text-xs text-[#195b4c] dark:text-[#aff0db] font-bold">
+                <CheckCircle2 className="w-4 h-4" />
                 <span>100% Nursys Verified Clinician Guests</span>
               </div>
             </div>

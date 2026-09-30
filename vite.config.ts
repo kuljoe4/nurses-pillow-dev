@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, Plugin} from 'vite';
+import { defineConfig, loadEnv, Plugin } from 'vite';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.ts';
 
 function phoneAuthApiPlugin(): Plugin {
@@ -16,9 +16,26 @@ function phoneAuthApiPlugin(): Plugin {
   };
 }
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  const googleMapsKey =
+    env.GOOGLE_MAPS_API_KEY ||
+    process.env.GOOGLE_MAPS_API_KEY ||
+    '';
+
+  const stripeKey =
+    env.STRIPE_PUBLISHABLE_KEY ||
+    process.env.STRIPE_PUBLISHABLE_KEY ||
+    '';
+
   return {
     plugins: [react(), tailwindcss(), phoneAuthApiPlugin()],
+    envPrefix: ['GOOGLE_', 'STRIPE_', 'VITE_'],
+    define: {
+      'import.meta.env.GOOGLE_MAPS_API_KEY': JSON.stringify(googleMapsKey),
+      'import.meta.env.STRIPE_PUBLISHABLE_KEY': JSON.stringify(stripeKey),
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

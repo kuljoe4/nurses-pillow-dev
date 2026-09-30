@@ -143,19 +143,43 @@
   --dur-slow: 450ms;
 }
 
-/* Universal anti-underline protection for icons, glyphs, and SVGs */
+/* Universal anti-underline & ligature flash protection for icons, glyphs, and SVGs */
 .material-symbols-outlined,
 .material-symbols-rounded,
 .material-symbols-sharp,
 .material-icons,
 [class*="material-symbols"] {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
   line-height: 1;
+}
+
+html:not(.fonts-loaded) .material-symbols-outlined,
+html:not(.fonts-loaded) .material-symbols-rounded,
+html:not(.fonts-loaded) .material-symbols-sharp,
+html:not(.fonts-loaded) .material-icons,
+html:not(.fonts-loaded) [class*="material-symbols"] {
+  color: transparent !important;
+  text-shadow: none !important;
+  visibility: hidden !important;
+  text-indent: -9999px !important;
+  overflow: hidden !important;
+  letter-spacing: -9999px !important;
+}
+
+html.fonts-loaded .material-symbols-outlined,
+html.fonts-loaded .material-symbols-rounded,
+html.fonts-loaded .material-symbols-sharp,
+html.fonts-loaded .material-icons,
+html.fonts-loaded [class*="material-symbols"] {
+  visibility: visible !important;
 }
 
 .material-symbols-outlined,

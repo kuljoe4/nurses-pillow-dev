@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { UserRole } from '../types';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { X, LogOut } from 'lucide-react';
 
 interface LogoutConfirmationModalProps {
   isOpen: boolean;
@@ -84,13 +85,13 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
           className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-[#0B2559] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
           aria-label="Close logout confirmation modal"
         >
-          <span className="material-symbols-outlined text-[18px] leading-none">close</span>
+          <X className="w-4 h-4" aria-hidden="true" />
         </button>
 
         {/* Minimal Icon Header */}
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-[#EFF6FB] dark:bg-[#15233a] text-[#0B2559] dark:text-[#E6ECF7] flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <LogOut className="w-5 h-5 text-[#0A6FA8] dark:text-[#3E9AD1]" aria-hidden="true" />
           </div>
           <div>
             <h2

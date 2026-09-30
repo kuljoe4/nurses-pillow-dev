@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookingRequest, HousingListing } from '../types';
+import { X, Calendar, ShieldCheck, Clock, AlertTriangle } from 'lucide-react';
 
 interface BookingDetailModalProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors cursor-pointer"
             aria-label="Close booking details"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -139,7 +140,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {booking.hospitalName} {booking.unitSpecialty ? `• ${booking.unitSpecialty}` : ''}
               </p>
               <div className="flex items-center gap-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold mt-1">
-                <span className="material-symbols-outlined text-[15px]">calendar_month</span>
+                <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>
                   {booking.startDate} – {booking.endDate} ({booking.durationWeeks || 13} Weeks)
                 </span>
@@ -150,7 +151,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Reassurance Explainer Box */}
           <div className="p-4 rounded-2xl bg-[#FBF0D6]/60 dark:bg-[#2a2212] border border-[#B9822E]/25 text-xs space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-[#745b0d] dark:text-[#f3d289]">
-              <span className="material-symbols-outlined text-[18px]">verified_user</span>
+              <ShieldCheck className="w-4 h-4 text-[#745b0d] dark:text-[#f3d289]" aria-hidden="true" />
               <span>Temporary Card Pre-Authorization Hold</span>
             </div>
             <p className="text-[#0B2559]/80 dark:text-[#E6ECF7]/80 leading-relaxed">
@@ -162,7 +163,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {isPending && (
             <div className="p-3.5 rounded-2xl bg-white dark:bg-[#14233a] border border-gray-200 dark:border-gray-700 text-xs space-y-1">
               <div className="font-semibold text-[#0B2559] dark:text-white flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-[#0A6FA8]">schedule</span>
+                <Clock className="w-4 h-4 text-[#0A6FA8]" aria-hidden="true" />
                 <span>Waiting for Host Response (24-Hour SLA)</span>
               </div>
               <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -198,7 +199,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {showCancelConfirm && (
             <div className="p-4 rounded-2xl bg-[#F4E2DC] dark:bg-[#2b1712] border border-[#A8452E]/30 text-xs space-y-3">
               <div className="font-bold text-[#A8452E] dark:text-[#F4E2DC] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[18px]">warning</span>
+                <AlertTriangle className="w-4 h-4" aria-hidden="true" />
                 <span>Release authorization hold and cancel request?</span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowUp } from 'lucide-react';
 
 interface ScrollProgressIndicatorProps {
   isNightShiftMode: boolean;
@@ -196,7 +197,7 @@ export const ScrollProgressIndicator: React.FC<ScrollProgressIndicatorProps> = (
             title="Return to top of page"
             className="flex items-center gap-0.5 text-[11px] font-medium text-[#0A6FA8] dark:text-[#3E9AD1] hover:text-[#0C7EBF] focus-visible:text-[#0C7EBF] dark:hover:text-[#67b5e4] focus-visible:text-[#67b5e4] transition-colors cursor-pointer group"
           >
-            <span className="material-symbols-outlined text-[13px] leading-none">arrow_upward</span>
+            <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
             <span className="group-hover:underline underline-offset-2">Top</span>
           </button>
         </div>
