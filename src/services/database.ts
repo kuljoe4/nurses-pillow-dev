@@ -593,6 +593,10 @@ class DatabaseService {
       const response = await fetch('/api/audit-logs', { headers });
       if (response.ok) {
         this.auditLogs = await response.json();
+      } else if (response.status === 401 || response.status === 403) {
+        // Silently ignore unauthorized/forbidden access to audit logs.
+        // Unauthenticated or non-admin users shouldn't have access, and it shouldn't produce a console error.
+        this.auditLogs = [];
       } else {
         console.error('[DatabaseService] Failed to fetch audit logs from PostgreSQL API');
       }
