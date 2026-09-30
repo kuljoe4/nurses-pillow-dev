@@ -13,7 +13,7 @@ import { railwayDb } from './src/services/railway.js';
 import authRoutes from './server/authRoutes.js';
 import { mapDbListingToFrontend } from './server/mapper.js';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
-import { authenticateToken } from './server/authMiddleware.js';
+import { authenticateToken, AuthenticatedRequest } from './server/authMiddleware.js';
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -95,6 +95,24 @@ async function startServer() {
 
       try {
         switch (event.type) {
+          case 'identity.verification_session.verified': {
+            const session = event.data.object;
+            const userId = session.metadata?.userId;
+            if (userId) {
+              console.log(`[Stripe Webhook] Identity verified for user: ${userId}`);
+              await db.query("UPDATE users SET identity_verified = true WHERE id = $1", [userId]);
+            }
+            break;
+          }
+          case 'identity.verification_session.requires_input': {
+            const session = event.data.object;
+            const userId = session.metadata?.userId;
+            if (userId) {
+              console.log(`[Stripe Webhook] Identity verification requires input for user: ${userId}`);
+              // In a real application, you might notify the user to retry or update DB state
+            }
+            break;
+          }
           case 'account.updated': {
             const account = event.data.object;
             if (account.payouts_enabled) {
@@ -106,15 +124,37 @@ async function startServer() {
             }
             break;
           }
+          case 'payment_intent.amount_capturable_updated':
+          case 'payment_intent.created': {
+             const paymentIntent = event.data.object;
+             console.log(`[Stripe Webhook] PaymentIntent pre-authorized (created/capturable_updated): ${paymentIntent.id}`);
+             break;
+          }
           case 'payment_intent.succeeded': {
             const paymentIntent = event.data.object;
-            console.log(`[Stripe Webhook] PaymentIntent succeeded: ${paymentIntent.id}`);
+            console.log(`[Stripe Webhook] PaymentIntent succeeded (captured): ${paymentIntent.id}`);
             // Update booking status from pending_payment to pending_host_approval
             await db.query(
               "UPDATE bookings SET status = 'pending_host_approval' WHERE id = (SELECT id FROM bookings WHERE stripe_payment_intent_id = $1 LIMIT 1)",
               [paymentIntent.id]
             );
             break;
+          }
+          case 'payment_intent.canceled': {
+             const paymentIntent = event.data.object;
+             console.log(`[Stripe Webhook] PaymentIntent canceled (hold released): ${paymentIntent.id}`);
+             // If a payment intent is canceled, the booking should be marked as canceled or declined.
+             await db.query(
+               "UPDATE bookings SET status = 'canceled' WHERE stripe_payment_intent_id = $1",
+               [paymentIntent.id]
+             );
+             break;
+          }
+          case 'charge.dispute.created': {
+             const dispute = event.data.object;
+             console.log(`[Stripe Webhook] Charge dispute created: ${dispute.id}`);
+             // In a robust implementation, you might route to an admin dispute queue and suspend host payouts.
+             break;
           }
           default:
             console.log(`Unhandled Stripe event type: ${event.type}`);
@@ -681,13 +721,285 @@ async function startServer() {
         return res.status(400).json({ error: 'Invalid payload' });
       }
 
-      console.log(`[Postmark Webhook] Received ${payload.RecordType} for ${payload.Recipient}`);
+      const eventRecordType = payload.RecordType;
+      const recipientEmail = payload.Recipient;
+
+      switch (eventRecordType) {
+        case 'Delivery': {
+          const messageId = payload.MessageID;
+          console.log(`[Postmark Webhook] Email successfully delivered to: ${recipientEmail} (ID: ${messageId})`);
+
+          const userRes = await db.query(`SELECT id FROM users WHERE email = $1`, [recipientEmail]);
+          if (userRes.rows.length > 0) {
+            const userId = userRes.rows[0].id;
+            await db.query(
+              `INSERT INTO audit_logs (id, event_type, record_id, details, actor) VALUES ($1, $2, $3, $4, $5)`,
+              [uuidv4(), 'email_delivery', messageId, `Email delivered. Postmark MessageID: ${messageId}`, userId]
+            );
+          }
+          break;
+        }
+        case 'Bounce': {
+          const bounceType = payload.Type;
+          const description = payload.Description;
+          console.warn(`[Postmark Webhook] Email bounced for ${recipientEmail}: ${bounceType} - ${description}`);
+
+          if (payload.TypeCode === 1) { // 1 = Hard bounce
+            await db.query(`UPDATE users SET email_verified = false WHERE email = $1`, [recipientEmail]);
+          }
+          break;
+        }
+        case 'SpamComplaint': {
+          console.warn(`[Postmark Webhook] Spam complaint recorded from: ${recipientEmail}`);
+
+          const userRes = await db.query(`SELECT id FROM users WHERE email = $1`, [recipientEmail]);
+          if (userRes.rows.length > 0) {
+            const userId = userRes.rows[0].id;
+            await db.query(
+              `INSERT INTO audit_logs (id, event_type, record_id, details, actor) VALUES ($1, $2, $3, $4, $5)`,
+              [uuidv4(), 'spam_complaint', userId, `Spam complaint received for ${recipientEmail}. Notification preferences paused.`, 'system']
+            );
+          }
+          break;
+        }
+        default:
+          console.log(`[Postmark Webhook] Unhandled event type: ${eventRecordType} for ${recipientEmail}`);
+          break;
+      }
+
       return res.status(200).json({ received: true });
     } catch (err: any) {
       console.error('Postmark webhook error:', err.message);
       return res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
+
+  // Endpoint to upload listing photos
+  app.post(
+    "/api/listings/:id/photos",
+    authenticateToken,
+    express.json({ limit: "50mb" }),
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const listingId = req.params.id;
+        const { photos } = req.body;
+
+        if (!photos || !Array.isArray(photos)) {
+          return res.status(400).json({ error: "Invalid photos payload" });
+        }
+
+        const listingRes = await db.query(
+          "SELECT id FROM listings WHERE id = $1 AND host_id = $2",
+          [listingId, req.user.id]
+        );
+
+        if (listingRes.rows.length === 0) {
+          return res.status(403).json({ error: "Unauthorized or listing not found" });
+        }
+
+        const uploadedPhotos = [];
+
+        for (const photo of photos) {
+          const result = await db.query(
+            `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+             VALUES ($1, $2, $3, $4) RETURNING id, photo_url, display_order, is_cover`,
+            [
+              listingId,
+              photo.data,
+              photo.displayOrder || 0,
+              photo.displayOrder === 0 ? true : false
+            ]
+          );
+          uploadedPhotos.push(result.rows[0]);
+        }
+
+        res.status(201).json({ photos: uploadedPhotos });
+      } catch (error: any) {
+        console.error("Error uploading photos:", error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+      }
+    }
+  );
+
+  // Endpoint to get listing photos
+  app.get("/api/listings/:id/photos", async (req, res) => {
+    try {
+      const listingId = req.params.id;
+
+      const result = await db.query(
+        `SELECT id, photo_url as url, display_order as "displayOrder", is_cover as "isCover"
+         FROM listing_photos
+         WHERE listing_id = $1
+         ORDER BY display_order ASC`,
+        [listingId]
+      );
+
+      res.json({ photos: result.rows });
+    } catch (error: any) {
+      console.error("Error fetching photos:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Endpoint to save/upsert a listing for the current user
+  app.post(
+    "/api/listings/my-listing",
+    authenticateToken,
+    express.json(),
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const existingRes = await db.query(
+          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+          [req.user.id]
+        );
+
+        let listingId;
+        if (existingRes.rows.length > 0) {
+          listingId = existingRes.rows[0].id;
+          await db.query(
+            "UPDATE listings SET property_type = $1, monthly_rent = $2, cleaning_fee = $3 WHERE id = $4",
+            [req.body.propertyType, req.body.roomAPrice || req.body.monthlyRate, 150, listingId]
+          );
+        } else {
+          const newListingRes = await db.query(
+            `INSERT INTO listings (host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+            [
+              req.user.id,
+              "New Sanctuary Stay",
+              req.body.propertyType || "individual_rooms",
+              "123 Healing Way",
+              "Durham",
+              "NC",
+              "27705",
+              36.0,
+              -78.9,
+              "hosp-duke",
+              req.body.roomAPrice || 1950,
+              0,
+              150,
+              true
+            ]
+          );
+          listingId = newListingRes.rows[0].id;
+        }
+
+        res.json({ listingId });
+      } catch (error: any) {
+        console.error("Error saving listing:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  // Endpoint to fetch current user's listing
+  app.get(
+    "/api/listings/my-listing",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const existingRes = await db.query(
+          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+          [req.user.id]
+        );
+
+        if (existingRes.rows.length > 0) {
+          res.json({ listingId: existingRes.rows[0].id });
+        } else {
+          res.json({ listingId: null });
+        }
+      } catch (error: any) {
+        console.error("Error fetching my listing:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  );
+
+  // Stripe Identity Verification Session
+  app.post(
+    "/api/stripe/identity/session",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const userId = req.user.id;
+        const verificationSession =
+          await stripe.identity.verificationSessions.create({
+            type: "document",
+            metadata: {
+              userId: userId,
+            },
+            options: {
+              document: {
+                require_matching_selfie: true,
+              },
+            },
+          });
+
+        res.json({
+          client_secret: verificationSession.client_secret,
+          session_id: verificationSession.id,
+        });
+      } catch (error) {
+        console.error("Error creating Stripe Identity Session:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/stripe/payment-intent/:id/capture",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { id } = req.params;
+        const paymentIntent = await stripe.paymentIntents.capture(id);
+        res.json({ success: true, paymentIntent });
+      } catch (error: any) {
+        console.error("Error capturing Payment Intent:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to capture payment intent" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/stripe/payment-intent/:id/cancel",
+    authenticateToken,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { id } = req.params;
+        const paymentIntent = await stripe.paymentIntents.cancel(id);
+        res.json({ success: true, paymentIntent });
+      } catch (error: any) {
+        console.error("Error canceling Payment Intent:", error);
+        res
+          .status(500)
+          .json({ error: error.message || "Failed to cancel payment intent" });
+      }
+    },
+  );
 
   // 5. Mount Vite Dev Middleware in Dev Mode, or Serve Static in Production
   const isProduction = process.env.NODE_ENV === 'production';

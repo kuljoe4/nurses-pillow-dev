@@ -104,6 +104,8 @@ CREATE TYPE ticket_status AS ENUM (
 -- ============================================================================
 
 -- Future-proofing: Supports Phase 2 Staffing Agency & Property Manager accounts
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users (LOWER(email));
+
 CREATE TABLE organizations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
