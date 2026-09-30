@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Navigation, Star } from 'lucide-react';
 import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
 
@@ -83,7 +82,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
 
         {/* Minimalist Top Left Badge: Distance Anchor */}
         <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold select-none">
-          <Navigation className="w-3 h-3 text-[#aff0db]" />
+          <span className="material-symbols-outlined text-[13px] text-[#aff0db]">near_me</span>
           <span>{listing.distanceBadge || `${driveMinutes} min commute`}</span>
         </div>
 
@@ -110,7 +109,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           <div className="flex items-center justify-between text-[11px] text-[#404850] dark:text-[#93ccff] font-bold uppercase tracking-wider mb-1">
             <span>{listing.propertyType || 'ENTIRE CONDO'}</span>
             <div className="flex items-center gap-1 text-amber-500 tabular-nums">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="material-symbols-outlined text-[15px]">star</span>
               <span className="text-[#0B2559] dark:text-white font-bold">{listing.nurseRating}</span>
               <span className="text-gray-400 font-normal">({listing.reviewsCount})</span>
             </div>

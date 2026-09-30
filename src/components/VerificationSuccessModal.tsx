@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { VerificationFormData } from '../types';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { X, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface VerificationSuccessModalProps {
   isOpen: boolean;
@@ -57,13 +56,13 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
           className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-[#0B2559] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
           aria-label="Close modal"
         >
-          <X className="w-4 h-4" aria-hidden="true" />
+          <span className="material-symbols-outlined text-[18px]">close</span>
         </button>
 
         {/* Minimal Hero Confirmation */}
         <div className="text-center pt-2">
           <div className="w-12 h-12 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#2F6E5E]/20 dark:text-[#aff0db] mx-auto flex items-center justify-center mb-3">
-            <ShieldCheck className="w-6 h-6" aria-hidden="true" />
+            <span className="material-symbols-outlined text-[24px]">verified</span>
           </div>
           <h2 className="text-xl font-bold tracking-tight text-[#0B2559] dark:text-white mb-1">
             License verified
@@ -79,15 +78,15 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
         {/* Minimal Unboxed Benefits (Zero-Pill, Zero Color Noise) */}
         <div className="my-5 py-3 border-y border-[rgba(11,37,89,0.08)] dark:border-[#233550] space-y-2.5 text-xs text-[#0B2559]/80 dark:text-[#E6ECF7]/80">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#2F6E5E] dark:text-[#aff0db] shrink-0" aria-hidden="true" />
+            <span className="material-symbols-outlined text-[16px] text-[#2F6E5E] dark:text-[#aff0db] shrink-0">check_circle</span>
             <span>Subsidized travel clinician rates with stipend-aligned billing</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#2F6E5E] dark:text-[#aff0db] shrink-0" aria-hidden="true" />
+            <span className="material-symbols-outlined text-[16px] text-[#2F6E5E] dark:text-[#aff0db] shrink-0">check_circle</span>
             <span>Guaranteed daytime quiet hours and blackout sleep sanctuary standards</span>
           </div>
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#2F6E5E] dark:text-[#aff0db] shrink-0" aria-hidden="true" />
+            <span className="material-symbols-outlined text-[16px] text-[#2F6E5E] dark:text-[#aff0db] shrink-0">check_circle</span>
             <span>Hospital contract cancellation flex protection</span>
           </div>
         </div>
@@ -110,7 +109,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
           >
             <span>Search housing</span>
-            <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>
       </div>

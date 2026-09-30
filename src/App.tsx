@@ -28,9 +28,6 @@ import { Milestone2ScopeGate } from "./components/Milestone2ScopeGate";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import { ScrollProgressIndicator } from "./components/ScrollProgressIndicator";
 import type { AdminSheetsPreset } from "./components/GoogleSheetsSyncModal";
-import { coverageService, ClearedStateData } from "./services/coverageService";
-import { db } from "./services/database";
-import { Stethoscope, Building2, ShieldAlert } from "lucide-react";
 
 // Code-split secondary views & heavy feature modules to eliminate initial bundle bloat
 const SearchListingsView = React.lazy(() =>
@@ -206,7 +203,6 @@ export default function App() {
     useState<VerificationStepId>(3);
   const [verificationData, setVerificationData] =
     useState<VerificationFormData>(BLANK_VERIFICATION_DATA);
-  const [clearedStates, setClearedStates] = useState<ClearedStateData[]>([]);
 
   // Proactive Role-Based Access Navigation Guard
   const handleNavigateTab = useCallback(
@@ -430,7 +426,6 @@ export default function App() {
     hospital: "Duke University Hospital - Durham, NC",
     duration: "13",
     radius: 5,
-    state: "NC",
   });
 
   // Shared booking requests across Portals A & B (persisted per account)
@@ -616,15 +611,12 @@ export default function App() {
   useEffect(() => {
     const initializeDb = async () => {
       try {
-        const [states] = await Promise.all([
-          coverageService.fetchClearedStates(),
+        const { db } = await import("./services/database");
+        await Promise.all([
           db.fetchHospitals(),
           db.fetchListings(),
           db.fetchAuditLogs(),
         ]);
-        if (states && states.length > 0) {
-          setClearedStates(states);
-        }
         setAppData({
           hospitals: db.getHospitals() as unknown as Hospital[],
           listings: db.getListings() as unknown as HousingListing[],
@@ -718,28 +710,6 @@ export default function App() {
   const handleSelectHospitalFromDirectory = useCallback(() => {
     setCurrentTab("find-housing");
   }, []);
-
-  const handleSelectStateFromMap = useCallback((stateCode: string) => {
-    const upper = stateCode.toUpperCase();
-    const stateInfo = clearedStates.find((s) => s.code.toUpperCase() === upper);
-
-    // Dynamically match primary hospital in that state from real database inventory or state metadata
-    const hospitalInState = appData.hospitals.find((h) => h.state?.toUpperCase() === upper);
-    const targetHospital =
-      hospitalInState?.name ||
-      stateInfo?.topFacilities?.[0] ||
-      (upper === 'NC' ? 'Duke University Hospital - Durham, NC' : `${stateInfo?.name || upper} Medical Center`);
-
-    setSearchParamsState((prev) => ({
-      ...prev,
-      hospital: targetHospital,
-      radius: 15,
-      state: upper,
-    }));
-
-    setCurrentTab('search-listings');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [clearedStates, appData.hospitals]);
 
   const handleOpenCheckout = useCallback((listing: HousingListing) => {
     setCheckoutListing(listing);
@@ -1022,7 +992,7 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-400 mx-auto flex items-center justify-center">
-                    <Stethoscope className="w-7 h-7" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-2xl">medical_services</span>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
@@ -1086,7 +1056,7 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-blue-500/15 text-blue-700 dark:text-blue-400 mx-auto flex items-center justify-center">
-                    <Building2 className="w-7 h-7" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-2xl">real_estate_agent</span>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
@@ -1155,7 +1125,9 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
-                    <ShieldAlert className="w-7 h-7" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-2xl">
+                      admin_panel_settings
+                    </span>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
@@ -1267,7 +1239,6 @@ export default function App() {
               onGoToSearchListings={(params) => {
                 if (params) {
                   setSearchParamsState((prev) => ({
-                    ...prev,
                     hospital: params.hospital || prev.hospital,
                     duration: params.duration || prev.duration,
                     radius: params.radius ?? prev.radius,
@@ -1296,8 +1267,6 @@ export default function App() {
               initialHospital={searchParamsState.hospital}
               initialDuration={searchParamsState.duration}
               initialRadius={searchParamsState.radius}
-              initialState={searchParamsState.state}
-              clearedStates={clearedStates}
             />
           )}
 
@@ -1410,11 +1379,6 @@ export default function App() {
         onOpenSupport={() => setIsSupportOpen(true)}
         onSelectTab={handleNavigateTab}
         isDeveloper={isDeveloper}
-        onSelectState={handleSelectStateFromMap}
-        selectedStateCode={searchParamsState.state || 'NC'}
-        listings={appData.listings}
-        hospitals={appData.hospitals}
-        clearedStates={clearedStates}
       />
 
       {/* Itemized Checkout Modal (Screen A4) - Lazy loaded only when requested */}

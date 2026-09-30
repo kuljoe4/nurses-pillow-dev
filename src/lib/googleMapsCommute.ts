@@ -133,62 +133,6 @@ export const HOSPITAL_GEO_DIRECTORY: Record<string, HospitalCoordinates> = {
     lng: -76.5927,
     healthSystem: 'Johns Hopkins Medicine',
   },
-  'University of Maryland Medical Center': {
-    name: 'University of Maryland Medical Center',
-    shortName: 'UMMC',
-    address: '22 S Greene St, Baltimore, MD 21201',
-    lat: 39.2882,
-    lng: -76.6231,
-    healthSystem: 'University of Maryland Medical System',
-  },
-  'Yale New Haven Hospital': {
-    name: 'Yale New Haven Hospital',
-    shortName: 'Yale New Haven',
-    address: '20 York St, New Haven, CT 06510',
-    lat: 41.3040,
-    lng: -72.9360,
-    healthSystem: 'Yale New Haven Health',
-  },
-  'Hartford Hospital': {
-    name: 'Hartford Hospital',
-    shortName: 'Hartford Hospital',
-    address: '80 Seymour St, Hartford, CT 06102',
-    lat: 41.7533,
-    lng: -72.6789,
-    healthSystem: 'Hartford HealthCare',
-  },
-  'Sanford Medical Center Fargo': {
-    name: 'Sanford Medical Center Fargo',
-    shortName: 'Sanford Fargo',
-    address: '5225 23rd Ave S, Fargo, ND 58104',
-    lat: 46.8524,
-    lng: -96.8622,
-    healthSystem: 'Sanford Health',
-  },
-  'Altru Health System': {
-    name: 'Altru Health System',
-    shortName: 'Altru Health',
-    address: '1200 S Columbia Rd, Grand Forks, ND 58201',
-    lat: 47.9152,
-    lng: -97.0652,
-    healthSystem: 'Altru Health',
-  },
-  'The University of Kansas Health System': {
-    name: 'The University of Kansas Health System',
-    shortName: 'KU Medical Center',
-    address: '3901 Rainbow Blvd, Kansas City, KS 66160',
-    lat: 39.0620,
-    lng: -94.6092,
-    healthSystem: 'The University of Kansas Health System',
-  },
-  'Ascension Via Christi St. Francis': {
-    name: 'Ascension Via Christi St. Francis',
-    shortName: 'Ascension Via Christi',
-    address: '929 N St Francis, Wichita, KS 67214',
-    lat: 37.6978,
-    lng: -97.3278,
-    healthSystem: 'Ascension Health',
-  },
 };
 
 // Known coordinates for listings in mock dataset
@@ -196,14 +140,6 @@ export const LISTING_GEO_MAP: Record<string, ListingCoordinates> = {
   'nc-duke-condo': { lat: 36.0112, lng: -78.9248, city: 'Durham', state: 'NC' },
   'nc-unc-room': { lat: 35.9132, lng: -79.0558, city: 'Chapel Hill', state: 'NC' },
   'nc-wakemed-studio': { lat: 35.7898, lng: -78.5872, city: 'Raleigh', state: 'NC' },
-  'md-hopkins-loft': { lat: 39.2830, lng: -76.5910, city: 'Baltimore', state: 'MD' },
-  'md-ummc-studio': { lat: 39.2860, lng: -76.6190, city: 'Baltimore', state: 'MD' },
-  'ct-yale-haven': { lat: 41.3120, lng: -72.9230, city: 'New Haven', state: 'CT' },
-  'ct-hartford-suite': { lat: 41.7610, lng: -72.6840, city: 'Hartford', state: 'CT' },
-  'nd-sanford-haven': { lat: 46.8570, lng: -96.8560, city: 'Fargo', state: 'ND' },
-  'nd-altru-loft': { lat: 47.9190, lng: -97.0590, city: 'Grand Forks', state: 'ND' },
-  'ks-kumed-haven': { lat: 39.0560, lng: -94.6130, city: 'Kansas City', state: 'KS' },
-  'ks-ascension-studio': { lat: 37.6920, lng: -97.3320, city: 'Wichita', state: 'KS' },
   'sf-sunset-suite': { lat: 37.7554, lng: -122.4862, city: 'San Francisco', state: 'CA' },
   'sf-dogpatch-studio': { lat: 37.7618, lng: -122.3902, city: 'San Francisco', state: 'CA' },
   'sf-potrero-hill': { lat: 37.7570, lng: -122.4010, city: 'San Francisco', state: 'CA' },
@@ -282,14 +218,6 @@ export function resolveHospitalCoordinates(query: string): HospitalCoordinates {
       result = HOSPITAL_GEO_DIRECTORY['UCSF Medical Center'];
     } else if (normalized.includes('stanford') || normalized.includes('palo alto')) {
       result = HOSPITAL_GEO_DIRECTORY['Stanford Health Care'];
-    } else if (normalized.includes('baltimore') || normalized.includes('hopkins') || normalized.includes('maryland') || /\bmd\b/.test(normalized)) {
-      result = HOSPITAL_GEO_DIRECTORY['The Johns Hopkins Hospital'];
-    } else if (normalized.includes('new haven') || normalized.includes('yale') || normalized.includes('connecticut') || /\bct\b/.test(normalized)) {
-      result = HOSPITAL_GEO_DIRECTORY['Yale New Haven Hospital'];
-    } else if (normalized.includes('fargo') || normalized.includes('sanford') || normalized.includes('north dakota') || /\bnd\b/.test(normalized)) {
-      result = HOSPITAL_GEO_DIRECTORY['Sanford Medical Center Fargo'];
-    } else if (normalized.includes('kansas') || normalized.includes('wichita') || normalized.includes('ku med') || /\bks\b/.test(normalized)) {
-      result = HOSPITAL_GEO_DIRECTORY['The University of Kansas Health System'];
     }
   }
 

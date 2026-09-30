@@ -3,28 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { db } from '../services/database';
-import { ClearedStateData, coverageService } from '../services/coverageService';
-import {
-  Building2,
-  ChevronDown,
-  Search,
-  Check,
-  ArrowUpDown,
-  Calendar,
-  SlidersHorizontal,
-  RefreshCw,
-  Map as MapIcon,
-  LayoutGrid,
-  ListChecks,
-  ShieldCheck,
-  CheckCircle2,
-  FilterX,
-  MapPin,
-  ChevronUp,
-  DollarSign,
-  Moon,
-  WashingMachine,
-} from 'lucide-react';
 import { ListingDetailModal } from './ListingDetailModal';
 import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
@@ -45,8 +23,6 @@ interface SearchListingsViewProps {
   initialHospital?: string;
   initialDuration?: string;
   initialRadius?: number;
-  initialState?: string;
-  clearedStates?: ClearedStateData[];
   isLoading?: boolean;
 }
 
@@ -71,49 +47,11 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   initialHospital = 'Duke University Hospital (Durham, NC)',
   initialDuration = '13',
   initialRadius = 5,
-  initialState = 'ALL',
-  clearedStates,
   isLoading,
 }) => {
+
+
   const [selectedHospital, setSelectedHospital] = useState(initialHospital);
-
-  useEffect(() => {
-    if (initialHospital) {
-      setSelectedHospital(initialHospital);
-    }
-  }, [initialHospital]);
-
-  // Dynamic cleared states from database or props
-  const [statesList, setStatesList] = useState<ClearedStateData[]>(clearedStates || []);
-  useEffect(() => {
-    if (clearedStates && clearedStates.length > 0) {
-      setStatesList(clearedStates);
-    } else {
-      coverageService.fetchClearedStates().then((data) => {
-        if (data && data.length > 0) setStatesList(data);
-      });
-    }
-  }, [clearedStates]);
-
-  // Regional cleared state filter (ALL, NC, MD, CT, ND, KS, and any future cleared states)
-  const [selectedStateFilter, setSelectedStateFilter] = useState<string>(initialState || 'ALL');
-
-  useEffect(() => {
-    if (initialState) {
-      setSelectedStateFilter(initialState);
-    }
-  }, [initialState]);
-
-  const handleSelectState = (stateCode: string) => {
-    setSelectedStateFilter(stateCode);
-    if (stateCode !== 'ALL') {
-      const stateObj = statesList.find((s) => s.code.toUpperCase() === stateCode.toUpperCase());
-      if (stateObj && stateObj.topFacilities && stateObj.topFacilities.length > 0) {
-        setSelectedHospital(stateObj.topFacilities[0]);
-      }
-    }
-  };
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
   const [commuteBuffer, setCommuteBuffer] = useState<number>(initialRadius);
@@ -276,15 +214,7 @@ useBodyScrollLock(isGsaModalOpen);
     { miles: 15, label: '15+ mi', desc: 'Max value radius' },
   ];
 
-  const popularHubs = useMemo(() => {
-    const facilities: string[] = [];
-    statesList.forEach((st) => {
-      if (st.topFacilities) {
-        facilities.push(...st.topFacilities);
-      }
-    });
-    return Array.from(new Set([...facilities, ...VERIFIED_HOSPITAL_HUBS]));
-  }, [statesList]);
+  const popularHubs = VERIFIED_HOSPITAL_HUBS;
 
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
@@ -298,11 +228,6 @@ useBodyScrollLock(isGsaModalOpen);
     // For now we map to the existing mock to preserve the component.
     const dbListings = db.getListings() || [];
     let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
-
-    // Filter by Region / Cleared State (data-driven)
-    if (selectedStateFilter && selectedStateFilter !== 'ALL') {
-      list = list.filter((l: HousingListing) => l.state?.toUpperCase() === selectedStateFilter.toUpperCase());
-    }
 
     // Filter by quick chip
     if (activeFilterChip === 'entire') {
@@ -391,7 +316,6 @@ useBodyScrollLock(isGsaModalOpen);
     selectedDuration,
     customDuration,
     selectedHospital,
-    selectedStateFilter,
   ]);
 
   const selectedMapListing = useMemo(() => {
@@ -422,16 +346,16 @@ useBodyScrollLock(isGsaModalOpen);
                 }}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <Building2 className="w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0" />
+                  <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[18px] shrink-0">
+                    local_hospital
+                  </span>
                   <span className="text-xs sm:text-sm font-semibold text-[#0B2559] dark:text-white truncate">
                     {selectedHospital}
                   </span>
                 </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-[#404850] dark:text-[#93ccff] shrink-0 transition-transform duration-200 group-hover:text-[#0A6FA8] ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
+                <span className="material-symbols-outlined text-[#404850] dark:text-[#93ccff] text-[18px] shrink-0 transition-transform duration-200 group-hover:text-[#0A6FA8] focus-visible:text-[#0A6FA8]">
+                  {isDropdownOpen ? 'expand_less' : 'expand_more'}
+                </span>
               </div>
 
               <AnimatePresence>
@@ -446,7 +370,9 @@ useBodyScrollLock(isGsaModalOpen);
                     {/* Quick search input */}
                     <div className="p-2 border-b border-[#c0c7d1]/20 dark:border-[#2b4162] bg-[#f8faff] dark:bg-[#111e33]">
                       <div className="relative">
-                        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]">
+                          search
+                        </span>
                         <input
                           type="text"
                           value={hospitalSearchQuery}
@@ -484,7 +410,7 @@ useBodyScrollLock(isGsaModalOpen);
                           >
                             <span className="truncate pr-2">{hosp}</span>
                             {selectedHospital === hosp ? (
-                              <Check className="w-3.5 h-3.5 text-[#195b4c] shrink-0" />
+                              <span className="material-symbols-outlined text-[14px] text-[#195b4c] shrink-0">check</span>
                             ) : (
                               <span className="text-[9px] text-gray-400 dark:text-gray-500 font-mono shrink-0">Verified</span>
                             )}
@@ -496,8 +422,8 @@ useBodyScrollLock(isGsaModalOpen);
                     {/* Scroll indicator footer */}
                     <div className="px-2.5 py-1 bg-[#f8faff] dark:bg-[#111e33] border-t border-[#c0c7d1]/20 dark:border-[#2b4162] flex items-center justify-between text-[10px] text-[#404850] dark:text-[#9CB3D3]">
                       <span>{filteredHospitals.length} campuses</span>
-                      <span className="flex items-center gap-1">
-                        <ArrowUpDown className="w-3 h-3" />
+                      <span className="flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-[13px]">swap_vert</span>
                         Scroll to explore
                       </span>
                     </div>
@@ -520,15 +446,19 @@ useBodyScrollLock(isGsaModalOpen);
               }`}
               title="Edit move-in date, contract rotation length, or commute radius"
             >
-              <Calendar className="w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1]" />
+              <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                calendar_today
+              </span>
               <span>
                 {formatDateFriendly(earliestCheckIn)} · {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} wks`} · {commuteBuffer} mi
               </span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
+              <span
+                className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
                   isAssignmentDrawerExpanded ? 'rotate-180' : ''
                 }`}
-              />
+              >
+                expand_more
+              </span>
             </button>
 
             {/* Clinical Filters Trigger (Progressive Disclosure) */}
@@ -546,22 +476,37 @@ useBodyScrollLock(isGsaModalOpen);
               }`}
               title="Filter by rent ceiling, day-sleeper quiet score, and shift logistics"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <span className="material-symbols-outlined text-[16px]">tune</span>
               <span>Filters</span>
               {activePanelFilterCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-white text-[#001848] text-[10px] flex items-center justify-center font-extrabold shadow-2xs">
                   {activePanelFilterCount}
                 </span>
               )}
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
+              <span
+                className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
                   isFilterPanelExpanded ? 'rotate-180' : ''
                 }`}
-              />
+              >
+                expand_more
+              </span>
             </button>
 
             {/* Quick Actions & Layout Toggle (Right-aligned) */}
             <div className="flex items-center gap-1.5 ml-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsGsaModalOpen(true)}
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
+                title="Calculate allowable federal GSA lodging per-diem (Phase 2 Contract Scope)"
+              >
+                <span className="material-symbols-outlined text-[14px]">lock_clock</span>
+                <span>GSA Stipend</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-900 dark:text-amber-200 font-mono font-bold">Phase 2</span>
+              </button>
+
               <button
                 type="button"
                 onClick={triggerLiveQueryRefresh}
@@ -570,7 +515,9 @@ useBodyScrollLock(isGsaModalOpen);
                 aria-label="Refresh listings for assigned campus"
                 className="h-9 w-9 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] dark:hover:bg-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
               >
-                <RefreshCw className={`w-4 h-4 ${isDataLoading ? 'animate-spin' : ''}`} />
+                <span className={`material-symbols-outlined text-[16px] ${isDataLoading ? 'animate-spin' : ''}`}>
+                  sync
+                </span>
               </button>
 
               <div className="inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840]">
@@ -584,7 +531,7 @@ useBodyScrollLock(isGsaModalOpen);
                   }`}
                   title="View split map and listings"
                 >
-                  <MapIcon className="w-3.5 h-3.5" />
+                  <span className="material-symbols-outlined text-[15px]">map</span>
                   <span className="hidden sm:inline">Split Map</span>
                 </button>
                 <button
@@ -597,7 +544,7 @@ useBodyScrollLock(isGsaModalOpen);
                   }`}
                   title="View full grid layout"
                 >
-                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="material-symbols-outlined text-[15px]">grid_view</span>
                   <span className="hidden sm:inline">Grid</span>
                 </button>
               </div>
@@ -711,48 +658,6 @@ useBodyScrollLock(isGsaModalOpen);
             )}
           </AnimatePresence>
 
-          {/* Regional Cleared State Filter Bar (Synchronized with interactive footer map) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 pb-1 custom-scrollbar text-xs border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]/60" role="group" aria-label="Filter listings by cleared state">
-            <span className="text-[11px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider flex items-center gap-1 shrink-0 mr-1">
-              <MapPin className="w-3.5 h-3.5 text-[#0A6FA8] dark:text-[#3E9AD1]" />
-              <span>State:</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => handleSelectState('ALL')}
-              aria-pressed={selectedStateFilter === 'ALL'}
-              className={`px-3 py-1 rounded-full whitespace-nowrap font-semibold text-xs transition-colors cursor-pointer border ${
-                selectedStateFilter === 'ALL'
-                  ? 'bg-[#0A6FA8] text-white border-[#0A6FA8] shadow-xs'
-                  : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#c0c7d1] border-transparent hover:border-[#0A6FA8]'
-              }`}
-            >
-              All Cleared States
-            </button>
-            {statesList.map((st) => {
-              const isSelected = selectedStateFilter.toUpperCase() === st.code.toUpperCase();
-              return (
-                <button
-                  key={st.code}
-                  type="button"
-                  onClick={() => handleSelectState(st.code)}
-                  aria-pressed={isSelected}
-                  className={`px-3 py-1 rounded-full whitespace-nowrap font-semibold text-xs transition-colors cursor-pointer border flex items-center gap-1 ${
-                    isSelected
-                      ? 'bg-[#0B2559] text-white border-[#0B2559] shadow-xs'
-                      : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#c0c7d1] border-transparent hover:border-[#0B2559]'
-                  }`}
-                >
-                  <span className="font-bold">{st.code}</span>
-                  <span className="text-[10px] opacity-75">· {st.name}</span>
-                  {st.isLaunchHub && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#F1CF78]" title="Primary Launch Hub" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
           {/* Quick Filter Chips Row */}
           <div className="flex items-center justify-between gap-2 overflow-x-auto pt-1 pb-0.5 custom-scrollbar text-xs">
             <div className="flex items-center gap-1.5 shrink-0">
@@ -788,13 +693,13 @@ useBodyScrollLock(isGsaModalOpen);
                 className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-[#EFF6FB] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#EFF6FB] dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] transition-colors cursor-pointer ml-1"
                 title="Open comprehensive 25-point clinical amenities checklist"
               >
-                <ListChecks className="w-3.5 h-3.5" />
+                <span className="material-symbols-outlined text-[14px]">checklist</span>
                 <span>25-Pt Checklist</span>
               </button>
             </div>
 
             <div className="hidden lg:flex items-center gap-1 text-[11px] font-bold text-[#195b4c] dark:text-[#aff0db] shrink-0 bg-[#195b4c]/10 dark:bg-[#aff0db]/10 px-2.5 py-1 rounded-full">
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="material-symbols-outlined text-[13px]">verified</span>
               <span>$0 Traveler Booking Fee</span>
             </div>
           </div>
@@ -829,7 +734,7 @@ useBodyScrollLock(isGsaModalOpen);
                   <div className="flex flex-wrap items-center justify-between pb-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 rounded-lg bg-[#005684]/10 dark:bg-[#93ccff]/15 flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[15px]">tune</span>
                       </span>
                       <div>
                         <h3 className="text-xs font-bold uppercase tracking-wider text-[#001848] dark:text-white">
@@ -848,7 +753,7 @@ useBodyScrollLock(isGsaModalOpen);
                           onClick={handleResetAllFilters}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400 cursor-pointer group"
                         >
-                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span className="material-symbols-outlined text-[14px]">refresh</span>
                           <span className="group-hover:underline">Reset ({activePanelFilterCount})</span>
                         </button>
                       )}
@@ -857,7 +762,7 @@ useBodyScrollLock(isGsaModalOpen);
                         onClick={() => setIsFilterModalOpen(true)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[#005684] dark:text-[#93ccff] cursor-pointer group"
                       >
-                        <ListChecks className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[14px]">checklist</span>
                         <span className="group-hover:underline">25-Point Checklist</span>
                       </button>
                     </div>
@@ -870,7 +775,9 @@ useBodyScrollLock(isGsaModalOpen);
                       <div>
                         <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
                           <span className="flex items-center gap-1.5">
-                            <DollarSign className="w-4 h-4 text-[#005684] dark:text-[#93ccff]" />
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              payments
+                            </span>
                             Monthly Rent Ceiling
                           </span>
                           <span className="text-sm font-black text-[#005684] dark:text-[#93ccff]">
@@ -908,7 +815,7 @@ useBodyScrollLock(isGsaModalOpen);
                       </div>
 
                       <div className="text-[10px] text-[#195b4c] dark:text-[#aff0db] bg-[#195b4c]/10 dark:bg-[#aff0db]/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold">
-                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[14px]">verified</span>
                         <span>$0 Traveler Booking Fee on all contracts</span>
                       </div>
                     </div>
@@ -918,7 +825,9 @@ useBodyScrollLock(isGsaModalOpen);
                       <div>
                         <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
                           <span className="flex items-center gap-1.5">
-                            <Moon className="w-4 h-4 text-[#005684] dark:text-[#93ccff]" />
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              bedtime
+                            </span>
                             Sleep Acoustic Standards
                           </span>
                         </div>
@@ -989,7 +898,9 @@ useBodyScrollLock(isGsaModalOpen);
                       <div>
                         <div className="flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white mb-2">
                           <span className="flex items-center gap-1.5">
-                            <WashingMachine className="w-4 h-4 text-[#005684] dark:text-[#93ccff]" />
+                            <span className="material-symbols-outlined text-[16px] text-[#005684] dark:text-[#93ccff]">
+                              local_laundry_service
+                            </span>
                             Shift Logistics & Protection
                           </span>
                         </div>
@@ -1062,7 +973,7 @@ useBodyScrollLock(isGsaModalOpen);
                       className="px-4 py-2 rounded-xl bg-[#001848] text-white text-xs font-bold hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] cursor-pointer transition-colors flex items-center gap-1.5 shadow-xs"
                     >
                       <span>Done Filtering</span>
-                      <ChevronUp className="w-3.5 h-3.5" />
+                      <span className="material-symbols-outlined text-[15px]">keyboard_arrow_up</span>
                     </button>
                   </div>
                 </div>
@@ -1124,7 +1035,7 @@ useBodyScrollLock(isGsaModalOpen);
                   className="py-16 px-6 text-center rounded-2xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
                 >
                   <span className="w-12 h-12 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                    <FilterX className="w-6 h-6" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-[24px]">filter_alt_off</span>
                   </span>
                   <h3 className="text-sm font-bold text-[#001848] dark:text-white">
                     No sanctuaries match the current filters
@@ -1173,7 +1084,7 @@ useBodyScrollLock(isGsaModalOpen);
               {/* Map Canvas Header Overlay */}
               <div className="relative z-10 flex items-center justify-between bg-white/90 dark:bg-[#111e33]/90 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
                 <div className="flex items-center gap-2">
-                  <MapIcon className="w-4 h-4 text-[#005684] dark:text-[#3E9AD1]" aria-hidden="true" />
+                  <span className="material-symbols-outlined text-[#005684] text-[18px]">map</span>
                   <div className="text-xs font-bold text-[#001848] dark:text-white">
                     <span>Medical Zone: </span>
                     <span className="text-[#005684] dark:text-[#93ccff]">{selectedHospital.split(' - ')[0]}</span>
@@ -1224,7 +1135,7 @@ useBodyScrollLock(isGsaModalOpen);
                     />
                     <div>
                       <div className="flex items-center gap-1.5 text-[11px] text-[#195b4c] font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
                         <span>{selectedMapListing.distanceBadge || `${selectedMapListing.driveTimeMinutes} min to hospital`}</span>
                       </div>
                       <h4 className="text-xs font-bold text-[#001848] dark:text-white line-clamp-1">
@@ -1286,7 +1197,7 @@ useBodyScrollLock(isGsaModalOpen);
                 className="py-20 px-6 text-center rounded-3xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
               >
                 <span className="w-14 h-14 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                  <FilterX className="w-7 h-7" aria-hidden="true" />
+                  <span className="material-symbols-outlined text-[28px]">filter_alt_off</span>
                 </span>
                 <h3 className="text-base font-bold text-[#001848] dark:text-white">
                   No sanctuaries match the current filters
@@ -1373,7 +1284,7 @@ useBodyScrollLock(isGsaModalOpen);
           >
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-6 h-6 text-[#195b4c] shrink-0" aria-hidden="true" />
+                <span className="material-symbols-outlined text-[#195b4c] text-[24px]">verified</span>
                 <div>
                   <h3 className="font-bold text-base">GSA Per-Diem Stipend Comparison</h3>
                   <span className="text-[10px] text-gray-500 dark:text-gray-400">Federal Lodging Allowance Analysis</span>

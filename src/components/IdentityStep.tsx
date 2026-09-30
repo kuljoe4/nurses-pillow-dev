@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
 import { VerificationStepperNav } from './VerificationStepperNav';
-import { BadgeCheck, CheckCircle2, Clock, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 interface IdentityStepProps {
   data: VerificationFormData;
@@ -153,17 +152,17 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         <div className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
-              <BadgeCheck className="w-3.5 h-3.5" aria-hidden="true" />
+              <span className="material-symbols-outlined text-[15px]">badge</span>
               Step 1 of 4 • Identity
             </span>
             {data.isIdVerified ? (
               <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="material-symbols-outlined text-[15px]">check_circle</span>
                 Verified
               </span>
             ) : (
               <span className="text-xs font-bold text-[#B9822E] dark:text-[#F1CF78] flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="material-symbols-outlined text-[15px]">schedule</span>
                 Pending Verification
               </span>
             )}
@@ -179,7 +178,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 
         {verificationError && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="material-symbols-outlined text-sm shrink-0">error</span>
             <span>{verificationError}</span>
           </div>
         )}
@@ -264,11 +263,9 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none rounded-full cursor-pointer"
                   aria-label={showSSN ? "Hide SSN" : "Show SSN"}
                 >
-                  {showSSN ? (
-                    <EyeOff className="w-5 h-5" aria-hidden="true" />
-                  ) : (
-                    <Eye className="w-5 h-5" aria-hidden="true" />
-                  )}
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showSSN ? 'visibility_off' : 'visibility'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -309,17 +306,17 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
                       : 'bg-[#0A6FA8] text-white'
                   }`}
                 >
-                  {data.isIdVerified ? (
-                    <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
-                  ) : (
-                    <BadgeCheck className="w-5 h-5" aria-hidden="true" />
-                  )}
+                  <span className="material-symbols-outlined">
+                    {data.isIdVerified ? 'check_circle' : 'id_card'}
+                  </span>
                 </div>
                 <div>
                   <div className="text-sm font-bold flex items-center gap-1.5">
                     <span>{data.idDocumentName || 'Upload Driver License or Passport'}</span>
                     {data.isIdVerified && (
-                      <CheckCircle2 className="w-4 h-4 text-[#2F6E5E] dark:text-[#aff0db]" aria-hidden="true" />
+                      <span className="material-symbols-outlined text-[#2F6E5E] dark:text-[#aff0db] text-base">
+                        check_circle
+                      </span>
                     )}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
@@ -351,7 +348,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
               className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
             >
               <span>{isVerifying ? 'Verifying legal identity...' : 'Save & continue'}</span>
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
             <button
               type="button"

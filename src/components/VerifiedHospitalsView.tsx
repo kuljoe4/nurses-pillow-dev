@@ -1,6 +1,5 @@
 import React from 'react';
 import { MOCK_HOSPITALS } from '../data/mockData';
-import { Building2, ShieldCheck, ThumbsUp, Car, Clock, ArrowRight } from 'lucide-react';
 
 interface VerifiedHospitalsViewProps {
   isNightShiftMode: boolean;
@@ -21,7 +20,7 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
         {/* Header */}
         <div className="max-w-2xl">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#cde5ff] text-[#005684] dark:bg-[#3E9AD1]/20 dark:text-[#93ccff] mb-2">
-            <Building2 className="w-3.5 h-3.5" aria-hidden="true" />
+            <span className="material-symbols-outlined text-sm">local_hospital</span>
             Hospital &amp; Trauma Directory
           </span>
           <h1
@@ -54,11 +53,11 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
               <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-[#195b4c] dark:text-[#aff0db] bg-[#aff0db]/30 px-2.5 py-1 rounded-full">
-                    <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-xs">verified</span>
                     {hosp.traumaLevel}
                   </span>
                   <div className="flex items-center gap-1 text-xs font-bold text-[#745b0d] dark:text-[#ffdf91]">
-                    <ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-sm">thumb_up</span>
                     <span>{hosp.nurseFeedbackScore}% Nurse Approved</span>
                   </div>
                 </div>
@@ -70,11 +69,15 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
 
                 <div className="space-y-2 mb-5 text-xs">
                   <div className="flex items-center gap-2">
-                    <Car className="w-4 h-4 text-[#0a6fa8] dark:text-[#3E9AD1]" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-[#0a6fa8] dark:text-[#3E9AD1] text-base">
+                      local_parking
+                    </span>
                     <span className="opacity-90"><strong>Parking:</strong> {hosp.parkingType}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#0a6fa8] dark:text-[#3E9AD1]" aria-hidden="true" />
+                    <span className="material-symbols-outlined text-[#0a6fa8] dark:text-[#3E9AD1] text-base">
+                      schedule
+                    </span>
                     <span className="opacity-90"><strong>Shift rotations:</strong> {hosp.shiftTypes.join(', ')}</span>
                   </div>
                 </div>
@@ -90,7 +93,7 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
                   className="px-4 py-2 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer"
                 >
                   <span>Find Homes</span>
-                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
               </div>
             </div>
