@@ -413,6 +413,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             {/* Left Column (7 cols): Address & Property Configuration */}
             <div className="lg:col-span-7 space-y-4">
+              {/* Photo Upload Hint */}
+              <div className="bg-[#EFF6FB] dark:bg-[#0B1626]/50 rounded-xl p-3 border border-[#0A6FA8]/20 flex items-start gap-2.5 shadow-xs">
+                <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1] mt-0.5 shrink-0">info</span>
+                <p className="text-[11px] text-[#404850] dark:text-[#c0c7d1] leading-relaxed">
+                  <strong>Photo Uploads:</strong> High-resolution property photography and visual amenity drag-and-drop ordering occurs in <strong>Step 3 (Media Hub)</strong> of the configuration stepper after initial property details are securely saved.
+                </p>
+              </div>
+
               {/* Card 1: Google Maps Address & Hospital Distance Mapping */}
               <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
                 <HostAddressMapping isNightShiftMode={isNightShiftMode} />
