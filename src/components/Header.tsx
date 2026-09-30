@@ -1,32 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavigationTab, UserRole, BookingRequest } from '../types';
 import { NursesPillowLogo } from './NursesPillowLogo';
-import {
-  Compass,
-  Home,
-  Building2,
-  PlusCircle,
-  ShieldAlert,
-  ShieldCheck,
-  LayoutDashboard,
-  HelpCircle,
-  LogOut,
-  User,
-  Headphones,
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-  Lock,
-  Bed,
-  FileCheck,
-  Activity,
-  Layers,
-} from 'lucide-react';
 
 interface HeaderProps {
   topBanner?: React.ReactNode;
@@ -274,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
                 }`}
               >
-                <Compass className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">travel_explore</span>
                 <span>Search &amp; Map</span>
               </button>
 
@@ -312,7 +286,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
                 }`}
               >
-                <Building2 className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
                 <span>My Sanctuaries</span>
               </button>
 
@@ -328,7 +302,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
                 }`}
               >
-                <PlusCircle className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">add_home</span>
                 <span>List Sanctuary</span>
               </button>
 
@@ -377,7 +351,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-amber-700 hover:bg-amber-50'
                 }`}
               >
-                <ShieldAlert className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
                 <span>Operations Portal</span>
               </button>
 
@@ -443,7 +417,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
                 }`}
               >
-                <Compass className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">travel_explore</span>
                 <span>Search &amp; Map</span>
               </button>
 
@@ -459,7 +433,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
                 }`}
               >
-                <Home className="w-4 h-4" />
+                <span className="material-symbols-outlined text-[17px]">home</span>
                 <span>For Property Hosts</span>
               </button>
 
@@ -496,11 +470,9 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <span>More</span>
-              {isMoreMenuOpen ? (
-                <ChevronUp className="w-4 h-4 transition-transform duration-200" />
-              ) : (
-                <ChevronDown className="w-4 h-4 transition-transform duration-200" />
-              )}
+              <span className="material-symbols-outlined text-[18px] transition-transform duration-200">
+                {isMoreMenuOpen ? 'expand_less' : 'expand_more'}
+              </span>
             </button>
 
             {isMoreMenuOpen && (
@@ -525,7 +497,9 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Building2 className="w-4 h-4 text-[#005684] dark:text-[#93ccff]" />
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
+                    local_hospital
+                  </span>
                   <div>
                     <div className="font-bold text-[#001848] dark:text-white">
                       Verified Hospitals Directory
@@ -543,7 +517,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
-                    <ShieldCheck className="w-4 h-4 text-[#195b4c] dark:text-[#aff0db]" />
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
+                      verified_user
+                    </span>
                     <div>
                       <div className="font-bold text-[#001848] dark:text-white">
                         Clinician Credentialing
@@ -567,7 +543,9 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Layers className="w-4 h-4 text-[#005684] dark:text-[#93ccff]" />
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
+                    policy
+                  </span>
                   <div>
                     <div className="font-bold text-[#001848] dark:text-white">
                       Sanctuary Standards &amp; Policies
@@ -584,7 +562,9 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
+                    dns
+                  </span>
                   <div>
                     <div className="font-bold text-[#001848] dark:text-white">
                       Platform Reliability &amp; Status
@@ -613,11 +593,9 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
             title={isNightShiftMode ? 'Switch to Day Shift Mode' : 'Switch to Night Shift Mode (Day-Sleeper Dark)'}
           >
-            {isNightShiftMode ? (
-              <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
-            ) : (
-              <Moon className="w-4 h-4 sm:w-5 sm:h-5" />
-            )}
+            <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+              {isNightShiftMode ? 'light_mode' : 'dark_mode'}
+            </span>
           </button>
 
           {/* Guest Sign In & Register Buttons or User Profile Capsule (Desktop only; on mobile/tablet unified in drawer menu) */}
@@ -675,7 +653,7 @@ export const Header: React.FC<HeaderProps> = ({
                       className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border border-white dark:border-[#0E1A2E] flex items-center justify-center shadow-2xs"
                       title="Verified Identity & Clinical Credentials"
                     >
-                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                      <span className="material-symbols-outlined text-[9px] text-white font-bold">check</span>
                     </span>
                   )}
                 </div>
@@ -693,7 +671,9 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 </div>
 
-                <ChevronDown className={`w-4 h-4 opacity-60 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                <span className={`material-symbols-outlined text-[18px] opacity-60 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
+                  expand_more
+                </span>
               </button>
 
               {/* Profile & Perspective Switcher Popover */}
@@ -720,7 +700,7 @@ export const Header: React.FC<HeaderProps> = ({
                             className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0"
                             title="Verified Platform Credentials"
                           >
-                            <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                            <span className="material-symbols-outlined text-[10px] font-bold">check</span>
                           </span>
                         )}
                       </div>
@@ -737,7 +717,7 @@ export const Header: React.FC<HeaderProps> = ({
                             }}
                             className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5 cursor-pointer group"
                           >
-                            <ShieldCheck className="w-3 h-3" />
+                            <span className="material-symbols-outlined text-[12px]">verified</span>
                             <span className="group-hover:underline">Verified Status</span>
                           </button>
                         )}
@@ -761,10 +741,10 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <LayoutDashboard className="w-4 h-4" />
+                          <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
                           <span>{activeBooking ? 'View active stay request' : 'Open Clinician Dashboard'}</span>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
                     )}
 
@@ -778,10 +758,10 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4" />
+                          <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
                           <span>Open Host Portal</span>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
                     )}
 
@@ -795,10 +775,10 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-full py-2 px-3.5 rounded-full bg-[#0B2559] dark:bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#12357a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
                       >
                         <div className="flex items-center gap-2">
-                          <ShieldAlert className="w-4 h-4" />
+                          <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
                           <span>Open Admin Operations Hub</span>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                       </button>
                     )}
                   </div>
@@ -843,7 +823,7 @@ export const Header: React.FC<HeaderProps> = ({
                           className="w-full mt-1 py-1.5 px-2.5 rounded-lg bg-white dark:bg-[#0E1A2E] hover:bg-[#0A6FA8] hover:text-white border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] transition-colors cursor-pointer flex items-center justify-between"
                         >
                           <span>Review stay details</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                         </button>
                       )}
                     </div>
@@ -860,7 +840,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors cursor-pointer"
                       >
-                        <HelpCircle className="w-4 h-4 text-gray-500" />
+                        <span className="material-symbols-outlined text-[16px] text-gray-500">help_outline</span>
                         <span>Support</span>
                       </button>
                     )}
@@ -873,7 +853,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-[#A8452E] dark:hover:text-[#F4E2DC] flex items-center gap-1.5 py-1 px-2.5 rounded-lg hover:bg-[#F4E2DC]/30 dark:hover:bg-[#15233a] transition-colors cursor-pointer"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <span className="material-symbols-outlined text-[16px]">logout</span>
                         <span>Log out</span>
                       </button>
                     )}
@@ -893,7 +873,9 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             className={`lg:hidden shrink-0 relative flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl transition-all duration-200 ease-in-out cursor-pointer border ${
               isMobileMenuOpen
-                ? 'bg-[#182840] border-[#005684] text-[#93ccff]'
+                ? isNightShiftMode
+                  ? 'bg-[#182840] border-[#005684] text-[#93ccff]'
+                  : 'bg-[#eaedff] border-[#005684] text-[#005684]'
                 : isNightShiftMode
                 ? 'bg-[#15233a] border-[#233550] text-[#E6ECF7] hover:bg-[#1e3250] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1e3250]'
                 : 'bg-gray-100 border-gray-200 text-[#001848] hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200'
@@ -902,11 +884,9 @@ export const Header: React.FC<HeaderProps> = ({
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-nav-menu"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-5 h-5 leading-none transition-transform duration-200" />
-            ) : (
-              <Menu className="w-5 h-5 leading-none transition-transform duration-200" />
-            )}
+            <span className="material-symbols-outlined text-[20px] sm:text-[22px] leading-none transition-transform duration-200">
+              {isMobileMenuOpen ? 'close' : 'menu'}
+            </span>
             <span className="text-xs font-bold">
               {isMobileMenuOpen ? 'Close' : 'Menu'}
             </span>
@@ -962,7 +942,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="p-3.5 rounded-2xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-[#13233a] dark:to-[#172b47] border border-blue-100 dark:border-[#233550] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-[#001848] dark:bg-[#005684] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <User className="w-5 h-5" />
+                    <span className="material-symbols-outlined text-[20px]">person</span>
                   </div>
                   <div>
                     <div className="text-xs font-bold text-[#001848] dark:text-white">
@@ -1034,7 +1014,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="px-2.5 py-1.5 rounded-xl bg-[#005684] text-white text-xs font-bold shrink-0 flex items-center gap-1 hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] cursor-pointer shadow-2xs"
                 >
                   <span>Dashboard</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </button>
               </div>
             )}
@@ -1061,9 +1041,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Bed className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>bed</span>
                       <span>Explore Stays</span>
                     </div>
                   </button>
@@ -1081,12 +1061,14 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>travel_explore</span>
                       <span>Search Stays &amp; Map</span>
                     </div>
                   </button>
+
+
 
                   <button
                     type="button"
@@ -1101,9 +1083,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <ShieldCheck className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'how-it-works' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>verified</span>
                       <span>How It Works &amp; Quiet Guarantee</span>
                     </div>
                   </button>
@@ -1126,9 +1108,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Building2 className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'host-dashboard' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>real_estate_agent</span>
                       <span>My Sanctuaries</span>
                     </div>
                   </button>
@@ -1146,9 +1128,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <PlusCircle className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'host-onboarding' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>add_home</span>
                       <span>List Sanctuary</span>
                     </div>
                   </button>
@@ -1166,9 +1148,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <ShieldCheck className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'for-hosts' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>verified_user</span>
                       <span>Host Standards</span>
                     </div>
                   </button>
@@ -1186,9 +1168,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>travel_explore</span>
                       <span>Explore Stays</span>
                     </div>
                   </button>
@@ -1211,7 +1193,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <ShieldAlert className="w-5 h-5" />
+                      <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                       <span>Operations Portal</span>
                     </div>
                   </button>
@@ -1229,7 +1211,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className="w-5 h-5" />
+                      <span className="material-symbols-outlined text-[20px]">travel_explore</span>
                       <span>Explore Stays</span>
                     </div>
                   </button>
@@ -1252,9 +1234,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Bed className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>bed</span>
                       <span>Explore Stays</span>
                     </div>
                   </button>
@@ -1272,9 +1254,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className={`w-5 h-5 ${
+                      <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`} />
+                      }`}>travel_explore</span>
                       <span>Search Stays &amp; Map</span>
                     </div>
                   </button>
@@ -1292,7 +1274,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Home className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">home</span>
                       <span>For Property Hosts</span>
                     </div>
                   </button>
@@ -1310,7 +1292,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <ShieldCheck className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">verified</span>
                       <span>How It Works &amp; Quiet Guarantee</span>
                     </div>
                   </button>
@@ -1337,7 +1319,9 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Building2 className="w-4 h-4 text-[#005684]" />
+                  <span className="material-symbols-outlined text-[18px] text-[#005684]">
+                    local_hospital
+                  </span>
                   <span>Verified Hospitals Directory</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium">
@@ -1359,7 +1343,9 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <ShieldCheck className="w-4 h-4 text-[#195b4c]" />
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
+                      verified_user
+                    </span>
                     <span>Clinician Credentialing (Nursys)</span>
                   </div>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
@@ -1380,7 +1366,9 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
                 }`}
               >
-                <Layers className="w-4 h-4 text-gray-500" />
+                <span className="material-symbols-outlined text-[18px] text-gray-500">
+                  policy
+                </span>
                 <span>Sanctuary Standards &amp; Policies</span>
               </button>
 
@@ -1397,7 +1385,9 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
+                    dns
+                  </span>
                   <span>Platform Reliability &amp; Status</span>
                 </div>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
@@ -1417,11 +1407,9 @@ export const Header: React.FC<HeaderProps> = ({
                 className="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] bg-gray-50 dark:bg-[#15233a] flex items-center justify-between text-xs font-bold text-[#001848] dark:text-white hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-100 dark:hover:bg-[#1c2e4c] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#1c2e4c] cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  {isNightShiftMode ? (
-                    <Sun className="w-4 h-4 text-[#ffdf91]" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-[#ffdf91]" />
-                  )}
+                  <span className="material-symbols-outlined text-[18px] text-[#ffdf91]">
+                    {isNightShiftMode ? 'light_mode' : 'dark_mode'}
+                  </span>
                   <span>{isNightShiftMode ? 'Day Mode' : 'Night Mode'}</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
@@ -1441,7 +1429,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="py-2 px-3 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Lock className="w-3.5 h-3.5" />
+                  <span className="material-symbols-outlined text-[15px]">lock</span>
                   <span>Lock Preview Session</span>
                 </button>
               </div>
@@ -1457,7 +1445,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 className="w-full py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] text-xs font-bold flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840] cursor-pointer"
               >
-                <Headphones className="w-4 h-4 text-[#005684]" />
+                <span className="material-symbols-outlined text-[18px] text-[#005684]">support_agent</span>
                 <span>24/7 Clinical Support</span>
               </button>
 
@@ -1470,7 +1458,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full py-2.5 px-3 rounded-xl border border-gray-200 dark:border-[#233550] text-gray-600 dark:text-gray-300 hover:text-[#A8452E] dark:hover:text-[#F4E2DC] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <span className="material-symbols-outlined text-[18px]">logout</span>
                   <span>Log out</span>
                 </button>
               ) : onOpenAuth ? (

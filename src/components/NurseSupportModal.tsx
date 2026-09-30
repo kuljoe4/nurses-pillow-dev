@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { X, Headphones, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface NurseSupportModalProps {
   isOpen: boolean;
@@ -62,15 +61,15 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors"
           aria-label="Close"
         >
-          <X className="w-5 h-5" aria-hidden="true" />
+          <span className="material-symbols-outlined text-xl">close</span>
         </button>
 
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-2xl bg-[#0a6fa8]/15 text-[#0a6fa8] dark:text-[#3E9AD1] flex items-center justify-center font-bold">
-            <Headphones className="w-6 h-6" aria-hidden="true" />
+            <span className="material-symbols-outlined text-2xl">support_agent</span>
           </div>
           <div>
             <h3 className="text-xl font-bold tracking-tight">Clinician Support Desk</h3>
@@ -110,7 +109,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
 
         {isSubmitted ? (
           <div className="p-6 rounded-2xl bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#2F6E5E]/20 dark:text-[#aff0db] text-center">
-            <CheckCircle2 className="w-8 h-8 mb-2 mx-auto text-[#2F6E5E] dark:text-[#aff0db]" aria-hidden="true" />
+            <span className="material-symbols-outlined text-3xl mb-1">check_circle</span>
             <p className="text-sm font-bold">Message Dispatched to Support Team</p>
             <p className="text-xs mt-1">
               A clinician support representative will respond shortly.
@@ -160,7 +159,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
               className="w-full py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <span>Send support request</span>
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </form>
         )}

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { db } from './server/db.js';
-import { railwayDb } from './server/railwayDb.js';
+import { railwayDb } from './src/services/railway.js';
 import authRoutes from './server/authRoutes.js';
 import { mapDbListingToFrontend } from './server/mapper.js';
 import { createPhoneAuthMiddleware } from './src/server/phoneAuthMiddleware.js';
@@ -243,108 +243,6 @@ async function startServer() {
       res.json(status);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
-    }
-  });
-
-  // Client Public Configuration Endpoint (Google Maps key without VITE_ prefix requirement)
-  app.get('/api/config/maps-key', (req: Request, res: Response) => {
-    const key = process.env.GOOGLE_MAPS_API_KEY || '';
-    res.json({ apiKey: key });
-  });
-
-  // Dynamic Multi-State Cleared Coverage & Geographic Registry API (Data-Driven Architecture)
-  app.get('/api/coverage/states', async (req: Request, res: Response) => {
-    try {
-      const result = await db.query(`
-        SELECT 
-          cs.code,
-          cs.name,
-          cs.capital,
-          cs.hospitals_count_label as "hospitalsCount",
-          cs.status,
-          cs.is_launch_hub as "isLaunchHub",
-          cs.sample_cities as "sampleCity",
-          cs.sanctuary_highlights as "sanctuaryHighlights",
-          cs.top_facilities as "topFacilities",
-          json_build_object('x', cs.center_x, 'y', cs.center_y) as "centerCoords",
-          cs.is_active as "isActive",
-          COALESCE(COUNT(DISTINCT l.id) FILTER (WHERE l.is_published = true), 0)::int as "activeListingsCount",
-          COALESCE(COUNT(DISTINCT hf.id), 0)::int as "actualFacilitiesCount"
-        FROM cleared_states cs
-        LEFT JOIN listings l ON l.state = cs.code
-        LEFT JOIN healthcare_facilities hf ON hf.state = cs.code
-        WHERE cs.is_active = true
-        GROUP BY cs.code, cs.name, cs.capital, cs.hospitals_count_label, cs.status, cs.is_launch_hub, cs.sample_cities, cs.sanctuary_highlights, cs.top_facilities, cs.center_x, cs.center_y, cs.is_active, cs.cleared_at
-        ORDER BY cs.is_launch_hub DESC, cs.cleared_at ASC, cs.name ASC
-      `);
-      res.json(result.rows);
-    } catch (error: any) {
-      console.error('Error querying cleared states from database:', error.message);
-      res.status(500).json({ error: 'Failed to fetch cleared state coverage' });
-    }
-  });
-
-  // Dynamic Add / Clear New State Endpoint (for future state clearances without code deployment)
-  app.post('/api/coverage/states', async (req: Request, res: Response) => {
-    try {
-      const {
-        code,
-        name,
-        capital,
-        hospitalsCount,
-        status = 'Cleared & Active',
-        isLaunchHub = false,
-        sampleCity,
-        sanctuaryHighlights,
-        topFacilities = [],
-        centerCoords = { x: 500, y: 300 },
-        isActive = true,
-      } = req.body;
-
-      if (!code || !name) {
-        return res.status(400).json({ error: 'State code and name are required' });
-      }
-
-      const upperCode = code.trim().toUpperCase();
-
-      await db.query(`
-        INSERT INTO cleared_states (
-          code, name, capital, hospitals_count_label, status, is_launch_hub,
-          sample_cities, sanctuary_highlights, top_facilities, center_x, center_y, is_active
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        ON CONFLICT (code) DO UPDATE SET
-          name = EXCLUDED.name,
-          capital = EXCLUDED.capital,
-          hospitals_count_label = EXCLUDED.hospitals_count_label,
-          status = EXCLUDED.status,
-          is_launch_hub = EXCLUDED.is_launch_hub,
-          sample_cities = EXCLUDED.sample_cities,
-          sanctuary_highlights = EXCLUDED.sanctuary_highlights,
-          top_facilities = EXCLUDED.top_facilities,
-          center_x = EXCLUDED.center_x,
-          center_y = EXCLUDED.center_y,
-          is_active = EXCLUDED.is_active,
-          updated_at = NOW();
-      `, [
-        upperCode,
-        name.trim(),
-        capital || '',
-        hospitalsCount || '25+',
-        status,
-        Boolean(isLaunchHub),
-        sampleCity || '',
-        sanctuaryHighlights || `Sanctuary-grade housing verified near ${name} healthcare systems.`,
-        topFacilities,
-        centerCoords.x || 500,
-        centerCoords.y || 300,
-        Boolean(isActive),
-      ]);
-
-      res.json({ success: true, message: `State ${upperCode} cleared and activated in database.` });
-    } catch (error: any) {
-      console.error('Error updating state coverage:', error.message);
-      res.status(500).json({ error: error.message });
     }
   });
 
