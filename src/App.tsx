@@ -1406,6 +1406,8 @@ export default function App() {
               handleNavigateTab("verification");
               setIsCheckoutOpen(false);
             }}
+            checkInDate={searchParamsState.checkInDate || '2026-10-01'}
+            checkOutDate={searchParamsState.checkOutDate || '2026-12-31'}
           />
         </Suspense>
       )}
