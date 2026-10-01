@@ -316,7 +316,7 @@ const ClusteredListingMarkers: React.FC<ClusteredListingMarkersProps> = ({
 }) => {
   const map = useMap();
   const clustererRef = useRef<MarkerClusterer | null>(null);
-  const markerElementsRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
+  const markerElementsRef = useRef<globalThis.Map<string, google.maps.marker.AdvancedMarkerElement>>(new globalThis.Map());
 
   // Initialize MarkerClusterer with customized Nurses Pillow cluster styling
   useEffect(() => {
