@@ -229,66 +229,44 @@ useBodyScrollLock(isGsaModalOpen);
     const dbListings = db.getListings() || [];
     let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
 
-    // Filter by quick chip
-    if (activeFilterChip === 'entire') {
-      list = list.filter((l: HousingListing) => l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'));
-    } else if (activeFilterChip === 'private') {
-      list = list.filter((l: HousingListing) => l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'));
-    } else if (activeFilterChip === 'blackout') {
-      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains);
-    } else if (activeFilterChip === 'laundry') {
-      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit);
-    } else if (activeFilterChip === 'parking') {
-      list = list.filter((l: HousingListing) => l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking);
-    }
-
-    // Filter by Commute Radius (1-15+ miles)
-    if (commuteBuffer && commuteBuffer < 15) {
-      list = list.filter((l: HousingListing) => {
-        const commute = calculateCommuteDuration(l, selectedHospital);
-        return commute.distanceMiles <= commuteBuffer;
-      });
-    }
-
-    // Filter by Assignment Duration (4, 8, 13, 26 weeks)
+    // ⚡ Bolt Performance Optimization: Single-pass early return filtering
+    // Replaced chained .filter() arrays (O(M*N)) with a single loop (O(N))
     const targetWeeks = selectedDuration === 'custom' ? (customDuration || 13) : parseInt(selectedDuration, 10);
-    if (targetWeeks) {
-      list = list.filter((l: HousingListing) => {
+
+    list = list.filter((l: HousingListing) => {
+      // 1. Quick chip filter
+      if (activeFilterChip === 'entire' && !(l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'))) return false;
+      if (activeFilterChip === 'private' && !(l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'))) return false;
+      if (activeFilterChip === 'blackout' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains)) return false;
+      if (activeFilterChip === 'laundry' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit)) return false;
+      if (activeFilterChip === 'parking' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking)) return false;
+
+      // 2. Commute Buffer
+      if (commuteBuffer && commuteBuffer < 15) {
+        const commute = calculateCommuteDuration(l, selectedHospital);
+        if (commute.distanceMiles > commuteBuffer) return false;
+      }
+
+      // 3. Assignment Duration
+      if (targetWeeks) {
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
         if (targetWeeks < minWeeks || targetWeeks > maxWeeks) return false;
-        return true;
-      });
-    }
+      }
 
-    // Extended filter criteria from panel
-    if (maxPrice < 3500) {
-      list = list.filter((l: HousingListing) => l.monthlyRate <= maxPrice);
-    }
-    if (minRating > 0) {
-      list = list.filter((l: HousingListing) => l.nurseRating >= minRating);
-    }
-    if (filterBlackout) {
-      list = list.filter((l: HousingListing) => l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')));
-    }
-    if (filterScrubWasher) {
-      list = list.filter((l: HousingListing) => l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')));
-    }
-    if (filterQuietDay) {
-      list = list.filter((l: HousingListing) => l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')));
-    }
-    if (filterSoundMachine) {
-      list = list.filter((l: HousingListing) => l.amenities?.whiteNoiseMachine);
-    }
-    if (filterDedicatedParking) {
-      list = list.filter((l: HousingListing) => l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')));
-    }
-    if (filterPetFriendly) {
-      list = list.filter((l: HousingListing) => l.amenities?.petFriendly);
-    }
-    if (filterContractFlex) {
-      list = list.filter((l: HousingListing) => l.contractFlexProtection);
-    }
+      // 4. Extended filter criteria
+      if (maxPrice < 3500 && l.monthlyRate > maxPrice) return false;
+      if (minRating > 0 && l.nurseRating < minRating) return false;
+      if (filterBlackout && !(l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')))) return false;
+      if (filterScrubWasher && !(l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')))) return false;
+      if (filterQuietDay && !(l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')))) return false;
+      if (filterSoundMachine && !l.amenities?.whiteNoiseMachine) return false;
+      if (filterDedicatedParking && !(l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')))) return false;
+      if (filterPetFriendly && !l.amenities?.petFriendly) return false;
+      if (filterContractFlex && !l.contractFlexProtection) return false;
+
+      return true; // Passed all active filters
+    });
 
     // Sort listings
     if (sortOption === 'closest') {
