@@ -5,7 +5,7 @@ import { UserJwtPayload } from './authMiddleware.js';
 import crypto from 'crypto';
 import { db } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenPayload } from './authMiddleware.js';
+import { TokenPayload, authenticateToken, AuthenticatedRequest } from './authMiddleware.js';
 
 type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<any>;
 
@@ -234,10 +234,10 @@ router.post('/reset-password', catchAsync(async (req, res, next) => {
 // Ephemeral store for pending email verifications
 const pendingEmailVerifications = new Map<string, { pin: string; expires: number }>();
 
-router.post('/send-verification-email', catchAsync(async (req, res, next) => {
-    const { email } = req.body;
+router.post('/send-verification-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+    const email = req.user?.email;
     if (!email) {
-      res.status(400).json({ error: 'Email is required' });
+      res.status(401).json({ error: 'Unauthorized: Email is missing in token' });
       return;
     }
 
@@ -313,10 +313,15 @@ router.post('/send-verification-email', catchAsync(async (req, res, next) => {
     res.json({ message: 'Verification email sent successfully' });
 }));
 
-router.post('/verify-email', catchAsync(async (req, res, next) => {
-    const { email, pin } = req.body;
-    if (!email || !pin) {
-      res.status(400).json({ error: 'Email and 6-digit PIN are required.' });
+router.post('/verify-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+    const { pin } = req.body;
+    const email = req.user?.email;
+    if (!email) {
+      res.status(401).json({ error: 'Unauthorized: Email is missing in token' });
+      return;
+    }
+    if (!pin) {
+      res.status(400).json({ error: '6-digit PIN is required.' });
       return;
     }
 
@@ -393,7 +398,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   }
 }));
 
-router.post('/phone/send-otp', catchAsync(async (req, res, next) => {
+router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
@@ -436,7 +441,7 @@ router.post('/phone/send-otp', catchAsync(async (req, res, next) => {
     });
 }));
 
-router.post('/phone/verify-otp', catchAsync(async (req, res, next) => {
+router.post('/phone/verify-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber, code } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     const cleanCode = (code || '').toString().trim().replace(/\D/g, '');
@@ -476,7 +481,8 @@ router.post('/phone/verify-otp', catchAsync(async (req, res, next) => {
     }
 
     if (data.status === 'approved') {
-       const { userId, userEmail } = await resolveUserIdentity(req, req.body.userId, req.body.email);
+       const userId = req.user?.id;
+       const userEmail = req.user?.email;
        if (userId || userEmail) {
          try {
            await db.query(
