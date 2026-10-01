@@ -169,7 +169,7 @@ interface FindHousingViewProps {
   onGoToEmailVerification?: () => void;
   onGoToPhoneVerification?: () => void;
   onRequestToBookListing?: (listing: HousingListing) => void;
-  onGoToSearchListings: (params?: { hospital?: string; duration?: string; radius?: number }) => void;
+  onGoToSearchListings: (params?: { hospital?: string; duration?: string; radius?: number; checkInDate?: string; checkOutDate?: string }) => void;
   onGoToHostPortal?: () => void;
   userRole?: string;
   userName?: string;
@@ -206,6 +206,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [customDuration, setCustomDuration] = useState<number>(1);
   const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
+  const [latestCheckOut, setLatestCheckOut] = useState('');
+  const [dateValidationError, setDateValidationError] = useState('');
   const [isCustomizingAssignment, setIsCustomizingAssignment] = useState(false);
   const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
@@ -250,6 +252,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     { label: '13 wks', value: '13' },
     { label: '26 wks', value: '26' },
     { label: 'Custom', value: 'custom' },
+    { label: 'Custom Dates', value: 'customDates' },
   ];
 
   const commuteOptions = [
@@ -298,12 +301,27 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   }, [featuredListings, activeListingFilter]);
 
   const handleExecuteSearch = useCallback(() => {
+    setDateValidationError('');
+    // Validate custom dates if selected
+    if (selectedDuration === 'customDates') {
+      if (!earliestCheckIn || !latestCheckOut) {
+        setDateValidationError('Both check-in and check-out dates are required.');
+        return;
+      }
+      if (new Date(latestCheckOut) <= new Date(earliestCheckIn)) {
+        setDateValidationError('Check-out date must be after check-in date.');
+        return;
+      }
+    }
+
     onGoToSearchListings({
       hospital: selectedHospital,
-      duration: selectedDuration === 'custom' ? customDuration.toString() : selectedDuration,
+      duration: selectedDuration === 'custom' ? customDuration.toString() : selectedDuration === 'customDates' ? 'customDates' : selectedDuration,
       radius: commuteBuffer,
+      checkInDate: earliestCheckIn,
+      checkOutDate: selectedDuration === 'customDates' ? latestCheckOut : undefined,
     });
-  }, [selectedHospital, selectedDuration, customDuration, commuteBuffer, onGoToSearchListings]);
+  }, [selectedHospital, selectedDuration, customDuration, commuteBuffer, earliestCheckIn, latestCheckOut, onGoToSearchListings]);
 
   return (
     <div className={`w-full transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
@@ -456,7 +474,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   title="Click to customize rotation duration"
                 >
                   <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
-                    {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} weeks`}
+                    {selectedDuration === 'custom' ? `${customDuration} wks` : selectedDuration === 'customDates' ? 'Custom Dates' : `${selectedDuration} weeks`}
                   </span>
                 </button>
                 <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
@@ -499,15 +517,33 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 >
                   {/* Dual Column: Check-in & Duration */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {/* Check-In Date */}
-                    <div>
+                    {/* Check-In Date & Optional Check-Out Date */}
+                    <div className="flex flex-col gap-4">
                       <ClinicalDatePicker
                         value={earliestCheckIn}
                         onChange={setEarliestCheckIn}
-                        label="Earliest Check-In"
+                        label="Check-In"
                         subLabel="Shift Start"
                         isNightShiftMode={isNightShiftMode}
                       />
+                      {selectedDuration === 'customDates' && (
+                        <div className="flex flex-col gap-1">
+                          <ClinicalDatePicker
+                            value={latestCheckOut}
+                            onChange={(date) => {
+                              setLatestCheckOut(date);
+                              setDateValidationError(''); // Clear error on change
+                            }}
+                            label="Check-Out"
+                            subLabel="Shift End"
+                            isNightShiftMode={isNightShiftMode}
+                            minDate={earliestCheckIn}
+                          />
+                          {dateValidationError && (
+                            <span className="text-red-500 text-xs font-medium ml-1 mt-1">{dateValidationError}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Assignment Duration */}
@@ -515,7 +551,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
                         Assignment Duration
                       </label>
-                      <div className="grid grid-cols-5 gap-2 h-12">
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 h-auto sm:h-12">
                         {durationOptions.map((opt) => (
                           <button
                             key={opt.value}

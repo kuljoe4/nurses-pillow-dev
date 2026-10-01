@@ -426,6 +426,8 @@ export default function App() {
     hospital: "Duke University Hospital - Durham, NC",
     duration: "13",
     radius: 5,
+    checkInDate: "",
+    checkOutDate: "",
   });
 
   // Shared booking requests across Portals A & B (persisted per account)
@@ -1242,9 +1244,17 @@ export default function App() {
                     hospital: params.hospital || prev.hospital,
                     duration: params.duration || prev.duration,
                     radius: params.radius ?? prev.radius,
+                    checkInDate: params.checkInDate || prev.checkInDate,
+                    checkOutDate: params.checkOutDate || prev.checkOutDate,
                   }));
                 }
                 handleNavigateTab("search-listings");
+                if (params && params.checkInDate && params.checkOutDate) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("checkInDate", params.checkInDate);
+                  url.searchParams.set("checkOutDate", params.checkOutDate);
+                  window.history.pushState({}, "", url);
+                }
               }}
               onGoToHostPortal={() => handleNavigateTab("host-dashboard")}
               userRole={currentUser.role}

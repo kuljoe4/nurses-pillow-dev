@@ -429,7 +429,7 @@ useBodyScrollLock(isGsaModalOpen);
                 calendar_today
               </span>
               <span>
-                {formatDateFriendly(earliestCheckIn)} · {selectedDuration === 'custom' ? `${customDuration} wks` : `${selectedDuration} wks`} · {commuteBuffer} mi
+                {formatDateFriendly(earliestCheckIn)} · {selectedDuration === 'custom' ? `${customDuration} wks` : selectedDuration === 'customDates' ? 'Custom Dates' : `${selectedDuration} wks`} · {commuteBuffer} mi
               </span>
               <span
                 className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
