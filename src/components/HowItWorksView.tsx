@@ -23,7 +23,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
       icon: 'verified_user',
       title: '1. Clinician Verification & RN Rates',
       description:
-        'We cross-reference every clinician with their State Board of Nursing (BRN/Nursys). Verified clinicians unlock negotiated, stipend-friendly rates up to 25% lower than Airbnb or Furnished Finder.',
+        'We cross-reference every clinician with their State Board of Nursing (BRN/Nursys). Verified clinicians unlock negotiated, stipend-friendly rates up to 25% lower than Airbnb or Traditional Directories.',
     },
     {
       icon: 'dark_mode',
@@ -161,7 +161,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
                       Nurses Pillow
                     </th>
                     <th className="p-4 sm:p-5 font-bold text-sm w-1/3 opacity-70">
-                      Furnished Finder / Others
+                      Traditional Directories
                     </th>
                   </tr>
                 </thead>
