@@ -6,6 +6,7 @@ import {
   useMapsLibrary,
   useMap,
 } from"@vis.gl/react-google-maps";
+import { ACTIVE_STATES, isStateActive } from "../lib/constants/states";
 
 interface HostAddressMappingProps {
   isNightShiftMode: boolean;
@@ -156,17 +157,26 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   ];
 
   const handleConfirm = () => {
+    const currentState = cityState.split(",")[1]?.trim().split(" ")[0] || "NC";
+
+    if (!isStateActive(currentState)) {
+      return;
+    }
+
     setIsConfirmed(true);
     onAddressConfirmed?.({
       formattedAddress: `${addressInput} ${unitApt ? `(${unitApt})` :""}`,
       lat: coords.lat,
       lng: coords.lng,
       city: cityState.split(",")[0] ||"Durham",
-      state:"NC",
+      state: currentState,
       zipCode: cityState.split("").pop() ||"27705",
       nearestHospitalDistances: nearbyDistances,
     });
   };
+
+  const currentState = cityState.split(",")[1]?.trim().split(" ")[0] || "NC";
+  const isValidState = isStateActive(currentState);
 
   return (
     <div className="space-y-6">
@@ -381,6 +391,16 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         </div>
       </div>
 
+      {/* Error Banner */}
+      {!isValidState && (
+        <div className="mt-4 p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-xs font-bold flex items-center gap-2">
+          <span className="material-symbols-outlined text-[16px]">
+            error
+          </span>
+          Listing creation is currently limited to NC, MD, CT, ND, and KS.
+        </div>
+      )}
+
       {/* Confirm Button */}
       <div className="flex items-center justify-between pt-2">
         <div className="text-xs text-gray-500">
@@ -397,7 +417,12 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         <button
           type="button"
           onClick={handleConfirm}
-          className="px-5 py-2.5 rounded-full bg-[#005684] hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] text-white text-xs font-bold transition-all duration-200 ease-in-out shadow-xs cursor-pointer flex items-center gap-1.5"
+          disabled={!isValidState}
+          className={`px-5 py-2.5 rounded-full text-white text-xs font-bold transition-all duration-200 ease-in-out shadow-xs flex items-center gap-1.5 ${
+            isValidState
+              ? "bg-[#005684] hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] cursor-pointer"
+              : "bg-gray-300 cursor-not-allowed opacity-70"
+          }`}
         >
           <span className="material-symbols-outlined text-[16px]">
             pin_drop
