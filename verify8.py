@@ -1,0 +1,55 @@
+import asyncio
+from playwright.async_api import async_playwright
+
+async def main():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+
+        # Navigate to the local dev server
+        await page.goto("http://localhost:3000")
+
+        # Wait for the Staging Auth Gate Modal to appear
+        await page.wait_for_selector("text=Authentication required", timeout=5000)
+
+        # Fill the auth gate form
+        await page.fill("input[type='text']", "lawrence")
+        await page.fill("input[type='password']", "np-preview-2026")
+        await page.click("button:has-text('Sign in')")
+
+        # Wait for the auth gate modal to disappear
+        await page.wait_for_selector("text=Authentication required", state="hidden", timeout=5000)
+
+        # Wait for the main page to load
+        await page.wait_for_selector("text=Explore Stays", timeout=5000)
+
+        # Take a screenshot to verify login was successful
+        await page.screenshot(path="verification/after-login.png")
+        print("Screenshot saved to verification/after-login.png")
+
+        # Click "Explore Stays"
+        await page.click("text=Explore Stays")
+
+        # Wait for listings to appear
+        await page.wait_for_selector("button:has-text('View details')", timeout=10000)
+
+        # Click the first "View details" button
+        await page.locator("button:has-text('View details')").first.click()
+
+        # Wait for the listing detail modal
+        await page.wait_for_selector("text=Request to book", timeout=10000)
+
+        # Click "Request to book"
+        await page.click("text=Request to book")
+
+        # Wait for the itemized checkout modal to appear (e.g., look for "Total")
+        await page.wait_for_selector("text=Total", timeout=10000)
+
+        # Take a screenshot
+        await page.screenshot(path="verification/checkout-modal.png")
+
+        print("Screenshot saved to verification/checkout-modal.png")
+        await browser.close()
+
+if __name__ == "__main__":
+    asyncio.run(main())

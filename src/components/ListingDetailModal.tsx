@@ -557,17 +557,6 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   <span>Clinical Sanitization</span>
                   <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toLocaleString()}.00</span>
                 </div>
-                <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                  <span className="flex items-center gap-1.5">
-                    <span>Security Deposit Hold</span>
-                    <span className="text-[10px] font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#E1EFE9] dark:bg-[#142823] px-2 py-0.5 rounded-full">
-                      $0 Policy
-                    </span>
-                  </span>
-                  <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                    $0.00 (No Card Hold)
-                  </span>
-                </div>
                 <div className="flex justify-between text-[#195b4c] font-semibold">
                   <span>$0 Traveler Fee (Guarantee)</span>
                   <span className="font-bold tabular-nums">Free ($0.00)</span>
