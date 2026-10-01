@@ -251,22 +251,6 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     };
   }, []);
 
-  const durationOptions = [
-    { label: '4 wks', value: '4' },
-    { label: '8 wks', value: '8' },
-    { label: '13 wks', value: '13' },
-    { label: '26 wks', value: '26' },
-    { label: 'Custom', value: 'custom' },
-    { label: 'Custom Dates', value: 'customDates' },
-  ];
-
-  const commuteOptions = [
-    { miles: 3, label: '3 miles', desc: 'Shift walk/bike' },
-    { miles: 5, label: '5 miles', desc: 'Quick commute' },
-    { miles: 10, label: '10 miles', desc: 'Suburban retreat' },
-    { miles: 15, label: '15 miles', desc: 'Max value radius' },
-  ];
-
   const popularHubs = VERIFIED_HOSPITAL_HUBS;
 
   const filteredHospitals = useMemo(() => {
@@ -305,28 +289,57 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     return featuredListings;
   }, [featuredListings, activeListingFilter]);
 
+  // Derived state to determine the string display of dates
+  const getDatesDisplayString = useCallback(() => {
+    try {
+      const startD = parseISO(earliestCheckIn);
+      if (latestCheckOut) {
+         const endD = parseISO(latestCheckOut);
+         // Calculate duration based on difference
+         const diffMs = endD.getTime() - startD.getTime();
+         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+         const diffWeeks = Math.floor(diffDays / 7);
+         const remainderDays = diffDays % 7;
+
+         let durationStr = '';
+         if (diffWeeks > 0 && remainderDays > 0) {
+            durationStr = `${diffDays} days · ${diffWeeks} week${diffWeeks > 1 ? 's' : ''}, ${remainderDays} day${remainderDays > 1 ? 's' : ''}`;
+         } else if (diffWeeks > 0 && remainderDays === 0) {
+            durationStr = `${diffWeeks} weeks · ${diffDays} days`;
+         } else {
+            durationStr = `${diffDays} days`;
+         }
+
+         return {
+            title: `${format(startD, 'MMM d, yyyy')} → ${format(endD, 'MMM d, yyyy')}`,
+            subtitle: durationStr
+         };
+      }
+      return { title: 'Select dates', subtitle: '' };
+    } catch (e) {
+      return { title: 'Select dates', subtitle: '' };
+    }
+  }, [earliestCheckIn, latestCheckOut]);
+
   const handleExecuteSearch = useCallback(() => {
     setDateValidationError('');
-    // Validate custom dates if selected
-    if (selectedDuration === 'customDates') {
-      if (!earliestCheckIn || !latestCheckOut) {
-        setDateValidationError('Both check-in and check-out dates are required.');
-        return;
-      }
-      if (new Date(latestCheckOut) <= new Date(earliestCheckIn)) {
-        setDateValidationError('Check-out date must be after check-in date.');
-        return;
-      }
+    if (!earliestCheckIn || !latestCheckOut) {
+      setDateValidationError('Both check-in and check-out dates are required.');
+      return;
+    }
+    if (new Date(latestCheckOut) <= new Date(earliestCheckIn)) {
+      setDateValidationError('Check-out date must be after check-in date.');
+      return;
     }
 
     onGoToSearchListings({
       hospital: selectedHospital,
-      duration: selectedDuration === 'custom' ? customDuration.toString() : selectedDuration === 'customDates' ? 'customDates' : selectedDuration,
+      duration: 'customDates',
       radius: commuteBuffer,
       checkInDate: earliestCheckIn,
-      checkOutDate: selectedDuration === 'customDates' ? latestCheckOut : undefined,
+      checkOutDate: latestCheckOut,
     });
-  }, [selectedHospital, selectedDuration, customDuration, commuteBuffer, earliestCheckIn, latestCheckOut, onGoToSearchListings]);
+  }, [selectedHospital, commuteBuffer, earliestCheckIn, latestCheckOut, onGoToSearchListings]);
 
   return (
     <div className={`w-full transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
@@ -419,7 +432,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="flex flex-col gap-3">
               {/* Row 1: Hospital Search */}
               <motion.div
                 initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
@@ -470,10 +483,10 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               )}
 
               {/* Row 2: Grid for Dates, Distance, and Search */}
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_200px_auto] gap-3 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-[1.5fr_200px_auto] gap-3 relative z-10">
                 {/* Assignment Dates */}
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
+                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-2">
                     Assignment dates
                   </label>
                   <button
@@ -486,26 +499,13 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
-                        {(() => {
-                           try {
-                             const startD = parseISO(earliestCheckIn);
-                             let endD: Date;
-                             let durStr: string;
-
-                             if (selectedDuration === 'customDates' && latestCheckOut) {
-                               endD = parseISO(latestCheckOut);
-                               durStr = 'Custom';
-                             } else {
-                               const wks = selectedDuration === 'custom' ? customDuration : parseInt(selectedDuration);
-                               endD = addWeeks(startD, wks || 13);
-                               durStr = `${wks || 13} weeks`;
-                             }
-                             return `${format(startD, 'MMM d')} → ${format(endD, 'MMM d')} · ${durStr}`;
-                           } catch (e) {
-                             return 'Select dates';
-                           }
-                        })()}
+                        {getDatesDisplayString().title}
                       </span>
+                      {getDatesDisplayString().subtitle && (
+                        <span className="text-[10px] text-[#0B2559]/70 dark:text-[#E6ECF7]/70 font-semibold">
+                          {getDatesDisplayString().subtitle}
+                        </span>
+                      )}
                     </div>
                     <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
                       {isDatesPopoverOpen ? 'expand_less' : 'expand_more'}
@@ -522,72 +522,65 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -8, scale: 0.95 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute top-[80px] left-0 w-full sm:w-[480px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-5 grid grid-cols-1 sm:grid-cols-2 gap-5"
+                          className="absolute top-[80px] left-0 w-full sm:w-[420px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-5 flex flex-col gap-4"
                         >
 
-                          <div className={selectedDuration === 'customDates' ? "grid grid-cols-2 gap-3" : "w-full"}>
-                            <div className="flex flex-col gap-1">
-                              <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                                Start Date
-                              </label>
+                          <div className="flex items-center gap-4 w-full">
+                            <div className="flex flex-col flex-1">
                               <ClinicalDatePicker
                                 value={earliestCheckIn}
-                                onChange={setEarliestCheckIn}
+                                onChange={(date) => {
+                                    setEarliestCheckIn(date);
+                                    if (date && latestCheckOut && new Date(date) >= new Date(latestCheckOut)) {
+                                      setLatestCheckOut(format(addWeeks(parseISO(date), 13), 'yyyy-MM-dd'));
+                                    }
+                                }}
                                 isNightShiftMode={isNightShiftMode}
                               />
                             </div>
-                            {selectedDuration === 'customDates' && (
-                              <div className="flex flex-col gap-1">
-                                <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                                  End Date
-                                </label>
-                                <ClinicalDatePicker
-                                  value={latestCheckOut}
-                                  onChange={(date) => {
-                                    setLatestCheckOut(date);
-                                    setDateValidationError('');
-                                  }}
-                                  isNightShiftMode={isNightShiftMode}
-                                  minDate={earliestCheckIn}
-                                  align="right"
-                                />
-                              </div>
-                            )}
-                            {dateValidationError && selectedDuration === 'customDates' && (
-                              <span className="col-span-2 text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
-                            )}
+                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30">arrow_forward</span>
+                            <div className="flex flex-col flex-1">
+                              <ClinicalDatePicker
+                                value={latestCheckOut}
+                                onChange={(date) => {
+                                  setLatestCheckOut(date);
+                                  setDateValidationError('');
+                                }}
+                                isNightShiftMode={isNightShiftMode}
+                                minDate={earliestCheckIn}
+                                align="right"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                              Duration
+
+                          {getDatesDisplayString().subtitle && !dateValidationError && (
+                            <div className="text-center text-sm font-bold text-[#0B2559] dark:text-[#93ccff] bg-[#EFF6FB] dark:bg-[#182840] py-2 rounded-xl">
+                                {getDatesDisplayString().subtitle}
+                            </div>
+                          )}
+                          {dateValidationError && (
+                            <span className="text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
+                          )}
+                          <div className="pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                            <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-3">
+                              Common assignment lengths
                             </label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {[{l: '4 wks', v: '4'}, {l: '8 wks', v: '8'}, {l: '13 wks', v: '13'}, {l: '26 wks', v: '26'}, {l: 'Custom', v: 'custom'}, {l: 'Dates', v: 'customDates'}].map(opt => (
+                            <div className="grid grid-cols-4 gap-2">
+                              {[4, 8, 13, 26].map(wks => (
                                 <button
-                                  key={opt.v}
+                                  key={wks}
                                   type="button"
-                                  onClick={() => setSelectedDuration(opt.v)}
-                                  className={`h-10 rounded-xl text-xs font-bold transition-colors ${selectedDuration === opt.v ? 'bg-[#0A6FA8] text-white' : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559]/80 dark:text-[#c0c7d1] hover:bg-[#E5F0F8]'}`}
+                                  onClick={() => {
+                                      if (earliestCheckIn) {
+                                          setLatestCheckOut(format(addWeeks(parseISO(earliestCheckIn), wks), 'yyyy-MM-dd'));
+                                      }
+                                  }}
+                                  className="h-10 rounded-xl text-xs font-bold transition-colors bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559]/80 dark:text-[#c0c7d1] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352]"
                                 >
-                                  {opt.l}
+                                  {wks} weeks
                                 </button>
                               ))}
                             </div>
-                            {selectedDuration === 'custom' && (
-                              <div className="mt-2">
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={customDuration || ''}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value);
-                                    setCustomDuration(isNaN(val) ? 0 : val);
-                                  }}
-                                  placeholder="Custom duration (weeks)"
-                                  className="w-full h-10 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#0B2559] dark:text-white text-xs font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
-                                />
-                              </div>
-                            )}
                           </div>
                         </motion.div>
                       </>

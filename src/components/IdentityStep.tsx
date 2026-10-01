@@ -231,7 +231,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
                   setVerificationError(null);
                   onChange({ dob: newDob });
                 }}
-                label="Date of Birth *"
                 maxDate={new Date().toISOString().split('T')[0]}
                 showPresets={false}
                 isNightShiftMode={isNightShiftMode}
