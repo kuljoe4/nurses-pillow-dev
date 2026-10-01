@@ -808,7 +808,7 @@ async function startServer() {
       const result = await db.query(
         `
         INSERT INTO bookings (
-          id, listing_id, traveler_id, start_date, end_date, stay_duration_weeks,
+          id, listing_id, traveler_id, start_date, end_date, assignment_duration_weeks,
           status, total_rent, base_monthly_rent, cleaning_fee, pet_fee,
           gross_booking_value, host_platform_fee_amount, host_payout_amount,
           cancellation_policy_agreed, host_id, stripe_payment_intent_id
@@ -915,7 +915,7 @@ async function startServer() {
 
       const result = await db.query(
         `
-        INSERT INTO bookings (id, listing_id, traveler_id, start_date, end_date, stay_duration_weeks, status, total_rent, base_monthly_rent, gross_booking_value, host_platform_fee_amount, host_payout_amount, cancellation_policy_agreed, host_id)
+        INSERT INTO bookings (id, listing_id, traveler_id, start_date, end_date, assignment_duration_weeks, status, total_rent, base_monthly_rent, gross_booking_value, host_platform_fee_amount, host_payout_amount, cancellation_policy_agreed, host_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *;
       `,
