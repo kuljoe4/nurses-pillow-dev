@@ -30,10 +30,10 @@
   <body class="bg-[#faf8ff] text-[#001848] antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
+    <script type="module">
       (function() {
         if ("fonts" in document) {
-          document.fonts.load('1em "Material Symbols Outlined"').then(function() {
+          document.fonts.load('16px "Material Symbols Outlined"').then(function() {
             document.documentElement.classList.add("fonts-loaded");
           }).catch(function() {
             document.documentElement.classList.add("fonts-loaded");

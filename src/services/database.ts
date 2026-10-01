@@ -825,6 +825,11 @@ class DatabaseService {
   async fetchAuditLogs(): Promise<DbAuditLog[]> {
     try {
       const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      if (!token) {
+        this.auditLogs = [];
+        return this.auditLogs;
+      }
+
       const headers: Record<string, string> = {};
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
