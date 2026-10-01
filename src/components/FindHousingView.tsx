@@ -14,6 +14,7 @@ import {
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
+import { addWeeks, format, parseISO } from 'date-fns';
 
 interface ObservedListingCardProps {
   listing: HousingListing;
@@ -210,12 +211,14 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
   const [latestCheckOut, setLatestCheckOut] = useState('');
   const [dateValidationError, setDateValidationError] = useState('');
-  const [isCustomizingAssignment, setIsCustomizingAssignment] = useState(false);
-  const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
+    const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
     userRole === 'host' ? 'hosts' : 'clinicians'
   );
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
+  const [isDatesPopoverOpen, setIsDatesPopoverOpen] = useState(false);
+  const [isDistancePopoverOpen, setIsDistancePopoverOpen] = useState(false);
+
 
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
   // to child components like ObservedListingCard that use React.memo,
@@ -402,291 +405,271 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             Curated furnished quiet spaces vetted for day-sleepers, shift schedules, and contract flexibility.
           </motion.p>
 
-          {/* Signature Assignment Card (Dominant Raised Surface per AGENTS.md) */}
+
+          {/* Signature Assignment Card (Compact & Fast) */}
           <motion.div
             variants={heroSearchCardVariant}
             className="w-full max-w-4xl bg-white dark:bg-[#111e33] rounded-[24px] p-6 sm:p-8 shadow-[0_12px_36px_rgba(11,37,89,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.4)] text-left relative border border-[rgba(11,37,89,0.08)] dark:border-[#233550]"
           >
-            {/* Header info bar */}
-            <div className="flex flex-wrap items-center justify-between pb-4 mb-5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-3">
-              <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-lg bg-[#EFF6FB] dark:bg-[#182840] flex items-center justify-center text-[#0A6FA8] dark:text-[#3E9AD1]">
-                  <span className="material-symbols-outlined text-[20px]">local_hospital</span>
-                </span>
-                <div>
-                  <h3 className="text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider">
-                    Where are you assigned?
-                  </h3>
-                  <p className="text-sm font-semibold text-[#0B2559] dark:text-white">
-                    Verified Travel Nurse Sanctuary Housing
-                  </p>
-                </div>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EFE9] dark:bg-[#195b4c]/20 text-[#2F6E5E] dark:text-[#aff0db] text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
+            {/* Header / Verified Badge Row */}
+            <div className="flex items-center justify-end pb-2 mb-4 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EFE9] dark:bg-[#195b4c]/20 text-[#2F6E5E] dark:text-[#aff0db] text-[10px] font-semibold uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
                 <span>Nursys® Primary-Source RN Verified</span>
               </div>
             </div>
 
-            {/* Hospital Search Autocomplete (Dominant Entry Point with Affordance) */}
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
-              whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-20px' }}
-              transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mb-5"
-            >
-              <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                Where are you assigned? (Hospital or clinic)
-              </label>
-              <div className="relative">
-                <GoogleHospitalAutocomplete
-                  value={selectedHospital}
-                  onChange={(hosp) => setSelectedHospital(hosp)}
-                  onSelectHospital={(hosp) => {
-                    setSelectedHospital(hosp.name);
-                    if (hosp.state) {
-                      setSelectedHospitalState(hosp.state);
-                    } else if (hosp.address) {
-                      const parts = hosp.address.split(',');
-                      if (parts.length > 1) {
-                         const potentialState = parts[1].trim().split(' ')[0];
-                         if (potentialState.length === 2) {
-                           setSelectedHospitalState(potentialState.toUpperCase());
-                         }
-                      }
-                    }
-                  }}
-                  isNightShiftMode={isNightShiftMode}
-                  placeholder="Where are you assigned? (e.g. Duke University, UNC, WakeMed)..."
-                />
-              </div>
-            </motion.div>
-
-            {/* Regional Limitation Banner */}
-            {!isStateActive(selectedHospitalState) && (
+            <div className="space-y-4">
+              {/* Row 1: Hospital Search */}
               <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-sm font-semibold flex items-center gap-2"
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+                whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-20px' }}
+                transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-20"
               >
-                <span className="material-symbols-outlined text-[18px]">
-                  location_off
-                </span>
-                We are launching soon in your state. Currently active in NC, MD, CT, ND, and KS.
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 w-full relative">
+                    <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
+                      Hospital / Clinic
+                    </label>
+                    <GoogleHospitalAutocomplete
+                      value={selectedHospital}
+                      onChange={(hosp) => setSelectedHospital(hosp)}
+                      onSelectHospital={(hosp) => {
+                        setSelectedHospital(hosp.name);
+                        if (hosp.state) {
+                          setSelectedHospitalState(hosp.state);
+                        } else if (hosp.address) {
+                          const parts = hosp.address.split(',');
+                          if (parts.length > 1) {
+                             const potentialState = parts[1].trim().split(' ')[0];
+                             if (potentialState.length === 2) {
+                               setSelectedHospitalState(potentialState.toUpperCase());
+                             }
+                          }
+                        }
+                      }}
+                      isNightShiftMode={isNightShiftMode}
+                      placeholder="e.g. Duke University Hospital..."
+                    />
+                  </div>
+                </div>
               </motion.div>
-            )}
 
-            {/* Progressive Disclosure Bar: Staged Data Summary+ Expand Button */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs sm:text-sm text-[#0B2559] dark:text-[#E6ECF7]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCustomizingAssignment((prev) => !prev);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
-                  title="Click to select move-in date"
-                >
-                  <span className="text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">Move-in</span>
-                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
-                    {formatDateFriendly(earliestCheckIn)}
-                  </span>
-                  <span className="material-symbols-outlined text-[15px] text-[#0A6FA8] dark:text-[#3E9AD1] opacity-70 group-hover:opacity-100 transition-opacity">
-                    edit_calendar
-                  </span>
-                </button>
-                <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomizingAssignment(true)}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
-                  title="Click to customize rotation duration"
-                >
-                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
-                    {selectedDuration === 'custom' ? `${customDuration} wks` : selectedDuration === 'customDates' ? 'Custom Dates' : `${selectedDuration} weeks`}
-                  </span>
-                </button>
-                <span className="text-[#0B2559]/30 dark:text-[#E6ECF7]/30">·</span>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomizingAssignment(true)}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-[#0A6FA8]/10 text-left transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
-                  title="Click to customize commute radius"
-                >
-                  <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums group-hover:underline">
-                    Within {commuteBuffer} mi
-                  </span>
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsCustomizingAssignment(!isCustomizingAssignment)}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] cursor-pointer py-1 px-2.5 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors self-start sm:self-auto group focus-visible:ring-2 focus-visible:ring-[#0A6FA8] focus-visible:outline-none"
-              >
-                <span className="group-hover:underline">{isCustomizingAssignment ? 'Fewer options' : 'Customize dates & radius'}</span>
-                <span
-                  className="material-symbols-outlined text-[16px] transition-transform duration-200"
-                  style={{ transform: isCustomizingAssignment ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
-                  expand_more
-                </span>
-              </button>
-            </div>
-
-            {/* Progressive Disclosure Drawer (Collapsible Advanced Controls) */}
-            <AnimatePresence>
-              {isCustomizingAssignment && (
+              {/* Regional Limitation Banner */}
+              {!isStateActive(selectedHospitalState) && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0, y: -8 }}
-                  animate={{ opacity: 1, height: 'auto', y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -8 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="pt-4 pb-2 space-y-5 px-1 -mx-1"
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-xs font-semibold flex items-center gap-2 mb-2"
                 >
-                  {/* Dual Column: Check-in & Duration */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {/* Date Range Group (Optimized for Cognitive Load & Space) */}
-                    <div className={selectedDuration === 'customDates' ? "grid grid-cols-2 gap-3" : "w-full"}>
-                      <div className="flex flex-col gap-1">
-                        <ClinicalDatePicker
-                          value={earliestCheckIn}
-                          onChange={setEarliestCheckIn}
-                          label="Check-In"
-                          subLabel="Shift Start"
-                          isNightShiftMode={isNightShiftMode}
-                        />
-                      </div>
-                      {selectedDuration === 'customDates' && (
-                        <div className="flex flex-col gap-1">
-                          <ClinicalDatePicker
-                            value={latestCheckOut}
-                            onChange={(date) => {
-                              setLatestCheckOut(date);
-                              setDateValidationError('');
-                            }}
-                            label="Check-Out"
-                            subLabel="Shift End"
-                            isNightShiftMode={isNightShiftMode}
-                            minDate={earliestCheckIn}
-                            align="right"
-                          />
-                        </div>
-                      )}
-                      {dateValidationError && selectedDuration === 'customDates' && (
-                        <span className="col-span-2 text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
-                      )}
-                    </div>
-
-                    {/* Assignment Duration */}
-                    <div>
-                      <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
-                        Assignment Duration
-                      </label>
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 h-auto sm:h-12">
-                        {durationOptions.map((opt) => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            onClick={() => setSelectedDuration(opt.value)}
-                            className={`rounded-xl text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer flex items-center justify-center tabular-nums ${
-                              selectedDuration === opt.value
-                                ? 'bg-[#0A6FA8] text-white shadow-xs'
-                                : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559]/80 dark:text-[#c0c7d1] hover:bg-[#E5F0F8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                      {selectedDuration === 'custom' && (
-                        <div className="mt-2">
-                          <input
-                            type="number"
-                            min="1"
-                            value={customDuration || ''}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              setCustomDuration(isNaN(val) ? 0 : val);
-                            }}
-                            placeholder="Custom duration (weeks)"
-                            className="w-full h-11 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#0B2559] dark:text-white text-xs font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Commute Buffer Slider & Action */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider">
-                        Max Commute Buffer
-                      </label>
-                      <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
-                        Within {commuteBuffer} miles of hospital
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                      {commuteOptions.map((opt) => (
-                        <button
-                          key={opt.miles}
-                          type="button"
-                          onClick={() => setCommuteBuffer(opt.miles)}
-                          className={`p-3 rounded-xl text-left border transition-all duration-200 ease-in-out cursor-pointer ${
-                            commuteBuffer === opt.miles
-                              ? 'border-[#0A6FA8] bg-[#EFF6FB] dark:bg-[#0A6FA8]/20'
-                              : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-[#EFF6FB]/60 dark:bg-[#182840] hover:bg-[#E5F0F8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]'
-                          }`}
-                        >
-                          <div className="text-xs font-bold text-[#0B2559] dark:text-white tabular-nums">{opt.label}</div>
-                          <div className="text-[11px] text-[#0B2559]/70 dark:text-[#c0c7d1]">{opt.desc}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <span className="material-symbols-outlined text-[16px]">location_off</span>
+                  We are launching soon in your state. Currently active in NC, MD, CT, ND, and KS.
                 </motion.div>
               )}
-            </AnimatePresence>
 
-            {/* Main Search Action Button */}
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
-              whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-20px' }}
-              transition={{ duration: 0.3, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-3"
-            >
-              <motion.button
-                type="button"
-                onClick={handleExecuteSearch}
-                whileTap={{ scale: 0.98 }}
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.15 }}
-                className="w-full h-14 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-base font-bold transition-all duration-200 ease-in-out shadow-md flex items-center justify-center gap-2 group cursor-pointer"
-              >
-                <span>Search housing near assignment</span>
-                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
-                  arrow_forward
-                </span>
-              </motion.button>
-            </motion.div>
+              {/* Row 2: Grid for Dates, Distance, and Search */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_200px_auto] gap-3 relative z-10">
+                {/* Assignment Dates */}
+                <div className="relative">
+                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
+                    Assignment dates
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDatesPopoverOpen(!isDatesPopoverOpen);
+                      setIsDistancePopoverOpen(false);
+                    }}
+                    className="w-full h-[52px] px-4 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors flex items-center justify-between text-left cursor-pointer group"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
+                        {(() => {
+                           try {
+                             const startD = parseISO(earliestCheckIn);
+                             let endD: Date;
+                             let durStr: string;
 
-            {/* Micro Escrow Trust Strip */}
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[#0B2559]/70 dark:text-[#E6ECF7]/70 text-center">
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#2F6E5E] dark:text-[#aff0db]">check_circle</span>
-                <span>$0 traveler booking fee</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1]">bedtime</span>
-                <span>Daytime quiet guarantee (&lt;35 dB)</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-[#2F6E5E] dark:text-[#aff0db]">verified_user</span>
-                <span>24h host response SLA</span>
-              </span>
+                             if (selectedDuration === 'customDates' && latestCheckOut) {
+                               endD = parseISO(latestCheckOut);
+                               durStr = 'Custom';
+                             } else {
+                               const wks = selectedDuration === 'custom' ? customDuration : parseInt(selectedDuration);
+                               endD = addWeeks(startD, wks || 13);
+                               durStr = `${wks || 13} weeks`;
+                             }
+                             return `${format(startD, 'MMM d')} → ${format(endD, 'MMM d')} · ${durStr}`;
+                           } catch (e) {
+                             return 'Select dates';
+                           }
+                        })()}
+                      </span>
+                    </div>
+                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                      {isDatesPopoverOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </button>
+
+                  {/* Progressive Disclosure Popover for Dates */}
+                  <AnimatePresence>
+                    {isDatesPopoverOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setIsDatesPopoverOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-[80px] left-0 w-full sm:w-[480px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-5 grid grid-cols-1 sm:grid-cols-2 gap-5"
+                        >
+
+                          <div className={selectedDuration === 'customDates' ? "grid grid-cols-2 gap-3" : "w-full"}>
+                            <div className="flex flex-col gap-1">
+                              <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+                                Start Date
+                              </label>
+                              <ClinicalDatePicker
+                                value={earliestCheckIn}
+                                onChange={setEarliestCheckIn}
+                                isNightShiftMode={isNightShiftMode}
+                              />
+                            </div>
+                            {selectedDuration === 'customDates' && (
+                              <div className="flex flex-col gap-1">
+                                <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+                                  End Date
+                                </label>
+                                <ClinicalDatePicker
+                                  value={latestCheckOut}
+                                  onChange={(date) => {
+                                    setLatestCheckOut(date);
+                                    setDateValidationError('');
+                                  }}
+                                  isNightShiftMode={isNightShiftMode}
+                                  minDate={earliestCheckIn}
+                                  align="right"
+                                />
+                              </div>
+                            )}
+                            {dateValidationError && selectedDuration === 'customDates' && (
+                              <span className="col-span-2 text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+                              Duration
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {[{l: '4 wks', v: '4'}, {l: '8 wks', v: '8'}, {l: '13 wks', v: '13'}, {l: '26 wks', v: '26'}, {l: 'Custom', v: 'custom'}, {l: 'Dates', v: 'customDates'}].map(opt => (
+                                <button
+                                  key={opt.v}
+                                  type="button"
+                                  onClick={() => setSelectedDuration(opt.v)}
+                                  className={`h-10 rounded-xl text-xs font-bold transition-colors ${selectedDuration === opt.v ? 'bg-[#0A6FA8] text-white' : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559]/80 dark:text-[#c0c7d1] hover:bg-[#E5F0F8]'}`}
+                                >
+                                  {opt.l}
+                                </button>
+                              ))}
+                            </div>
+                            {selectedDuration === 'custom' && (
+                              <div className="mt-2">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={customDuration || ''}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    setCustomDuration(isNaN(val) ? 0 : val);
+                                  }}
+                                  placeholder="Custom duration (weeks)"
+                                  className="w-full h-10 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] text-[#0B2559] dark:text-white text-xs font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Maximum Distance */}
+                <div className="relative">
+                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
+                    Maximum distance
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDistancePopoverOpen(!isDistancePopoverOpen);
+                      setIsDatesPopoverOpen(false);
+                    }}
+                    className="w-full h-[52px] px-4 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors flex items-center justify-between text-left cursor-pointer group"
+                  >
+                    <span className="text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
+                      Within {commuteBuffer} miles
+                    </span>
+                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                      {isDistancePopoverOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </button>
+
+                  {/* Progressive Disclosure Popover for Distance */}
+                  <AnimatePresence>
+                    {isDistancePopoverOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setIsDistancePopoverOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-[80px] right-0 w-full min-w-[220px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1"
+                        >
+                          {[
+                            {miles: 3, label: '3 miles', desc: 'Walking / Scooter'},
+                            {miles: 5, label: '5 miles', desc: 'Quick commute'},
+                            {miles: 10, label: '10 miles', desc: 'Moderate commute'},
+                            {miles: 15, label: '15 miles', desc: 'Maximum radius'}
+                          ].map(opt => (
+                            <button
+                              key={opt.miles}
+                              type="button"
+                              onClick={() => {
+                                setCommuteBuffer(opt.miles);
+                                setIsDistancePopoverOpen(false);
+                              }}
+                              className={`w-full p-3 rounded-xl text-left flex flex-col transition-colors ${commuteBuffer === opt.miles ? 'bg-[#0A6FA8]/10 dark:bg-[#0A6FA8]/20 border border-[#0A6FA8]/30' : 'hover:bg-[#EFF6FB] dark:hover:bg-[#182840] border border-transparent'}`}
+                            >
+                              <span className="text-sm font-bold text-[#0B2559] dark:text-white">{opt.label}</span>
+                              <span className="text-[10px] text-[#0B2559]/60 dark:text-[#c0c7d1]/60 font-semibold uppercase">{opt.desc}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Search Action */}
+                <div className="flex items-end">
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setIsDatesPopoverOpen(false);
+                      setIsDistancePopoverOpen(false);
+                      handleExecuteSearch();
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="w-full md:w-auto h-[52px] px-8 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer"
+                  >
+                    <span className="whitespace-nowrap">Search housing →</span>
+                  </motion.button>
+                </div>
+              </div>
             </div>
           </motion.div>
 
