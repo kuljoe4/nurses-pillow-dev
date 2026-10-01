@@ -70,7 +70,7 @@ async function startServer() {
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
+        connectSrc: ["'self'", "data:", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
         workerSrc: ["'self'", "blob:"]
       },
     },
