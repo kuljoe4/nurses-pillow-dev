@@ -5,6 +5,7 @@ import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { ListingDetailModal } from './ListingDetailModal';
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleHospitalAutocomplete } from './GoogleHospitalAutocomplete';
+import { ACTIVE_STATES, isStateActive } from '../lib/constants/states';
 import {
   heroContainerVariant,
   heroItemVariant,
@@ -200,6 +201,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital - Durham, NC');
+  const [selectedHospitalState, setSelectedHospitalState] = useState('NC');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
   const [commuteBuffer, setCommuteBuffer] = useState<number>(5);
@@ -423,11 +425,39 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 <GoogleHospitalAutocomplete
                   value={selectedHospital}
                   onChange={(hosp) => setSelectedHospital(hosp)}
+                  onSelectHospital={(hosp) => {
+                    setSelectedHospital(hosp.name);
+                    if (hosp.state) {
+                      setSelectedHospitalState(hosp.state);
+                    } else if (hosp.address) {
+                      const parts = hosp.address.split(',');
+                      if (parts.length > 1) {
+                         const potentialState = parts[1].trim().split(' ')[0];
+                         if (potentialState.length === 2) {
+                           setSelectedHospitalState(potentialState.toUpperCase());
+                         }
+                      }
+                    }
+                  }}
                   isNightShiftMode={isNightShiftMode}
                   placeholder="Where are you assigned? (e.g. Duke University, UNC, WakeMed)..."
                 />
               </div>
             </motion.div>
+
+            {/* Regional Limitation Banner */}
+            {!isStateActive(selectedHospitalState) && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-sm font-semibold flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  location_off
+                </span>
+                We are launching soon in your state. Currently active in NC, MD, CT, ND, and KS.
+              </motion.div>
+            )}
 
             {/* Progressive Disclosure Bar: Staged Data Summary+ Expand Button */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 pb-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550]">

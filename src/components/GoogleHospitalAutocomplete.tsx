@@ -8,6 +8,7 @@ export interface SelectedHospitalInfo {
   lat?: number;
   lng?: number;
   system?: string;
+  state?: string;
 }
 
 interface GoogleHospitalAutocompleteProps {
@@ -206,7 +207,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
       const request: google.maps.places.AutocompleteRequest = {
         input: trimmed,
         sessionToken: sessionTokenRef.current ?? undefined,
-        region: 'us',
+        includedRegionCodes: ['us'], // Modern Places API property
       };
 
       placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
@@ -254,17 +255,28 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
       // Use modern Places API (New) Place.fetchFields()
       const place = prediction.toPlace();
       await place.fetchFields({
-        fields: ['displayName', 'formattedAddress', 'location'],
+        fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'],
       });
 
       const lat = place.location ? place.location.lat() : undefined;
       const lng = place.location ? place.location.lng() : undefined;
+
+      let parsedState: string | undefined = undefined;
+      if (place.addressComponents) {
+        for (const component of place.addressComponents) {
+          if (component.types.includes('administrative_area_level_1')) {
+            parsedState = component.shortText || undefined;
+            break;
+          }
+        }
+      }
 
       onSelectHospital?.({
         name: place.displayName || name,
         address: place.formattedAddress || address,
         lat,
         lng,
+        state: parsedState,
       });
     } catch {
       onSelectHospital?.({ name, address });
