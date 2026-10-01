@@ -5,6 +5,7 @@ import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration, resolveHospitalCoordinates, getListingCoordinates } from '../lib/googleMapsCommute';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { calculateStayPricing } from '../lib/utils/pricing';
 
 interface ListingDetailModalProps {
   listing: HousingListing | null;
@@ -17,6 +18,8 @@ interface ListingDetailModalProps {
   onRequestToBook?: (listing: HousingListing) => void;
   selectedHospital?: string;
   commuteMode?: 'transit' | 'drive';
+  checkInDate?: string;
+  checkOutDate?: string;
 }
 
 export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
@@ -30,6 +33,8 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   onRequestToBook,
   selectedHospital = 'Duke University Hospital',
   commuteMode = 'transit',
+  checkInDate = '2026-10-05',
+  checkOutDate = '2027-01-04',
 }) => {
   useBodyScrollLock(!!listing);
 
@@ -59,6 +64,11 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   }, [listing?.rooms, selectedRoomId]);
 
   const activeMonthlyRate = selectedRoom ? selectedRoom.monthlyRate : (listing?.monthlyRate || 1950);
+
+  // Calculate Stay Pricing
+  const { daysCount, accommodationTotal, dailyRate } = calculateStayPricing(activeMonthlyRate, checkInDate, checkOutDate);
+  const cleaningFee = 150;
+  const initialDueAtHold = accommodationTotal + cleaningFee;
 
   const commute = useMemo(() => {
     if (!listing) return null;
@@ -540,16 +550,23 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
               {/* Fee Breakdown */}
               <div className="space-y-1.5 text-xs text-[#404850] dark:text-[#c0c7d1]">
                 <div className="flex justify-between">
-                  <span>Monthly Lodging Rate</span>
-                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${activeMonthlyRate.toLocaleString()}.00</span>
+                  <span>Accommodation ({daysCount} nights)</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${accommodationTotal.toLocaleString()}.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Clinical Sanitization</span>
-                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">$150.00</span>
+                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toLocaleString()}.00</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Refundable Security Hold</span>
-                  <span className="font-bold tabular-nums text-[#001848] dark:text-white">$250.00</span>
+                <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                  <span className="flex items-center gap-1.5">
+                    <span>Security Deposit Hold</span>
+                    <span className="text-[10px] font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#E1EFE9] dark:bg-[#142823] px-2 py-0.5 rounded-full">
+                      $0 Policy
+                    </span>
+                  </span>
+                  <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    $0.00 (No Card Hold)
+                  </span>
                 </div>
                 <div className="flex justify-between text-[#195b4c] font-semibold">
                   <span>$0 Traveler Fee (Guarantee)</span>
@@ -561,7 +578,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 </div>
                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between font-bold text-sm text-[#001848] dark:text-white">
                   <span>Initial Due at Hold</span>
-                  <span className="text-[#0A6FA8] dark:text-[#93ccff] font-black tabular-nums">${(activeMonthlyRate + 400).toLocaleString()}.00</span>
+                  <span className="text-[#0A6FA8] dark:text-[#93ccff] font-black tabular-nums">${initialDueAtHold.toLocaleString()}.00</span>
                 </div>
               </div>
 

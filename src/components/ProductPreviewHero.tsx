@@ -366,12 +366,6 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                       $120
                     </span>
                   </div>
-                  <div className="flex justify-between text-[#0B2559]/80 dark:text-[#E6ECF7]/80">
-                    <span>Security Deposit Hold (refundable)</span>
-                    <span className="font-semibold text-[#0B2559] dark:text-white">
-                      ${listing.securityDeposit ?? 500}
-                    </span>
-                  </div>
                   <div className="flex justify-between text-[#2F6E5E] font-bold">
                     <span>Traveler Platform Booking Fee</span>
                     <span>$0.00 (Guaranteed)</span>
@@ -379,7 +373,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                   <div className="pt-2 border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex justify-between text-sm font-black text-[#0B2559] dark:text-white">
                     <span>Move-in Total</span>
                     <span>
-                      ${(listing.monthlyRate+ 120+ (listing.securityDeposit ?? 500)).toLocaleString()}
+                      ${(listing.monthlyRate+ 120).toLocaleString()}
                     </span>
                   </div>
                 </div>
