@@ -517,32 +517,35 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 >
                   {/* Dual Column: Check-in & Duration */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {/* Check-In Date & Optional Check-Out Date */}
-                    <div className="flex flex-col gap-4">
-                      <ClinicalDatePicker
-                        value={earliestCheckIn}
-                        onChange={setEarliestCheckIn}
-                        label="Check-In"
-                        subLabel="Shift Start"
-                        isNightShiftMode={isNightShiftMode}
-                      />
+                    {/* Date Range Group (Optimized for Cognitive Load & Space) */}
+                    <div className={selectedDuration === 'customDates' ? "grid grid-cols-2 gap-3" : "w-full"}>
+                      <div className="flex flex-col gap-1">
+                        <ClinicalDatePicker
+                          value={earliestCheckIn}
+                          onChange={setEarliestCheckIn}
+                          label="Check-In"
+                          subLabel="Shift Start"
+                          isNightShiftMode={isNightShiftMode}
+                        />
+                      </div>
                       {selectedDuration === 'customDates' && (
                         <div className="flex flex-col gap-1">
                           <ClinicalDatePicker
                             value={latestCheckOut}
                             onChange={(date) => {
                               setLatestCheckOut(date);
-                              setDateValidationError(''); // Clear error on change
+                              setDateValidationError('');
                             }}
                             label="Check-Out"
                             subLabel="Shift End"
                             isNightShiftMode={isNightShiftMode}
                             minDate={earliestCheckIn}
+                            align="right"
                           />
-                          {dateValidationError && (
-                            <span className="text-red-500 text-xs font-medium ml-1 mt-1">{dateValidationError}</span>
-                          )}
                         </div>
+                      )}
+                      {dateValidationError && selectedDuration === 'customDates' && (
+                        <span className="col-span-2 text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
                       )}
                     </div>
 
