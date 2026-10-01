@@ -559,8 +559,6 @@ useBodyScrollLock(isGsaModalOpen);
                     <ClinicalDatePicker
                       value={earliestCheckIn}
                       onChange={setEarliestCheckIn}
-                      label="Earliest Move-In"
-                      subLabel="Shift Start"
                       isNightShiftMode={isNightShiftMode}
                     />
                   </div>

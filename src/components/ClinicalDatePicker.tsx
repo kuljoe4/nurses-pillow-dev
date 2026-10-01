@@ -329,9 +329,6 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 ml-2">
-            <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white dark:bg-[#0B1626] border border-gray-200 dark:border-gray-700 text-[11px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1]">
-              Calendar
-            </span>
             <span
               className={`material-symbols-outlined text-[18px] text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
                 isOpen ? 'rotate-180 text-[#0A6FA8] dark:text-[#3E9AD1]' : ''

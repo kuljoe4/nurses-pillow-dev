@@ -1,0 +1,37 @@
+--- src/components/FindHousingView.tsx
++++ src/components/FindHousingView.tsx
+@@ -474,7 +474,7 @@
+               <div className="grid grid-cols-1 md:grid-cols-[1.5fr_200px_auto] gap-3 relative z-10">
+                 {/* Assignment Dates */}
+                 <div className="relative">
+-                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
++                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-2">
+                     Assignment dates
+                   </label>
+                   <button
+@@ -506,12 +506,12 @@
+                           className="absolute top-[80px] left-0 w-full sm:w-[420px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-5 flex flex-col gap-4"
+                         >
+
+-                          <div className="flex items-center gap-4 w-full">
++                          <div className="flex items-start gap-4 w-full">
+                             <div className="flex flex-col gap-1 flex-1">
+                               <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+-                                Start Date
++                                Move-in
+                               </label>
+                               <ClinicalDatePicker
+                                 value={earliestCheckIn}
+@@ -523,10 +523,10 @@
+                                 isNightShiftMode={isNightShiftMode}
+                               />
+                             </div>
+-                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30 mt-6">arrow_forward</span>
++                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30 mt-[34px]">arrow_forward</span>
+                             <div className="flex flex-col gap-1 flex-1">
+                               <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+-                                End Date
++                                Move-out
+                               </label>
+                               <ClinicalDatePicker
+                                 value={latestCheckOut}

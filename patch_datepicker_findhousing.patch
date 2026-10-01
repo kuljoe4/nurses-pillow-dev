@@ -1,0 +1,24 @@
+--- src/components/FindHousingView.tsx
++++ src/components/FindHousingView.tsx
+@@ -529,9 +529,6 @@
+
+                           <div className="flex items-center gap-4 w-full">
+                             <div className="flex flex-col flex-1">
+-                              <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+-                                Move-in
+-                              </label>
+                               <ClinicalDatePicker
+                                 value={earliestCheckIn}
+                                 onChange={(date) => {
+@@ -543,10 +540,7 @@
+                                 isNightShiftMode={isNightShiftMode}
+                               />
+                             </div>
+-                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30 mt-[34px]">arrow_forward</span>
++                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30">arrow_forward</span>
+                             <div className="flex flex-col flex-1">
+-                              <label className="block text-xs font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-2">
+-                                Move-out
+-                              </label>
+                               <ClinicalDatePicker
+                                 value={latestCheckOut}
