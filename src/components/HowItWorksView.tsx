@@ -23,7 +23,7 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
       icon: 'verified_user',
       title: '1. Clinician Verification & RN Rates',
       description:
-        'We cross-reference every clinician with their State Board of Nursing (BRN/Nursys). Verified clinicians unlock negotiated, stipend-friendly rates up to 25% lower than Airbnb or Furnished Finder.',
+        'We cross-reference every clinician with their State Board of Nursing (BRN/Nursys). Verified clinicians unlock negotiated, stipend-friendly rates up to 25% lower than Airbnb or Traditional Directories.',
     },
     {
       icon: 'dark_mode',
@@ -131,6 +131,72 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
             </motion.div>
           ))}
         </div>
+
+        {/* Comparison Matrix */}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="max-w-4xl mx-auto mt-16 mb-8"
+        >
+          <div className="text-center mb-8">
+            <h2 className={`text-2xl sm:text-3xl font-bold mb-3 ${isNightShiftMode ? 'text-white' : 'text-[#001848]'}`}>
+              Nurses Pillow vs. Traditional Directories
+            </h2>
+            <p className={`text-sm max-w-2xl mx-auto ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
+              Why top healthcare travelers and hosts prefer a verified ecosystem over general housing boards.
+            </p>
+          </div>
+
+          <div className={`overflow-hidden rounded-3xl border shadow-sm ${
+            isNightShiftMode ? 'bg-[#0E1A2E] border-[#233550]' : 'bg-white border-[rgba(11,37,89,0.08)]'
+          }`}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className={isNightShiftMode ? 'bg-[#15233a] text-[#E6ECF7]' : 'bg-[#f4f6fb] text-[#001848]'}>
+                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3">Feature</th>
+                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3 bg-[#0a6fa8]/10 text-[#0a6fa8] dark:text-[#93ccff]">
+                      Nurses Pillow
+                    </th>
+                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3 opacity-70">
+                      Traditional Directories
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className={`text-sm ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
+                  <tr className="border-b border-black/5 dark:border-white/5">
+                    <td className="p-4 sm:p-5 font-semibold">Upfront Cost</td>
+                    <td className="p-4 sm:p-5 font-bold text-[#195b4c] dark:text-[#aff0db] bg-[#0a6fa8]/5">
+                      $0 (Pay only when booked)
+                    </td>
+                    <td className="p-4 sm:p-5 opacity-80">$199/yr subscription</td>
+                  </tr>
+                  <tr className="border-b border-black/5 dark:border-white/5">
+                    <td className="p-4 sm:p-5 font-semibold">Traveler Identity</td>
+                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">Biometric ID Verified</td>
+                    <td className="p-4 sm:p-5 opacity-80">Unverified at signup</td>
+                  </tr>
+                  <tr className="border-b border-black/5 dark:border-white/5">
+                    <td className="p-4 sm:p-5 font-semibold">Professional Credentials</td>
+                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
+                      Official Registry/Board Verified
+                    </td>
+                    <td className="p-4 sm:p-5 opacity-80">Unchecked</td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 sm:p-5 font-semibold">Booking & Payments</td>
+                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
+                      Secure Stripe Connect split
+                    </td>
+                    <td className="p-4 sm:p-5 opacity-80">Manual off-platform coordination</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Action card */}
         <motion.div

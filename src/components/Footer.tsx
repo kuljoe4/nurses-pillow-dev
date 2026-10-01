@@ -38,7 +38,7 @@ export const Footer: React.FC<FooterProps> = ({
               </span>
             </div>
             <p className="text-sm leading-relaxed mb-4">
-              Sanctuary-grade housing built exclusively for traveling clinicians navigating grueling shifts.
+              Sanctuary-grade housing built exclusively for verified healthcare professionals. $0 to list — pay only when booked.
             </p>
 
             {/* 24/7 Clinician Support badge */}

@@ -427,7 +427,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             variants={heroItemVariant}
             className="text-3xl sm:text-4xl lg:text-[46px] lg:leading-[54px] font-bold text-[#001848] dark:text-white max-w-4xl tracking-tight mb-4"
           >
-            Find your home near your next assignment.
+            Verified Healthcare Professionals Only.
           </motion.h1>
 
           {/* Subtitle */}
@@ -435,7 +435,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             variants={heroItemVariant}
             className="text-base sm:text-lg text-[#404850] dark:text-[#c0c7d1] max-w-2xl leading-relaxed mb-8"
           >
-            Curated furnished quiet spaces vetted for day-sleepers, shift schedules, and contract flexibility.
+            Find your home near your next assignment. Curated furnished quiet spaces vetted for day-sleepers, shift schedules, and contract flexibility.
           </motion.p>
 
 
