@@ -203,7 +203,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   userName,
 }) => {
   const shouldReduceMotion = useReducedMotion();
-  const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital - Durham, NC');
+  const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital');
   const [selectedHospitalState, setSelectedHospitalState] = useState('NC');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
@@ -492,7 +492,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   className="p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-xs font-semibold flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[16px] shrink-0">location_off</span>
-                  <span>Currently active in NC, MD, CT, ND, and KS. Expanding soon to your hospital state.</span>
+                  <span>We are launching soon in your state. Currently active in NC, MD, CT, ND, and KS.</span>
                 </motion.div>
               )}
 
@@ -649,6 +649,19 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   {dateValidationError}
                 </p>
               )}
+
+              {/* Active States Badge */}
+              <div className="flex flex-col md:flex-row items-center justify-center gap-3 mt-4 pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#2b4162] text-xs font-semibold">
+                <span className="text-[#0B2559]/75 dark:text-[#E6ECF7]/75">Currently active in:</span>
+                <div className="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
+                  {['NC', 'MD', 'CT', 'ND', 'KS'].map((state) => (
+                    <span key={state} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] shadow-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
+                      {state}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
               {/* Unconstrained Floating Dates Popover (Anchored Responsively Across Assignment Card) */}
               <AnimatePresence>
@@ -1172,6 +1185,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
+        checkInDate={earliestCheckIn}
+        checkOutDate={latestCheckOut}
         onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);

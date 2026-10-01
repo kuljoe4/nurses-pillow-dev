@@ -15,7 +15,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="preload" href="/fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin />
     <script>
       // Suppress benign Vite HMR WebSocket warning in cloud preview environment
       window.addEventListener('unhandledrejection', function(event) {
@@ -30,17 +29,10 @@
   <body class="bg-[#faf8ff] text-[#001848] antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script type="module">
+    <script>
       (function() {
-        if ("fonts" in document) {
-          document.fonts.load('16px "Material Symbols Outlined"').then(function() {
-            document.documentElement.classList.add("fonts-loaded");
-          }).catch(function() {
-            document.documentElement.classList.add("fonts-loaded");
-          });
-        } else {
-          document.documentElement.classList.add("fonts-loaded");
-        }
+        // Fallback to immediately showing fonts if JS fonts API fails or is slow
+        document.documentElement.classList.add("fonts-loaded");
       })();
     </script>
     <script>

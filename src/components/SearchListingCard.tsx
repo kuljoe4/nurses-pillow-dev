@@ -41,7 +41,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
   // Transparent Fee Calculations (per AGENTS.md rule 4.C Transparent Pricing)
   const monthlyRent = listing.monthlyRate || 1950;
   const cleaningFee = 150; // Standard clinical sanitization
-  const depositHold = listing.securityDeposit ?? 250; // Refundable security deposit hold
+  const depositHold = 0; // Strict Platform-Wide Policy: Zero Security Deposit Holds for Clinicians
   const travelerFee = 0; // $0 Traveler Booking Fee
   const totalMoveInHold = monthlyRent + cleaningFee + depositHold + travelerFee;
 
