@@ -38,9 +38,6 @@ export default defineConfig(() => {
               if (id.includes('firebase')) {
                 return 'vendor-firebase';
               }
-              if (id.includes('framer-motion') || id.includes('motion')) {
-                return 'vendor-motion';
-              }
               if (id.includes('react') || id.includes('react-dom')) {
                 return 'vendor-react';
               }
