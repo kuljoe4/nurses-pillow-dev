@@ -153,6 +153,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   const [isOpen, setIsOpen] = useState(false);
   const [placesSuggestions, setPlacesSuggestions] = useState<google.maps.places.AutocompleteSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [curatedHospitals, setCuratedHospitals] = useState<SelectedHospitalInfo[]>(CURATED_HOSPITALS);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -163,6 +164,25 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    fetch('/api/hospitals')
+      .then(res => res.json())
+      .then((data: any[]) => {
+        if (data && data.length > 0) {
+          const fetched = data.map(h => ({
+            name: h.name,
+            address: `${h.address || ''}, ${h.city || ''}, ${h.state || ''} ${h.zip || ''}`.trim().replace(/^,|,$/g, ''),
+            lat: h.latitude,
+            lng: h.longitude,
+            system: h.health_system,
+            state: h.state,
+          }));
+          setCuratedHospitals(fetched);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // Click outside listener
   useEffect(() => {
@@ -179,15 +199,15 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   const filteredCurated = useMemo(() => {
     const query = inputValue.trim().toLowerCase();
     if (!query) {
-      return CURATED_HOSPITALS.slice(0, 6);
+      return curatedHospitals.slice(0, 6);
     }
-    return CURATED_HOSPITALS.filter(
+    return curatedHospitals.filter(
       (h) =>
         h.name.toLowerCase().includes(query) ||
         h.address.toLowerCase().includes(query) ||
         (h.system && h.system.toLowerCase().includes(query))
     );
-  }, [inputValue]);
+  }, [inputValue, curatedHospitals]);
 
   // Handle typing: use Places API (New) AutocompleteSuggestion if available
   const handleInputChange = (text: string) => {
@@ -334,7 +354,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
               <span>North Carolina Flagship Medical Centers</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {CURATED_HOSPITALS.slice(0, 5).map((h) => (
+              {curatedHospitals.slice(0, 5).map((h) => (
                 <button
                   key={h.name}
                   type="button"
