@@ -665,8 +665,10 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                   <span className="text-[10px] font-medium opacity-70 leading-none flex items-center gap-1">
                     <span>{getRoleLabel(currentUser.role)}</span>
-                    {isVerified && (
+                    {isVerified ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[9px]">✓</span>
+                    ) : currentUser.role === 'nurse' && (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold text-[9px]">!</span>
                     )}
                   </span>
                 </div>
@@ -708,7 +710,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${roleStyles.badge}`}>
                           {getRoleLabel(currentUser.role)}
                         </span>
-                        {isVerified && (
+                        {isVerified ? (
                           <button
                             type="button"
                             onClick={() => {
@@ -719,6 +721,18 @@ export const Header: React.FC<HeaderProps> = ({
                           >
                             <span className="material-symbols-outlined text-[12px]">verified</span>
                             <span className="group-hover:underline">Verified Status</span>
+                          </button>
+                        ) : currentUser.role === 'nurse' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onSelectTab('verification');
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-0.5 cursor-pointer group"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">pending_actions</span>
+                            <span className="group-hover:underline">Complete Verification</span>
                           </button>
                         )}
                       </div>
@@ -995,8 +1009,19 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className={`px-1.5 py-0.2 rounded font-bold ${roleStyles.badge}`}>
                         {getRoleLabel(currentUser.role)}
                       </span>
-                      {isVerified && (
+                      {isVerified ? (
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Verified</span>
+                      ) : currentUser.role === 'nurse' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelectTab('verification');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="text-amber-600 dark:text-amber-400 font-semibold hover:underline cursor-pointer flex items-center gap-0.5"
+                        >
+                          <span>• Unverified (Click to Complete)</span>
+                        </button>
                       )}
                     </div>
                   </div>
