@@ -1,6 +1,7 @@
 import React from 'react';
 import { NursesPillowLogo } from './NursesPillowLogo';
 import { ACTIVE_CLEARED_STATES } from '../data/mockData';
+import { ActiveStatesMap } from './ui/ActiveStatesMap';
 
 interface FooterProps {
   isNightShiftMode: boolean;
@@ -248,17 +249,17 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#2F6E5E] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
                 <h4
                   className={`text-xs font-bold uppercase tracking-wider ${
                     isNightShiftMode ? 'text-white' : 'text-[#001848]'
                   }`}
                 >
-                  Active State Coverage • Cleared for Immediate Clinical Housing
+                  Coverage Areas
                 </h4>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Hospital assignment search, nurse licensing/registry verification, and $0-hold furnished listings are currently live in 5 cleared states.
+                Hospital assignment search, nurse licensing/registry verification, and $0-hold furnished listings are currently live in 5 cleared states. Expanding nationwide. Additional healthcare markets opening soon.
               </p>
             </div>
             <button
@@ -271,34 +272,43 @@ export const Footer: React.FC<FooterProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-            {ACTIVE_CLEARED_STATES.map((st) => (
-              <button
-                key={st.code}
-                onClick={() => onSelectTab('find-housing')}
-                type="button"
-                className={`p-3 rounded-xl border text-left transition-all hover:scale-[1.02] cursor-pointer ${
-                  isNightShiftMode
-                    ? 'bg-[#15233a] border-[#233550] hover:border-[#3E9AD1]'
-                    : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.06)] hover:border-[#0A6FA8]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-extrabold text-sm text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    {st.code}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db]">
-                    Live
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
-                  {st.name}
-                </div>
-                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                  {st.status}
-                </div>
-              </button>
-            ))}
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 flex-1">
+              {ACTIVE_CLEARED_STATES.map((st) => (
+                <button
+                  key={st.code}
+                  onClick={() => onSelectTab('find-housing')}
+                  type="button"
+                  className={`p-3 rounded-xl border text-left transition-all hover:scale-[1.02] cursor-pointer ${
+                    isNightShiftMode
+                      ? 'bg-[#15233a] border-[#233550] hover:border-[#3E9AD1]'
+                      : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.06)] hover:border-[#0A6FA8]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                      <span className="font-extrabold text-sm text-[#0A6FA8] dark:text-[#3E9AD1]">
+                        {st.code}
+                      </span>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db]">
+                      Live
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
+                    {st.name}
+                  </div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    {st.status}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="w-full md:w-1/3 xl:w-1/4 shrink-0">
+              <ActiveStatesMap isNightShiftMode={isNightShiftMode} />
+            </div>
           </div>
         </div>
 

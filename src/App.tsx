@@ -424,7 +424,7 @@ export default function App() {
 
   // Dedicated search params state (Screen A2)
   const [searchParamsState, setSearchParamsState] = useState({
-    hospital: "Duke University Hospital - Durham, NC",
+    hospital: "Duke University Hospital",
     duration: "13",
     radius: 5,
     checkInDate: "",

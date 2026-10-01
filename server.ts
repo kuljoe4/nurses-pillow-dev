@@ -697,10 +697,12 @@ async function startServer() {
   // Hospitals / Healthcare Facilities
   app.get('/api/hospitals', async (req: Request, res: Response) => {
     try {
+      const activeStatesQuery = ACTIVE_STATES.map(state => `'${state}'`).join(', ');
       const result = await db.query(`
         SELECT id, name, health_system, address_line1 as address, city, state, postal_code as zip,
         latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score
         FROM healthcare_facilities
+        WHERE state IN (${activeStatesQuery})
       `);
       res.json(result.rows);
     } catch (error: any) {
@@ -1253,10 +1255,15 @@ async function startServer() {
           return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const state = req.body.state || "NC"; // fallback
-        if (!ACTIVE_STATES.includes(state as any)) {
+        const ListingStateSchema = z.object({
+          state: z.enum(['NC', 'MD', 'CT', 'ND', 'KS']).default('NC'),
+        }).passthrough();
+
+        const parsedBody = ListingStateSchema.safeParse(req.body);
+        if (!parsedBody.success) {
           return res.status(400).json({ error: "Listing creation is currently limited to NC, MD, CT, ND, and KS." });
         }
+        const state = parsedBody.data.state;
 
         const existingRes = await db.query(
           "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
