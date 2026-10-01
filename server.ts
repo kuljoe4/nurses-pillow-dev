@@ -252,6 +252,9 @@ async function startServer() {
   app.use('/api/auth', authRoutes);
 
   // Identity Verification Endpoint (NV-01, NV-02)
+  // TODO: Integrate Stripe Identity for real biometric & ID verification.
+  // Currently, this endpoint performs strict local data validation to enforce real inputs
+  // before updating the database, but does not yet call the Stripe API.
   app.post('/api/verify/identity', authenticateToken, async (req: any, res: Response) => {
     try {
       const { legalFirstName, legalLastName, dob, lastFourSSN, idDocumentName } = req.body;

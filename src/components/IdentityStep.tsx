@@ -350,13 +350,15 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
               <span>{isVerifying ? 'Verifying legal identity...' : 'Save & continue'}</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
-            <button
-              type="button"
-              onClick={() => onSelectStep(2)}
-              className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
-            >
-              Continue to Step 2
-            </button>
+            {data.isIdVerified && (
+              <button
+                type="button"
+                onClick={() => onSelectStep(2)}
+                className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
+              >
+                Continue to Step 2
+              </button>
+            )}
           </div>
         </form>
       </div>

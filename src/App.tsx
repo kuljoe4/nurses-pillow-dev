@@ -644,11 +644,12 @@ export default function App() {
     if (emailVerified === "true" || emailVerified === "1") {
       fetchUserProfile().then(() => {
         handleUpdateVerification({ isContactVerified: true });
+        handleNavigateTab("phone-verification");
       });
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
-  }, [fetchUserProfile, handleUpdateVerification]);
+  }, [fetchUserProfile, handleUpdateVerification, handleNavigateTab]);
 
   // Handle Password Reset Links
   useEffect(() => {

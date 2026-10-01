@@ -59,6 +59,12 @@ export const ContactStep: React.FC<ContactStepProps> = ({
       return;
     }
 
+    const isBothVerified = Boolean(data.isContactVerified && data.phoneVerified);
+    if (!isBothVerified) {
+      setErrorMessage("Please complete both email and phone verification before proceeding.");
+      return;
+    }
+
     setErrorMessage(null);
 
     // Save entered contact values without forging false verification
@@ -341,13 +347,24 @@ export const ContactStep: React.FC<ContactStepProps> = ({
               <span>Save &amp; continue</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
-            <button
-              type="button"
-              onClick={() => onSelectStep(1)}
-              className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
-            >
-              Back to Identity
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onSelectStep(1)}
+                className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
+              >
+                Back
+              </button>
+              {isBothVerified && (
+                <button
+                  type="button"
+                  onClick={() => onSelectStep(3)}
+                  className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
+                >
+                  Continue to Step 3
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>
