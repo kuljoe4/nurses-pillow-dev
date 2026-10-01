@@ -1392,6 +1392,10 @@ export default function App() {
             onBookingSubmitted={handleConfirmCheckout}
             currentUser={currentUser}
             verificationData={verificationData}
+            onGoToVerification={() => {
+              handleNavigateTab("verification");
+              setIsCheckoutOpen(false);
+            }}
           />
         </Suspense>
       )}

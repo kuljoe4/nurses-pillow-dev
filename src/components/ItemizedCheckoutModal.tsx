@@ -18,6 +18,7 @@ interface ItemizedCheckoutModalProps {
     email?: string;
   };
   verificationData?: any;
+  onGoToVerification?: () => void;
 }
 
 export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
@@ -28,6 +29,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   onBookingSubmitted,
   currentUser,
   verificationData,
+  onGoToVerification,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -282,15 +284,28 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     </div>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    disabled={isCheckoutLocked}
-                    className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer flex justify-center items-center gap-2"
-                  >
-                    Continue to Payment
-                    {isCheckoutLocked && <span className="material-symbols-outlined text-[18px]">lock</span>}
-                  </button>
+                  {isCheckoutLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onGoToVerification) {
+                          onGoToVerification();
+                        }
+                      }}
+                      className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer flex justify-center items-center gap-2"
+                    >
+                      Complete Verification to Book
+                      <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer flex justify-center items-center gap-2"
+                    >
+                      Continue to Payment
+                    </button>
+                  )}
                 </motion.div>
               ) : (
                 <motion.div
