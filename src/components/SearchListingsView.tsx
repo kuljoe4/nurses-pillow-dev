@@ -374,6 +374,7 @@ useBodyScrollLock(isGsaModalOpen);
                           search
                         </span>
                         <input
+                          aria-label="Search hospitals"
                           type="text"
                           value={hospitalSearchQuery}
                           onChange={(e) => setHospitalSearchQuery(e.target.value)}
@@ -786,6 +787,7 @@ useBodyScrollLock(isGsaModalOpen);
                         </div>
 
                         <input
+                          aria-label="Maximum price"
                           type="range"
                           min="1500"
                           max="3500"
@@ -856,8 +858,9 @@ useBodyScrollLock(isGsaModalOpen);
 
                         {/* Toggles */}
                         <div className="space-y-2">
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterBlackout" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterBlackout"
                               type="checkbox"
                               checked={filterBlackout}
                               onChange={(e) => setFilterBlackout(e.target.checked)}
@@ -866,8 +869,9 @@ useBodyScrollLock(isGsaModalOpen);
                             <span>Blackout Curtains (100% light block)</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterQuietDay" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterQuietDay"
                               type="checkbox"
                               checked={filterQuietDay}
                               onChange={(e) => setFilterQuietDay(e.target.checked)}
@@ -876,8 +880,9 @@ useBodyScrollLock(isGsaModalOpen);
                             <span>Day-Sleeper Quiet Hours (≤35dB)</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterSoundMachine" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterSoundMachine"
                               type="checkbox"
                               checked={filterSoundMachine}
                               onChange={(e) => setFilterSoundMachine(e.target.checked)}
@@ -906,8 +911,9 @@ useBodyScrollLock(isGsaModalOpen);
                         </div>
 
                         <div className="space-y-2 mt-2">
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterScrubWasher" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterScrubWasher"
                               type="checkbox"
                               checked={filterScrubWasher}
                               onChange={(e) => setFilterScrubWasher(e.target.checked)}
@@ -916,8 +922,9 @@ useBodyScrollLock(isGsaModalOpen);
                             <span>In-Unit Scrub Washer & Dryer</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterDedicatedParking" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterDedicatedParking"
                               type="checkbox"
                               checked={filterDedicatedParking}
                               onChange={(e) => setFilterDedicatedParking(e.target.checked)}
@@ -926,8 +933,9 @@ useBodyScrollLock(isGsaModalOpen);
                             <span>Dedicated Reserved Parking Spot</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterContractFlex" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterContractFlex"
                               type="checkbox"
                               checked={filterContractFlex}
                               onChange={(e) => setFilterContractFlex(e.target.checked)}
@@ -936,8 +944,9 @@ useBodyScrollLock(isGsaModalOpen);
                             <span>Contract Flex Protection ($0 Cancellation)</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
+                          <label htmlFor="filterPetFriendly" className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#001848] dark:text-white">
                             <input
+                              id="filterPetFriendly"
                               type="checkbox"
                               checked={filterPetFriendly}
                               onChange={(e) => setFilterPetFriendly(e.target.checked)}

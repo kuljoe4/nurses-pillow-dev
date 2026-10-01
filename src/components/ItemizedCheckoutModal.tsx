@@ -393,8 +393,9 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
 
                     {/* Policy Simplification */}
                     <div className="text-xs text-[#404850] dark:text-[#c0c7d1] space-y-2">
-                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                      <label htmlFor="policy-agreement" className="flex items-start gap-2.5 cursor-pointer select-none">
                         <input
+                          id="policy-agreement"
                           type="checkbox"
                           checked={agreedToPolicy}
                           onChange={(e) => setAgreedToPolicy(e.target.checked)}
