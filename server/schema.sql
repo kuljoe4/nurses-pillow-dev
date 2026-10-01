@@ -135,7 +135,10 @@ CREATE TABLE users (
 
     clinical_license_number VARCHAR(100),
     clinical_state_board VARCHAR(100),
-    profession_specialty VARCHAR(150),
+    profession_type VARCHAR(100),
+    specialty VARCHAR(150),
+    primary_hospital_id VARCHAR(255) REFERENCES healthcare_facilities(id),
+    shift_preference VARCHAR(20),
     clinical_document_url TEXT,
     verification_status VARCHAR(50) DEFAULT 'unverified',
 
@@ -274,6 +277,9 @@ CREATE TABLE listings (
     is_healthcare_ready_plus BOOLEAN DEFAULT FALSE,
 
     nearest_hospital_id VARCHAR(255) REFERENCES healthcare_facilities(id),
+    min_stay_days INT DEFAULT 30,
+    max_stay_days INT DEFAULT 365,
+    quiet_daytime_environment BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -381,7 +387,7 @@ CREATE TABLE bookings (
     -- Stay Dates
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    stay_duration_weeks INT NOT NULL, -- 4, 8, 13, 26, or custom
+    assignment_duration_weeks INT NOT NULL, -- 4, 8, 13, 26, or custom
     status booking_status NOT NULL DEFAULT 'requested',
     cancellation_policy_agreed cancellation_policy_tier NOT NULL,
 
