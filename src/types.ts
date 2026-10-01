@@ -39,6 +39,9 @@ export interface BookingRequest {
   cleaningFee: number;
   petFee: number;
   travelerFee: number;
+  parkingFee?: number;
+  extraOptionsFee?: number;
+  selectedExtraOptions?: Array<{ name: string; price: number }>;
   totalInitialCharge: number;
   hostNetPayout: number;
   status: 'pending_host_approval' | 'approved' | 'declined' | 'active' | 'completed';
@@ -162,6 +165,9 @@ export interface HousingListing {
   isVerifiedByAdmin?: boolean;
   requiresSecurityDeposit?: boolean;
   securityDeposit?: number;
+  parkingFee?: number;
+  petFee?: number;
+  extraOptions?: Array<{ name: string; price: number }>;
   depositTermsExplainer?: string;
   customFeeOverridePercent?: number;
   hasFeeOverride?: boolean;
