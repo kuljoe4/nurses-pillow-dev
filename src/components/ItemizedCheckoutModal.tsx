@@ -4,6 +4,7 @@ import { HousingListing, BookingRequest } from '../types';
 import { stripeConnect, STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, StripeSplitTransaction } from '../services/stripeConnect';
 import { CancellationRefundEngine, CancellationTier } from '../services/cancellationEngine';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { calculateStayPricing } from '../lib/utils/pricing';
 
 interface ItemizedCheckoutModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ interface ItemizedCheckoutModalProps {
   };
   verificationData?: any;
   onGoToVerification?: () => void;
+  checkInDate: string;
+  checkOutDate: string;
 }
 
 export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
@@ -30,6 +33,8 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   currentUser,
   verificationData,
   onGoToVerification,
+  checkInDate,
+  checkOutDate,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -64,13 +69,17 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   if (!isOpen) return null;
 
   const monthlyRent = listing.monthlyRate || 1950;
+
+  // Calculate Stay Pricing
+  const { daysCount, accommodationTotal, dailyRate } = calculateStayPricing(monthlyRent, checkInDate, checkOutDate);
+
   // Strict Platform-Wide Policy: Zero Security Deposit Holds for Clinicians
   const securityDeposit = 0;
   const cleaningFee = 150;
-  const petFee = 0;
+  const petFee = 0; // we can keep it 0 for now unless listing has pet fee
   const travelerFee = 0;
-  // Upfront charge includes initial month lodging and cleaning fee. Zero security deposit hold.
-  const totalInitialCharge = monthlyRent + cleaningFee + petFee + travelerFee;
+  // Upfront charge includes prorated accommodation, cleaning fee, and pet fee.
+  const totalInitialCharge = accommodationTotal + cleaningFee + petFee + travelerFee;
 
   // Effective host fee lookup (checks for custom fee override vs global rate)
   const hostEffective = stripeConnect.getEffectiveFeeRate(listing.id || listing.title);
@@ -132,9 +141,9 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         unitSpecialty: verificationData?.professionSpecialty?.includes('PICU') ? 'Pediatric ICU' : 'Clinical Rotation',
         listingId: listing.id,
         listingTitle: listing.title,
-        startDate: '2026-10-01',
-        endDate: '2026-12-31',
-        durationWeeks: 13,
+        startDate: checkInDate,
+        endDate: checkOutDate,
+        durationWeeks: Math.round(daysCount / 7),
         monthlyRent,
         securityDeposit,
         cleaningFee,
@@ -230,7 +239,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                         {listing.title}
                       </div>
                       <div className="text-[11px] text-[#404850] dark:text-[#c0c7d1]">
-                        13-Week Assignment • Oct 1 – Dec 31
+                        Stay Duration Summary • {daysCount} Nights
                       </div>
                     </div>
                   </div>
@@ -238,8 +247,8 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                   {/* Itemized Cost Summary Table */}
                   <div className="border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl p-4 mb-5 space-y-2.5 text-xs">
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                      <span>Monthly Rent (First Month)</span>
-                      <span className="font-bold tabular-nums text-[#001848] dark:text-white">${monthlyRent.toLocaleString()}.00</span>
+                      <span>Accommodation ({daysCount} nights)</span>
+                      <span className="font-bold tabular-nums text-[#001848] dark:text-white">${accommodationTotal.toLocaleString()}.00</span>
                     </div>
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                       <span className="flex items-center gap-1.5">
@@ -256,6 +265,12 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                       <span>Cleaning Fee</span>
                       <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toFixed(2)}</span>
                     </div>
+                    {petFee > 0 && (
+                      <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                        <span>Pet Fee</span>
+                        <span className="font-bold tabular-nums text-[#001848] dark:text-white">${petFee.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                       <span>Traveler Platform Fee</span>
                       <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">$0.00</span>
@@ -455,7 +470,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               Booking Request Dispatched to Host Sarah!
             </h3>
             <p className="text-xs text-[#404850] dark:text-[#c0c7d1] max-w-md mx-auto leading-relaxed">
-              Your 13-week booking request has been securely placed into Host Sarah's approval queue. Host has <strong>24 hours</strong> to confirm.
+              Your {Math.round(daysCount / 7)}-week booking request has been securely placed into Host Sarah's approval queue. Host has <strong>24 hours</strong> to confirm.
             </p>
 
             <div className="p-4 rounded-2xl bg-[#eaedff]/60 dark:bg-[#15233a] max-w-md mx-auto text-left text-xs space-y-2">

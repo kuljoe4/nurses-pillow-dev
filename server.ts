@@ -18,6 +18,7 @@ import { authenticateToken, AuthenticatedRequest } from './server/authMiddleware
 import Stripe from 'stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+import { calculateStayPricing } from './src/lib/utils/pricing.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -457,6 +458,127 @@ async function startServer() {
   });
 
   // Bookings Creation
+
+  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: any, res: Response) => {
+    try {
+      const { listing_id, start_date, end_date, traveler_name } = req.body;
+
+      if (!listing_id || !start_date || !end_date) {
+        return res.status(400).json({ error: 'Missing listing_id, start_date, or end_date' });
+      }
+
+      const traveler_id = req.user?.id;
+      if (!traveler_id) {
+        return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      }
+
+      const listingRes = await db.query(
+        'SELECT id, monthly_rent, cleaning_fee, pet_fee, host_id FROM listings WHERE id = $1',
+        [listing_id]
+      );
+
+      if (listingRes.rows.length === 0) {
+        return res.status(404).json({ error: 'Listing not found' });
+      }
+
+      const listing = listingRes.rows[0];
+      const monthlyRent = Number(listing.monthly_rent) || 0;
+      const cleaningFee = Number(listing.cleaning_fee) || 0;
+      const petFee = Number(listing.pet_fee) || 0;
+      const hostId = listing.host_id;
+
+      // Ensure user exists as in the original /api/bookings
+      const userRes = await db.query('SELECT id FROM users WHERE id = $1', [traveler_id]);
+      if (userRes.rows.length === 0) {
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+        const hashedPassword = await bcrypt.hash(randomPassword, 12);
+        await db.query(
+          `
+          INSERT INTO users (id, email, password_hash, role, full_name, is_nurse_verified)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (id) DO NOTHING;
+          `,
+          [traveler_id, traveler_id + '@example.com', hashedPassword, 'nurse', traveler_name || 'Guest', true]
+        );
+      }
+
+      const { daysCount, accommodationTotal } = calculateStayPricing(monthlyRent, start_date, end_date);
+
+      const totalPreAuthAmount = Math.round((accommodationTotal + cleaningFee + petFee) * 100);
+      const platformFeeAmount = Math.round(accommodationTotal * 0.05 * 100);
+
+      // Check if host has a connected account to create transfer data
+      const hostRes = await db.query('SELECT stripe_connected_account_id, stripe_payouts_enabled FROM users WHERE id = $1', [hostId]);
+      let stripeConnectedAccountId = null;
+      if (hostRes.rows.length > 0) {
+        stripeConnectedAccountId = hostRes.rows[0].stripe_connected_account_id;
+      }
+
+      let paymentIntentArgs: any = {
+        amount: totalPreAuthAmount,
+        currency: 'usd',
+        capture_method: 'manual',
+        metadata: {
+          daysCount: daysCount.toString(),
+          start_date,
+          end_date,
+          listing_id,
+          traveler_id
+        }
+      };
+
+      if (stripeConnectedAccountId) {
+        paymentIntentArgs.application_fee_amount = platformFeeAmount;
+        paymentIntentArgs.transfer_data = {
+          destination: stripeConnectedAccountId
+        };
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
+
+      const result = await db.query(
+        `
+        INSERT INTO bookings (
+          id, listing_id, traveler_id, start_date, end_date, stay_duration_weeks,
+          status, total_rent, base_monthly_rent, cleaning_fee, pet_fee,
+          gross_booking_value, host_platform_fee_amount, host_payout_amount,
+          cancellation_policy_agreed, host_id, stripe_payment_intent_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        RETURNING *;
+        `,
+        [
+          `bk-${uuidv4()}`,
+          listing_id,
+          traveler_id,
+          start_date,
+          end_date,
+          Math.round(daysCount / 7),
+          'pending_host_approval',
+          accommodationTotal,
+          monthlyRent,
+          cleaningFee,
+          petFee,
+          (totalPreAuthAmount / 100), // gross_booking_value
+          (platformFeeAmount / 100), // host_platform_fee_amount
+          ((totalPreAuthAmount - platformFeeAmount) / 100), // host_payout_amount
+          'flexible',
+          hostId,
+          paymentIntent.id
+        ]
+      );
+
+      res.json({
+        booking: result.rows[0],
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error: any) {
+      console.error('Error creating checkout booking request:', error);
+      res.status(500).json({ error: error.message || 'Internal Server Error' });
+    }
+  });
+
   app.post('/api/bookings', authenticateToken, async (req: any, res) => {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
