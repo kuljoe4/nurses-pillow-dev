@@ -61,11 +61,12 @@ async function startServer() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://maps.googleapis.com", "https://maps.gstatic.com", "https://*.googleusercontent.com", "https://*.googleapis.com"],
         scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https://maps.googleapis.com"]
+        connectSrc: ["'self'", "https://maps.googleapis.com", "https://*.googleapis.com"],
+        workerSrc: ["'self'", "blob:"]
       },
     },
   }));
