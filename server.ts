@@ -857,6 +857,12 @@ async function startServer() {
           return res.status(401).json({ error: "Unauthorized" });
         }
 
+        const state = req.body.state || "NC"; // fallback
+        const activeStates = ['NC', 'MD', 'CT', 'ND', 'KS'];
+        if (!activeStates.includes(state)) {
+          return res.status(400).json({ error: "Listing creation is currently limited to NC, MD, CT, ND, and KS." });
+        }
+
         const existingRes = await db.query(
           "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
           [req.user.id]
@@ -866,8 +872,8 @@ async function startServer() {
         if (existingRes.rows.length > 0) {
           listingId = existingRes.rows[0].id;
           await db.query(
-            "UPDATE listings SET property_type = $1, monthly_rent = $2, cleaning_fee = $3 WHERE id = $4",
-            [req.body.propertyType, req.body.roomAPrice || req.body.monthlyRate, 150, listingId]
+            "UPDATE listings SET property_type = $1, monthly_rent = $2, cleaning_fee = $3, state = $4 WHERE id = $5",
+            [req.body.propertyType, req.body.roomAPrice || req.body.monthlyRate, 150, state, listingId]
           );
         } else {
           const newListingRes = await db.query(
@@ -877,12 +883,12 @@ async function startServer() {
               req.user.id,
               "New Sanctuary Stay",
               req.body.propertyType || "individual_rooms",
-              "123 Healing Way",
-              "Durham",
-              "NC",
-              "27705",
-              36.0,
-              -78.9,
+              req.body.addressLine1 || "123 Healing Way",
+              req.body.city || "Durham",
+              state,
+              req.body.postalCode || "27705",
+              req.body.lat || 36.0,
+              req.body.lng || -78.9,
               "hosp-duke",
               req.body.roomAPrice || 1950,
               0,
