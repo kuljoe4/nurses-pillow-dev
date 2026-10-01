@@ -131,6 +131,13 @@ export const db = {
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
         `);
+
+        // Set default value for security_deposit_amount
+        await railwayDb.query(`ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;`);
+
+        // Sanitize existing listings records to enforce security_deposit defaults
+        await railwayDb.query(`UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;`);
+
         // Ensure favorites table and indexes exist
         await railwayDb.query(`
           CREATE TABLE IF NOT EXISTS favorites (
@@ -172,6 +179,12 @@ export const db = {
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
         `);
+
+        // Set default value for security_deposit_amount
+        await pool.query(`ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;`);
+
+        // Sanitize existing listings records to enforce security_deposit defaults
+        await pool.query(`UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;`);
 
         // Ensure favorites table and indexes exist
         await pool.query(`
