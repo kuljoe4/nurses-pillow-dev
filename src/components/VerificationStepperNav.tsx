@@ -47,11 +47,32 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
           {steps.map((step) => {
             const isActive = currentStep === step.id;
 
+            // Can only navigate to this step if it's the current step, or it's verified,
+            // or the directly preceding step is completely verified.
+            let canNavigate = false;
+            if (isActive || step.isVerified || step.isPending) {
+              canNavigate = true;
+            } else if (step.id === 1) {
+              canNavigate = true; // Step 1 is always accessible
+            } else {
+              // Check if previous step is verified
+              const prevStep = steps.find(s => s.id === step.id - 1);
+              if (prevStep?.isVerified) {
+                canNavigate = true;
+              }
+            }
+
+            const handleClick = () => {
+              if (canNavigate) {
+                onSelectStep(step.id);
+              }
+            };
+
             if (isActive) {
               return (
                 <button
                   key={step.id}
-                  onClick={() => onSelectStep(step.id)}
+                  onClick={handleClick}
                   type="button"
                   className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#0A6FA8] text-white text-left cursor-pointer transition-colors shadow-xs"
                 >
@@ -67,7 +88,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
               return (
                 <button
                   key={step.id}
-                  onClick={() => onSelectStep(step.id)}
+                  onClick={handleClick}
                   type="button"
                   className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-left cursor-pointer transition-colors"
                 >
@@ -83,7 +104,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
               return (
                 <button
                   key={step.id}
-                  onClick={() => onSelectStep(step.id)}
+                  onClick={handleClick}
                   type="button"
                   className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#FBF0D6] text-[#B9822E] dark:bg-[#2b2413] dark:text-[#F1CF78] text-left cursor-pointer transition-colors"
                 >
@@ -98,9 +119,12 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
             return (
               <button
                 key={step.id}
-                onClick={() => onSelectStep(step.id)}
+                onClick={handleClick}
+                disabled={!canNavigate}
                 type="button"
-                className={`flex items-center gap-2 px-3 py-2 rounded-full text-left transition-colors cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full text-left transition-colors ${
+                  canNavigate ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                } ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-gray-400 hover:text-white'
                     : 'bg-gray-100 text-gray-600 hover:text-[#0B2559]'

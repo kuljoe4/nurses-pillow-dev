@@ -268,7 +268,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
   const yearOptions = useMemo(() => {
     const currentY = new Date().getFullYear();
     const years = [];
-    for (let y = currentY + 5; y >= currentY - 5; y--) {
+    for (let y = currentY + 5; y >= currentY - 80; y--) {
       years.push(y);
     }
     return years;
