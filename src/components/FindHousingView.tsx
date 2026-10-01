@@ -1172,6 +1172,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
+        checkInDate={earliestCheckIn}
+        checkOutDate={latestCheckOut}
         onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);

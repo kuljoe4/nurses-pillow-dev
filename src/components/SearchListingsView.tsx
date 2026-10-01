@@ -69,6 +69,12 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   const [latestCheckOut, setLatestCheckOut] = useState(
     initialCheckOutDate || '2027-01-04'
   );
+
+  // Sync dates when props change (e.g. user goes back to find housing and changes search params)
+  useEffect(() => {
+    if (initialCheckInDate) setEarliestCheckIn(initialCheckInDate);
+    if (initialCheckOutDate) setLatestCheckOut(initialCheckOutDate);
+  }, [initialCheckInDate, initialCheckOutDate]);
   const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -1521,6 +1527,8 @@ useBodyScrollLock(isGsaModalOpen);
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
         commuteMode={commuteMode}
+        checkInDate={earliestCheckIn}
+        checkOutDate={latestCheckOut}
         onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
