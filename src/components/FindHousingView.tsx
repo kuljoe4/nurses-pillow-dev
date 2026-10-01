@@ -331,7 +331,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   return (
     <div className={`w-full transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
       {/* 1. HERO SECTION & ASSIGNMENT CARD */}
-      <section className="relative overflow-hidden px-4 sm:px-6 lg:px-12 pt-6 sm:pt-10 lg:pt-12 pb-12 sm:pb-16 lg:pb-20">
+      <section className="relative px-4 sm:px-6 lg:px-12 pt-6 sm:pt-10 lg:pt-12 pb-12 sm:pb-16 lg:pb-20">
         {/* Soft Ambient Radial Accents (zero blur-filter rasterization overhead) */}
         <div
           className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full pointer-events-none opacity-60 dark:opacity-40"
