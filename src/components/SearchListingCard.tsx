@@ -14,10 +14,10 @@ export interface SearchListingCardProps {
   selectedHospital?: string;
   viewMode?: 'split-map' | 'grid';
   isNightShiftMode?: boolean;
+  commuteMode?: 'transit' | 'drive';
 }
 
 export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
-
   listing,
   isSaved,
   isSelectedOnMap = false,
@@ -28,6 +28,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
   selectedHospital,
   viewMode = 'split-map',
   isNightShiftMode = false,
+  commuteMode = 'transit',
 }) => {
 
 
@@ -59,11 +60,17 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
 
       onFocus={() => { if (onSelectOnMap) onSelectOnMap(listing.id); }}
 
-      onClick={() => onViewDetails(listing)}
+      onClick={() => {
+        if (viewMode === 'split-map') {
+          if (onSelectOnMap) onSelectOnMap(listing.id);
+        } else {
+          onViewDetails(listing);
+        }
+      }}
       tabIndex={0}
       role="article"
       aria-label={`${listing.title}, $${monthlyRent.toLocaleString()} per month near ${hospitalDisplay}`}
-      className={`relative rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-200 ease-in-out duration-250 cursor-pointer flex flex-col justify-between group outline-none ${
+      className={`relative rounded-2xl overflow-hidden bg-white dark:bg-[#111e33] border transition-all duration-200 ease-in-out cursor-pointer flex flex-col justify-between group outline-none ${
         isSelectedOnMap
           ? 'border-[#0A6FA8] ring-2 ring-[#0A6FA8]/40 shadow-lg'
           : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-xs hover:border-[#0A6FA8]/40 hover:shadow-md'
@@ -80,11 +87,23 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-500 ease-out"
         />
 
-        {/* Minimalist Top Left Badge: Distance Anchor */}
-        <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold select-none">
-          <span className="material-symbols-outlined text-[13px] text-[#aff0db]">near_me</span>
-          <span>{listing.distanceBadge || `${driveMinutes} min commute`}</span>
+        {/* Minimalist Top Left Badge: Distance & Commute Mode Anchor */}
+        <div className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-xs text-white text-[11px] font-semibold select-none shadow-xs">
+          <span className="material-symbols-outlined text-[13px] text-[#aff0db]">
+            {commuteMode === 'transit' ? 'directions_bus' : 'directions_car'}
+          </span>
+          <span className="tabular-nums">
+            {commuteMode === 'transit' ? `${transitMinutes} min transit` : `${driveMinutes} min drive`}
+          </span>
         </div>
+
+        {/* Route Active on Map Badge */}
+        {isSelectedOnMap && (
+          <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0A6FA8] text-white text-[10px] font-bold shadow-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Route Highlighted</span>
+          </div>
+        )}
 
         {/* Top Right: Signature Pillow Save Button */}
         <div
@@ -98,8 +117,6 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
             size={17}
           />
         </div>
-
-
       </div>
 
       {/* 2. CARD BODY: PRIMARY RESTING DETAILS */}
@@ -144,32 +161,51 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
           </div>
         </div>
 
-        {/* 3. RESTING ACTION BAR (Only shown when not expanded to maintain clean line) */}
+        {/* 3. RESTING ACTION BAR */}
         <div className="flex pt-2.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            {viewMode === 'split-map' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onSelectOnMap) onSelectOnMap(listing.id);
+                }}
+                className={`text-xs font-bold px-2 py-1 rounded-lg transition-colors cursor-pointer ${
+                  isSelectedOnMap
+                    ? 'bg-[#0A6FA8] text-white shadow-2xs'
+                    : 'text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-[#EFF6FB] dark:hover:bg-[#182840]'
+                }`}
+                title="Highlight route to hospital on map"
+              >
+                {isSelectedOnMap ? 'Route Active' : 'View Route'}
+              </button>
+            )}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onViewDetails(listing);
               }}
-              className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
+              className="text-xs font-bold text-[#404850] dark:text-gray-300 hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] hover:underline cursor-pointer"
             >
-              View Details
+              Details
             </button>
-
-            {onRequestToBook && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRequestToBook(listing);
-                }}
-                className="px-3 py-1 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer"
-              >
-                Book Stay
-              </button>
-            )}
           </div>
+
+          {onRequestToBook && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRequestToBook(listing);
+              }}
+              className="px-3 py-1 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#0A6FA8] hover:text-white dark:hover:bg-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold transition-all duration-200 ease-in-out cursor-pointer"
+            >
+              Book Stay
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );

@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CommuteCalculationResult } from '../lib/googleMapsCommute';
+import { fetchLiveCommuteRoute, LiveCommuteResult } from '../services/liveCommuteApi';
 
 export interface GoogleMapsTravelTimeDisplayProps {
   commute: CommuteCalculationResult;
   compact?: boolean;
   className?: string;
   isNightShiftMode?: boolean;
+  initialMode?: 'drive' | 'transit' | 'walk';
+  origin?: { lat: number; lng: number };
+  destination?: { lat: number; lng: number };
 }
 
 export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayProps> = ({
@@ -14,9 +18,81 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
   compact = false,
   className = '',
   isNightShiftMode = false,
+  initialMode = 'drive',
+  origin,
+  destination,
 }) => {
-  const [selectedMode, setSelectedMode] = useState<'drive' | 'transit' | 'walk'>('drive');
+  const [selectedMode, setSelectedMode] = useState<'drive' | 'transit' | 'walk'>(initialMode);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [liveRoute, setLiveRoute] = useState<LiveCommuteResult | null>(null);
+  const [isLoadingLive, setIsLoadingLive] = useState(false);
+
+  // Sync when initialMode changes externally
+  useEffect(() => {
+    if (initialMode) {
+      setSelectedMode(initialMode);
+    }
+  }, [initialMode]);
+
+  // Fetch real Google Maps Routes API data on-demand
+  useEffect(() => {
+    let isMounted = true;
+    if (origin && destination) {
+      setIsLoadingLive(true);
+      fetchLiveCommuteRoute(origin, destination, selectedMode)
+        .then((res) => {
+          if (isMounted && res?.success) {
+            setLiveRoute(res);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (isMounted) setIsLoadingLive(false);
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [origin?.lat, origin?.lng, destination?.lat, destination?.lng, selectedMode]);
+
+  // Dynamic route and departure calculation based on active commute mode (uses live API when resolved)
+  const isLive = !!liveRoute && (liveRoute.source === 'google-maps-api' || liveRoute.source === 'cache');
+  const activeMinutes = liveRoute
+    ? liveRoute.durationMinutes
+    : selectedMode === 'transit'
+    ? commute.transitMinutes
+    : selectedMode === 'walk'
+    ? commute.walkMinutes
+    : commute.driveMinutes;
+
+  const displayDistance = liveRoute ? liveRoute.distanceMiles : commute.distanceMiles;
+
+  // Buffer: transit needs shuttle boarding window (15m), walking needs scrub-in (10m), driving needs garage parking & ward walk (12m)
+  const shiftBuffer = selectedMode === 'transit' ? 16 : selectedMode === 'walk' ? 10 : 12;
+  const dayTotalMinutes = activeMinutes + shiftBuffer;
+  const dayDepMinute = (60 - (dayTotalMinutes % 60)) % 60;
+  const dayDepHour = dayTotalMinutes > 60 ? 5 : 6;
+  const activeDayDeparture = `${dayDepHour}:${dayDepMinute.toString().padStart(2, '0')} AM (for 7 AM shift)`;
+
+  const nightTotalMinutes = activeMinutes + (selectedMode === 'transit' ? 14 : selectedMode === 'walk' ? 10 : 10);
+  const nightDepMinute = (60 - (nightTotalMinutes % 60)) % 60;
+  const nightDepHour = nightTotalMinutes > 60 ? 5 : 6;
+  const activeNightDeparture = `${nightDepHour}:${nightDepMinute.toString().padStart(2, '0')} PM (for 7 PM shift)`;
+
+  const dynamicRouteSummary =
+    liveRoute?.routeDescription ||
+    (selectedMode === 'transit'
+      ? `${commute.hospitalShortName} Campus Shuttle / Express Line (${commute.transitMinutes} min)`
+      : selectedMode === 'walk'
+      ? `Hospital Pedestrian Greenline (${commute.walkMinutes} min walk)`
+      : commute.routeSummary);
+
+  const dynamicTrafficStatus =
+    selectedMode === 'transit'
+      ? liveRoute?.transitInfo?.headsign ? `Headsign: ${liveRoute.transitInfo.headsign}` : 'Scheduled every 10–15m'
+      : selectedMode === 'walk'
+      ? 'Pedestrian walking path'
+      : commute.trafficStatus;
 
   return (
     <div
@@ -37,7 +113,24 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
           </span>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Live API provenance tag */}
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isLive
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : 'bg-blue-100/70 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'
+            }`}
+            title={isLive ? 'Real-time calculation from Google Maps Routes API' : 'Calculated using GIS coordinates and speed models'}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isLive ? 'bg-emerald-600 dark:bg-emerald-400 animate-pulse' : 'bg-[#0A6FA8]'
+              }`}
+            />
+            <span>{isLive ? 'Google Maps Live API' : 'GIS Model'}</span>
+          </span>
+
           <span
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
               commute.isShiftSafe
@@ -50,7 +143,7 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
                 commute.isShiftSafe ? 'bg-[#2F6E5E] dark:bg-[#aff0db]' : 'bg-[#B9822E]'
               }`}
             />
-            <span>{commute.isShiftSafe ? 'Shift-Safe Route' : 'Suburban Commute'}</span>
+            <span>{commute.isShiftSafe ? 'Shift-Safe' : 'Suburban'}</span>
           </span>
         </div>
       </div>
@@ -67,8 +160,8 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
             }}
             className={`p-1.5 rounded-xl border transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
               selectedMode === 'drive'
-                ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white'
-                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
+                ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white ring-1 ring-[#0A6FA8]/20'
+                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
             }`}
             title="Drive Time to Hospital"
           >
@@ -76,7 +169,10 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
               <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1]">
                 directions_car
               </span>
-              <span>{commute.driveMinutes}m</span>
+              <span>{selectedMode === 'drive' && liveRoute ? liveRoute.durationMinutes : commute.driveMinutes}m</span>
+              {isLoadingLive && selectedMode === 'drive' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0A6FA8] animate-ping" />
+              )}
             </div>
             <div className="text-[10px] text-[#0B2559]/70 dark:text-[#9CB3D3] font-medium">Drive</div>
           </button>
@@ -90,8 +186,8 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
             }}
             className={`p-1.5 rounded-xl border transition-all duration-200 ease-in-out duration-150 cursor-pointer ${
               selectedMode === 'transit'
-                ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white'
-                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#111e33]/80 text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
+                ? 'bg-white dark:bg-[#111e33] border-[#0A6FA8] shadow-xs text-[#0B2559] dark:text-white ring-1 ring-[#0A6FA8]/20'
+                : 'bg-white/50 dark:bg-[#111e33]/50 border-transparent hover:bg-white focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-white/80 dark:hover:bg-[#111e33] text-[#0B2559]/80 dark:text-[#E6ECF7]/80'
             }`}
             title="Hospital Shuttle or Public Transit"
           >
@@ -99,7 +195,10 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
               <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1]">
                 directions_bus
               </span>
-              <span>{commute.transitMinutes}m</span>
+              <span>{selectedMode === 'transit' && liveRoute ? liveRoute.durationMinutes : commute.transitMinutes}m</span>
+              {isLoadingLive && selectedMode === 'transit' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0A6FA8] animate-ping" />
+              )}
             </div>
             <div className="text-[10px] text-[#0B2559]/70 dark:text-[#9CB3D3] font-medium">Transit</div>
           </button>
@@ -113,22 +212,39 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
               <span className="material-symbols-outlined text-[14px] text-[#0A6FA8] dark:text-[#3E9AD1]">
                 distance
               </span>
-              <span>{commute.distanceMiles} mi</span>
+              <span>{displayDistance} mi</span>
             </div>
             <div className="text-[10px] text-[#0B2559]/70 dark:text-[#9CB3D3] font-medium">Distance</div>
           </div>
         </div>
 
+        {/* Live Transit Line Details Banner (When returned by Google Maps Transit API) */}
+        {selectedMode === 'transit' && liveRoute?.transitInfo && (
+          <div className="p-2 rounded-xl bg-white dark:bg-[#111e33] border border-[#0A6FA8]/20 shadow-2xs flex items-center justify-between text-[11px] gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="material-symbols-outlined text-[15px] text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0">
+                directions_bus
+              </span>
+              <span className="font-bold text-[#0B2559] dark:text-white truncate">
+                {liveRoute.transitInfo.lineName}
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-[#2F6E5E] dark:text-[#aff0db] shrink-0">
+              {liveRoute.transitInfo.stopCount ? `${liveRoute.transitInfo.stopCount} stops` : 'Campus Line'}
+            </span>
+          </div>
+        )}
+
         {/* Route Snapshot Bar */}
         <div className="flex items-center justify-between text-[11px] text-[#0B2559]/70 dark:text-[#9CB3D3] pt-0.5">
           <span className="flex items-center gap-1 truncate max-w-[70%]">
             <span className="material-symbols-outlined text-[13px] text-[#2F6E5E] dark:text-[#aff0db] shrink-0">
-              alt_route
+              {selectedMode === 'transit' ? 'directions_bus' : selectedMode === 'walk' ? 'directions_walk' : 'alt_route'}
             </span>
-            <span className="truncate">{commute.routeSummary}</span>
+            <span className="truncate">{dynamicRouteSummary}</span>
           </span>
           <span className="text-[10px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0 tabular-nums">
-            {commute.trafficStatus}
+            {dynamicTrafficStatus}
           </span>
         </div>
 
@@ -168,7 +284,7 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
                       <span>Day Shift (7 AM)</span>
                     </span>
                     <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
-                      Depart by {commute.dayShiftDepartureEstimate}
+                      Depart by {activeDayDeparture}
                     </span>
                   </div>
 
@@ -178,7 +294,7 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
                       <span>Night Shift (7 PM)</span>
                     </span>
                     <span className="font-bold text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
-                      Depart by {commute.nightShiftDepartureEstimate}
+                      Depart by {activeNightDeparture}
                     </span>
                   </div>
 

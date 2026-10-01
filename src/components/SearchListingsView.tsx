@@ -11,7 +11,10 @@ import { SearchListingCard } from './SearchListingCard';
 import { GoogleMapsSplitView } from './GoogleMapsSplitView';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
-import { calculateCommuteDuration } from '../lib/googleMapsCommute';
+import { ClinicalDateRangePicker, calculateAssignmentDuration } from './ClinicalDateRangePicker';
+import { Calendar as CalendarIcon, Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { calculateCommuteDuration, resolveHospitalCoordinates, getListingCoordinates } from '../lib/googleMapsCommute';
+import { fetchLiveCommuteRoute, LiveCommuteResult } from '../services/liveCommuteApi';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;
@@ -23,6 +26,8 @@ interface SearchListingsViewProps {
   initialHospital?: string;
   initialDuration?: string;
   initialRadius?: number;
+  initialCheckInDate?: string;
+  initialCheckOutDate?: string;
   isLoading?: boolean;
 }
 
@@ -47,6 +52,8 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   initialHospital = 'Duke University Hospital (Durham, NC)',
   initialDuration = '13',
   initialRadius = 5,
+  initialCheckInDate,
+  initialCheckOutDate,
   isLoading,
 }) => {
 
@@ -58,10 +65,15 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   const isInitialCustom = !['4', '8', '13', '26'].includes(initialDuration);
   const [selectedDuration, setSelectedDuration] = useState(isInitialCustom ? 'custom' : initialDuration);
   const [customDuration, setCustomDuration] = useState<number>(isInitialCustom ? parseInt(initialDuration) : 1);
-  const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
+  const [earliestCheckIn, setEarliestCheckIn] = useState(initialCheckInDate || '2026-10-05');
+  const [latestCheckOut, setLatestCheckOut] = useState(
+    initialCheckOutDate || '2027-01-04'
+  );
+  const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'split-map' | 'grid'>('split-map');
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [sortOption, setSortOption] = useState<'closest' | 'price_low' | 'quiet_score'>('closest');
   const [activeFilterChip, setActiveFilterChip] = useState<'all' | 'entire' | 'private' | 'blackout' | 'laundry' | 'parking'>('all');
   const [commuteMode, setCommuteMode] = useState<'transit' | 'drive'>('transit');
@@ -73,6 +85,10 @@ useBodyScrollLock(isGsaModalOpen);
 
   const handleSelectOnMap = useCallback((id: string) => {
     setSelectedMapListingId(id);
+    // On smaller screens where map is stacked below sidebar, gently scroll map into view
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      document.getElementById('split-map-canvas')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }, []);
 
   const handleViewDetails = useCallback((listing: HousingListing) => {
@@ -300,8 +316,71 @@ useBodyScrollLock(isGsaModalOpen);
     return MOCK_LISTINGS.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
   }, [selectedMapListingId, filteredListings]);
 
+  const currentMapListingIndex = useMemo(() => {
+    return filteredListings.findIndex((l) => l.id === selectedMapListing?.id);
+  }, [filteredListings, selectedMapListing]);
+
+  const handlePrevMapListing = useCallback(() => {
+    if (filteredListings.length === 0) return;
+    const prevIdx = (currentMapListingIndex - 1 + filteredListings.length) % filteredListings.length;
+    setSelectedMapListingId(filteredListings[prevIdx].id);
+  }, [filteredListings, currentMapListingIndex]);
+
+  const handleNextMapListing = useCallback(() => {
+    if (filteredListings.length === 0) return;
+    const nextIdx = (currentMapListingIndex + 1) % filteredListings.length;
+    setSelectedMapListingId(filteredListings[nextIdx].id);
+  }, [filteredListings, currentMapListingIndex]);
+
+  const handleToggleCommuteMode = useCallback((mode: 'transit' | 'drive') => {
+    setCommuteMode(mode);
+    setMapNotification(mode === 'transit' ? 'Transit mode active: Bus & rail times' : 'Drive mode active: Vehicle commute times');
+    setTimeout(() => {
+      setMapNotification(null);
+    }, 2200);
+  }, []);
+
+  // Fetch real Google Maps Routes API commute data on-demand for active map preview
+  const [selectedMapLiveRoute, setSelectedMapLiveRoute] = useState<LiveCommuteResult | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (selectedMapListing && selectedHospital) {
+      const origin = getListingCoordinates(selectedMapListing);
+      const dest = resolveHospitalCoordinates(selectedHospital);
+      fetchLiveCommuteRoute({ lat: origin.lat, lng: origin.lng }, { lat: dest.lat, lng: dest.lng }, commuteMode)
+        .then((res) => {
+          if (isMounted && res?.success) {
+            setSelectedMapLiveRoute(res);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedMapListing?.id, selectedHospital, commuteMode]);
+
   return (
     <div className={`w-full min-h-screen transition-colors ${isNightShiftMode ? 'bg-[#08101C] text-[#E6ECF7]' : 'bg-[#faf8ff] text-[#001848]'}`}>
+      {/* Commute Mode Feedback Toast */}
+      <AnimatePresence>
+        {mapNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-18 left-1/2 -translate-x-1/2 z-50 bg-[#0B2559]/95 dark:bg-[#111e33]/95 text-white text-xs font-bold px-4 py-2 rounded-full shadow-xl border border-[rgba(255,255,255,0.2)] backdrop-blur-md flex items-center gap-2 pointer-events-none"
+          >
+            <span className="material-symbols-outlined text-[16px] text-[#aff0db]">
+              {commuteMode === 'transit' ? 'directions_bus' : 'directions_car'}
+            </span>
+            <span>{mapNotification}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 1. COMPACT CLINICAL SEARCH & ASSIGNMENT HUB */}
       <section className="w-full bg-white dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-xs px-3 sm:px-6 lg:px-8 py-2.5">
         <div className="max-w-7xl mx-auto flex flex-col gap-2">
@@ -499,24 +578,78 @@ useBodyScrollLock(isGsaModalOpen);
                 </span>
               </button>
 
+              {/* Global Commute Mode Switcher (Transit vs Drive) */}
+              <div className="inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                <button
+                  type="button"
+                  onClick={() => handleToggleCommuteMode('transit')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    commuteMode === 'transit'
+                      ? 'bg-[#0A6FA8] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1] hover:text-[#0B2559] dark:hover:text-white'
+                  }`}
+                  title="Switch commute calculations to Transit & Hospital Shuttle routes"
+                  aria-pressed={commuteMode === 'transit'}
+                >
+                  <span className="material-symbols-outlined text-[14px]">directions_bus</span>
+                  <span className="hidden sm:inline">Transit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleCommuteMode('drive')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    commuteMode === 'drive'
+                      ? 'bg-[#0A6FA8] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1] hover:text-[#0B2559] dark:hover:text-white'
+                  }`}
+                  title="Switch commute calculations to Driving & Highway vehicle times"
+                  aria-pressed={commuteMode === 'drive'}
+                >
+                  <span className="material-symbols-outlined text-[14px]">directions_car</span>
+                  <span className="hidden sm:inline">Drive</span>
+                </button>
+              </div>
+
               <div className="inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840]">
                 <button
                   type="button"
-                  onClick={() => setViewMode('split-map')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-200 ease-in-out duration-150 ${
-                    viewMode === 'split-map'
+                  onClick={() => {
+                    setViewMode('split-map');
+                    setIsMapExpanded(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    viewMode === 'split-map' && !isMapExpanded
                       ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
                       : 'text-[#404850] dark:text-[#c0c7d1]'
                   }`}
                   title="View split map and listings"
                 >
-                  <span className="material-symbols-outlined text-[15px]">map</span>
-                  <span className="hidden sm:inline">Split Map</span>
+                  <span className="material-symbols-outlined text-[15px]">vertical_split</span>
+                  <span className="hidden sm:inline">Split</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-200 ease-in-out duration-150 ${
+                  onClick={() => {
+                    setViewMode('split-map');
+                    setIsMapExpanded(true);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    viewMode === 'split-map' && isMapExpanded
+                      ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                  title="Expand map to fullscreen (hide list)"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span className="hidden sm:inline">Full Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode('grid');
+                    setIsMapExpanded(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
                     viewMode === 'grid'
                       ? 'bg-white dark:bg-[#0B2559] text-[#001848] dark:text-white shadow-xs'
                       : 'text-[#404850] dark:text-[#c0c7d1]'
@@ -554,13 +687,26 @@ useBodyScrollLock(isGsaModalOpen);
                 className="border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] pt-3 pb-1 px-1 -mx-1"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-[#EFF6FB]/60 dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                  {/* Move-in Date */}
+                  {/* Assignment Dates (Connected Range) */}
                   <div>
-                    <ClinicalDatePicker
-                      value={earliestCheckIn}
-                      onChange={setEarliestCheckIn}
-                      isNightShiftMode={isNightShiftMode}
-                    />
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-1">
+                      Assignment Dates
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsDateRangeModalOpen(true)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-[rgba(11,37,89,0.12)] dark:border-[#233550] bg-white dark:bg-[#182840] hover:border-[#0A6FA8] flex items-center justify-between text-left cursor-pointer transition-colors group"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <CalendarIcon className="w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0" aria-hidden="true" />
+                        <span className="text-xs font-bold text-[#0B2559] dark:text-white tabular-nums whitespace-nowrap truncate">
+                          {formatDateFriendly(earliestCheckIn)} – {formatDateFriendly(latestCheckOut)}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] bg-[#EFF6FB] dark:bg-[#0A6FA8]/20 px-2 py-0.5 rounded-full shrink-0 tabular-nums">
+                        {calculateAssignmentDuration(earliestCheckIn, latestCheckOut).weeks > 0 ? `${calculateAssignmentDuration(earliestCheckIn, latestCheckOut).weeks}w` : 'Set'}
+                      </span>
+                    </button>
                   </div>
 
                   {/* Rotation Duration */}
@@ -573,7 +719,19 @@ useBodyScrollLock(isGsaModalOpen);
                         <button
                           key={opt.value}
                           type="button"
-                          onClick={() => setSelectedDuration(opt.value)}
+                          onClick={() => {
+                            setSelectedDuration(opt.value);
+                            const w = parseInt(opt.value);
+                            if (!isNaN(w) && earliestCheckIn) {
+                              const parts = earliestCheckIn.split('-').map(Number);
+                              const d = new Date(parts[0], parts[1] - 1, parts[2], 12);
+                              d.setDate(d.getDate() + w * 7);
+                              const y = d.getFullYear();
+                              const m = String(d.getMonth() + 1).padStart(2, '0');
+                              const day = String(d.getDate()).padStart(2, '0');
+                              setLatestCheckOut(`${y}-${m}-${day}`);
+                            }
+                          }}
                           className={`flex-1 h-9 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
                             selectedDuration === opt.value
                               ? 'bg-[#0A6FA8] text-white shadow-2xs'
@@ -592,6 +750,15 @@ useBodyScrollLock(isGsaModalOpen);
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
                           setCustomDuration(isNaN(val) ? 0 : val);
+                          if (!isNaN(val) && val > 0 && earliestCheckIn) {
+                            const parts = earliestCheckIn.split('-').map(Number);
+                            const d = new Date(parts[0], parts[1] - 1, parts[2], 12);
+                            d.setDate(d.getDate() + val * 7);
+                            const y = d.getFullYear();
+                            const m = String(d.getMonth() + 1).padStart(2, '0');
+                            const day = String(d.getDate()).padStart(2, '0');
+                            setLatestCheckOut(`${y}-${m}-${day}`);
+                          }
                         }}
                         placeholder="Weeks count"
                         className="w-full h-8 px-2.5 mt-1.5 rounded-lg bg-white dark:bg-[#182840] text-[#001848] dark:text-white text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0A6FA8] border border-[rgba(11,37,89,0.08)]"
@@ -979,171 +1146,287 @@ useBodyScrollLock(isGsaModalOpen);
           />
         ) : (
           <>
-            {/* Split Map View Mode */}
+            {/* Split / Full Map View Mode */}
             {viewMode === 'split-map' && (
-          <div className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[820px]">
-            {/* LEFT 7 COLS: Listings Feed */}
-            <div className="lg:col-span-7 px-3 sm:px-6 lg:px-8 py-3.5 flex flex-col gap-4">
-              {/* Feed Header & Sort Controls */}
-              <div className="flex flex-wrap items-center justify-between pb-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
-                <div className="flex items-baseline gap-2" aria-live="polite">
-                  <h2 className="text-base sm:text-lg font-bold text-[#001848] dark:text-white tabular-nums">
-                    {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'}
-                  </h2>
-                  <span className="text-xs text-[#404850] dark:text-[#93ccff] truncate max-w-[280px]">
-                    near {selectedHospital.split(' - ')[0]} (≤{commuteBuffer} mi)
-                  </span>
-                </div>
+              <div className={`w-full ${isMapExpanded ? 'flex flex-col' : 'grid grid-cols-1 lg:grid-cols-12'} min-h-[820px] transition-all duration-300`}>
+                {/* LEFT 7 COLS: Listings Feed (hidden when map is expanded) */}
+                {!isMapExpanded && (
+                  <div className="lg:col-span-7 px-3 sm:px-6 lg:px-8 py-3.5 flex flex-col gap-4">
+                    {/* Feed Header & Sort Controls */}
+                    <div className="flex flex-wrap items-center justify-between pb-2.5 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550] gap-2">
+                      <div className="flex items-baseline gap-2" aria-live="polite">
+                        <h2 className="text-base sm:text-lg font-bold text-[#001848] dark:text-white tabular-nums">
+                          {filteredListings.length} {filteredListings.length === 1 ? 'Sanctuary' : 'Sanctuaries'}
+                        </h2>
+                        <span className="text-xs text-[#404850] dark:text-[#93ccff] truncate max-w-[280px]">
+                          near {selectedHospital.split(' - ')[0]} (≤{commuteBuffer} mi)
+                        </span>
+                      </div>
 
-                <div className="flex items-center gap-1.5">
-                  <label htmlFor="search-sort-select" className="text-xs font-semibold text-[#404850] dark:text-[#93ccff]">
-                    Sort:
-                  </label>
-                  <select
-                    id="search-sort-select"
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value as 'closest' | 'price_low' | 'quiet_score')}
-                    className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
-                  >
-                    <option value="closest">Closest</option>
-                    <option value="price_low">Price: Low to High</option>
-                    <option value="quiet_score">Quiet Rating</option>
-                  </select>
-                </div>
-              </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <label htmlFor="search-sort-select" className="text-xs font-semibold text-[#404850] dark:text-[#93ccff]">
+                            Sort:
+                          </label>
+                          <select
+                            id="search-sort-select"
+                            value={sortOption}
+                            onChange={(e) => setSortOption(e.target.value as 'closest' | 'price_low' | 'quiet_score')}
+                            className="text-xs font-semibold bg-white dark:bg-[#182840] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] rounded-lg px-2.5 py-1 text-[#001848] dark:text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#005684]"
+                          >
+                            <option value="closest">Closest</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="quiet_score">Quiet Rating</option>
+                          </select>
+                        </div>
 
-              {/* Listings Cards Feed */}
-              {filteredListings.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="py-16 px-6 text-center rounded-2xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
-                >
-                  <span className="w-12 h-12 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
-                    <span className="material-symbols-outlined text-[24px]">filter_alt_off</span>
-                  </span>
-                  <h3 className="text-sm font-bold text-[#001848] dark:text-white">
-                    No sanctuaries match the current filters
-                  </h3>
-                  <p className="text-xs text-[#404850] dark:text-[#93ccff] max-w-sm">
-                    Try raising your rent ceiling or unchecking specialized day-sleeper amenities.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleResetAllFilters}
-                    className="mt-2 px-4 py-2 rounded-xl bg-[#0A6FA8] text-white text-xs font-bold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors shadow-xs cursor-pointer"
-                  >
-                    Reset All Filters
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <AnimatePresence >
-                    {filteredListings.map((listing) => {
-                      const isSaved = savedListingIds.includes(listing.id);
-                      const isSelectedOnMap = selectedMapListingId === listing.id;
+                        {/* Expand Map Quick Button */}
+                        <button
+                          type="button"
+                          onClick={() => setIsMapExpanded(true)}
+                          className="h-8 px-2.5 rounded-lg border border-[rgba(11,37,89,0.12)] dark:border-[#233550] bg-white dark:bg-[#182840] hover:bg-[#EFF6FB] dark:hover:bg-[#1f3352] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold hidden lg:flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                          title="Expand map to fullscreen (hide list)"
+                          aria-label="Expand map to fullscreen (hide list)"
+                        >
+                          <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span className="whitespace-nowrap">Expand view</span>
+                        </button>
+                      </div>
+                    </div>
 
-                      return (
-                        <SearchListingCard
-                          key={listing.id}
-                          listing={listing}
-                          isSaved={isSaved}
-                          isSelectedOnMap={isSelectedOnMap}
-                          onToggleSave={onToggleSave}
-                          onSelectOnMap={handleSelectOnMap}
-                          onViewDetails={handleViewDetails}
-                          onRequestToBook={onRequestToBookListing}
-                          selectedHospital={selectedHospital}
-                          viewMode="split-map"
-                          isNightShiftMode={isNightShiftMode}
-                        />
-                      );
-                    })}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </div>
+                    {/* Listings Cards Feed */}
+                    {filteredListings.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="py-16 px-6 text-center rounded-2xl bg-white dark:bg-[#111e33] border border-dashed border-[rgba(11,37,89,0.15)] dark:border-[#233550] flex flex-col items-center justify-center gap-3"
+                      >
+                        <span className="w-12 h-12 rounded-full bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-center text-[#005684] dark:text-[#93ccff]">
+                          <span className="material-symbols-outlined text-[24px]">filter_alt_off</span>
+                        </span>
+                        <h3 className="text-sm font-bold text-[#001848] dark:text-white">
+                          No sanctuaries match the current filters
+                        </h3>
+                        <p className="text-xs text-[#404850] dark:text-[#93ccff] max-w-sm">
+                          Try raising your rent ceiling or unchecking specialized day-sleeper amenities.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleResetAllFilters}
+                          className="mt-2 px-4 py-2 rounded-xl bg-[#0A6FA8] text-white text-xs font-bold hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors shadow-xs cursor-pointer"
+                        >
+                          Reset All Filters
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <AnimatePresence>
+                          {filteredListings.map((listing) => {
+                            const isSaved = savedListingIds.includes(listing.id);
+                            const isSelectedOnMap = selectedMapListingId === listing.id;
 
-            {/* RIGHT 5 COLS: Interactive SVG Map */}
-            <div className="lg:col-span-5 relative lg:sticky lg:top-14 lg:h-[calc(100vh-56px)] bg-[#eef3f9] dark:bg-[#0a1424] border-l border-[rgba(11,37,89,0.08)] dark:border-[#233550] p-3 sm:p-4 flex flex-col justify-between overflow-hidden">
-              {/* Map Canvas Header Overlay */}
-              <div className="relative z-10 flex items-center justify-between bg-white/90 dark:bg-[#111e33]/90 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#005684] text-[18px]">map</span>
-                  <div className="text-xs font-bold text-[#001848] dark:text-white">
-                    <span>Medical Zone: </span>
-                    <span className="text-[#005684] dark:text-[#93ccff]">{selectedHospital.split(' - ')[0]}</span>
+                            return (
+                              <SearchListingCard
+                                key={listing.id}
+                                listing={listing}
+                                isSaved={isSaved}
+                                isSelectedOnMap={isSelectedOnMap}
+                                onToggleSave={onToggleSave}
+                                onSelectOnMap={handleSelectOnMap}
+                                onViewDetails={handleViewDetails}
+                                onRequestToBook={onRequestToBookListing}
+                                selectedHospital={selectedHospital}
+                                viewMode="split-map"
+                                isNightShiftMode={isNightShiftMode}
+                                commuteMode={commuteMode}
+                              />
+                            );
+                          })}
+                        </AnimatePresence>
+                      </motion.div>
+                    )}
                   </div>
-                </div>
+                )}
 
-                <div className="flex items-center gap-1 bg-[#f2f3ff] dark:bg-[#182840] p-0.5 rounded-lg text-[11px] font-bold">
-                  <button
-                    type="button"
-                    onClick={() => setCommuteMode('transit')}
-                    className={`px-2 py-0.5 rounded ${commuteMode === 'transit' ? 'bg-[#005684] text-white' : 'text-[#404850] dark:text-gray-300'}`}
-                  >
-                    Transit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCommuteMode('drive')}
-                    className={`px-2 py-0.5 rounded ${commuteMode === 'drive' ? 'bg-[#005684] text-white' : 'text-[#404850] dark:text-gray-300'}`}
-                  >
-                    Drive
-                  </button>
-                </div>
-              </div>
-
-              {/* Live Interactive Google Maps Split View */}
-              <div className="relative my-2 sm:my-3 flex-1 min-h-[420px] lg:min-h-0 w-full rounded-2xl overflow-hidden shadow-sm">
-                <GoogleMapsSplitView
-                  isNightShiftMode={isNightShiftMode}
-                  listings={filteredListings}
-                  selectedListingId={selectedMapListingId}
-                  onSelectListing={(listing: HousingListing) => {
-                    setSelectedMapListingId(listing.id);
-                    setActiveDetailListing(listing);
-                  }}
-                  hospitalName={selectedHospital}
-                  radiusMiles={commuteBuffer}
-                />
-              </div>
-
-              {/* Bottom Selected Listing Preview Card */}
-              {selectedMapListing && (
-                <div className="relative z-10 bg-white dark:bg-[#111e33] rounded-2xl p-3 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={selectedMapListing.images[0]}
-                      alt={selectedMapListing.title}
-                      className="w-14 h-14 rounded-xl object-cover"
-                    />
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-[#195b4c] font-bold">
-                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                        <span>{selectedMapListing.distanceBadge || `${selectedMapListing.driveTimeMinutes} min to hospital`}</span>
+                {/* RIGHT 5 COLS / FULLSCREEN 12 COLS: Interactive Google Map */}
+                <div
+                  id="split-map-canvas"
+                  className={`${
+                    isMapExpanded
+                      ? 'w-full h-[calc(100vh-130px)] min-h-[640px]'
+                      : 'lg:col-span-5 relative lg:sticky lg:top-14 lg:h-[calc(100vh-56px)] border-l'
+                  } bg-[#eef3f9] dark:bg-[#0a1424] border-[rgba(11,37,89,0.08)] dark:border-[#233550] p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-300`}
+                >
+                  {/* Map Canvas Header Overlay */}
+                  <div className="relative z-10 flex items-center justify-between bg-white/95 dark:bg-[#111e33]/95 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-sm gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[#0A6FA8] dark:text-[#3E9AD1] text-[18px] shrink-0">map</span>
+                      <div className="text-xs font-bold text-[#001848] dark:text-white truncate">
+                        <span>Medical Zone: </span>
+                        <span className="text-[#0A6FA8] dark:text-[#3E9AD1]">{selectedHospital.split(' - ')[0]}</span>
+                        {isMapExpanded && (
+                          <span className="ml-2 text-[11px] font-semibold text-[#404850] dark:text-[#93ccff] hidden md:inline">
+                            ({filteredListings.length} sanctuaries)
+                          </span>
+                        )}
                       </div>
-                      <h4 className="text-xs font-bold text-[#001848] dark:text-white line-clamp-1">
-                        {selectedMapListing.title}
-                      </h4>
-                      <div className="text-xs font-extrabold text-[#005684] dark:text-[#93ccff]">
-                        ${selectedMapListing.monthlyRate.toLocaleString()} / mo
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1 bg-[#f2f3ff] dark:bg-[#182840] p-0.5 rounded-lg text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCommuteMode('transit')}
+                          className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${commuteMode === 'transit' ? 'bg-[#0A6FA8] text-white shadow-2xs' : 'text-[#404850] dark:text-gray-300 hover:text-[#0B2559]'}`}
+                          title="Calculate public transit and campus bus routes"
+                        >
+                          Transit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCommuteMode('drive')}
+                          className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${commuteMode === 'drive' ? 'bg-[#0A6FA8] text-white shadow-2xs' : 'text-[#404850] dark:text-gray-300 hover:text-[#0B2559]'}`}
+                          title="Calculate vehicle driving and highway times"
+                        >
+                          Drive
+                        </button>
                       </div>
+
+                      {/* 'Expand View' / 'Show List' Button (Airbnb Interaction) */}
+                      <button
+                        type="button"
+                        onClick={() => setIsMapExpanded((prev) => !prev)}
+                        className={`h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] ${
+                          isMapExpanded
+                            ? 'bg-[#0B2559] dark:bg-[#0A6FA8] hover:bg-[#0A6FA8] text-white'
+                            : 'bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white'
+                        }`}
+                        title={isMapExpanded ? "Show listings list (Collapse view)" : "Hide listings list and expand map to fullscreen"}
+                        aria-label={isMapExpanded ? "Show listings list (Collapse view)" : "Hide listings list and expand map to fullscreen"}
+                      >
+                        {isMapExpanded ? (
+                          <>
+                            <Minimize2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <span className="whitespace-nowrap">Show list</span>
+                          </>
+                        ) : (
+                          <>
+                            <Maximize2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            <span className="whitespace-nowrap">Expand view</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveDetailListing(selectedMapListing)}
-                    className="px-3 py-2 rounded-xl bg-[#005684] hover:bg-[#004266] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#004266] text-white text-xs font-bold transition-colors cursor-pointer shrink-0"
-                  >
-                    View Stay
-                  </button>
+                  {/* Live Interactive Google Maps Split View */}
+                  <div className="relative my-2 sm:my-3 flex-1 min-h-[420px] lg:min-h-0 w-full rounded-2xl overflow-hidden shadow-sm">
+                    <GoogleMapsSplitView
+                      isNightShiftMode={isNightShiftMode}
+                      listings={filteredListings}
+                      selectedListingId={selectedMapListingId}
+                      onSelectListing={(listing: HousingListing) => {
+                        setSelectedMapListingId(listing.id);
+                      }}
+                      onOpenDetails={handleViewDetails}
+                      onToggleCommuteMode={handleToggleCommuteMode}
+                      hospitalName={selectedHospital}
+                      radiusMiles={commuteBuffer}
+                      commuteMode={commuteMode}
+                    />
+                  </div>
+
+                  {/* Bottom Selected Listing Preview Card */}
+                  {selectedMapListing && (
+                    <div
+                      className={`relative z-10 bg-white dark:bg-[#111e33] rounded-2xl p-3 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md flex items-center justify-between gap-3 ${
+                        isMapExpanded ? 'max-w-xl mx-auto w-full shadow-xl' : 'w-full'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isMapExpanded && filteredListings.length > 1 && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={handlePrevMapListing}
+                              className="w-7 h-7 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] dark:hover:bg-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
+                              title="Previous sanctuary on map"
+                              aria-label="Previous sanctuary on map"
+                            >
+                              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleNextMapListing}
+                              className="w-7 h-7 rounded-full bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#e2edf7] dark:hover:bg-[#20324e] text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center cursor-pointer transition-colors"
+                              title="Next sanctuary on map"
+                              aria-label="Next sanctuary on map"
+                            >
+                              <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                            </button>
+                          </div>
+                        )}
+                        <img
+                          src={selectedMapListing.images[0]}
+                          alt={selectedMapListing.title}
+                          className="w-14 h-14 rounded-xl object-cover shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 text-[11px] text-[#195b4c] font-bold">
+                            <span className="material-symbols-outlined text-[13px]">
+                              {commuteMode === 'transit' ? 'directions_bus' : 'directions_car'}
+                            </span>
+                            <span className="truncate">
+                              {selectedMapLiveRoute && selectedMapLiveRoute.travelMode.toLowerCase() === commuteMode
+                                ? `${selectedMapLiveRoute.durationMinutes} min ${commuteMode} (Live Maps API)`
+                                : commuteMode === 'transit'
+                                ? `${Math.round((selectedMapListing.driveTimeMinutes || 8) * 1.8)} min transit to hospital`
+                                : `${selectedMapListing.driveTimeMinutes || 8} min drive to hospital`}
+                            </span>
+                            {selectedMapLiveRoute && selectedMapLiveRoute.travelMode.toLowerCase() === commuteMode && (
+                              <span
+                                className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"
+                                title="Real-time route calculation from Google Maps Routes API"
+                              />
+                            )}
+                            {isMapExpanded && currentMapListingIndex >= 0 && (
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold tabular-nums ml-1">
+                                ({currentMapListingIndex + 1}/{filteredListings.length})
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="text-xs font-bold text-[#001848] dark:text-white line-clamp-1 truncate">
+                            {selectedMapListing.title}
+                          </h4>
+                          <div className="text-xs font-extrabold text-[#005684] dark:text-[#93ccff] tabular-nums">
+                            ${selectedMapListing.monthlyRate.toLocaleString()} / mo
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isMapExpanded && (
+                          <button
+                            type="button"
+                            onClick={() => setIsMapExpanded(false)}
+                            className="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#182840] dark:hover:bg-[#1f3352] text-[#001848] dark:text-white text-xs font-bold transition-colors cursor-pointer hidden sm:block whitespace-nowrap"
+                          >
+                            Show list
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setActiveDetailListing(selectedMapListing)}
+                          className="px-3.5 py-2 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                        >
+                          View Stay
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
         {/* 3-Column Grid View Mode */}
         {viewMode === 'grid' && (
@@ -1214,6 +1497,7 @@ useBodyScrollLock(isGsaModalOpen);
                         selectedHospital={selectedHospital}
                         viewMode="grid"
                         isNightShiftMode={isNightShiftMode}
+                        commuteMode={commuteMode}
                       />
                     );
                   })}
@@ -1236,6 +1520,7 @@ useBodyScrollLock(isGsaModalOpen);
         isVerified={isVerified}
         onGoToVerification={onGoToVerification}
         selectedHospital={selectedHospital}
+        commuteMode={commuteMode}
         onRequestToBook={useCallback((listing: HousingListing) => {
           setActiveDetailListing(null);
           onRequestToBookListing?.(listing);
@@ -1252,6 +1537,38 @@ useBodyScrollLock(isGsaModalOpen);
         isNightShiftMode={isNightShiftMode}
         activeHospitalName={selectedHospital}
       />
+
+      {/* Interactive Clinical Date Range Picker Modal */}
+      <AnimatePresence>
+        {isDateRangeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+            <div
+              className="fixed inset-0"
+              onClick={() => setIsDateRangeModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.16 }}
+              className="relative z-10 w-full max-w-3xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ClinicalDateRangePicker
+                startDate={earliestCheckIn}
+                endDate={latestCheckOut}
+                onChange={(start, end) => {
+                  setEarliestCheckIn(start);
+                  setLatestCheckOut(end);
+                }}
+                isNightShiftMode={isNightShiftMode}
+                onApply={() => setIsDateRangeModalOpen(false)}
+                onClose={() => setIsDateRangeModalOpen(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* GSA Stipend Audit Modal */}
       {isGsaModalOpen && (

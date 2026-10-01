@@ -1,7 +1,7 @@
 // Nurses Pillow - Relational Database Schema & Service (Railway PostgreSQL Architecture)
 // Models: Users, Hospitals, Multi-Room Listings, Listing Rooms, Pricing Calendars, Bookings, Audit Logs
 
-import { railwayClient, RailwayDatabaseStatus } from './railway';
+import { railwayClient, RailwayDatabaseStatus } from './railway.ts';
 
 export interface DbUser {
   id: string;

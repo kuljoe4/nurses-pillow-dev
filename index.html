@@ -28,6 +28,15 @@
           document.documentElement.classList.add("fonts-loaded");
         }
       })();
+
+      // Suppress benign Vite HMR WebSocket warning in cloud preview environment
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event.reason;
+        var text = (reason && (reason.message || reason.stack || String(reason))) || '';
+        if (text.indexOf('WebSocket closed without opened') !== -1 || text.indexOf('failed to connect to websocket') !== -1) {
+          event.preventDefault();
+        }
+      });
     </script>
   </head>
   <body class="bg-[#faf8ff] text-[#001848] antialiased">

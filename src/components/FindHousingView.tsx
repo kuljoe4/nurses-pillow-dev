@@ -14,6 +14,8 @@ import {
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
 import { calculateCommuteDuration } from '../lib/googleMapsCommute';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
+import { ClinicalDateRangePicker } from './ClinicalDateRangePicker';
+import { ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { addWeeks, format, parseISO } from 'date-fns';
 
 interface ObservedListingCardProps {
@@ -209,7 +211,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [selectedDuration, setSelectedDuration] = useState('13');
   const [customDuration, setCustomDuration] = useState<number>(1);
   const [earliestCheckIn, setEarliestCheckIn] = useState('2026-10-05');
-  const [latestCheckOut, setLatestCheckOut] = useState('');
+  const [latestCheckOut, setLatestCheckOut] = useState('2027-01-04');
   const [dateValidationError, setDateValidationError] = useState('');
     const [activeListingFilter, setActiveListingFilter] = useState<'all' | 'close' | 'quiet' | 'laundry' | 'pets'>('all');
   const [activeProtectionTab, setActiveProtectionTab] = useState<'clinicians' | 'hosts'>(
@@ -218,6 +220,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   const [activeDetailListing, setActiveDetailListing] = useState<HousingListing | null>(null);
   const [isDatesPopoverOpen, setIsDatesPopoverOpen] = useState(false);
   const [isDistancePopoverOpen, setIsDistancePopoverOpen] = useState(false);
+  const [activeSearchStep, setActiveSearchStep] = useState<'dates' | 'distance' | 'search' | null>(null);
+  const [isSearchHighlighted, setIsSearchHighlighted] = useState(false);
 
 
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
@@ -289,37 +293,53 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     return featuredListings;
   }, [featuredListings, activeListingFilter]);
 
-  // Derived state to determine the string display of dates
-  const getDatesDisplayString = useCallback(() => {
+  // Streamlined date display with zero text wrapping
+  const dateDisplay = useMemo(() => {
     try {
-      const startD = parseISO(earliestCheckIn);
-      if (latestCheckOut) {
-         const endD = parseISO(latestCheckOut);
-         // Calculate duration based on difference
-         const diffMs = endD.getTime() - startD.getTime();
-         const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-         const diffWeeks = Math.floor(diffDays / 7);
-         const remainderDays = diffDays % 7;
-
-         let durationStr = '';
-         if (diffWeeks > 0 && remainderDays > 0) {
-            durationStr = `${diffDays} days · ${diffWeeks} week${diffWeeks > 1 ? 's' : ''}, ${remainderDays} day${remainderDays > 1 ? 's' : ''}`;
-         } else if (diffWeeks > 0 && remainderDays === 0) {
-            durationStr = `${diffWeeks} weeks · ${diffDays} days`;
-         } else {
-            durationStr = `${diffDays} days`;
-         }
-
-         return {
-            title: `${format(startD, 'MMM d, yyyy')} → ${format(endD, 'MMM d, yyyy')}`,
-            subtitle: durationStr
-         };
+      if (!earliestCheckIn) {
+        return { rangeText: 'Select dates', weeksBadge: '' };
       }
-      return { title: 'Select dates', subtitle: '' };
-    } catch (e) {
-      return { title: 'Select dates', subtitle: '' };
+      const [y1, m1, d1] = earliestCheckIn.split('-').map(Number);
+      const startD = new Date(y1, m1 - 1, d1, 12);
+      const startFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(startD);
+
+      if (!latestCheckOut) {
+        return { rangeText: `${startFmt} → Check-out`, weeksBadge: '' };
+      }
+
+      const [y2, m2, d2] = latestCheckOut.split('-').map(Number);
+      const endD = new Date(y2, m2 - 1, d2, 12);
+      const endFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(endD);
+
+      const diffDays = Math.round((endD.getTime() - startD.getTime()) / (1000 * 60 * 60 * 24));
+      const weeks = Math.round(diffDays / 7);
+
+      return {
+        rangeText: `${startFmt} – ${endFmt}`,
+        weeksBadge: weeks > 0 ? `${weeks} wks` : `${diffDays}d`,
+      };
+    } catch {
+      return { rangeText: 'Select dates', weeksBadge: '' };
     }
   }, [earliestCheckIn, latestCheckOut]);
+
+  // Progressive transition handler: when dates are applied, smoothly highlight Max Distance without opening dropdown
+  const handleDatesCompleted = useCallback(() => {
+    setIsDatesPopoverOpen(false);
+    setActiveSearchStep('distance');
+    setIsDistancePopoverOpen(false);
+  }, []);
+
+  // Progressive transition handler: when distance is chosen, highlight Search CTA
+  const handleDistanceSelected = useCallback((miles: number) => {
+    setCommuteBuffer(miles);
+    setIsDistancePopoverOpen(false);
+    setActiveSearchStep('search');
+    setIsSearchHighlighted(true);
+    setTimeout(() => {
+      setIsSearchHighlighted(false);
+    }, 2400);
+  }, []);
 
   const handleExecuteSearch = useCallback(() => {
     setDateValidationError('');
@@ -419,225 +439,179 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           </motion.p>
 
 
-          {/* Signature Assignment Card (Compact & Fast) */}
+          {/* Signature Assignment Card (Streamlined, Low-Cognitive-Load & Fluid Airbnb-Style Transitions) */}
           <motion.div
             variants={heroSearchCardVariant}
-            className="w-full max-w-4xl bg-white dark:bg-[#111e33] rounded-[24px] p-6 sm:p-8 shadow-[0_12px_36px_rgba(11,37,89,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.4)] text-left relative border border-[rgba(11,37,89,0.08)] dark:border-[#233550]"
+            className="w-full max-w-4xl bg-white dark:bg-[#111e33] rounded-[24px] p-5 sm:p-7 shadow-[0_12px_36px_rgba(11,37,89,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.4)] text-left relative border border-[rgba(11,37,89,0.08)] dark:border-[#233550]"
           >
-            {/* Header / Verified Badge Row */}
-            <div className="flex items-center justify-end pb-2 mb-4 border-b border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EFE9] dark:bg-[#195b4c]/20 text-[#2F6E5E] dark:text-[#aff0db] text-[10px] font-semibold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2F6E5E] dark:bg-[#aff0db]" />
-                <span>Nursys® Primary-Source RN Verified</span>
-              </div>
-            </div>
-
             <div className="flex flex-col gap-3">
-              {/* Row 1: Hospital Search */}
+              {/* Row 1: Hospital Assignment Search */}
               <motion.div
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
                 whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-20px' }}
                 transition={{ duration: 0.3, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-20"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex-1 w-full relative">
-                    <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
-                      Hospital / Clinic
-                    </label>
-                    <GoogleHospitalAutocomplete
-                      value={selectedHospital}
-                      onChange={(hosp) => setSelectedHospital(hosp)}
-                      onSelectHospital={(hosp) => {
-                        setSelectedHospital(hosp.name);
-                        if (hosp.state) {
-                          setSelectedHospitalState(hosp.state);
-                        } else if (hosp.address) {
-                          const parts = hosp.address.split(',');
-                          if (parts.length > 1) {
-                             const potentialState = parts[1].trim().split(' ')[0];
-                             if (potentialState.length === 2) {
-                               setSelectedHospitalState(potentialState.toUpperCase());
-                             }
+                <div className="w-full relative">
+                  <label className="block text-[10px] sm:text-[11px] font-bold text-[#0B2559]/75 dark:text-[#E6ECF7]/75 uppercase tracking-wider mb-1.5 ml-1">
+                    Where are you assigned?
+                  </label>
+                  <GoogleHospitalAutocomplete
+                    value={selectedHospital}
+                    onChange={(hosp) => setSelectedHospital(hosp)}
+                    onSelectHospital={(hosp) => {
+                      setSelectedHospital(hosp.name);
+                      if (hosp.state) {
+                        setSelectedHospitalState(hosp.state);
+                      } else if (hosp.address) {
+                        const parts = hosp.address.split(',');
+                        if (parts.length > 1) {
+                          const potentialState = parts[1].trim().split(' ')[0];
+                          if (potentialState.length === 2) {
+                            setSelectedHospitalState(potentialState.toUpperCase());
                           }
                         }
-                      }}
-                      isNightShiftMode={isNightShiftMode}
-                      placeholder="e.g. Duke University Hospital..."
-                    />
-                  </div>
+                      }
+                      // Smooth progressive transition to assignment dates (like Airbnb)
+                      setActiveSearchStep('dates');
+                      setIsDatesPopoverOpen(true);
+                      setIsDistancePopoverOpen(false);
+                    }}
+                    isNightShiftMode={isNightShiftMode}
+                    placeholder="Search hospital or healthcare system..."
+                  />
                 </div>
               </motion.div>
 
               {/* Regional Limitation Banner */}
               {!isStateActive(selectedHospitalState) && (
                 <motion.div
-                  initial={{ opacity: 0, y: -5 }}
+                  initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-xs font-semibold flex items-center gap-2 mb-2"
+                  className="p-3 rounded-xl bg-[#F4E2DC] border border-[#A8452E]/20 text-[#A8452E] text-xs font-semibold flex items-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-[16px]">location_off</span>
-                  We are launching soon in your state. Currently active in NC, MD, CT, ND, and KS.
+                  <span className="material-symbols-outlined text-[16px] shrink-0">location_off</span>
+                  <span>Currently active in NC, MD, CT, ND, and KS. Expanding soon to your hospital state.</span>
                 </motion.div>
               )}
 
               {/* Row 2: Grid for Dates, Distance, and Search */}
-              <div className="grid grid-cols-1 md:grid-cols-[1.5fr_200px_auto] gap-3 relative z-10">
-                {/* Assignment Dates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_auto] gap-3 items-end relative z-10">
+                {/* Assignment Dates Selector */}
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-2">
+                  <label className="block text-[10px] sm:text-[11px] font-bold text-[#0B2559]/75 dark:text-[#E6ECF7]/75 uppercase tracking-wider mb-1.5 ml-1 whitespace-nowrap">
                     Assignment dates
                   </label>
                   <button
                     type="button"
                     onClick={() => {
-                      setIsDatesPopoverOpen(!isDatesPopoverOpen);
+                      const next = !isDatesPopoverOpen;
+                      setIsDatesPopoverOpen(next);
+                      setActiveSearchStep(next ? 'dates' : null);
                       setIsDistancePopoverOpen(false);
                     }}
-                    className="w-full h-[52px] px-4 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors flex items-center justify-between text-left cursor-pointer group"
+                    className={`w-full h-[52px] px-3.5 sm:px-4 rounded-xl border transition-all duration-200 flex items-center justify-between text-left cursor-pointer group ${
+                      activeSearchStep === 'dates' || isDatesPopoverOpen
+                        ? 'bg-white dark:bg-[#182840] border-[#0A6FA8] ring-2 ring-[#0A6FA8]/25 shadow-md'
+                        : 'bg-[#EFF6FB] dark:bg-[#15233a] border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:bg-[#E5F0F8] dark:hover:bg-[#1a2d48]'
+                    } focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]`}
                   >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
-                        {getDatesDisplayString().title}
+                    <div className="flex items-center gap-2 min-w-0 overflow-hidden pr-2">
+                      <span className="text-xs sm:text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors tabular-nums whitespace-nowrap truncate">
+                        {dateDisplay.rangeText}
                       </span>
-                      {getDatesDisplayString().subtitle && (
-                        <span className="text-[10px] text-[#0B2559]/70 dark:text-[#E6ECF7]/70 font-semibold">
-                          {getDatesDisplayString().subtitle}
+                      {dateDisplay.weeksBadge && (
+                        <span className="text-[10px] sm:text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] bg-[#EFF6FB] dark:bg-[#0A6FA8]/20 px-2 py-0.5 rounded-full tabular-nums whitespace-nowrap shrink-0">
+                          {dateDisplay.weeksBadge}
                         </span>
                       )}
                     </div>
-                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                      {isDatesPopoverOpen ? 'expand_less' : 'expand_more'}
-                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0 transition-transform duration-200 ${
+                        isDatesPopoverOpen ? 'rotate-180' : ''
+                      }`}
+                      aria-hidden="true"
+                    />
                   </button>
-
-                  {/* Progressive Disclosure Popover for Dates */}
-                  <AnimatePresence>
-                    {isDatesPopoverOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsDatesPopoverOpen(false)} />
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute top-[80px] left-0 w-full sm:w-[420px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-5 flex flex-col gap-4"
-                        >
-
-                          <div className="flex items-center gap-4 w-full">
-                            <div className="flex flex-col flex-1">
-                              <ClinicalDatePicker
-                                value={earliestCheckIn}
-                                onChange={(date) => {
-                                    setEarliestCheckIn(date);
-                                    if (date && latestCheckOut && new Date(date) >= new Date(latestCheckOut)) {
-                                      setLatestCheckOut(format(addWeeks(parseISO(date), 13), 'yyyy-MM-dd'));
-                                    }
-                                }}
-                                isNightShiftMode={isNightShiftMode}
-                              />
-                            </div>
-                            <span className="material-symbols-outlined text-[#0B2559]/30 dark:text-[#E6ECF7]/30">arrow_forward</span>
-                            <div className="flex flex-col flex-1">
-                              <ClinicalDatePicker
-                                value={latestCheckOut}
-                                onChange={(date) => {
-                                  setLatestCheckOut(date);
-                                  setDateValidationError('');
-                                }}
-                                isNightShiftMode={isNightShiftMode}
-                                minDate={earliestCheckIn}
-                                align="right"
-                              />
-                            </div>
-                          </div>
-
-                          {getDatesDisplayString().subtitle && !dateValidationError && (
-                            <div className="text-center text-sm font-bold text-[#0B2559] dark:text-[#93ccff] bg-[#EFF6FB] dark:bg-[#182840] py-2 rounded-xl">
-                                {getDatesDisplayString().subtitle}
-                            </div>
-                          )}
-                          {dateValidationError && (
-                            <span className="text-red-500 text-[11px] font-medium mt-0.5">{dateValidationError}</span>
-                          )}
-                          <div className="pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                            <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-3">
-                              Common assignment lengths
-                            </label>
-                            <div className="grid grid-cols-4 gap-2">
-                              {[4, 8, 13, 26].map(wks => (
-                                <button
-                                  key={wks}
-                                  type="button"
-                                  onClick={() => {
-                                      if (earliestCheckIn) {
-                                          setLatestCheckOut(format(addWeeks(parseISO(earliestCheckIn), wks), 'yyyy-MM-dd'));
-                                      }
-                                  }}
-                                  className="h-10 rounded-xl text-xs font-bold transition-colors bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559]/80 dark:text-[#c0c7d1] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352]"
-                                >
-                                  {wks} weeks
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
                 </div>
 
-                {/* Maximum Distance */}
+                {/* Maximum Distance Selector */}
                 <div className="relative">
-                  <label className="block text-[10px] font-bold text-[#0B2559]/70 dark:text-[#E6ECF7]/70 uppercase tracking-wider mb-1.5 ml-1">
-                    Maximum distance
+                  <label className="block text-[10px] sm:text-[11px] font-bold text-[#0B2559]/75 dark:text-[#E6ECF7]/75 uppercase tracking-wider mb-1.5 ml-1 whitespace-nowrap">
+                    Max distance
                   </label>
                   <button
                     type="button"
                     onClick={() => {
-                      setIsDistancePopoverOpen(!isDistancePopoverOpen);
+                      const next = !isDistancePopoverOpen;
+                      setIsDistancePopoverOpen(next);
+                      setActiveSearchStep(next ? 'distance' : null);
                       setIsDatesPopoverOpen(false);
                     }}
-                    className="w-full h-[52px] px-4 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-[#EFF6FB] dark:bg-[#182840] hover:bg-[#E5F0F8] dark:hover:bg-[#1f3352] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors flex items-center justify-between text-left cursor-pointer group"
+                    className={`w-full h-[52px] px-3.5 sm:px-4 rounded-xl border transition-all duration-300 flex items-center justify-between text-left cursor-pointer group ${
+                      activeSearchStep === 'distance' || isDistancePopoverOpen
+                        ? 'bg-white dark:bg-[#182840] border-[#0A6FA8] ring-2 ring-[#0A6FA8]/30 shadow-md scale-[1.01]'
+                        : 'bg-[#EFF6FB] dark:bg-[#15233a] border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:bg-[#E5F0F8] dark:hover:bg-[#1a2d48]'
+                    } focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]`}
                   >
-                    <span className="text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors">
+                    <span className="text-xs sm:text-sm font-bold text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] dark:group-hover:text-[#3E9AD1] transition-colors tabular-nums whitespace-nowrap">
                       Within {commuteBuffer} miles
                     </span>
-                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                      {isDistancePopoverOpen ? 'expand_less' : 'expand_more'}
-                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1] shrink-0 transition-transform duration-200 ${
+                        isDistancePopoverOpen ? 'rotate-180' : ''
+                      }`}
+                      aria-hidden="true"
+                    />
                   </button>
 
-                  {/* Progressive Disclosure Popover for Distance */}
+                  {/* Distance Dropdown (Generous width, clean scannable options) */}
                   <AnimatePresence>
                     {isDistancePopoverOpen && (
                       <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsDistancePopoverOpen(false)} />
+                        <div
+                          className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent"
+                          onClick={() => {
+                            setIsDistancePopoverOpen(false);
+                            setActiveSearchStep(null);
+                          }}
+                        />
                         <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                          exit={{ opacity: 0, y: -6, scale: 0.98 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute top-[80px] right-0 w-full min-w-[220px] bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1"
+                          className="absolute top-[calc(100%+8px)] right-0 w-64 sm:w-72 bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.1)] dark:border-[#233550] rounded-2xl shadow-xl z-50 p-2 flex flex-col gap-1"
                         >
                           {[
-                            {miles: 3, label: '3 miles', desc: 'Walking / Scooter'},
-                            {miles: 5, label: '5 miles', desc: 'Quick commute'},
-                            {miles: 10, label: '10 miles', desc: 'Moderate commute'},
-                            {miles: 15, label: '15 miles', desc: 'Maximum radius'}
-                          ].map(opt => (
+                            { miles: 3, label: '3 miles', desc: 'Shift walk / bike' },
+                            { miles: 5, label: '5 miles', desc: 'Recommended (Quick commute)' },
+                            { miles: 10, label: '10 miles', desc: '15–20 min drive' },
+                            { miles: 15, label: '15 miles', desc: 'Extended radius' },
+                            { miles: 25, label: '25 miles', desc: 'Regional hospital hub' },
+                          ].map((opt) => (
                             <button
                               key={opt.miles}
                               type="button"
-                              onClick={() => {
-                                setCommuteBuffer(opt.miles);
-                                setIsDistancePopoverOpen(false);
-                              }}
-                              className={`w-full p-3 rounded-xl text-left flex flex-col transition-colors ${commuteBuffer === opt.miles ? 'bg-[#0A6FA8]/10 dark:bg-[#0A6FA8]/20 border border-[#0A6FA8]/30' : 'hover:bg-[#EFF6FB] dark:hover:bg-[#182840] border border-transparent'}`}
+                              onClick={() => handleDistanceSelected(opt.miles)}
+                              className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer ${
+                                commuteBuffer === opt.miles
+                                  ? 'bg-[#0A6FA8]/10 dark:bg-[#0A6FA8]/20 border border-[#0A6FA8]/30'
+                                  : 'hover:bg-[#EFF6FB] dark:hover:bg-[#182840] border border-transparent'
+                              }`}
                             >
-                              <span className="text-sm font-bold text-[#0B2559] dark:text-white">{opt.label}</span>
-                              <span className="text-[10px] text-[#0B2559]/60 dark:text-[#c0c7d1]/60 font-semibold uppercase">{opt.desc}</span>
+                              <div>
+                                <span className="text-xs sm:text-sm font-bold text-[#0B2559] dark:text-white tabular-nums block whitespace-nowrap">
+                                  {opt.label}
+                                </span>
+                                <span className="text-[10px] text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                  {opt.desc}
+                                </span>
+                              </div>
+                              {commuteBuffer === opt.miles && (
+                                <Check className="w-4 h-4 text-[#0A6FA8] dark:text-[#3E9AD1]" aria-hidden="true" />
+                              )}
                             </button>
                           ))}
                         </motion.div>
@@ -646,23 +620,78 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                   </AnimatePresence>
                 </div>
 
-                {/* Search Action */}
+                {/* Search Housing Action Button */}
                 <div className="flex items-end">
                   <motion.button
                     type="button"
                     onClick={() => {
                       setIsDatesPopoverOpen(false);
                       setIsDistancePopoverOpen(false);
+                      setActiveSearchStep(null);
                       handleExecuteSearch();
                     }}
                     whileTap={{ scale: 0.98 }}
                     whileHover={{ scale: 1.02 }}
-                    className="w-full md:w-auto h-[52px] px-8 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer"
+                    className={`w-full md:w-auto h-[52px] px-8 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer ${
+                      isSearchHighlighted || activeSearchStep === 'search'
+                        ? 'ring-4 ring-[#0A6FA8]/40 shadow-xl scale-[1.02] bg-[#0C7EBF]'
+                        : ''
+                    }`}
                   >
                     <span className="whitespace-nowrap">Search housing →</span>
                   </motion.button>
                 </div>
               </div>
+
+              {/* Validation Error Message */}
+              {dateValidationError && (
+                <p className="text-xs text-[#A8452E] font-semibold mt-1">
+                  {dateValidationError}
+                </p>
+              )}
+
+              {/* Unconstrained Floating Dates Popover (Anchored Responsively Across Assignment Card) */}
+              <AnimatePresence>
+                {isDatesPopoverOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent"
+                      onClick={() => {
+                        setIsDatesPopoverOpen(false);
+                        setActiveSearchStep(null);
+                      }}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                      className="fixed inset-x-3 top-20 sm:absolute sm:inset-x-auto sm:top-[calc(100%+8px)] sm:left-0 md:left-1/2 md:-translate-x-1/2 z-50 w-[calc(100vw-24px)] sm:w-full md:w-[700px] lg:w-[720px] max-w-full drop-shadow-2xl"
+                    >
+                      <ClinicalDateRangePicker
+                        startDate={earliestCheckIn}
+                        endDate={latestCheckOut}
+                        onChange={(start, end) => {
+                          setEarliestCheckIn(start);
+                          setLatestCheckOut(end);
+                          setDateValidationError('');
+                          if (start && end) {
+                            // Highlight the next input ('distance') to signal what is next,
+                            // while STILL keeping the dates dropdown open so user can clearly see range visual!
+                            setActiveSearchStep('distance');
+                            setIsDistancePopoverOpen(false);
+                          }
+                        }}
+                        isNightShiftMode={isNightShiftMode}
+                        onApply={handleDatesCompleted}
+                        onClose={() => {
+                          setIsDatesPopoverOpen(false);
+                        }}
+                      />
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 

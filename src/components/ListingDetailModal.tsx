@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleMapsTravelTimeDisplay } from './GoogleMapsTravelTimeDisplay';
-import { calculateCommuteDuration } from '../lib/googleMapsCommute';
+import { calculateCommuteDuration, resolveHospitalCoordinates, getListingCoordinates } from '../lib/googleMapsCommute';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface ListingDetailModalProps {
@@ -16,6 +16,7 @@ interface ListingDetailModalProps {
   onGoToVerification: () => void;
   onRequestToBook?: (listing: HousingListing) => void;
   selectedHospital?: string;
+  commuteMode?: 'transit' | 'drive';
 }
 
 export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
@@ -28,6 +29,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   onGoToVerification,
   onRequestToBook,
   selectedHospital = 'Duke University Hospital',
+  commuteMode = 'transit',
 }) => {
   useBodyScrollLock(!!listing);
 
@@ -62,6 +64,18 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
     if (!listing) return null;
     return calculateCommuteDuration(listing, selectedHospital);
   }, [listing, selectedHospital]);
+
+  const originCoords = useMemo(() => {
+    if (!listing) return undefined;
+    const coords = getListingCoordinates(listing);
+    return { lat: coords.lat, lng: coords.lng };
+  }, [listing]);
+
+  const destCoords = useMemo(() => {
+    if (!selectedHospital) return undefined;
+    const hosp = resolveHospitalCoordinates(selectedHospital);
+    return { lat: hosp.lat, lng: hosp.lng };
+  }, [selectedHospital]);
 
   // Close on Escape key press
   useEffect(() => {
@@ -341,6 +355,9 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 <GoogleMapsTravelTimeDisplay
                   commute={commute}
                   isNightShiftMode={isNightShiftMode}
+                  initialMode={commuteMode}
+                  origin={originCoords}
+                  destination={destCoords}
                 />
               </div>
             )}

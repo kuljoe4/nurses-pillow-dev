@@ -28,6 +28,7 @@ import { Milestone2ScopeGate } from "./components/Milestone2ScopeGate";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import { ScrollProgressIndicator } from "./components/ScrollProgressIndicator";
 import type { AdminSheetsPreset } from "./components/GoogleSheetsSyncModal";
+import { Stethoscope, Building2, ShieldAlert } from "lucide-react";
 
 // Code-split secondary views & heavy feature modules to eliminate initial bundle bloat
 const SearchListingsView = React.lazy(() =>
@@ -995,7 +996,7 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-teal-500/15 text-teal-700 dark:text-teal-400 mx-auto flex items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl">medical_services</span>
+                    <Stethoscope className="w-7 h-7" aria-hidden="true" />
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
@@ -1059,7 +1060,7 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-blue-500/15 text-blue-700 dark:text-blue-400 mx-auto flex items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl">real_estate_agent</span>
+                    <Building2 className="w-7 h-7" aria-hidden="true" />
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
@@ -1128,9 +1129,7 @@ export default function App() {
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
                 <div className="max-w-md w-full bg-white dark:bg-[#0B1626] rounded-3xl p-8 border border-[rgba(11,37,89,0.1)] dark:border-[#233550] shadow-md text-center space-y-4">
                   <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
-                    <span className="material-symbols-outlined text-2xl">
-                      admin_panel_settings
-                    </span>
+                    <ShieldAlert className="w-7 h-7" aria-hidden="true" />
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
@@ -1278,6 +1277,8 @@ export default function App() {
               initialHospital={searchParamsState.hospital}
               initialDuration={searchParamsState.duration}
               initialRadius={searchParamsState.radius}
+              initialCheckInDate={searchParamsState.checkInDate}
+              initialCheckOutDate={searchParamsState.checkOutDate}
             />
           )}
 
