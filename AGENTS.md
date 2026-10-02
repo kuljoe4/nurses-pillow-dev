@@ -70,7 +70,7 @@ Staged visual structure replacing standard search bars:
 - **Booking Status Tags:** Solid-filled **rectangle** tags (*Requested / Accepted / Declined / Paid / Upcoming*)—deliberately distinct from pill badges so trust and booking states are never confused at a glance.
 
 ### C. Transparent Pricing
-- Itemized checkout MUST display: **Monthly Rent + Cleaning Fee + Pet Fee + Security Deposit Hold + $0 Traveler Fee + Taxes**. Unknown values render as *"Pending review"* in muted italic—never guess numbers.
+- Itemized checkout MUST display: **Monthly Rent + Cleaning Fee + Pet Fee + $0 Traveler Fee + Taxes**. Unknown values render as *"Pending review"* in muted italic—never guess numbers.
 
 ---
 
