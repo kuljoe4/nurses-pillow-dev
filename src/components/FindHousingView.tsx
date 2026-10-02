@@ -393,26 +393,6 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           animate={shouldReduceMotion ? undefined : 'visible'}
           className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10"
         >
-          {/* Host Perspective Notice when logged in as Host */}
-          {userRole === 'host' && (
-            <div className="mb-6 w-full max-w-2xl px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-lg">home</span>
-                <span className="font-bold">Active Perspective: Property Host ({userName || 'Michael Vance'})</span>
-              </div>
-              {onGoToHostPortal && (
-                <button
-                  type="button"
-                  onClick={onGoToHostPortal}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-amber-700 text-white font-bold transition-all duration-200 ease-in-out shadow-xs cursor-pointer flex items-center gap-1 shrink-0"
-                >
-                  <span>Go to Host Portal</span>
-                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                </button>
-              )}
-            </div>
-          )}
-
           {/* Brand Script Greeting */}
           <motion.div
             variants={heroItemVariant}
