@@ -354,6 +354,13 @@ async function startServer() {
       let targetUserId = userId;
       let targetEmail = email;
 
+      let primarySourceName = 'Nursys QuickConfirm'; // Default
+      if (specialty && (specialty.toString().toUpperCase() === 'MD' || specialty.toString().toUpperCase() === 'DO')) {
+        primarySourceName = 'FSMB DocInfo';
+      } else if (specialty && specialty.toString().toUpperCase().includes('CNA')) {
+        primarySourceName = 'State Nurse Aide Registry';
+      }
+
       if (targetUserId || targetEmail) {
         await db.query(
           `UPDATE users
@@ -361,9 +368,10 @@ async function startServer() {
                clinical_state_board = $2,
                profession_specialty = $3,
                clinical_document_url = $4,
-               verification_status = 'pending_review'
+               verification_status = 'pending_review',
+               primary_source_name = $7
            WHERE id = $5 OR LOWER(email) = LOWER($6)`,
-          [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '']
+          [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '', primarySourceName]
         );
       }
 
@@ -388,7 +396,7 @@ async function startServer() {
       }
 
       const result = await db.query(`
-        SELECT id, email, full_name, is_nurse_verified as verification_status FROM users
+        SELECT id, email, full_name, is_nurse_verified as verification_status, clinical_license_number as license_number, clinical_state_board as state_board, profession_specialty, document_purged, primary_source_name FROM users
       `);
 
       res.json(result.rows);

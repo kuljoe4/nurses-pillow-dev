@@ -161,7 +161,7 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Credential
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                Primary Source Registry
+                {clinicianTitle?.includes('CNA') ? 'State Nurse Aide Registry' : 'Primary Source Registry'}
               </span>
             </div>
           </div>
