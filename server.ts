@@ -67,11 +67,11 @@ async function startServer() {
         defaultSrc: ["'self'"],
         frameAncestors: ["'self'", "https://*.google.com", "https://*.googleusercontent.com", "https://aistudio.google.com", "https://*.run.app", "*"],
         imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://maps.googleapis.com", "https://maps.gstatic.com", "https://*.googleusercontent.com", "https://*.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com", "blob:", "data:", "'sha256-30HWrVZFgNSeG1TxpjdFwc8iLppAZjAvX6ztrt+DWs4='", "'sha256-8Dn3mlJvfLHy/DzQO0yJzO5NeH3rAcBEKr7k7D1KtQA='", "'sha256-dpQuVarlB6eLlYlsXzFVnIVE08Nkr2dS093bV0akVMI='"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc: ["'self'", "data:", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
-        workerSrc: ["'self'", "blob:"]
+        workerSrc: ["'self'", "blob:", "data:", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com"]
       },
     },
   }));
