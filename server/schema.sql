@@ -141,6 +141,7 @@ CREATE TABLE users (
     shift_preference VARCHAR(20),
     clinical_document_url TEXT,
     verification_status VARCHAR(50) DEFAULT 'unverified',
+    primary_source_name VARCHAR(150),
 
     is_host_verified BOOLEAN DEFAULT FALSE,  -- True if Stripe ID & property authority passed
     is_suspended BOOLEAN DEFAULT FALSE,

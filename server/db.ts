@@ -129,7 +129,8 @@ export const db = {
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
-          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
+          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
+          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150);
         `);
 
         // Set default value for security_deposit_amount
@@ -177,7 +178,8 @@ export const db = {
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
-          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
+          ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
+          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150);
         `);
 
         // Set default value for security_deposit_amount

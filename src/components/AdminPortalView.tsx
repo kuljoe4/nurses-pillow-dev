@@ -301,6 +301,10 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             <span>FSMB DocInfo</span>
                             <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                           </a>
+                        ) : r.profession?.includes('CNA') ? (
+                          <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
+                            <span>State Nurse Aide Registry</span>
+                          </span>
                         ) : (
                           <a
                             href="https://www.nursys.com"
