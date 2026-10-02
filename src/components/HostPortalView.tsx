@@ -90,6 +90,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [roomCount, setRoomCount] = useState<number>(2);
   const [roomAPrice, setRoomAPrice] = useState<number>(1950);
   const [roomBPrice, setRoomBPrice] = useState<number>(1850);
+  const [petFee, setPetFee] = useState<number>(0);
+  const [parkingFee, setParkingFee] = useState<number>(0);
+  const [extraOptionsStr, setExtraOptionsStr] = useState<string>('[]');
 
   const [listingPhotos, setListingPhotos] = useState<{ id?: string, url: string, file?: File }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -206,10 +209,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     try {
       // Create listing update payload
       const listingPayload = {
+        listingId: editingListingId, // Pass ID to update instead of insert
         propertyType,
         roomCount,
         roomAPrice,
         roomBPrice,
+        petFee,
+        parkingFee,
+        extraOptions: (() => { try { return JSON.parse(extraOptionsStr); } catch { return []; } })(),
         cancellationTier,
         amenities: {
           hasBlackout,
@@ -739,6 +746,53 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Card 3.5: Extra Options (Pet/Parking) */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Extra Fees & Options (Per Stay)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                        Pet Fee (Optional)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                        <input
+                          type="number"
+                          value={petFee}
+                          onChange={(e) => setPetFee(Number(e.target.value))}
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                        Parking Fee (Optional)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                        <input
+                          type="number"
+                          value={parkingFee}
+                          onChange={(e) => setParkingFee(Number(e.target.value))}
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2 mt-2">
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                        Custom Extra Options (JSON array) e.g. [{`{"name": "Grocery", "price": 50}`}]
+                      </label>
+                      <textarea
+                        value={extraOptionsStr}
+                        onChange={(e) => setExtraOptionsStr(e.target.value)}
+                        className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-xs font-mono outline-none focus:border-[#0A6FA8] transition-colors h-16"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Card 4: Specialized Healthcare Amenities */}

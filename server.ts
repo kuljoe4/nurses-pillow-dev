@@ -1265,45 +1265,64 @@ async function startServer() {
         }
         const state = parsedBody.data.state;
 
-        const existingRes = await db.query(
-          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
-          [req.user.id]
-        );
+        const { listingId: providedListingId } = req.body;
+        let listingId = providedListingId;
 
-        let listingId;
-        if (existingRes.rows.length > 0) {
-          listingId = existingRes.rows[0].id;
-          await db.query(
-            `UPDATE listings
-             SET property_type = $1,
-                 monthly_rent = $2,
-                 cleaning_fee = $3,
-                 address_line1 = $4,
-                 city = $5,
-                 state = $6,
-                 postal_code = $7,
-                 latitude = $8,
-                 longitude = $9
-             WHERE id = $10`,
-            [
-              req.body.propertyType,
-              req.body.roomAPrice || req.body.monthlyRate,
-              150,
-              req.body.addressLine1 || "123 Healing Way",
-              req.body.city || "Durham",
-              state,
-              req.body.postalCode || "27705",
-              req.body.lat || 36.0,
-              req.body.lng || -78.9,
-              listingId
-            ]
+        // Extra Options
+        const petFee = req.body.petFee || 0;
+        const parkingFee = req.body.parkingFee || 0;
+        const extraOptions = JSON.stringify(req.body.extraOptions || []);
+
+        if (listingId) {
+          // Verify listing belongs to host before updating
+          const verifyRes = await db.query(
+            "SELECT id FROM listings WHERE id = $1 AND host_id = $2",
+            [listingId, req.user.id]
           );
+
+          if (verifyRes.rows.length > 0) {
+            await db.query(
+              `UPDATE listings
+               SET property_type = $1,
+                   monthly_rent = $2,
+                   cleaning_fee = $3,
+                   pet_fee = $4,
+                   parking_fee = $5,
+                   extra_options = $6,
+                   address_line1 = $7,
+                   city = $8,
+                   state = $9,
+                   postal_code = $10,
+                   latitude = $11,
+                   longitude = $12
+               WHERE id = $13`,
+              [
+                req.body.propertyType,
+                req.body.roomAPrice || req.body.monthlyRate,
+                150,
+                petFee,
+                parkingFee,
+                extraOptions,
+                req.body.addressLine1 || "123 Healing Way",
+                req.body.city || "Durham",
+                state,
+                req.body.postalCode || "27705",
+                req.body.lat || 36.0,
+                req.body.lng || -78.9,
+                listingId
+              ]
+            );
+          } else {
+             return res.status(403).json({ error: "Forbidden: Not the owner of this listing." });
+          }
         } else {
+          listingId = `list-${uuidv4()}`;
           const newListingRes = await db.query(
-            `INSERT INTO listings (id, host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, is_published)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+            `INSERT INTO listings (id, host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, pet_fee, parking_fee, extra_options, is_published)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id`,
             [
               \`lst_${uuidv4()}\`,
+              listingId,
               req.user.id,
               "New Sanctuary Stay",
               req.body.propertyType || "individual_rooms",
@@ -1317,6 +1336,9 @@ async function startServer() {
               req.body.roomAPrice || 1950,
               0,
               150,
+              petFee,
+              parkingFee,
+              extraOptions,
               true
             ]
           );
@@ -1331,9 +1353,9 @@ async function startServer() {
     }
   );
 
-  // Endpoint to fetch current user's listing
+  // Endpoint to fetch current user's listings
   app.get(
-    "/api/listings/my-listing",
+    "/api/listings/my-listings",
     authenticateToken,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -1342,17 +1364,13 @@ async function startServer() {
         }
 
         const existingRes = await db.query(
-          "SELECT id FROM listings WHERE host_id = $1 LIMIT 1",
+          "SELECT * FROM listings WHERE host_id = $1",
           [req.user.id]
         );
 
-        if (existingRes.rows.length > 0) {
-          res.json({ listingId: existingRes.rows[0].id });
-        } else {
-          res.json({ listingId: null });
-        }
+        res.json({ listings: existingRes.rows });
       } catch (error: any) {
-        console.error("Error fetching my listing:", error);
+        console.error("Error fetching my listings:", error);
         res.status(500).json({ error: "Internal Server Error" });
       }
     }

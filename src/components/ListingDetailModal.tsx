@@ -68,7 +68,15 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   // Calculate Stay Pricing
   const { daysCount, accommodationTotal, dailyRate } = calculateStayPricing(activeMonthlyRate, checkInDate, checkOutDate);
   const cleaningFee = 150;
-  const initialDueAtHold = accommodationTotal + cleaningFee;
+
+  const petFee = listing?.petFee || 0;
+  const parkingFee = listing?.parkingFee || 0;
+
+  // Note: We don't have interactive checkbox state here to select individual options,
+  // so we'll just show them as "add-ons available" or optionally pre-sum them.
+  // We'll leave the interactive selection for the Checkout Modal to keep this view clean.
+
+  const initialDueAtHold = accommodationTotal + cleaningFee + petFee + parkingFee;
 
   const commute = useMemo(() => {
     if (!listing) return null;
@@ -557,6 +565,35 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   <span>Clinical Sanitization</span>
                   <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toLocaleString()}.00</span>
                 </div>
+                {petFee > 0 && (
+                  <div className="flex justify-between">
+                    <span>Pet Fee</span>
+                    <span className="font-bold tabular-nums text-[#001848] dark:text-white">${petFee.toLocaleString()}.00</span>
+                  </div>
+                )}
+                {parkingFee > 0 && (
+                  <div className="flex justify-between">
+                    <span>Parking Fee</span>
+                    <span className="font-bold tabular-nums text-[#001848] dark:text-white">${parkingFee.toLocaleString()}.00</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                  <span className="flex items-center gap-1.5">
+                    <span>Security Deposit Hold</span>
+                    <span className="text-[10px] font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#E1EFE9] dark:bg-[#142823] px-2 py-0.5 rounded-full">
+                      $0 Policy
+                    </span>
+                  </span>
+                  <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    $0.00 (No Card Hold)
+                  </span>
+                </div>
+                {listing?.extraOptions && listing.extraOptions.length > 0 && (
+                  <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                    <span>Host Add-ons Available</span>
+                    <span className="font-medium text-[10px]">{listing.extraOptions.length} Options</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#195b4c] font-semibold">
                   <span>$0 Traveler Fee (Guarantee)</span>
                   <span className="font-bold tabular-nums">Free ($0.00)</span>
