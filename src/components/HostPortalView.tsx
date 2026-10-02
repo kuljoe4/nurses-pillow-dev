@@ -42,47 +42,79 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
   // Fetch host's listing on load to get the ID
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     if (activeHostTab === 'editor') {
       const fetchListing = async () => {
         try {
           const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
-          const res = await fetch('/api/listings/my-listing', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          if (!token) return;
+
+          const res = await fetch('/api/listings/my-listings', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            signal: controller.signal
           });
-          if (res.ok) {
+
+          if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const data = await res.json();
-            if (data.listingId) {
-              setEditingListingId(data.listingId);
+            if (isMounted && data.listings && data.listings.length > 0) {
+              setEditingListingId(data.listings[0].id);
             }
+          } else if (!res.ok) {
+             console.error(`Failed to fetch host listings: ${res.status} ${res.statusText}`);
           }
-        } catch (err) {
-          console.error("Failed to fetch host listing:", err);
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            console.error("Failed to fetch host listing:", err);
+          }
         }
       };
       fetchListing();
     }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [activeHostTab]);
 
 
   // Fetch photos on load
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     if (activeHostTab === 'editor' && editingListingId) {
       const fetchPhotos = async () => {
         try {
-          const res = await fetch(`/api/listings/${editingListingId}/photos`);
-          if (res.ok) {
+          const res = await fetch(`/api/listings/${editingListingId}/photos`, {
+            signal: controller.signal
+          });
+          if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const data = await res.json();
-            setListingPhotos(data.photos.map((p: any) => ({
-              id: p.id,
-              url: p.url
-            })));
+            if (isMounted && data.photos) {
+              setListingPhotos(data.photos.map((p: any) => ({
+                id: p.id,
+                url: p.url
+              })));
+            }
+          } else if (!res.ok) {
+            console.error(`Failed to load listing photos: ${res.status} ${res.statusText}`);
           }
-        } catch (err) {
-          console.error("Failed to load listing photos:", err);
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            console.error("Failed to load listing photos:", err);
+          }
         }
       };
       fetchPhotos();
     }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [activeHostTab, editingListingId]);
 
   // Screen B2 Editor Form State
@@ -168,9 +200,11 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const fetchPayoutStatus = async () => {
     try {
       const res = await fetch(`/api/stripe/status/${hostId}`);
-      if (res.ok) {
+      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
         const data = await res.json();
         setPayoutsEnabled(data.payouts_enabled);
+      } else if (!res.ok) {
+        console.error(`Failed to fetch payout status: ${res.status} ${res.statusText}`);
       }
     } catch (err) {
       console.error('Failed to fetch Stripe status', err);
@@ -189,10 +223,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           refreshUrl: `${window.location.origin}${window.location.pathname}?stripe_refresh=true`,
         }),
       });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          setIsConnectingStripe(false);
+        }
       } else {
+        console.error(`Failed to create account link: ${res.status} ${res.statusText}`);
         setIsConnectingStripe(false);
       }
     } catch (err) {
@@ -242,12 +281,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         body: JSON.stringify(listingPayload)
       });
 
-      if (listingRes.ok) {
+      if (listingRes.ok && listingRes.headers.get('content-type')?.includes('application/json')) {
         const listingData = await listingRes.json();
         currentListingId = listingData.listingId;
         if (!editingListingId) {
           setEditingListingId(currentListingId);
         }
+      } else if (!listingRes.ok) {
+        console.error(`Failed to save host listing: ${listingRes.status} ${listingRes.statusText}`);
       }
 
       // Handle photos - process the new files
