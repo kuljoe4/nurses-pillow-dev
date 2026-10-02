@@ -21,27 +21,27 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
   const commitments = [
     {
       icon: 'verified_user',
-      title: '1. Clinician Verification & RN Rates',
+      title: '1. Verified Professionals, Better Rates',
       description:
-        'We cross-reference every clinician with their State Board of Nursing (BRN/Nursys). Verified clinicians unlock negotiated, stipend-friendly rates up to 25% lower than Airbnb or Traditional Directories.',
+        'We verify every professional with their state board. This unlocks better rates designed for your travel stipends, often lower than general short-term rentals.',
     },
     {
       icon: 'dark_mode',
-      title: '2. The 100% Day-Sleeper Protocol',
+      title: '2. Restful Sleep, Any Time',
       description:
-        'Every sanctuary requires laboratory-grade thermal blackout curtains (blocking 99.8% of light), white noise sound machines, and strict daytime quiet-hour agreements from neighbors.',
+        'Properties feature true blackout curtains, white noise options, and environments conducive to daytime rest for night-shift workers.',
     },
     {
       icon: 'shield_with_heart',
-      title: '3. Contract Flex Guarantee',
+      title: '3. Flexible Contract Support',
       description:
-        'If a hospital cancels, reschedules, or floats your travel contract early, you can exit your lease with zero penalty fees and 100% deposit returns upon presenting your agency notice.',
+        'If your assignment is canceled or shortened unexpectedly, you can adjust your stay without heavy penalties by providing your agency notice.',
     },
     {
       icon: 'local_hospital',
-      title: '4. Sub-15 Minute Hospital Proximity',
+      title: '4. Convenient Commutes',
       description:
-        'Zero exhausting commutes after brutal 12-hour shifts. Every listing maps exact transit times, bike pathways, and secure parking structures for day and night shift rotations.',
+        'Spend less time driving. We provide clear details on commute times to your assigned hospital, whether you drive, walk, or bike.',
     },
   ];
 
@@ -61,21 +61,21 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           className="text-center max-w-2xl mx-auto pt-4"
         >
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db] mb-3">
-            Built by Nurses for Nurses
+            Designed for Healthcare Travelers
           </span>
           <h1
             className={`text-3xl sm:text-4xl font-bold tracking-tight mb-3 ${
               isNightShiftMode ? 'text-white' : 'text-[#001848]'
             }`}
           >
-            How Nurses Pillow Guarantees Real Rest
+            How Nurses Pillow Works
           </h1>
           <p
             className={`text-base leading-relaxed ${
               isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'
             }`}
           >
-            Traveling clinicians work 12+ hour shifts under life-or-death pressure. We created a sanctuary network designed to eliminate the anxiety of unreliable sublets and noisy daytime neighborhoods.
+            We connect traveling healthcare professionals with housing tailored for rest and convenience, so you can focus on your assignment.
           </p>
         </motion.div>
 
@@ -142,10 +142,10 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
         >
           <div className="text-center mb-8">
             <h2 className={`text-2xl sm:text-3xl font-bold mb-3 ${isNightShiftMode ? 'text-white' : 'text-[#001848]'}`}>
-              Nurses Pillow vs. Traditional Directories
+              Nurses Pillow vs. General Short-Term Housing
             </h2>
             <p className={`text-sm max-w-2xl mx-auto ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
-              Why top healthcare travelers and hosts prefer a verified ecosystem over general housing boards.
+              See how a platform built for healthcare travelers compares to general housing boards.
             </p>
           </div>
 
@@ -161,36 +161,36 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
                       Nurses Pillow
                     </th>
                     <th className="p-4 sm:p-5 font-bold text-sm w-1/3 opacity-70">
-                      Traditional Directories
+                      General Housing
                     </th>
                   </tr>
                 </thead>
                 <tbody className={`text-sm ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
                   <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Upfront Cost</td>
+                    <td className="p-4 sm:p-5 font-semibold">Upfront Fees</td>
                     <td className="p-4 sm:p-5 font-bold text-[#195b4c] dark:text-[#aff0db] bg-[#0a6fa8]/5">
-                      $0 (Pay only when booked)
+                      $0 to browse and book
                     </td>
-                    <td className="p-4 sm:p-5 opacity-80">$199/yr subscription</td>
+                    <td className="p-4 sm:p-5 opacity-80">May require subscriptions</td>
                   </tr>
                   <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Traveler Identity</td>
-                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">Biometric ID Verified</td>
-                    <td className="p-4 sm:p-5 opacity-80">Unverified at signup</td>
+                    <td className="p-4 sm:p-5 font-semibold">Identity Verification</td>
+                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">Secure identity check</td>
+                    <td className="p-4 sm:p-5 opacity-80">Variable verification</td>
                   </tr>
                   <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Professional Credentials</td>
+                    <td className="p-4 sm:p-5 font-semibold">Professional Standing</td>
                     <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
-                      Official Registry/Board Verified
+                      Verified credentials
                     </td>
-                    <td className="p-4 sm:p-5 opacity-80">Unchecked</td>
+                    <td className="p-4 sm:p-5 opacity-80">Not checked</td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold">Booking & Payments</td>
+                    <td className="p-4 sm:p-5 font-semibold">Payments</td>
                     <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
-                      Secure Stripe Connect split
+                      Secure, on-platform payments
                     </td>
-                    <td className="p-4 sm:p-5 opacity-80">Manual off-platform coordination</td>
+                    <td className="p-4 sm:p-5 opacity-80">Often manual or off-platform</td>
                   </tr>
                 </tbody>
               </table>
@@ -210,27 +210,27 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
               : 'bg-white border-[rgba(11,37,89,0.12)] text-[#001848]'
           }`}
         >
-          <h2 className="text-2xl font-bold mb-2">Ready to secure your assignment housing?</h2>
+          <h2 className="text-2xl font-bold mb-2">Ready to find your next home?</h2>
           <p
             className={`text-sm max-w-lg mx-auto mb-6 ${
               isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'
             }`}
           >
-            Verify your nursing credentials in 2 minutes to unlock locked inventory and host direct messaging.
+            Verify your credentials to connect with hosts and view available housing.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={onGoToVerification}
               className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#0a6fa8] hover:bg-[#005684] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#005684] text-white font-semibold text-sm shadow-md cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>Verify Nursing License (Step 3)</span>
+              <span>Verify Nursing License</span>
               <span className="material-symbols-outlined text-base">arrow_forward</span>
             </button>
             <button
               onClick={onGoToHousing}
               className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-current text-sm font-semibold hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer"
             >
-              Browse Housing Sanctuaries
+              Browse Housing
             </button>
           </div>
         </motion.div>
