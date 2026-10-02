@@ -1321,8 +1321,7 @@ async function startServer() {
             `INSERT INTO listings (id, host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, pet_fee, parking_fee, extra_options, is_published)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id`,
             [
-              \`lst_${uuidv4()}\`,
-              listingId,
+              `lst_${uuidv4()}`,
               req.user.id,
               "New Sanctuary Stay",
               req.body.propertyType || "individual_rooms",
