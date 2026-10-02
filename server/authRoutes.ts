@@ -243,8 +243,7 @@ router.post('/send-verification-email', authenticateToken, catchAsync(async (req
 
     const postmarkServerToken =
       process.env.POSTMARK_SERVER_TOKEN ||
-      process.env.VITE_POSTMARK_SERVER_TOKEN ||
-      '683695c7-ee7b-4cce-9f57-04eb0f38af5c';
+      process.env.VITE_POSTMARK_SERVER_TOKEN;
     const cleanEmail = email.trim().toLowerCase();
     const userResult = await db.query('SELECT id, full_name FROM users WHERE LOWER(email) = $1', [cleanEmail]);
 
@@ -366,22 +365,6 @@ router.get('/me', catchAsync(async (req, res, next) => {
     (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
 
   if (!token) {
-    const emailParam = req.query.email as string;
-    if (emailParam) {
-      try {
-        const cleanEmail = emailParam.trim().toLowerCase();
-        const result = await db.query(
-          'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE LOWER(email) = $1',
-          [cleanEmail]
-        );
-        if (result.rows.length > 0) {
-          res.json({ user: result.rows[0] });
-          return;
-        }
-      } catch (err) {
-        console.error('Error fetching user by email fallback:', err);
-      }
-    }
     res.json({ user: null });
     return;
   }

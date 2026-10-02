@@ -507,17 +507,14 @@ export default function App() {
 
   // Explicitly fetch and synchronize the current user's profile from the backend
   // to prevent UI from displaying stale, mocked, or placeholder user data.
-  const fetchUserProfile = useCallback(async (targetEmail?: string) => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const token = localStorage.getItem("np_auth_token");
       const headers: Record<string, string> = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const emailToQuery = targetEmail || localStorage.getItem("np_user_email") || undefined;
-      const url = emailToQuery
-        ? `/api/auth/me?email=${encodeURIComponent(emailToQuery)}`
-        : "/api/auth/me";
+      const url = "/api/auth/me";
 
       const res = await fetch(url, {
         headers,
@@ -816,7 +813,7 @@ export default function App() {
 
       // 2. Explicitly trigger a re-fetch of the current user's profile from the backend
       // to guarantee no stale, mocked, or placeholder user data persists in the UI
-      const freshUser = await fetchUserProfile(email);
+      const freshUser = await fetchUserProfile();
 
       if (skipAutoNavigate) {
         return;
@@ -1288,15 +1285,15 @@ export default function App() {
               isNightShiftMode={isNightShiftMode}
               initialEmail={verificationData.workEmail}
               onEmailVerified={async () => {
-                await fetchUserProfile(verificationData.workEmail);
+                await fetchUserProfile();
               }}
               onProceedToPhoneVerification={async () => {
-                await fetchUserProfile(verificationData.workEmail);
+                await fetchUserProfile();
                 handleUpdateVerification({ isContactVerified: true });
                 handleNavigateTab("phone-verification");
               }}
               onProceedToLicenseVerification={async () => {
-                await fetchUserProfile(verificationData.workEmail);
+                await fetchUserProfile();
                 handleUpdateVerification({ isContactVerified: true });
                 handleNavigateTab("verification");
                 setVerificationStep(3);
