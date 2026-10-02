@@ -70,7 +70,7 @@ async function startServer() {
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
+        connectSrc: ["'self'", "data:", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
         workerSrc: ["'self'", "blob:"]
       },
     },
@@ -697,10 +697,12 @@ async function startServer() {
   // Hospitals / Healthcare Facilities
   app.get('/api/hospitals', async (req: Request, res: Response) => {
     try {
+      const activeStatesQuery = ACTIVE_STATES.map(state => `'${state}'`).join(', ');
       const result = await db.query(`
         SELECT id, name, health_system, address_line1 as address, city, state, postal_code as zip,
         latitude, longitude, trauma_level, teaching_hospital, parking_type, nurse_feedback_score
         FROM healthcare_facilities
+        WHERE state IN (${activeStatesQuery})
       `);
       res.json(result.rows);
     } catch (error: any) {
@@ -808,7 +810,7 @@ async function startServer() {
       const result = await db.query(
         `
         INSERT INTO bookings (
-          id, listing_id, traveler_id, start_date, end_date, stay_duration_weeks,
+          id, listing_id, traveler_id, start_date, end_date, assignment_duration_weeks,
           status, total_rent, base_monthly_rent, cleaning_fee, pet_fee,
           gross_booking_value, host_platform_fee_amount, host_payout_amount,
           cancellation_policy_agreed, host_id, stripe_payment_intent_id
@@ -915,7 +917,7 @@ async function startServer() {
 
       const result = await db.query(
         `
-        INSERT INTO bookings (id, listing_id, traveler_id, start_date, end_date, stay_duration_weeks, status, total_rent, base_monthly_rent, gross_booking_value, host_platform_fee_amount, host_payout_amount, cancellation_policy_agreed, host_id)
+        INSERT INTO bookings (id, listing_id, traveler_id, start_date, end_date, assignment_duration_weeks, status, total_rent, base_monthly_rent, gross_booking_value, host_platform_fee_amount, host_payout_amount, cancellation_policy_agreed, host_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *;
       `,
@@ -1253,10 +1255,15 @@ async function startServer() {
           return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const state = req.body.state || "NC"; // fallback
-        if (!ACTIVE_STATES.includes(state as any)) {
+        const ListingStateSchema = z.object({
+          state: z.enum(['NC', 'MD', 'CT', 'ND', 'KS']).default('NC'),
+        }).passthrough();
+
+        const parsedBody = ListingStateSchema.safeParse(req.body);
+        if (!parsedBody.success) {
           return res.status(400).json({ error: "Listing creation is currently limited to NC, MD, CT, ND, and KS." });
         }
+        const state = parsedBody.data.state;
 
         const { listingId: providedListingId } = req.body;
         let listingId = providedListingId;
@@ -1314,6 +1321,7 @@ async function startServer() {
             `INSERT INTO listings (id, host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, pet_fee, parking_fee, extra_options, is_published)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id`,
             [
+              \`lst_${uuidv4()}\`,
               listingId,
               req.user.id,
               "New Sanctuary Stay",
