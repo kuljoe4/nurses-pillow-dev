@@ -242,7 +242,6 @@ export function buildNurseTaxLedgerData(bookings: BookingRequest[]): {
     'Duration (Weeks)',
     'Monthly Rent ($)',
     'Cleaning Fee ($)',
-    'Security Deposit Hold ($)',
     'Traveler Platform Fee ($)',
     'Total Initial Out-of-Pocket ($)',
     'GSA Lodging Stipend Comparison ($/mo)',

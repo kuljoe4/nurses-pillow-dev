@@ -261,6 +261,8 @@ CREATE TABLE listings (
     security_deposit_amount DECIMAL(10, 2) DEFAULT 0.00,
     cleaning_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     pet_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    parking_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    extra_options JSONB DEFAULT '[]'::jsonb,
 
     -- Marketplace Policies
     cancellation_policy cancellation_policy_tier NOT NULL DEFAULT 'flexible',
@@ -396,6 +398,8 @@ CREATE TABLE bookings (
     total_rent DECIMAL(10, 2) NOT NULL,
     cleaning_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     pet_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    parking_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    extra_options_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     deposit_hold_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     gross_booking_value DECIMAL(10, 2) NOT NULL, -- GBV metric
@@ -625,6 +629,3 @@ CREATE TRIGGER update_hospitals_modtime BEFORE UPDATE ON healthcare_facilities F
 CREATE TRIGGER update_listings_modtime BEFORE UPDATE ON listings FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_rooms_modtime BEFORE UPDATE ON listing_rooms FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_bookings_modtime BEFORE UPDATE ON bookings FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-
--- Ensure security deposit constraints are enforced post-migration
-UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;

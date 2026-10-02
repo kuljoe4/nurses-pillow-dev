@@ -16,6 +16,8 @@ export interface DbListingRow {
   is_active?: boolean;
   cancellation_tier?: string;
   pet_fee: number | string;
+  parking_fee?: number | string;
+  extra_options?: any;
 }
 
 // Maps enterprise DB schema formats to the `HousingListing` format the frontend expects.
@@ -56,6 +58,9 @@ export function mapDbListingToFrontend(dbRow: DbListingRow) {
     featuredSanctuary: false,
     propertyType: dbRow.property_type,
     latitude: Number(dbRow.latitude),
-    longitude: Number(dbRow.longitude)
+    longitude: Number(dbRow.longitude),
+    petFee: Number(dbRow.pet_fee || 0),
+    parkingFee: Number(dbRow.parking_fee || 0),
+    extraOptions: typeof dbRow.extra_options === 'string' ? JSON.parse(dbRow.extra_options) : dbRow.extra_options,
   };
 }

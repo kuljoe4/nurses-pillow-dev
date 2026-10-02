@@ -76,10 +76,18 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   // Strict Platform-Wide Policy: Zero Security Deposit Holds for Clinicians
   const securityDeposit = 0;
   const cleaningFee = 150;
-  const petFee = 0; // we can keep it 0 for now unless listing has pet fee
+  const petFee = listing.petFee || 0;
+  const parkingFee = listing.parkingFee || 0;
+
+  const [selectedExtraOptions, setSelectedExtraOptions] = useState<Record<string, boolean>>({});
+
+  const extraOptionsFee = (listing.extraOptions || []).reduce((acc, opt) => {
+    return acc + (selectedExtraOptions[opt.name] ? Number(opt.price) : 0);
+  }, 0);
+
   const travelerFee = 0;
   // Upfront charge includes prorated accommodation, cleaning fee, and pet fee.
-  const totalInitialCharge = accommodationTotal + cleaningFee + petFee + travelerFee;
+  const totalInitialCharge = accommodationTotal + cleaningFee + petFee + parkingFee + extraOptionsFee + travelerFee;
 
   // Effective host fee lookup (checks for custom fee override vs global rate)
   const hostEffective = stripeConnect.getEffectiveFeeRate(listing.id || listing.title);
@@ -148,6 +156,9 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         securityDeposit,
         cleaningFee,
         petFee,
+        parkingFee,
+        extraOptionsFee,
+        selectedExtraOptions: (listing.extraOptions || []).filter(o => selectedExtraOptions[o.name]),
         travelerFee,
         totalInitialCharge,
         hostNetPayout: splitPreview.hostNetPayout,
@@ -251,17 +262,6 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                       <span className="font-bold tabular-nums text-[#001848] dark:text-white">${accommodationTotal.toLocaleString()}.00</span>
                     </div>
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
-                      <span className="flex items-center gap-1.5">
-                        <span>Security Deposit Hold</span>
-                        <span className="text-[10px] font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#E1EFE9] dark:bg-[#142823] px-2 py-0.5 rounded-full">
-                          $0 Policy
-                        </span>
-                      </span>
-                      <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                        $0.00 (No Card Hold)
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                       <span>Cleaning Fee</span>
                       <span className="font-bold tabular-nums text-[#001848] dark:text-white">${cleaningFee.toFixed(2)}</span>
                     </div>
@@ -269,6 +269,33 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                       <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
                         <span>Pet Fee</span>
                         <span className="font-bold tabular-nums text-[#001848] dark:text-white">${petFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {parkingFee > 0 && (
+                      <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
+                        <span>Parking Fee</span>
+                        <span className="font-bold tabular-nums text-[#001848] dark:text-white">${parkingFee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {listing.extraOptions && listing.extraOptions.length > 0 && (
+                      <div className="pt-2 pb-1 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Extra Options</span>
+                        <div className="space-y-2">
+                          {listing.extraOptions.map((opt, i) => (
+                            <label key={i} className="flex items-center justify-between cursor-pointer">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={!!selectedExtraOptions[opt.name]}
+                                  onChange={(e) => setSelectedExtraOptions(prev => ({...prev, [opt.name]: e.target.checked}))}
+                                  className="rounded accent-[#0A6FA8]"
+                                />
+                                <span className="text-[#404850] dark:text-[#c0c7d1]">{opt.name}</span>
+                              </div>
+                              <span className="font-bold tabular-nums text-[#001848] dark:text-white">+${Number(opt.price).toFixed(2)}</span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     )}
                     <div className="flex justify-between items-center text-[#404850] dark:text-[#c0c7d1]">
