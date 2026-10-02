@@ -58,6 +58,9 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
+  // Expose app for testing if needed
+  (global as any).app = app;
+
   app.use(helmet({
     frameguard: false, // Disables X-Frame-Options to allow iframe embedding in preview
     crossOriginResourcePolicy: false,
@@ -425,8 +428,7 @@ async function startServer() {
           verification_status = 'verified',
           document_purged = true,
           document_purged_at = NOW(),
-          clinical_document_url = NULL,
-          is_nurse_verified = true
+          clinical_document_url = NULL
         WHERE id = $1
       `, [userId]);
 

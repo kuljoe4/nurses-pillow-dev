@@ -130,7 +130,9 @@ export const db = {
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
-          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150);
+          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS document_purged BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS document_purged_at TIMESTAMPTZ;
         `);
 
         // Set default value for security_deposit_amount
@@ -179,7 +181,9 @@ export const db = {
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
-          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150);
+          ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS document_purged BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS document_purged_at TIMESTAMPTZ;
         `);
 
         // Set default value for security_deposit_amount
