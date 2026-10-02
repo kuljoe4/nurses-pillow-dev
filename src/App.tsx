@@ -550,16 +550,20 @@ export default function App() {
 
           const isDemo = Boolean(user.id?.startsWith("usr_demo") || user.email === "sarah.jenkins@ucsf.edu");
 
-          // Load user's persisted bookings
-          const bookingsKey = getBookingsKey(user.email, user.id);
-          const savedBookings = localStorage.getItem(bookingsKey);
-          if (savedBookings !== null) {
-            try {
-              setBookingRequests(JSON.parse(savedBookings));
-            } catch {
+          // Load user's actual bookings from API
+          try {
+            const bookingsRes = await fetch('/api/bookings/me', {
+              headers,
+              credentials: "include",
+            });
+            if (bookingsRes.ok) {
+              const bookingsData = await bookingsRes.json();
+              setBookingRequests(bookingsData.bookings || []);
+            } else {
               setBookingRequests([]);
             }
-          } else if (!isDemo) {
+          } catch (err) {
+            console.error("Failed to fetch bookings:", err);
             setBookingRequests([]);
           }
 
@@ -742,13 +746,18 @@ export default function App() {
       }
     }
 
+    try {
+      const token = localStorage.getItem("np_auth_token");
+      await fetch(`/api/bookings/${id}/approve`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
     setBookingRequests((prev) => {
-      const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
-      const key = getBookingsKey(currentUser?.email, currentUser?.id);
-      try {
-        localStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      return next;
+      return prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
     });
   }, [currentUser, bookingRequests]);
 
@@ -764,13 +773,18 @@ export default function App() {
       }
     }
 
+    try {
+      const token = localStorage.getItem("np_auth_token");
+      await fetch(`/api/bookings/${id}/decline`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
     setBookingRequests((prev) => {
-      const next = prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
-      const key = getBookingsKey(currentUser?.email, currentUser?.id);
-      try {
-        localStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      return next;
+      return prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
     });
   }, [currentUser, bookingRequests]);
 

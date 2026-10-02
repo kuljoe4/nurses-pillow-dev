@@ -506,7 +506,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           <div className="text-xs text-gray-500">
             Primary Clinician Credential Audit:{' '}
             <strong className="text-[#0B2559] dark:text-white font-bold">{displayName}</strong>
-            {' • '}{verificationData?.professionSpecialty || 'Registered Nurse'}
+            {' • '}{verificationData?.professionSpecialty || 'Healthcare Professional'}
           </div>
 
           {/* Streamlined Verification Sources (Single Grid, Zero Redundancy) */}

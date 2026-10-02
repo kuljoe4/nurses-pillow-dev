@@ -15,6 +15,7 @@ interface HostPortalViewProps {
     role: string;
     name: string;
     email?: string;
+    isHostVerified?: boolean;
   };
 }
 
@@ -59,7 +60,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const data = await res.json();
             if (isMounted && data.listings && data.listings.length > 0) {
-              setEditingListingId(data.listings[0].id);
+              const l = data.listings[0];
+              setEditingListingId(l.id);
+              if (l.property_type) setPropertyType(l.property_type);
+              if (l.monthly_rate) setRoomAPrice(l.monthly_rate);
+              if (l.pet_fee) setPetFee(l.pet_fee);
+              if (l.cleaning_fee) setParkingFee(0); // Assuming parking fee mapped elsewhere or just leave it
+              if (l.cancellation_tier) setCancellationTier(l.cancellation_tier === 'strict_90d' ? 'Strict' : 'Flexible');
             }
           } else if (!res.ok) {
              console.error(`Failed to fetch host listings: ${res.status} ${res.statusText}`);
@@ -1061,9 +1068,17 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   Government photo identification and facial liveness match for host authenticity.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>Verified RealID</span>
+              <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                {currentUser?.isHostVerified ? (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db]">
+                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>Verified RealID</span>
+                  </div>
+                ) : (
+                  <button className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs">
+                    Verify Identity
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1080,9 +1095,17 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   Property deed, property tax receipt, or master lease sublease authorization.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>Deed Verified on File</span>
+              <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                {currentUser?.isHostVerified ? (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db]">
+                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>Deed Verified on File</span>
+                  </div>
+                ) : (
+                  <button className="w-full bg-[#EFF6FB] text-[#0A6FA8] hover:bg-[#E1EFE9] text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs">
+                    Upload Document
+                  </button>
+                )}
               </div>
             </div>
 

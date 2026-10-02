@@ -694,6 +694,94 @@ async function startServer() {
     }
   });
 
+  // ---------------------------------------------------------
+  // Bookings / Reservations
+  // ---------------------------------------------------------
+  app.get('/api/bookings/me', authenticateToken, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.id;
+      const role = req.user.role;
+
+      let query = `
+        SELECT
+          b.id,
+          b.status,
+          b.start_date,
+          b.end_date,
+          b.assignment_duration_weeks,
+          b.total_rent,
+          b.base_monthly_rent,
+          b.host_payout_amount,
+          b.gross_booking_value,
+          b.stripe_payment_intent_id,
+          b.created_at,
+          b.cancellation_policy_agreed,
+          l.id as listing_id,
+          l.title as listing_title,
+          u.full_name as traveler_name,
+          u.phone_number as traveler_phone,
+          u.avatar_url as traveler_avatar,
+          u.profession_type,
+          u.specialty,
+          hf.name as hospital_name
+        FROM bookings b
+        LEFT JOIN listings l ON b.listing_id = l.id
+        LEFT JOIN users u ON b.traveler_id = u.id
+        LEFT JOIN healthcare_facilities hf ON b.hospital_id = hf.id
+      `;
+
+      if (role === 'host') {
+        query += ` WHERE b.host_id = $1 ORDER BY b.created_at DESC`;
+      } else {
+        query += ` WHERE b.traveler_id = $1 ORDER BY b.created_at DESC`;
+      }
+
+      const result = await db.query(query, [userId]);
+
+      const formattedBookings = result.rows.map((row: any) => {
+        const profession = row.profession_type || 'Healthcare Professional';
+        const spec = row.specialty ? ` - ${row.specialty}` : '';
+        const title = `${profession}${spec}`;
+
+        const monthlyRent = Number(row.base_monthly_rent) || 0;
+        const totalCharge = Number(row.gross_booking_value) || 0;
+        const netPayout = Number(row.host_payout_amount) || 0;
+
+        return {
+          id: row.id,
+          listingId: row.listing_id,
+          listingTitle: row.listing_title || 'Sanctuary Listing',
+          clinicianName: row.traveler_name || 'Traveler',
+          clinicianTitle: title,
+          clinicianAvatar: row.traveler_avatar || 'https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80',
+          clinicianPhone: row.traveler_phone || 'N/A',
+          hospitalName: row.hospital_name || 'Assigned Hospital',
+          unitSpecialty: row.specialty || 'Various',
+          startDate: new Date(row.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          endDate: new Date(row.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          durationWeeks: row.assignment_duration_weeks || 13,
+          monthlyRent: monthlyRent,
+          cleaningFee: 150,
+          securityDeposit: 250,
+          petFee: 0,
+          travelerFee: 0,
+          totalInitialCharge: totalCharge,
+          hostNetPayout: netPayout,
+          status: row.status || 'pending_host_approval',
+          submittedAt: new Date(row.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }),
+          deadlineHoursRemaining: 24,
+          specialRequests: row.cancellation_policy_agreed ? `Agreed to ${row.cancellation_policy_agreed} cancellation policy.` : '',
+          paymentIntentId: row.stripe_payment_intent_id
+        };
+      });
+
+      res.json({ bookings: formattedBookings });
+    } catch (error: any) {
+      console.error('Error fetching bookings:', error);
+      res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+  });
+
   // Hospitals / Healthcare Facilities
   app.get('/api/hospitals', async (req: Request, res: Response) => {
     try {
