@@ -301,9 +301,17 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             <span>FSMB DocInfo</span>
                             <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                           </a>
-                        ) : r.profession?.includes('CNA') ? (
+                        ) : r.profession?.toUpperCase().includes('CNA') ? (
                           <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
                             <span>State Nurse Aide Registry</span>
+                          </span>
+                        ) : r.profession?.toUpperCase() === 'PA' || r.profession?.toUpperCase().includes('PHYSICIAN ASSISTANT') ? (
+                          <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
+                            <span>State Medical Board</span>
+                          </span>
+                        ) : r.profession && !['RN', 'LPN', 'LVN', 'NP', 'CRNA', 'CNM', 'APRN'].some(p => r.profession!.toUpperCase().includes(p)) ? (
+                          <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
+                            <span>State Professional Registry</span>
                           </span>
                         ) : (
                           <a

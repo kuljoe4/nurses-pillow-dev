@@ -161,7 +161,15 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Credential
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                {clinicianTitle?.includes('CNA') ? 'State Nurse Aide Registry' : 'Primary Source Registry'}
+                {clinicianTitle?.toUpperCase().includes('CNA')
+                  ? 'State Nurse Aide Registry'
+                  : clinicianTitle?.toUpperCase() === 'PA' || clinicianTitle?.toUpperCase().includes('PHYSICIAN ASSISTANT')
+                  ? 'State Medical Board'
+                  : clinicianTitle?.toUpperCase() === 'MD' || clinicianTitle?.toUpperCase() === 'DO' || clinicianTitle?.toUpperCase().includes('PHYSICIAN (MD')
+                  ? 'FSMB DocInfo'
+                  : clinicianTitle && !['RN', 'LPN', 'LVN', 'NP', 'CRNA', 'CNM', 'APRN'].some(p => clinicianTitle!.toUpperCase().includes(p))
+                  ? 'State Professional Registry'
+                  : 'Primary Source Registry'}
               </span>
             </div>
           </div>

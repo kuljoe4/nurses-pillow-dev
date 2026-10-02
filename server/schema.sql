@@ -147,6 +147,9 @@ CREATE TABLE users (
     is_suspended BOOLEAN DEFAULT FALSE,
     suspension_reason TEXT,
 
+    document_purged BOOLEAN DEFAULT FALSE,
+    document_purged_at TIMESTAMPTZ,
+
     -- Password Reset
     reset_password_token VARCHAR(255),
     reset_password_expires TIMESTAMP WITH TIME ZONE,

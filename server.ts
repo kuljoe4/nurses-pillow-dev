@@ -58,6 +58,9 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
+  // Expose app for testing if needed
+  (global as any).app = app;
+
   app.use(helmet({
     frameguard: false, // Disables X-Frame-Options to allow iframe embedding in preview
     crossOriginResourcePolicy: false,
@@ -355,10 +358,31 @@ async function startServer() {
       let targetEmail = email;
 
       let primarySourceName = 'Nursys QuickConfirm'; // Default
-      if (specialty && (specialty.toString().toUpperCase() === 'MD' || specialty.toString().toUpperCase() === 'DO')) {
-        primarySourceName = 'FSMB DocInfo';
-      } else if (specialty && specialty.toString().toUpperCase().includes('CNA')) {
-        primarySourceName = 'State Nurse Aide Registry';
+      if (specialty) {
+        const specUpper = specialty.toString().toUpperCase();
+        if (specUpper === 'MD' || specUpper === 'DO' || specUpper.includes('PHYSICIAN (MD')) {
+          primarySourceName = 'FSMB DocInfo';
+        } else if (specUpper.includes('CNA') || specUpper.includes('NURSE AIDE')) {
+          primarySourceName = 'State Nurse Aide Registry';
+        } else if (
+          specUpper.includes('RESPIRATORY') ||
+          specUpper.includes('IMAGING') ||
+          specUpper.includes('RAD TECH') ||
+          specUpper.includes('SURGICAL TECH') ||
+          specUpper.includes('LAB') ||
+          specUpper.includes('PHYSICAL THERAPIST') ||
+          specUpper.includes('OCCUPATIONAL THERAPIST') ||
+          specUpper.includes('PHARMACIST') ||
+          specUpper.includes('PARAMEDIC') ||
+          specUpper.includes('EMT') ||
+          specUpper.includes('MEDICAL ASSISTANT') ||
+          specUpper.includes('ALLIED') ||
+          specUpper.includes('PT_OT')
+        ) {
+          primarySourceName = 'State Professional Registry';
+        } else if (specUpper === 'PA' || specUpper.includes('PHYSICIAN ASSISTANT')) {
+          primarySourceName = 'State Medical Board';
+        }
       }
 
       if (targetUserId || targetEmail) {
@@ -425,8 +449,7 @@ async function startServer() {
           verification_status = 'verified',
           document_purged = true,
           document_purged_at = NOW(),
-          clinical_document_url = NULL,
-          is_nurse_verified = true
+          clinical_document_url = NULL
         WHERE id = $1
       `, [userId]);
 
