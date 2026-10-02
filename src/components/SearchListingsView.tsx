@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
 import { db } from '../services/database';
-import { ListingDetailModal } from './ListingDetailModal';
-import { HealthcareAmenitiesFilterModal } from './HealthcareAmenitiesFilterModal';
+const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
+const HealthcareAmenitiesFilterModal = React.lazy(() => import('./HealthcareAmenitiesFilterModal').then((m) => ({ default: m.HealthcareAmenitiesFilterModal })));
 import { SearchListingsSkeleton } from './skeletons/SearchListingsSkeleton';
 import { PillowSaveButton } from './PillowSaveButton';
 import { SearchListingCard } from './SearchListingCard';
@@ -1517,6 +1517,7 @@ useBodyScrollLock(isGsaModalOpen);
       </section>
 
       {/* MODALS */}
+      <Suspense fallback={null}>
       <ListingDetailModal
         listing={activeDetailListing}
         onClose={useCallback(() => setActiveDetailListing(null), [])}
@@ -1534,7 +1535,9 @@ useBodyScrollLock(isGsaModalOpen);
           onRequestToBookListing?.(listing);
         }, [onRequestToBookListing])}
       />
+      </Suspense>
 
+      <Suspense fallback={null}>
       <HealthcareAmenitiesFilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
@@ -1545,6 +1548,7 @@ useBodyScrollLock(isGsaModalOpen);
         isNightShiftMode={isNightShiftMode}
         activeHospitalName={selectedHospital}
       />
+      </Suspense>
 
       {/* Interactive Clinical Date Range Picker Modal */}
       <AnimatePresence>
