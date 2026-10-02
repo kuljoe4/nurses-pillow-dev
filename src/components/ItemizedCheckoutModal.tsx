@@ -73,8 +73,6 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   // Calculate Stay Pricing
   const { daysCount, accommodationTotal, dailyRate } = calculateStayPricing(monthlyRent, checkInDate, checkOutDate);
 
-  // Strict Platform-Wide Policy: Zero Security Deposit Holds for Clinicians
-  const securityDeposit = 0;
   const cleaningFee = 150;
   const petFee = listing.petFee || 0;
   const parkingFee = listing.parkingFee || 0;
@@ -110,7 +108,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const splitPreview = stripeConnect.calculateSplit(
     monthlyRent,
     cleaningFee,
-    securityDeposit,
+    0, // securityDeposit
     finalFeeRate
   );
 
@@ -132,7 +130,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       const splitTxn = await stripeConnect.processSplitPayment({
         monthlyRent,
         cleaningFee,
-        securityDeposit,
+        securityDeposit: 0,
         cardNumber,
         hostConnectedAccountId: hostOverride?.connectedAccountId || 'acct_1NC_DukeHost_Express',
         customFeeRateOrPercent: finalFeeRate,
@@ -153,7 +151,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         endDate: checkOutDate,
         durationWeeks: Math.round(daysCount / 7),
         monthlyRent,
-        securityDeposit,
+        securityDeposit: 0,
         cleaningFee,
         petFee,
         parkingFee,
