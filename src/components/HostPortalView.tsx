@@ -654,6 +654,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                           type="button"
                           onClick={() => setRoomCount(Math.max(2, roomCount - 1))}
                           className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#0B2559] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                          aria-label="Decrease room count"
                         >
                           <span className="material-symbols-outlined text-[18px]">remove</span>
                         </button>
@@ -662,6 +663,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                           type="button"
                           onClick={() => setRoomCount(Math.min(5, roomCount + 1))}
                           className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[#0B2559] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                          aria-label="Increase room count"
                         >
                           <span className="material-symbols-outlined text-[18px]">add</span>
                         </button>
@@ -879,6 +881,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                             type="button"
                             onClick={() => removePhoto(index)}
                             className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                            aria-label="Remove photo"
                           >
                             <span className="material-symbols-outlined text-[16px]">close</span>
                           </button>

@@ -8,3 +8,6 @@
 ## 2025-10-27 - Input Labels and Accessibility
 **Learning:** Found several `<input>` fields embedded within `<label>` without `htmlFor` tying them together, or independent inputs without `aria-label`. Properly adding `id` and `htmlFor`, and using `aria-label` for standalone controls (like sliders or search inputs), is vital for screen readers.
 **Action:** Enforce strict checking of `<label>` and `<input>` pairings to use `htmlFor` and `id`, and add `aria-label` for inputs like search and range sliders.
+## 2023-10-27 - Missing Aria Labels on Icon-Only Buttons
+**Learning:** Found several icon-only buttons (like `remove`, `add`, and `close` icons inside `HostPortalView.tsx`) that lacked `aria-label` attributes. This breaks accessibility for screen readers.
+**Action:** Added `aria-label` to these buttons to explicitly describe their actions (e.g., "Decrease room count", "Remove photo"). When implementing or reviewing icon buttons, ensure they always have an accessible name using `aria-label` if there is no visible text.
