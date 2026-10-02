@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
+import { MOCK_LISTINGS } from '../data/mockData';
+import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleHospitalAutocomplete } from './GoogleHospitalAutocomplete';
@@ -43,7 +44,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
   onSelectListing,
   onRequestToBook,
   shouldReduceMotion,
-  selectedHospital = 'Duke University Hospital',
+  selectedHospital = '',
   isNightShiftMode = false,
 }) => {
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
@@ -203,7 +204,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   userName,
 }) => {
   const shouldReduceMotion = useReducedMotion();
-  const [selectedHospital, setSelectedHospital] = useState('Duke University Hospital');
+  const [selectedHospital, setSelectedHospital] = useState('');
   const [selectedHospitalState, setSelectedHospitalState] = useState('NC');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
@@ -255,7 +256,14 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     };
   }, []);
 
-  const popularHubs = VERIFIED_HOSPITAL_HUBS;
+  const [popularHubs, setPopularHubs] = useState<string[]>([]);
+  useEffect(() => {
+    Promise.resolve(db.getHospitals()).then(data => {
+      if (data && data.length > 0) {
+        setPopularHubs(data.map((h: any) => h.name));
+      }
+    }).catch(console.error);
+  }, []);
 
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;

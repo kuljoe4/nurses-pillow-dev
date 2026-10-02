@@ -1,6 +1,7 @@
 // Source: Google Maps Platform Code Assist - Places API (New)
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
+import { db } from '../services/database';
 
 export interface SelectedHospitalInfo {
   name: string;
@@ -19,141 +20,18 @@ interface GoogleHospitalAutocompleteProps {
   isNightShiftMode?: boolean;
 }
 
-// Curated hospital directory for instant, offline-resilient lookups
-const CURATED_HOSPITALS: SelectedHospitalInfo[] = [
-  {
-    name: 'Duke University Hospital',
-    address: '2301 Erwin Rd, Durham, NC 27710',
-    lat: 36.0076,
-    lng: -78.9382,
-    system: 'Duke Health (Level I Trauma)',
-  },
-  {
-    name: 'UNC Medical Center',
-    address: '101 Manning Dr, Chapel Hill, NC 27514',
-    lat: 35.9049,
-    lng: -79.0526,
-    system: 'UNC Health (Level I Trauma & Burn Center)',
-  },
-  {
-    name: 'WakeMed Raleigh Campus',
-    address: '3000 New Bern Ave, Raleigh, NC 27610',
-    lat: 35.7892,
-    lng: -78.5886,
-    system: 'WakeMed Health (Level I Trauma)',
-  },
-  {
-    name: 'Atrium Health Carolinas Medical Center',
-    address: '1000 Blythe Blvd, Charlotte, NC 28203',
-    lat: 35.2036,
-    lng: -80.8385,
-    system: 'Advocate Health (Level I Trauma)',
-  },
-  {
-    name: 'ECU Health Medical Center',
-    address: '2100 Stantonsburg Rd, Greenville, NC 27834',
-    lat: 35.6074,
-    lng: -77.4048,
-    system: 'ECU Health (Level I Trauma)',
-  },
-  {
-    name: 'Novant Health Forsyth Medical Center',
-    address: '3333 Silas Creek Pkwy, Winston-Salem, NC 27103',
-    lat: 36.0782,
-    lng: -80.3015,
-    system: 'Novant Health',
-  },
-  {
-    name: 'FirstHealth Moore Regional Hospital',
-    address: '155 Memorial Dr, Pinehurst, NC 28374',
-    lat: 35.1956,
-    lng: -79.4589,
-    system: 'FirstHealth of the Carolinas',
-  },
-  {
-    name: 'Moses H. Cone Memorial Hospital',
-    address: '1200 N Elm St, Greensboro, NC 27401',
-    lat: 36.0884,
-    lng: -79.7915,
-    system: 'Cone Health',
-  },
-  {
-    name: 'Mission Hospital',
-    address: '509 Biltmore Ave, Asheville, NC 28801',
-    lat: 35.5786,
-    lng: -82.5484,
-    system: 'HCA Healthcare (Level II Trauma)',
-  },
-  {
-    name: 'Duke Regional Hospital',
-    address: '3643 N Roxboro St, Durham, NC 27704',
-    lat: 36.0371,
-    lng: -78.9056,
-    system: 'Duke Health',
-  },
-  {
-    name: 'UNC Rex Hospital',
-    address: '4420 Lake Boone Trail, Raleigh, NC 27607',
-    lat: 35.8193,
-    lng: -78.6974,
-    system: 'UNC Health',
-  },
-  {
-    name: 'WakeMed Cary Hospital',
-    address: '1900 Kildaire Farm Rd, Cary, NC 27518',
-    lat: 35.7411,
-    lng: -78.7842,
-    system: 'WakeMed Health',
-  },
-  {
-    name: 'Johns Hopkins Hospital',
-    address: '1800 Orleans St, Baltimore, MD 21287',
-    lat: 39.2969,
-    lng: -76.5927,
-    system: 'Johns Hopkins Medicine',
-  },
-  {
-    name: 'Massachusetts General Hospital',
-    address: '55 Fruit St, Boston, MA 02114',
-    lat: 42.3628,
-    lng: -71.0691,
-    system: 'Mass General Brigham',
-  },
-  {
-    name: 'Mayo Clinic Hospital - Rochester',
-    address: '1216 2nd St SW, Rochester, MN 55902',
-    lat: 44.0205,
-    lng: -92.4831,
-    system: 'Mayo Clinic',
-  },
-  {
-    name: 'Stanford Health Care',
-    address: '300 Pasteur Dr, Stanford, CA 94305',
-    lat: 37.4348,
-    lng: -122.1751,
-    system: 'Stanford Medicine',
-  },
-  {
-    name: 'UCSF Medical Center - Mission Bay',
-    address: '1825 4th St, San Francisco, CA 94158',
-    lat: 37.7681,
-    lng: -122.3908,
-    system: 'UCSF Health',
-  },
-];
-
 export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProps> = ({
   value,
   onChange,
   onSelectHospital,
-  placeholder = 'Search hospital or medical center (e.g. Duke, UNC, WakeMed)...',
+  placeholder = 'Search hospital or medical center...',
   isNightShiftMode,
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
   const [placesSuggestions, setPlacesSuggestions] = useState<google.maps.places.AutocompleteSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [curatedHospitals, setCuratedHospitals] = useState<SelectedHospitalInfo[]>(CURATED_HOSPITALS);
+  const [curatedHospitals, setCuratedHospitals] = useState<SelectedHospitalInfo[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -166,9 +44,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   }, [value]);
 
   useEffect(() => {
-    fetch('/api/hospitals')
-      .then(res => res.json())
-      .then((data: any[]) => {
+    Promise.resolve(db.getHospitals()).then((data: any[]) => {
         if (data && data.length > 0) {
           const fetched = data.map(h => ({
             name: h.name,
@@ -348,14 +224,15 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#15233a] rounded-2xl shadow-lg z-50 border border-[rgba(11,37,89,0.12)] dark:border-[#2b4162] overflow-hidden flex flex-col max-h-96">
           {/* Quick preset chips */}
-          <div className="p-3 bg-[#EFF6FB]/60 dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#2b4162]">
-            <div className="text-[10px] font-bold text-[#0B2559]/60 dark:text-[#9CB3D3] uppercase tracking-wider mb-2 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[13px] text-[#0A6FA8]">stars</span>
-              <span>North Carolina Flagship Medical Centers</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {curatedHospitals.slice(0, 5).map((h) => (
-                <button
+          {curatedHospitals.length > 0 && (
+            <div className="p-3 bg-[#EFF6FB]/60 dark:bg-[#111e33] border-b border-[rgba(11,37,89,0.08)] dark:border-[#2b4162]">
+              <div className="text-[10px] font-bold text-[#0B2559]/60 dark:text-[#9CB3D3] uppercase tracking-wider mb-2 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[13px] text-[#0A6FA8]">stars</span>
+                <span>Featured Medical Centers</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {curatedHospitals.slice(0, 5).map((h) => (
+                  <button
                   key={h.name}
                   type="button"
                   onClick={() => handleSelectCurated(h)}
@@ -363,9 +240,10 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
                 >
                   {h.name.replace(' Hospital', '').replace(' Medical Center', '')}
                 </button>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* List of results */}
           <div className="overflow-y-auto overscroll-contain py-1">
@@ -412,7 +290,7 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
             </div>
             {filteredCurated.length === 0 && placesSuggestions.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
-                No hospitals match "{inputValue}". Select from the flagship list above or try another name.
+                No hospitals match "{inputValue}". Select from the list above or try another name.
               </div>
             ) : (
               filteredCurated.map((hosp) => (

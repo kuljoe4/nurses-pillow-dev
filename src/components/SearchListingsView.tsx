@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
+import { MOCK_LISTINGS } from '../data/mockData';
 import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 const HealthcareAmenitiesFilterModal = React.lazy(() => import('./HealthcareAmenitiesFilterModal').then((m) => ({ default: m.HealthcareAmenitiesFilterModal })));
@@ -49,7 +49,7 @@ export const SearchListingsView: React.FC<SearchListingsViewProps> = React.memo(
   isVerified,
   onGoToVerification,
   onRequestToBookListing,
-  initialHospital = 'Duke University Hospital (Durham, NC)',
+  initialHospital = '',
   initialDuration = '13',
   initialRadius = 5,
   initialCheckInDate,
@@ -236,7 +236,14 @@ useBodyScrollLock(isGsaModalOpen);
     { miles: 15, label: '15+ mi', desc: 'Max value radius' },
   ];
 
-  const popularHubs = VERIFIED_HOSPITAL_HUBS;
+  const [popularHubs, setPopularHubs] = useState<string[]>([]);
+  useEffect(() => {
+    Promise.resolve(db.getHospitals()).then(data => {
+      if (data && data.length > 0) {
+        setPopularHubs(data.map((h: any) => h.name));
+      }
+    }).catch(console.error);
+  }, []);
 
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;

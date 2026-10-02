@@ -826,27 +826,6 @@ export const MOCK_HOSPITALS: Hospital[] = [
   },
 ];
 
-export const VERIFIED_HOSPITAL_HUBS: string[] = [
-  'Duke University Hospital',
-  'UNC Medical Center',
-  'WakeMed Raleigh Campus',
-  'Atrium Health Carolinas Medical Center',
-  'Novant Health Presbyterian Medical Center',
-  'ECU Health Medical Center',
-  'Cone Health Moses H. Cone Memorial Hospital',
-  'Stanford Health Care',
-  'UCSF Medical Center',
-  'Cedars-Sinai Medical Center',
-  'Mayo Clinic Hospital',
-  'The Johns Hopkins Hospital',
-  'Massachusetts General Hospital',
-  'Cleveland Clinic Main Campus',
-  'Vanderbilt University Medical Center',
-  'Northwestern Memorial Hospital',
-  'Houston Methodist Hospital',
-  'NewYork-Presbyterian Hospital',
-  'Emory University Hospital',
-];
 
 export const MOCK_DEMAND_REPORTS: MarketDemandReport[] = [
   {
