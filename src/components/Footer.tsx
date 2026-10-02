@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { db } from '../services/database';
 import { NursesPillowLogo } from './NursesPillowLogo';
 import { ACTIVE_CLEARED_STATES } from '../data/mockData';
 import { ACTIVE_STATES } from '../lib/constants/states';
@@ -17,6 +18,13 @@ export const Footer: React.FC<FooterProps> = ({
   onSelectTab,
   isDeveloper = false,
 }) => {
+  const [hospitalCount, setHospitalCount] = useState<number>(0);
+  useEffect(() => {
+    Promise.resolve(db.getHospitals()).then(data => {
+      setHospitalCount(data?.length || 0);
+    }).catch(console.error);
+  }, []);
+
   return (
     <footer
       className={`w-full border-t transition-colors mt-auto ${
@@ -268,7 +276,7 @@ export const Footer: React.FC<FooterProps> = ({
               type="button"
               className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
             >
-              <span>View All 265+ Cleared Hospitals</span>
+              <span>View All {hospitalCount > 0 ? hospitalCount : '265'}+ Cleared Hospitals</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </div>
