@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { HousingListing } from '../types';
 import { MOCK_LISTINGS, VERIFIED_HOSPITAL_HUBS } from '../data/mockData';
-import { ListingDetailModal } from './ListingDetailModal';
+const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 import { PillowSaveButton } from './PillowSaveButton';
 import { GoogleHospitalAutocomplete } from './GoogleHospitalAutocomplete';
 import { ACTIVE_STATES, isStateActive } from '../lib/constants/states';
@@ -1176,6 +1176,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
       </section>
 
       {/* DETAIL MODAL */}
+      <Suspense fallback={null}>
       <ListingDetailModal
         listing={activeDetailListing}
         onClose={useCallback(() => setActiveDetailListing(null), [])}
@@ -1192,6 +1193,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
           onRequestToBookListing?.(listing);
         }, [onRequestToBookListing])}
       />
+      </Suspense>
     </div>
   );
 };
