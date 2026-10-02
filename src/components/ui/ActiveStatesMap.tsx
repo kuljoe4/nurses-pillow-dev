@@ -54,9 +54,9 @@ export const ActiveStatesMap: React.FC<{
                         cursor: isActive ? 'pointer' : 'default',
                       },
                       pressed: { outline: 'none' },
-                    }}
+                    } as any}
                   >
-                    <title>{geo.properties.name}</title>
+                    <title>{geo.properties?.name}</title>
                   </Geography>
                 );
               })}
@@ -78,7 +78,7 @@ export const ActiveStatesMap: React.FC<{
                          default: { outline: 'none', pointerEvents: 'none' },
                          hover: { outline: 'none', pointerEvents: 'none' },
                          pressed: { outline: 'none', pointerEvents: 'none' },
-                       }}
+                       } as any}
                      />
                    );
                 }
