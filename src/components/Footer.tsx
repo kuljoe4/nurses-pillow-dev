@@ -1,6 +1,7 @@
 import React from 'react';
 import { NursesPillowLogo } from './NursesPillowLogo';
 import { ACTIVE_CLEARED_STATES } from '../data/mockData';
+import { ACTIVE_STATES } from '../lib/constants/states';
 import { ActiveStatesMap } from './ui/ActiveStatesMap';
 
 interface FooterProps {
@@ -274,7 +275,7 @@ export const Footer: React.FC<FooterProps> = ({
 
           <div className="flex flex-col md:flex-row gap-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 flex-1">
-              {ACTIVE_CLEARED_STATES.map((st) => (
+              {ACTIVE_CLEARED_STATES.filter(st => ACTIVE_STATES.includes(st.code as any)).map((st) => (
                 <button
                   key={st.code}
                   onClick={() => onSelectTab('find-housing')}
