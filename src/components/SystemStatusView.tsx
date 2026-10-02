@@ -77,6 +77,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
           </div>
           <div className="flex items-center gap-1.5">
             <button
+              aria-label="View live health status"
               onClick={() => setActiveView('status')}
               className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'status'
@@ -87,6 +88,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               Live Health Status
             </button>
             <button
+              aria-label="Preview 404 page error state"
               onClick={() => setActiveView('404')}
               className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === '404'
@@ -97,6 +99,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               404 Page
             </button>
             <button
+              aria-label="Preview 500 page error state"
               onClick={() => setActiveView('500')}
               className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === '500'
@@ -107,6 +110,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               500 Error
             </button>
             <button
+              aria-label="Preview maintenance mode state"
               onClick={() => setActiveView('maintenance')}
               className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'maintenance'
@@ -117,6 +121,7 @@ export const SystemStatusView: React.FC<SystemStatusViewProps> = ({
               Maintenance
             </button>
             <button
+              aria-label="Preview suspended account compliance notice"
               onClick={() => setActiveView('suspended')}
               className={`px-3 py-1 rounded-lg font-semibold transition-all duration-200 ease-in-out cursor-pointer ${
                 activeView === 'suspended'
