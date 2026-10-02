@@ -81,7 +81,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
       const request: google.maps.places.AutocompleteRequest = {
         input: trimmed,
         sessionToken: sessionTokenRef.current ?? undefined,
-        region:"us",
+        includedRegionCodes: ["us"],
       };
 
       placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
