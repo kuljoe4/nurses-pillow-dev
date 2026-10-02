@@ -276,7 +276,7 @@ export const Footer: React.FC<FooterProps> = ({
               type="button"
               className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
             >
-              <span>View All {hospitalCount > 0 ? hospitalCount : '265'}+ Cleared Hospitals</span>
+              <span>{hospitalCount > 0 ? `View All ${hospitalCount}+ Cleared Hospitals` : 'View All Cleared Hospitals'}</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
           </div>
