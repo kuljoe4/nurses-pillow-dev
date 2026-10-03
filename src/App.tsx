@@ -188,6 +188,7 @@ export default function App() {
     email?: string;
     isNurseVerified?: boolean;
     isHostVerified?: boolean;
+    isIdVerified?: boolean;
   }>({ role: "guest", name: "Guest User" });
   const isDeveloper = stagingUser === "developer" || currentUser.role === "developer";
 
@@ -531,6 +532,7 @@ export default function App() {
             email: user.email,
             isNurseVerified: Boolean(user.is_nurse_verified),
             isHostVerified: Boolean(user.is_host_verified),
+            isIdVerified: Boolean(user.identity_verified),
           });
           // Synchronize verified database state into verification workflow
           setVerificationData((prev) => ({
@@ -782,6 +784,7 @@ export default function App() {
       id?: string,
       isNurseVerified?: boolean,
       isHostVerified?: boolean,
+      isIdVerified?: boolean,
       skipAutoNavigate?: boolean
     ) => {
       // 1. Optimistic immediate state update to keep UI responsive
@@ -792,6 +795,7 @@ export default function App() {
         id,
         isNurseVerified,
         isHostVerified,
+        isIdVerified,
       });
 
       if (email) {
@@ -802,6 +806,7 @@ export default function App() {
           legalFirstName: name.split(" ")[0] || prev.legalFirstName,
           legalLastName: name.split(" ").slice(1).join(" ") || prev.legalLastName,
           isContactVerified: Boolean(isNurseVerified || prev.isContactVerified),
+          isIdVerified: Boolean(isIdVerified || prev.isIdVerified),
           licenseStatus: isNurseVerified ? "verified" : prev.licenseStatus,
         }));
       }

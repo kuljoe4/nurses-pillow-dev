@@ -12,6 +12,7 @@ interface HostPortalViewProps {
   initialTab?: 'dashboard' | 'editor' | 'onboarding';
   currentUser?: {
     isHostVerified?: boolean;
+    isIdVerified?: boolean;
     stripeAccountId?: string;
     payoutsEnabled?: boolean;
     id?: string;
@@ -1065,10 +1066,17 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   Government photo identification and facial liveness match for host authenticity.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>Verified RealID</span>
-              </div>
+              {currentUser?.isIdVerified ? (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span>Verified RealID</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-500 pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                  <span className="material-symbols-outlined text-[16px]">pending</span>
+                  <span>Verification Pending</span>
+                </div>
+              )}
             </div>
 
             {/* Card 2 */}
@@ -1084,10 +1092,17 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   Property deed, property tax receipt, or master lease sublease authorization.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>Deed Verified on File</span>
-              </div>
+              {currentUser?.isHostVerified ? (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span>Deed Verified on File</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-500 pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+                  <span className="material-symbols-outlined text-[16px]">pending</span>
+                  <span>Verification Pending</span>
+                </div>
+              )}
             </div>
 
             {/* Card 3 */}
