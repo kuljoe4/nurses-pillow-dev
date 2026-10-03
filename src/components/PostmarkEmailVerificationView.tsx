@@ -27,6 +27,13 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   const [isVerified, setIsVerified] = useState(false);
   const [resendNotification, setResendNotification] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [error]);
   const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Synchronize email if prop changes after mount
@@ -332,7 +339,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
 
           {/* Feedback Alerts */}
           {error && (
-            <div
+          <div ref={errorRef}
               role="alert"
               className="mb-4 p-3 rounded-xl bg-[#F4E2DC] text-[#A8452E] text-xs font-medium flex items-center gap-2"
             >
