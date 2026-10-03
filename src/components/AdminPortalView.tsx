@@ -141,7 +141,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
     }
 
     setReviews((prev) =>
-      prev.map((r) => (r.id === reviewId ? { ...r, licenseStatus: 'declined' } : r))
+      prev.map((r) => (r.id === reviewId ? { ...r, licenseStatus: 'rejected' } : r))
     );
     setActionNotice('Clinician registration declined in PostgreSQL database.');
     setTimeout(() => setActionNotice(null), 4000);
