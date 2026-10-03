@@ -78,7 +78,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
     .join('')
     .toUpperCase() || 'RN';
 
-  const userIsVerified = isVerified || currentUser?.isNurseVerified || verificationData?.licenseStatus === 'verified' || false;
+  const userIsVerified = currentUser?.isNurseVerified || verificationData?.licenseStatus === 'verified' || isVerified || false;
 
   return (
     <div
@@ -162,13 +162,13 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           </div>
 
           <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
-            <span className="text-[11px] font-medium text-gray-500 block">Saved Pillows</span>
+            <span className="text-[11px] font-medium text-gray-500 block">Saved Properties</span>
             <div>
               <span className="text-xl sm:text-2xl font-bold text-[#0B2559] dark:text-white tabular-nums">
                 {savedListingIds.length}
               </span>
               <span className="text-[10px] text-gray-400 block mt-0.5">
-                {savedListingIds.length === 1 ? 'Sanctuary' : 'Sanctuaries'}
+                {savedListingIds.length === 1 ? 'Property' : 'Properties'}
               </span>
             </div>
           </div>
@@ -200,7 +200,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">hotel</span>
-            <span>Sanctuary Bookings</span>
+            <span>Stays</span>
             {activeBookings.length > 0 && (
               <span className="px-1.5 py-0.2 rounded-full bg-[#0A6FA8] text-white text-[10px] font-bold tabular-nums">
                 {activeBookings.length}
@@ -218,7 +218,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">bookmark</span>
-            <span>Saved Pillows</span>
+            <span>Saved Properties</span>
             <span className="px-1.5 py-0.2 rounded-full bg-[#F1CF78] text-[#745b0d] text-[10px] font-bold tabular-nums">
               {savedListingIds.length}
             </span>
@@ -243,7 +243,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* TAB 1: Sanctuary Bookings & Requests */}
+      {/* TAB 1: Stays & Requests */}
       {activeTab === 'bookings' && (
         <div>
           {activeBookings.length === 0 ? (
@@ -252,10 +252,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 <span className="material-symbols-outlined text-[24px]">hotel</span>
               </div>
               <h2 className="text-base sm:text-lg font-bold mb-1.5 text-[#0B2559] dark:text-white">
-                No active sanctuary bookings
+                No active property bookings
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mb-5 leading-relaxed">
-                When you request to book a furnished sanctuary near your hospital assignment, your reservation status, pre-authorization hold, and host response will appear here.
+                When you request to book a furnished property near your hospital assignment, your reservation status, pre-authorization hold, and host response will appear here.
               </p>
               <button
                 type="button"
@@ -307,7 +307,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                             listing?.images[0] ||
                             'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
                           }
-                          alt={booking.listingTitle || 'Sanctuary housing'}
+                          alt={booking.listingTitle || 'Property housing'}
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute bottom-1.5 left-1.5 right-1.5 text-white bg-black/70 backdrop-blur-xs p-1.5 rounded-lg text-[10px]">
@@ -379,12 +379,12 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: My Saved Pillows */}
+      {/* TAB 2: My Saved Properties */}
       {activeTab === 'saved' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Saved Pillows</h2>
+              <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Saved Properties</h2>
               <p className="text-xs text-gray-500">Furnished sanctuaries bookmarked for your hospital rotations</p>
             </div>
             <button
@@ -402,10 +402,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 <span className="material-symbols-outlined text-[24px]">bookmark</span>
               </div>
               <h3 className="text-sm font-bold text-[#0B2559] dark:text-white mb-1">
-                No saved pillows yet
+                No saved properties yet
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Tap the pillow icon on any shift-ready sanctuary to save and compare commute times to your hospital.
+                Tap the pillow icon on any shift-ready property to save and compare commute times to your hospital.
               </p>
               <button
                 type="button"
@@ -468,7 +468,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       }}
                       className="px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold cursor-pointer transition-colors"
                     >
-                      View sanctuary
+                      View property
                     </button>
                   </div>
                 </div>
@@ -484,7 +484,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
             <div>
               <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] uppercase tracking-wider">
-                Healthcare Trust Architecture
+                Verification Status
               </span>
               <h2 className="text-lg sm:text-xl font-bold text-[#0B2559] dark:text-white">
                 Verification &amp; Credential Status

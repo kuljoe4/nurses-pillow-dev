@@ -29,7 +29,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
       a: 'Every traveling clinician must complete our 4-step verification: two-factor authentication, government ID biometric match, and real-time Nursys / State Nursing Board primary source verification. You host only licensed healthcare professionals.',
     },
     {
-      q: 'What are the day-sleeper sanctuary requirements?',
+      q: 'What are the day-sleeper property requirements?',
       a: 'Because travel nurses work rotating 12-hour day and night shifts, host properties must provide 100% blackout curtains in bedrooms, high-speed WiFi for charting, in-unit laundry for scrub sanitation, and respect daytime quiet hours (08:00 – 16:00).',
     },
     {
@@ -53,7 +53,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#aff0db]/30 text-[#195b4c] dark:text-[#aff0db]">
             <span className="material-symbols-outlined text-[15px]">real_estate_agent</span>
-            Property Host Sanctuary Community
+            Property Host Property Community
           </span>
           <h1
             className={`text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight ${
@@ -85,7 +85,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
               onClick={onGoToHousing}
               className="px-6 py-3.5 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] hover:text-[#0A6FA8] dark:hover:text-[#3E9AD1] focus-visible:ring-2 focus-visible:ring-[#0A6FA8] text-xs sm:text-sm font-semibold transition-all duration-200 ease-in-out cursor-pointer"
             >
-              Explore Existing Sanctuary Listings
+              Explore Existing Property Listings
             </button>
           </div>
         </div>
@@ -239,14 +239,14 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
                   onClick={onGoToHostPortal}
                   className="w-full mt-4 py-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold hover:bg-[#162e62] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#162e62] transition-all duration-200 ease-in-out cursor-pointer shadow-xs"
                 >
-                  List This Sanctuary
+                  List This Property
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* SANCTUARY STANDARDS */}
+        {/* PROPERTY STANDARDS */}
         <div
           className={`p-8 sm:p-10 rounded-3xl border shadow-sm space-y-8 ${
             isNightShiftMode
@@ -258,7 +258,7 @@ export const ForHostsView: React.FC<ForHostsViewProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-[#005684] dark:text-[#93ccff] mb-1 block">
               Quality Standards
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold">Nurses Pillow Sanctuary Checklist</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">Nurses Pillow Property Checklist</h2>
             <p className="text-sm opacity-80 mt-1 max-w-2xl">
               To guarantee rest and recovery for clinicians treating patients at major hospitals, all registered properties meet our 4 essential criteria:
             </p>

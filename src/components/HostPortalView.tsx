@@ -11,6 +11,9 @@ interface HostPortalViewProps {
   onGoToHousing: () => void;
   initialTab?: 'dashboard' | 'editor' | 'onboarding';
   currentUser?: {
+    isHostVerified?: boolean;
+    stripeAccountId?: string;
+    payoutsEnabled?: boolean;
     id?: string;
     role: string;
     name: string;
@@ -167,8 +170,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [isSavedEditor, setIsSavedEditor] = useState(false);
 
   // Stripe Connect State
+  // Mock state for Stripe connect button interactions if needed
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
-  const [payoutsEnabled, setPayoutsEnabled] = useState(false);
+  const [payoutsEnabled, setPayoutsEnabled] = useState(currentUser?.payoutsEnabled || false);
 
   // Processing States for bookings
   const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
@@ -362,7 +366,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0B2559] dark:text-white">
-            Host Sanctuary Control Console
+            Host Dashboard
           </h1>
         </div>
 
