@@ -40,6 +40,7 @@ interface NurseDashboardViewProps {
     email?: string;
     isNurseVerified?: boolean;
     isHostVerified?: boolean;
+    isIdVerified?: boolean;
   };
   verificationData?: any;
 }

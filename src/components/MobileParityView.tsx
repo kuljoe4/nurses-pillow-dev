@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
-import { MOCK_LISTINGS } from '../data/mockData';
+import { HousingListing } from '../types';
 import { NursesPillowLogo } from './NursesPillowLogo';
 
 interface MobileParityViewProps {
   isNightShiftMode: boolean;
   onNavigateHome: () => void;
+  listings?: HousingListing[];
+  currentTab?: string;
+  onChangeTab?: (tab: string) => void;
+  savedListingIds?: string[];
+  onToggleSave?: (id: string) => void;
+  activeBookings?: any[];
 }
 
 export const MobileParityView: React.FC<MobileParityViewProps> = ({
   isNightShiftMode,
   onNavigateHome,
+  listings,
+  currentTab,
+  onChangeTab,
+  savedListingIds,
+  onToggleSave,
+  activeBookings,
 }) => {
   const [activeScreen, setActiveScreen] = useState<string>('M-04');
   const [deviceTheme, setDeviceTheme] = useState<'light' | 'dark'>('light');
@@ -275,15 +287,15 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
                       <div className="text-xs font-bold mb-2">Featured Near Hospital</div>
                       <div className="p-2.5 rounded-xl bg-white dark:bg-[#0B1626] border border-black/5 dark:border-white/10 flex gap-2.5 items-center">
                         <img
-                          src={MOCK_LISTINGS[0]?.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
+                          src={listings && listings.length > 0 ? listings[0].images[0] : ""}
                           alt="listing"
-                          className="w-16 h-16 rounded-lg object-cover"
+                          className="w-16 h-16 rounded-lg object-cover bg-slate-100"
                         />
                         <div className="text-xs flex-1">
-                          <div className="font-bold truncate">{MOCK_LISTINGS[0].title}</div>
+                          <div className="font-bold truncate">{listings && listings.length > 0 ? listings[0].title : "Your Stay"}</div>
                           <div className="text-[10px] text-emerald-600 font-semibold">0.8 mi • 6 min transit</div>
                           <div className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] mt-1">
-                            ${MOCK_LISTINGS[0].monthlyRate}/mo
+                            ${listings && listings.length > 0 ? listings[0].monthlyRate : "0"}/mo
                           </div>
                         </div>
                       </div>

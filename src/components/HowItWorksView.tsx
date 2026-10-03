@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ProductPreviewHero } from './ProductPreviewHero';
-import { MOCK_LISTINGS } from '../data/mockData';
+import { db } from '../services/database';
 
 interface HowItWorksViewProps {
   isNightShiftMode: boolean;
@@ -16,7 +16,9 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const [isSaved, setIsSaved] = useState(false);
-  const heroListing = MOCK_LISTINGS[0]; // Use the first listing for the demo
+
+  const dbListings = db.getListings() || [];
+  const heroListing = dbListings.length > 0 ? dbListings[0] : null;
 
   const commitments = [
     {
@@ -93,14 +95,16 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
               <span>Interactive Sanctuary Preview</span>
             </span>
           </div>
-          <ProductPreviewHero
-            listing={heroListing}
-            isSaved={isSaved}
-            onToggleSave={() => setIsSaved(!isSaved)}
-            onSelectListing={onGoToHousing}
-            onRequestToBook={onGoToHousing}
-            shouldReduceMotion={shouldReduceMotion}
-          />
+          {heroListing && (
+            <ProductPreviewHero
+              listing={heroListing}
+              isSaved={isSaved}
+              onToggleSave={() => setIsSaved(!isSaved)}
+              onSelectListing={onGoToHousing}
+              onRequestToBook={onGoToHousing}
+              shouldReduceMotion={shouldReduceMotion}
+            />
+          )}
         </motion.div>
 
         {/* 4 Sanctuary Pillars */}

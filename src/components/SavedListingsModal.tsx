@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface SavedListingsModalProps {
@@ -39,7 +38,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const sourceListings = allListings && allListings.length > 0 ? allListings : MOCK_LISTINGS;
+  const sourceListings = allListings && allListings.length > 0 ? allListings : [];
   const savedListings = sourceListings.filter((item) =>
     savedListingIds.includes(item.id)
   );
