@@ -261,6 +261,7 @@ class RailwayDatabaseManager {
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT TRUE;
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS cancellation_policy VARCHAR(50) DEFAULT 'flexible';
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS pet_fee DECIMAL(10, 2) DEFAULT 0.00;
+        ALTER TABLE listings ADD COLUMN IF NOT EXISTS parking_fee DECIMAL(10, 2) DEFAULT 0.00;
 
         -- Set default value for security_deposit_amount or make the column nullable
         ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;
@@ -290,6 +291,8 @@ class RailwayDatabaseManager {
           host_id VARCHAR(255) NOT NULL,
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
+
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parking_fee DECIMAL(10, 2) DEFAULT 0.00;
 
         CREATE TABLE IF NOT EXISTS audit_logs (
           id VARCHAR(255) PRIMARY KEY,
