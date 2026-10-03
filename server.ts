@@ -818,10 +818,18 @@ async function startServer() {
   app.get('/api/listings', async (req: Request, res: Response) => {
     try {
       const result = await db.query(`
-        SELECT id, host_id, title, property_type, city, state, postal_code as zip,
-        latitude, longitude, nearest_hospital_id, monthly_rent as monthly_rate, security_deposit_amount as security_deposit,
-        cleaning_fee, is_published as is_active, cancellation_policy as cancellation_tier, pet_fee
-        FROM listings WHERE is_published = true
+        SELECT l.id, l.host_id, l.title, l.property_type, l.city, l.state, l.postal_code as zip,
+        l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rent as monthly_rate, l.security_deposit_amount as security_deposit,
+        l.cleaning_fee, l.is_published as is_active, l.cancellation_policy as cancellation_tier, l.pet_fee,
+        COALESCE(
+          (
+            SELECT json_agg(lp.photo_url ORDER BY lp.display_order ASC)
+            FROM listing_photos lp
+            WHERE lp.listing_id = l.id
+          ),
+          '[]'::json
+        ) as images
+        FROM listings l WHERE l.is_published = true
       `);
       const mapped = result.rows.map(mapDbListingToFrontend);
       res.json(mapped);

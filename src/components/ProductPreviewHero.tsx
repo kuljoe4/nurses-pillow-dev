@@ -69,7 +69,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
         {/* Left: Sanctuary Photo with Commute HUD & Save Control */}
         <div className="md:col-span-5 relative rounded-2xl overflow-hidden aspect-[16/11] sm:aspect-[4/3] bg-gray-100 dark:bg-[#15233a] shadow-xs group">
           <img
-            src={listing.images[0]}
+            src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'}
             alt={listing.title}
             loading="lazy"
             decoding="async"

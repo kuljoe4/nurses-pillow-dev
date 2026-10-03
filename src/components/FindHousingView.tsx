@@ -72,7 +72,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
       {/* Image Header */}
       <div className="relative h-60 w-full overflow-hidden bg-gray-100">
         <img
-          src={listing.images[0]}
+          src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
           alt={listing.title}
           loading="lazy"
           decoding="async"

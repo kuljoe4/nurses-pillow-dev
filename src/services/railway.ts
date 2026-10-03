@@ -352,6 +352,30 @@ class RailwayDatabaseManager {
              ON CONFLICT (id) DO NOTHING;`,
             lParams
           );
+
+          const defaultImages = [
+            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
+          ];
+          const photoParams: any[] = [];
+          const photoValues: string[] = [];
+          let pIdx = 1;
+          for (const l of NC_LISTING_SEEDS) {
+            defaultImages.forEach((img, index) => {
+              photoValues.push(`($${pIdx++}, $${pIdx++}, $${pIdx++}, $${pIdx++})`);
+              photoParams.push(l.id, img, index, index === 0);
+            });
+          }
+
+          if (photoValues.length > 0) {
+            await this.pool.query(
+              `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+               VALUES ${photoValues.join(', ')}
+               ON CONFLICT DO NOTHING;`,
+              photoParams
+            );
+          }
         }
         console.log('[Railway DB] ✅ Initial seed sync to Railway complete.');
       }
