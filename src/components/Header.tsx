@@ -963,7 +963,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <button
                           type="button"
                           onClick={() => {
-                            onSwitchRole('guest');
+                            onSwitchRole('guest' as UserRole);
                             setIsProfileMenuOpen(false);
                           }}
                           className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${(currentUser.role as UserRole) === 'guest' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
@@ -1692,10 +1692,10 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onSwitchRole('guest');
+                      onSwitchRole('guest' as UserRole);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'guest' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'guest' as UserRole ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
                   >
                     Guest View
                   </button>
