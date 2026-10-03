@@ -70,7 +70,7 @@ async function startServer() {
         defaultSrc: ["'self'"],
         frameAncestors: ["'self'", "https://*.google.com", "https://*.googleusercontent.com", "https://aistudio.google.com", "https://*.run.app", "*"],
         imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://maps.googleapis.com", "https://maps.gstatic.com", "https://*.googleusercontent.com", "https://*.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com", "blob:", "data:", "'sha256-30HWrVZFgNSeG1TxpjdFwc8iLppAZjAvX6ztrt+DWs4='", "'sha256-8Dn3mlJvfLHy/DzQO0yJzO5NeH3rAcBEKr7k7D1KtQA='", "'sha256-dpQuVarlB6eLlYlsXzFVnIVE08Nkr2dS093bV0akVMI='"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com", "blob:", "data:", "'sha256-30HWrVZFgNSeG1TxpjdFwc8iLppAZjAvX6ztrt+DWs4='", "'sha256-8Dn3mlJvfLHy/DzQO0yJzO5NeH3rAcBEKr7k7D1KtQA='", "'sha256-dpQuVarlB6eLlYlsXzFVnIVE08Nkr2dS093bV0akVMI='", "'sha256-ieoeWczDHkReVBsRBqaal5AFMlBtNjMzgwKvLqi/tSU='"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc: ["'self'", "data:", "https://maps.googleapis.com", "https://*.googleapis.com", "https://*.run.app", "ws:", "wss:"],
@@ -877,7 +877,12 @@ async function startServer() {
       });
     } catch (error: any) {
       console.error('Error creating checkout booking request:', error);
-      res.status(500).json({ error: error.message || 'Internal Server Error' });
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      res.status(error.statusCode || 500).json({
+        error: error.type || 'StripeError',
+        message: errorMessage,
+        raw: error.raw
+      });
     }
   });
 
@@ -1071,7 +1076,12 @@ async function startServer() {
       res.json({ url: accountLink.url });
     } catch (error: any) {
       console.error('Error generating Stripe Account Link:', error);
-      res.status(500).json({ error: error.message || 'Internal Server Error' });
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      res.status(error.statusCode || 500).json({
+        error: error.type || 'StripeError',
+        message: errorMessage,
+        raw: error.raw
+      });
     }
   });
 
