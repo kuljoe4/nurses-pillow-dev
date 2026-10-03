@@ -52,7 +52,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   onSelectListing,
   onGoToHousing,
   activeBookings = [],
-  isVerified = true,
+  isVerified,
   onGoToVerification,
   onOpenSupport,
   currentUser,
@@ -78,7 +78,20 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
     .join('')
     .toUpperCase() || 'RN';
 
-  const userIsVerified = currentUser?.isNurseVerified || verificationData?.licenseStatus === 'verified' || isVerified || false;
+  const userIsVerified = Boolean(
+    currentUser?.isNurseVerified ||
+    (isVerified !== undefined ? isVerified : false) ||
+    verificationData?.licenseStatus === 'verified'
+  );
+
+  const isIdVerified = Boolean(
+    currentUser?.isIdVerified ||
+    verificationData?.isIdVerified
+  );
+
+  const phoneVerified = Boolean(
+    verificationData?.phoneVerified
+  );
 
   return (
     <div
@@ -523,9 +536,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               </div>
               <span
                 className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                style={verificationData?.isIdVerified ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' } : { backgroundColor: '#FBF0D6', color: '#B9822E' }}
+                style={isIdVerified ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' } : { backgroundColor: '#FBF0D6', color: '#B9822E' }}
               >
-                {verificationData?.isIdVerified ? 'Verified' : 'Pending'}
+                {isIdVerified ? 'Verified' : 'Pending'}
               </span>
             </div>
 
@@ -543,9 +556,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
               </div>
               <span
                 className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                style={verificationData?.phoneVerified ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' } : { backgroundColor: '#FBF0D6', color: '#B9822E' }}
+                style={phoneVerified ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' } : { backgroundColor: '#FBF0D6', color: '#B9822E' }}
               >
-                {verificationData?.phoneVerified ? 'Verified' : 'Pending'}
+                {phoneVerified ? 'Verified' : 'Pending'}
               </span>
             </div>
 

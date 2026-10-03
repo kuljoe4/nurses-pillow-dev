@@ -281,14 +281,14 @@ export const Footer: React.FC<FooterProps> = ({
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 flex-1">
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 flex-1">
               {ACTIVE_CLEARED_STATES.filter(st => ACTIVE_STATES.includes(st.code as any)).map((st) => (
                 <button
                   key={st.code}
                   onClick={() => onSelectTab('find-housing')}
                   type="button"
-                  className={`p-3 rounded-xl border text-left transition-all hover:scale-[1.02] cursor-pointer ${
+                  className={`p-3 rounded-xl border text-left transition-all hover:scale-[1.02] cursor-pointer flex flex-col justify-between ${
                     isNightShiftMode
                       ? 'bg-[#15233a] border-[#233550] hover:border-[#3E9AD1]'
                       : 'bg-[#EFF6FB] border-[rgba(11,37,89,0.06)] hover:border-[#0A6FA8]'
@@ -305,18 +305,23 @@ export const Footer: React.FC<FooterProps> = ({
                       Live
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
-                    {st.name}
-                  </div>
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                    {st.status}
+                  <div>
+                    <div className="text-xs font-bold text-[#0B2559] dark:text-white truncate">
+                      {st.name}
+                    </div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      {st.status}
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="w-full md:w-1/3 xl:w-1/4 shrink-0">
-              <ActiveStatesMap isNightShiftMode={isNightShiftMode} />
+            <div className="w-full lg:w-80 xl:w-96 shrink-0">
+              <ActiveStatesMap
+                isNightShiftMode={isNightShiftMode}
+                onSelectState={() => onSelectTab('find-housing')}
+              />
             </div>
           </div>
         </div>

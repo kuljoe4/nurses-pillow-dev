@@ -88,8 +88,9 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           className="max-w-4xl mx-auto"
         >
           <div className="mb-4 text-center">
-            <span className="text-sm font-semibold uppercase tracking-wider text-[#0a6fa8] dark:text-[#3E9AD1]">
-              Interactive Preview
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0A6FA8]/10 text-[#0A6FA8] dark:bg-[#3E9AD1]/15 dark:text-[#3E9AD1]">
+              <span className="material-symbols-outlined text-[15px]">touch_app</span>
+              <span>Interactive Sanctuary Preview</span>
             </span>
           </div>
           <ProductPreviewHero
@@ -141,60 +142,129 @@ export const HowItWorksView: React.FC<HowItWorksViewProps> = ({
           className="max-w-4xl mx-auto mt-16 mb-8"
         >
           <div className="text-center mb-8">
-            <h2 className={`text-2xl sm:text-3xl font-bold mb-3 ${isNightShiftMode ? 'text-white' : 'text-[#001848]'}`}>
-              Nurses Pillow vs. General Short-Term Housing
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0A6FA8]/10 text-[#0A6FA8] dark:bg-[#3E9AD1]/15 dark:text-[#3E9AD1] mb-3">
+              <span className="material-symbols-outlined text-[15px]">compare_arrows</span>
+              <span>Transparent Comparison</span>
+            </div>
+            <h2 className={`text-2xl sm:text-3xl font-bold mb-3 ${isNightShiftMode ? 'text-white' : 'text-[#0B2559]'}`}>
+              Nurses Pillow vs. Traditional Directories (Furnished Finder)
             </h2>
-            <p className={`text-sm max-w-2xl mx-auto ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
-              See how a platform built for healthcare travelers compares to general housing boards.
+            <p className={`text-sm sm:text-base max-w-2xl mx-auto leading-relaxed ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
+              Built exclusively for traveling clinicians navigating grueling shifts. Transparent terms, zero subscription paywalls, and verified hospital proximity.
             </p>
           </div>
 
-          <div className={`overflow-hidden rounded-3xl border shadow-sm ${
+          {/* Desktop & Tablet Table (Hidden on small mobile) */}
+          <div className={`hidden sm:block overflow-hidden rounded-3xl border shadow-sm ${
             isNightShiftMode ? 'bg-[#0E1A2E] border-[#233550]' : 'bg-white border-[rgba(11,37,89,0.08)]'
           }`}>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className={isNightShiftMode ? 'bg-[#15233a] text-[#E6ECF7]' : 'bg-[#f4f6fb] text-[#001848]'}>
-                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3">Feature</th>
-                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3 bg-[#0a6fa8]/10 text-[#0a6fa8] dark:text-[#93ccff]">
-                      Nurses Pillow
-                    </th>
-                    <th className="p-4 sm:p-5 font-bold text-sm w-1/3 opacity-70">
-                      General Housing
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className={`text-sm ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
-                  <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Upfront Fees</td>
-                    <td className="p-4 sm:p-5 font-bold text-[#195b4c] dark:text-[#aff0db] bg-[#0a6fa8]/5">
-                      $0 to browse and book
-                    </td>
-                    <td className="p-4 sm:p-5 opacity-80">May require subscriptions</td>
-                  </tr>
-                  <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Identity Verification</td>
-                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">Secure identity check</td>
-                    <td className="p-4 sm:p-5 opacity-80">Variable verification</td>
-                  </tr>
-                  <tr className="border-b border-black/5 dark:border-white/5">
-                    <td className="p-4 sm:p-5 font-semibold">Professional Standing</td>
-                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
-                      Verified credentials
-                    </td>
-                    <td className="p-4 sm:p-5 opacity-80">Not checked</td>
-                  </tr>
-                  <tr>
-                    <td className="p-4 sm:p-5 font-semibold">Payments</td>
-                    <td className="p-4 sm:p-5 font-semibold bg-[#0a6fa8]/5">
-                      Secure, on-platform payments
-                    </td>
-                    <td className="p-4 sm:p-5 opacity-80">Often manual or off-platform</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className={isNightShiftMode ? 'bg-[#15233a] text-[#E6ECF7]' : 'bg-[#f4f6fb] text-[#0B2559]'}>
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3">Standard / Feature</th>
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3 bg-[#0a6fa8]/10 text-[#0a6fa8] dark:text-[#3E9AD1]">
+                    Nurses Pillow
+                  </th>
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3 opacity-70">
+                    Traditional Directories
+                  </th>
+                </tr>
+              </thead>
+              <tbody className={`text-sm ${isNightShiftMode ? 'text-[#9CB3D3]' : 'text-[#404850]'}`}>
+                <tr className="border-b border-black/5 dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white">Upfront Cost</td>
+                  <td className="p-4 sm:p-5 font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#0a6fa8]/5 tabular-nums">
+                    $0 to list — pay only when booked
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80 tabular-nums">$199/yr. recurring upfront fee</td>
+                </tr>
+                <tr className="border-b border-black/5 dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white">Traveler Identity</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0a6fa8]/5">
+                    <div className="flex items-center gap-1.5 text-[#2F6E5E] dark:text-[#aff0db] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">fingerprint</span>
+                      <span>Biometric ID Verified</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Unverified at signup</td>
+                </tr>
+                <tr className="border-b border-black/5 dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white">Professional Credentials</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0a6fa8]/5">
+                    <div className="flex items-center gap-1.5 text-[#2F6E5E] dark:text-[#aff0db] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">verified</span>
+                      <span>Official Registry/Board Verified</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Unchecked / Self-reported</td>
+                </tr>
+                <tr>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white">Booking &amp; Payments</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0a6fa8]/5">
+                    <div className="flex items-center gap-1.5 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">lock</span>
+                      <span>Secure Stripe Connect split</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Manual off-platform coordination</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Touch Cards (Stacking cleanly on screens < 640px) */}
+          <div className="sm:hidden space-y-3">
+            {[
+              {
+                feature: 'Upfront Cost',
+                np: '$0 to list — pay only when booked',
+                trad: '$199/yr. recurring fee',
+                npHighlight: true,
+              },
+              {
+                feature: 'Traveler Identity',
+                np: 'Biometric ID Verified',
+                trad: 'Unverified at signup',
+                icon: 'fingerprint',
+              },
+              {
+                feature: 'Professional Credentials',
+                np: 'Official Registry/Board Verified',
+                trad: 'Unchecked / Self-reported',
+                icon: 'verified',
+              },
+              {
+                feature: 'Booking & Payments',
+                np: 'Secure Stripe Connect split',
+                trad: 'Manual off-platform coordination',
+                icon: 'lock',
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className={`p-4 rounded-2xl border ${
+                  isNightShiftMode ? 'bg-[#0E1A2E] border-[#233550]' : 'bg-white border-[rgba(11,37,89,0.08)] shadow-xs'
+                }`}
+              >
+                <div className="text-xs font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-2.5">
+                  {item.feature}
+                </div>
+                <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 mb-2">
+                  <div className="text-[10px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase mb-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                    Nurses Pillow
+                  </div>
+                  <div className="text-xs font-bold text-[#0B2559] dark:text-white flex items-center gap-1.5">
+                    {item.icon && <span className="material-symbols-outlined text-[15px] text-[#2F6E5E] dark:text-[#aff0db]">{item.icon}</span>}
+                    <span>{item.np}</span>
+                  </div>
+                </div>
+                <div className="px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/5 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-[10px] font-semibold uppercase text-gray-400 mb-0.5">Traditional Directories</div>
+                  <div>{item.trad}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
 

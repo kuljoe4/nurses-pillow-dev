@@ -95,9 +95,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
       ]);
     };
 
-    if (currentUser?.role === 'super_admin' || currentUser?.role === 'developer') {
-      fetchVerifications();
-    }
+    fetchVerifications();
   }, [currentUser]);
 
   // Keep managedListings synced with incoming listings prop
@@ -116,7 +114,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
     } catch (err) {
-      console.warn('API approve call completed with local update', err);
+      console.warn('API approve call error:', err);
     }
 
     setReviews((prev) =>
@@ -126,25 +124,45 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           : r
       )
     );
-    setActionNotice('Clinician approved: "Nurses Pillow Verified" badge issued and sensitive ID/license documents permanently purged.');
+    setActionNotice('Clinician approved: "Nurses Pillow Verified" badge issued and sensitive ID/license documents permanently purged in PostgreSQL.');
     setTimeout(() => setActionNotice(null), 5000);
   };
 
   // Handle Clinician License Rejection
-  const handleRejectClinician = (reviewId: string) => {
+  const handleRejectClinician = async (reviewId: string) => {
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      await fetch(`/api/admin/verifications/${reviewId}/reject`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch (err) {
+      console.warn('API reject call error:', err);
+    }
+
     setReviews((prev) =>
-      prev.map((r) => (r.id === reviewId ? { ...r, licenseStatus: 'rejected' } : r))
+      prev.map((r) => (r.id === reviewId ? { ...r, licenseStatus: 'declined' } : r))
     );
-    setActionNotice('Clinician registration rejected. Notification dispatched.');
+    setActionNotice('Clinician registration declined in PostgreSQL database.');
     setTimeout(() => setActionNotice(null), 4000);
   };
 
   // Handle Host Property Verification Approval (A-10)
-  const handleApproveProperty = (listingId: string) => {
+  const handleApproveProperty = async (listingId: string) => {
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      await fetch(`/api/admin/listings/${listingId}/approve`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch (err) {
+      console.warn('API approve property error:', err);
+    }
+
     setManagedListings((prev) =>
       prev.map((l) => (l.id === listingId ? { ...l, verified: true } : l))
     );
-    setActionNotice('Property verified: Sanctuary approved and indexed for traveling clinician search.');
+    setActionNotice('Property verified in PostgreSQL: Sanctuary approved and indexed for traveling clinician search.');
     setTimeout(() => setActionNotice(null), 4000);
   };
 

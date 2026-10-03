@@ -80,24 +80,14 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
     setIsSubmitting(true);
     setSubmitError(null);
 
-    // Check if demo account
-    const isDemo = data.legalFirstName === 'Sarah' && data.legalLastName === 'Jenkins';
-
-    if (isDemo) {
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onChange({ licenseStatus: 'verified' });
-        onOpenSuccessModal();
-      }, 500);
-      return;
-    }
-
     try {
       const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const userEmail = localStorage.getItem('np_user_email') || data.workEmail;
+
       const res = await fetch('/api/verify/license', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -105,11 +95,13 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           stateBoard: data.issuingStateBoard,
           specialty: data.professionSpecialty,
           documentName: data.uploadedDocument?.name || 'document.pdf',
+          email: userEmail,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Verification service temporarily unavailable.');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Verification service temporarily unavailable.');
       }
 
       onChange({ licenseStatus: 'pending_review' });

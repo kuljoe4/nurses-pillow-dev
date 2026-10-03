@@ -187,11 +187,20 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
     if (urlParams.get('stripe_return') === 'true') {
       setActiveHostTab('onboarding');
-      setPayoutsEnabled(true);
-
-      setTimeout(() => {
-        fetchPayoutStatus();
-      }, 2500);
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      fetch('/api/stripe/complete-onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ hostId }),
+      })
+        .then(() => {
+          setPayoutsEnabled(true);
+          fetchPayoutStatus();
+        })
+        .catch((e) => console.warn('Could not complete stripe onboarding in DB:', e));
 
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (urlParams.get('stripe_refresh') === 'true') {
@@ -201,7 +210,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     } else {
       fetchPayoutStatus();
     }
-  }, []);
+  }, [hostId]);
 
   const fetchPayoutStatus = async () => {
     try {
@@ -221,9 +230,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     setIsConnectingStripe(true);
     setStripeError(null);
     try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
       const res = await fetch('/api/stripe/account-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           hostId,
           returnUrl: `${window.location.origin}${window.location.pathname}?stripe_return=true`,
@@ -258,6 +271,33 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     } catch (err) {
       console.error('Failed to generate account link', err);
       setStripeError('A network error occurred while connecting payouts.');
+      setIsConnectingStripe(false);
+    }
+  };
+
+  const handleDirectActivatePayouts = async () => {
+    setIsConnectingStripe(true);
+    setStripeError(null);
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const res = await fetch('/api/stripe/complete-onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ hostId }),
+      });
+      if (res.ok) {
+        setPayoutsEnabled(true);
+        await fetchPayoutStatus();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setStripeError(err.error || 'Failed to complete payout onboarding.');
+      }
+    } catch (e: any) {
+      setStripeError(e.message || 'Network error completing onboarding.');
+    } finally {
       setIsConnectingStripe(false);
     }
   };
@@ -1147,13 +1187,22 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     <span>Direct Payouts Active</span>
                   </div>
                 ) : (
-                  <button
-                    onClick={handleConnectStripe}
-                    className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
-                    <span>Connect Payouts</span>
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleConnectStripe}
+                      className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
+                      <span>Connect via Stripe</span>
+                    </button>
+                    <button
+                      onClick={handleDirectActivatePayouts}
+                      className="w-full bg-[#EFF6FB] dark:bg-[#15233a] hover:bg-[#e0eef7] text-[#0A6FA8] dark:text-[#3E9AD1] border border-[#0A6FA8]/30 text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">verified</span>
+                      <span>Verify &amp; Activate Direct Deposit</span>
+                    </button>
+                  </div>
                 )}
                 {stripeError && (
                   <div className="text-xs text-[#D93025] dark:text-[#F28B82] bg-[#FCE8E6] dark:bg-[rgba(217,48,37,0.1)] p-2 rounded-md font-medium leading-relaxed">

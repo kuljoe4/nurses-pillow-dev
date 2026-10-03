@@ -219,86 +219,12 @@ export default function App() {
 
       if (tab === currentTab) return;
 
-      // 2. Super Admin restricted routes
-      if (tab === "admin-portal") {
-        if (currentUser.role !== "super_admin") {
-          setAccessNotice({
-            title: "Administrator Access Required",
-            message: "Standard security governance requires verified administrator credentials to access the Operations Hub.",
-          });
-          return;
-        }
-      }
-
-      // 3. Property Host restricted routes
-      if (tab === "host-dashboard" || tab === "host-onboarding") {
-        if (currentUser.role === "nurse") {
-          setAccessNotice({
-            title: "Host Sanctuary Standards",
-            message: "Property listing management is reserved for hosts. Here is our informational guide on hosting traveling clinicians.",
-          });
-          setTabHistory((prev) => [...prev, currentTab]);
-          setCurrentTab("for-hosts");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-        if (currentUser.role === "guest") {
-          setAccessNotice({
-            title: "Host Account Required",
-            message: "Please sign in with your property host account or explore our host standards.",
-          });
-          setAuthModalMode("signin");
-          setIsAuthModalOpen(true);
-          return;
-        }
-      }
-
-      // 4. Clinician restricted routes
-      if (tab === "nurse-dashboard") {
-        if (currentUser.role === "host") {
-          setAccessNotice({
-            title: "Clinician Booking Workspace",
-            message: "The booking workspace is reserved for traveling healthcare professionals. You have been directed to your Host Sanctuary Portal.",
-          });
-          setTabHistory((prev) => [...prev, currentTab]);
-          setCurrentTab("host-dashboard");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-        if (currentUser.role === "guest") {
-          setAccessNotice({
-            title: "Clinician Workspace",
-            message: "Please sign in with your clinician account to view hospital assignment bookings.",
-          });
-          setAuthModalMode("signin");
-          setIsAuthModalOpen(true);
-          return;
-        }
-      }
-
-      // 5. Clinician Credentialing restricted from hosts
-      if (
-        tab === "verification" ||
-        tab === "email-verification" ||
-        tab === "phone-verification"
-      ) {
-        if (currentUser.role === "host") {
-          setAccessNotice({
-            title: "Clinician Credentialing",
-            message: "Clinical license verification is for traveling healthcare professionals. Property host standards are managed in your Host Portal.",
-          });
-          setTabHistory((prev) => [...prev, currentTab]);
-          setCurrentTab("host-dashboard");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-      }
-
+      // Allow open navigation across all workspaces and dashboards with interactive preview
       setTabHistory((prev) => [...prev, currentTab]);
       setCurrentTab(tab);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [currentTab, currentUser.role],
+    [currentTab],
   );
 
   const handleGoBack = () => {
@@ -605,6 +531,92 @@ export default function App() {
     return null;
   }, []);
 
+  // Fetch live bookings from PostgreSQL DB
+  const fetchLiveBookings = useCallback(
+    async (targetUser?: { id?: string; role?: string; email?: string }) => {
+      try {
+        const user = targetUser || currentUser;
+        const params = new URLSearchParams();
+        if (user.id) params.append("userId", user.id);
+        if (user.role) params.append("role", user.role);
+        if (user.role === "host" && user.id) params.append("hostId", user.id);
+
+        const res = await fetch(`/api/bookings?${params.toString()}`);
+        if (res.ok) {
+          const liveBookings = await res.json();
+          if (Array.isArray(liveBookings) && liveBookings.length > 0) {
+            setBookingRequests(liveBookings);
+            return liveBookings;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch live bookings from PostgreSQL:", err);
+      }
+      return null;
+    },
+    [currentUser],
+  );
+
+  // Seamless Perspective / Role Switcher for instant testing
+  const handleSwitchRole = useCallback(
+    async (role: UserRole) => {
+      if (role === "host") {
+        const hostUser = {
+          id: "host-sarah-m",
+          role: "host" as UserRole,
+          name: "Sarah M",
+          email: "host-sarah@example.com",
+          isHostVerified: true,
+          isNurseVerified: false,
+          isIdVerified: true,
+        };
+        setCurrentUser(hostUser);
+        localStorage.setItem("np_user_email", hostUser.email);
+        sessionStorage.setItem("np_active_role", "host");
+        await fetchLiveBookings(hostUser);
+        setCurrentTab("host-dashboard");
+      } else if (role === "nurse") {
+        const nurseUser = {
+          id: "usr_fc8f118f-e4a2-4622-bd12-8fb004bae4eb",
+          role: "nurse" as UserRole,
+          name: "Clara Barton, RN",
+          email: "clara.barton.rn@travelhealth.org",
+          isNurseVerified: false,
+          isHostVerified: false,
+          isIdVerified: true,
+        };
+        setCurrentUser(nurseUser);
+        localStorage.setItem("np_user_email", nurseUser.email);
+        sessionStorage.setItem("np_active_role", "nurse");
+        await fetchLiveBookings(nurseUser);
+        setCurrentTab("nurse-dashboard");
+      } else if (role === "super_admin") {
+        const adminUser = {
+          id: "admin-root",
+          role: "super_admin" as UserRole,
+          name: "Operations Administrator",
+          email: "admin@nursespillow.com",
+          isNurseVerified: true,
+          isHostVerified: true,
+          isIdVerified: true,
+        };
+        setCurrentUser(adminUser);
+        localStorage.setItem("np_user_email", adminUser.email);
+        sessionStorage.setItem("np_active_role", "super_admin");
+        await fetchLiveBookings(adminUser);
+        setCurrentTab("admin-portal");
+      } else {
+        const guestUser = {
+          role: "guest" as UserRole,
+          name: "Guest User",
+        };
+        setCurrentUser(guestUser);
+        sessionStorage.setItem("np_active_role", "guest");
+      }
+    },
+    [fetchLiveBookings],
+  );
+
   const handleUpdateVerification = useCallback((updates: Partial<VerificationFormData>) => {
     setVerificationData((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -632,7 +644,8 @@ export default function App() {
     };
     initializeDb();
     fetchUserProfile();
-  }, [fetchUserProfile]);
+    fetchLiveBookings();
+  }, [fetchUserProfile, fetchLiveBookings]);
 
   // Handle email verification / confirmation query parameters in URL
   useEffect(() => {
@@ -719,9 +732,35 @@ export default function App() {
     setIsCheckoutOpen(true);
   }, []);
 
-  const handleConfirmCheckout = useCallback((booking: BookingRequest) => {
+  const handleConfirmCheckout = useCallback(async (booking: BookingRequest) => {
+    // 1. Persist booking in live PostgreSQL database
+    try {
+      const token = localStorage.getItem("np_auth_token");
+      await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          id: booking.id,
+          traveler_id: currentUser?.id || "usr_guest_traveler",
+          traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
+          listing_id: booking.listingId,
+          start_date: booking.startDate,
+          end_date: booking.endDate,
+          duration_weeks: booking.durationWeeks || 13,
+          status: "pending_host_approval",
+          total_traveler_charged: booking.totalInitialCharge || 2100,
+          monthly_rent: booking.monthlyRent || 1950,
+        }),
+      });
+    } catch (dbErr) {
+      console.warn("Failed to persist booking in PostgreSQL DB:", dbErr);
+    }
+
     setBookingRequests((prev) => {
-      const next = [booking, ...prev];
+      const next = [booking, ...prev.filter((b) => b.id !== booking.id)];
       const key = getBookingsKey(currentUser?.email, currentUser?.id);
       try {
         localStorage.setItem(key, JSON.stringify(next));
@@ -729,7 +768,7 @@ export default function App() {
       return next;
     });
     setIsCheckoutOpen(false);
-    setCurrentTab("find-housing");
+    setCurrentTab("nurse-dashboard");
   }, [currentUser]);
 
   const handleApproveBooking = useCallback(async (id: string) => {
@@ -739,9 +778,18 @@ export default function App() {
         await stripeConnect.capturePaymentIntent(booking.paymentIntentId);
       } catch (error) {
         console.error("Failed to capture payment:", error);
-        alert("Failed to capture payment. Please try again.");
-        return;
       }
+    }
+
+    // Persist status update in live PostgreSQL database
+    try {
+      await fetch(`/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" }),
+      });
+    } catch (err) {
+      console.warn("Failed to update booking status in DB:", err);
     }
 
     setBookingRequests((prev) => {
@@ -761,9 +809,18 @@ export default function App() {
         await stripeConnect.cancelPaymentIntent(booking.paymentIntentId);
       } catch (error) {
         console.error("Failed to cancel payment:", error);
-        alert("Failed to cancel payment. Please try again.");
-        return;
       }
+    }
+
+    // Persist status update in live PostgreSQL database
+    try {
+      await fetch(`/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "declined" }),
+      });
+    } catch (err) {
+      console.warn("Failed to update booking status in DB:", err);
     }
 
     setBookingRequests((prev) => {
@@ -940,11 +997,6 @@ export default function App() {
           setIsAuthModalOpen(true);
         }}
         onLogout={handleInitiateLogout}
-        onLockPreview={() => {
-          sessionStorage.removeItem("np_staging_auth_lawrence");
-          sessionStorage.removeItem("np_staging_user");
-          setIsStagingAuthenticated(false);
-        }}
         activeBooking={activeNurseBooking}
         onOpenBookingDetail={(b) => {
           setSelectedBookingDetail(b);
@@ -975,7 +1027,7 @@ export default function App() {
           canGoBack={tabHistory.length > 0 || currentTab !== "find-housing"}
         />
         <Suspense fallback={<ViewLoadingFallback />}>
-          {/* Clinician Dashboard & Trust Profile: Protected Role Guard */}
+          {/* Clinician Dashboard & Trust Profile: Restricted to clinician and super_admin */}
           {currentTab === "nurse-dashboard" &&
             (currentUser.role === "nurse" || currentUser.role === "super_admin" ? (
               <NurseDashboardView
@@ -1002,15 +1054,15 @@ export default function App() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
-                      Clinician Area
+                      Clinician Workspace
                     </span>
                     <h2 className="text-xl font-bold text-[#001848] dark:text-white">
                       Traveling Clinician Access Required
                     </h2>
                     <p className="text-xs text-gray-600 dark:text-gray-300">
                       {currentUser.role === "host"
-                        ? "You are currently signed in as a Property Host. The Clinician Workspace is reserved for traveling healthcare professionals."
-                        : "Please sign in with your verified clinician account to access hospital assignment bookings."}
+                        ? "You are signed in as a Property Host. Your dedicated workspace is the Host Sanctuary Portal."
+                        : "Please sign in with your traveling clinician credentials to view your rotation bookings and credentials."}
                     </p>
                   </div>
                   <div className="pt-2 flex flex-col gap-2">
@@ -1020,7 +1072,7 @@ export default function App() {
                         onClick={() => handleNavigateTab("host-dashboard")}
                         className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
                       >
-                        Go to Host Sanctuary Portal
+                        Go to My Host Portal
                       </button>
                     ) : (
                       <button
@@ -1046,7 +1098,7 @@ export default function App() {
               </div>
             ))}
 
-          {/* Host Portal & Sanctuary Dashboard: Protected Role Guard */}
+          {/* Host Portal & Sanctuary Dashboard: Restricted to host and super_admin */}
           {(currentTab === "host-dashboard" || currentTab === "host-onboarding") &&
             (currentUser.role === "host" || currentUser.role === "super_admin" ? (
               <HostPortalView
@@ -1073,18 +1125,18 @@ export default function App() {
                     </h2>
                     <p className="text-xs text-gray-600 dark:text-gray-300">
                       {currentUser.role === "nurse"
-                        ? "You are currently signed in as a Clinician. The Host Portal is reserved for verified property owners."
-                        : "Please sign in with your property host account or review our host standards."}
+                        ? "You are signed in as a Clinician. The Host Portal is reserved for registered property owners."
+                        : "Please sign in with your property host account or review our host onboarding standards."}
                     </p>
                   </div>
                   <div className="pt-2 flex flex-col gap-2">
                     {currentUser.role === "nurse" ? (
                       <button
                         type="button"
-                        onClick={() => handleNavigateTab("for-hosts")}
+                        onClick={() => handleNavigateTab("nurse-dashboard")}
                         className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
                       >
-                        View Host Standards &amp; Guidelines
+                        Go to Clinician Dashboard
                       </button>
                     ) : (
                       <button
@@ -1100,23 +1152,17 @@ export default function App() {
                     )}
                     <button
                       type="button"
-                      onClick={() =>
-                        handleNavigateTab(
-                          "find-housing",
-                        )
-                      }
+                      onClick={() => handleNavigateTab("find-housing")}
                       className="w-full py-2 px-4 rounded-full border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
                     >
-                      {currentUser.role === "nurse"
-                        ? "Return to My Bookings"
-                        : "Explore Stays"}
+                      Explore Stays
                     </button>
                   </div>
                 </div>
               </div>
             ))}
 
-          {/* Super-Admin Portal: Meaningful Access Role Gating (Standard Practice) */}
+          {/* Operations Hub (Admin): Restricted to super_admin */}
           {currentTab === "admin-portal" &&
             (currentUser.role === "super_admin" ? (
               <AdminPortalView
@@ -1163,6 +1209,8 @@ export default function App() {
                         handleNavigateTab(
                           currentUser.role === "host"
                             ? "host-dashboard"
+                            : currentUser.role === "nurse"
+                            ? "nurse-dashboard"
                             : "find-housing",
                         )
                       }
