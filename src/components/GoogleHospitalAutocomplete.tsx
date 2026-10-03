@@ -34,10 +34,20 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   const [curatedHospitals, setCuratedHospitals] = useState<SelectedHospitalInfo[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Modern Places Library (Places API (New))
   const placesLibrary = useMapsLibrary('places');
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setInputValue(value);
@@ -92,35 +102,42 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
     setIsOpen(true);
 
     const trimmed = text.trim();
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
     if (trimmed.length > 2 && placesLibrary?.AutocompleteSuggestion) {
       setIsSearching(true);
 
-      // Initialize session token for Places API (New) if needed
-      if (!sessionTokenRef.current && placesLibrary.AutocompleteSessionToken) {
-        sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
-      }
+      debounceTimerRef.current = setTimeout(() => {
+        // Initialize session token for Places API (New) if needed
+        if (!sessionTokenRef.current && placesLibrary.AutocompleteSessionToken) {
+          sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
+        }
 
-      const request: google.maps.places.AutocompleteRequest = {
-        input: trimmed,
-        sessionToken: sessionTokenRef.current ?? undefined,
-        includedRegionCodes: ['us'], // Modern Places API property
-      };
+        const request: google.maps.places.AutocompleteRequest = {
+          input: trimmed,
+          sessionToken: sessionTokenRef.current ?? undefined,
+          includedRegionCodes: ['us'], // Modern Places API property
+        };
 
-      placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
-        .then((res) => {
-          if (res?.suggestions) {
-            setPlacesSuggestions(res.suggestions);
-          } else {
+        placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
+          .then((res) => {
+            if (res?.suggestions) {
+              setPlacesSuggestions(res.suggestions);
+            } else {
+              setPlacesSuggestions([]);
+            }
+          })
+          .catch((err) => {
+            // Graceful fallback to curated directory on any API error
             setPlacesSuggestions([]);
-          }
-        })
-        .catch((err) => {
-          // Graceful fallback to curated directory on any API error
-          setPlacesSuggestions([]);
-        })
-        .finally(() => {
-          setIsSearching(false);
-        });
+          })
+          .finally(() => {
+            setIsSearching(false);
+          });
+      }, 300);
     } else {
       setPlacesSuggestions([]);
       setIsSearching(false);
