@@ -11,3 +11,6 @@
 ## 2023-10-27 - Missing Aria Labels on Icon-Only Buttons
 **Learning:** Found several icon-only buttons (like `remove`, `add`, and `close` icons inside `HostPortalView.tsx`) that lacked `aria-label` attributes. This breaks accessibility for screen readers.
 **Action:** Added `aria-label` to these buttons to explicitly describe their actions (e.g., "Decrease room count", "Remove photo"). When implementing or reviewing icon buttons, ensure they always have an accessible name using `aria-label` if there is no visible text.
+## 2024-10-02 - Added ARIA label to password visibility toggle
+**Learning:** Found an icon-only button lacking an accessible label in AuthModal.tsx. Icon-only buttons must always have an aria-label to be readable by screen readers.
+**Action:** Always verify icon-only buttons (`<button><span class="material-symbols-outlined">...</span></button>`) have dynamic or static `aria-label`s.

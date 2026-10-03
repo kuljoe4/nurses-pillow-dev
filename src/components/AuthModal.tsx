@@ -720,6 +720,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {showPassword ? "visibility_off" : "visibility"}
