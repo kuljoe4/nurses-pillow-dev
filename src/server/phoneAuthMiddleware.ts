@@ -208,7 +208,9 @@ export function createPhoneAuthMiddleware() {
             if (token) {
               try {
                 const jwt = (await import('jsonwebtoken')).default;
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nurses_pillow_secret_2026') as any;
+                // Security: Fallback secret should only be used in development environments.
+                // The main server initialization in server/authRoutes.ts guarantees JWT_SECRET is present in production.
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
                 if (decoded?.id) userId = decoded.id;
                 if (decoded?.email) userEmail = decoded.email;
               } catch {}
