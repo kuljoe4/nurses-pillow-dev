@@ -11,7 +11,6 @@ import {
 import {
   INITIAL_VERIFICATION_DATA,
   BLANK_VERIFICATION_DATA,
-  MOCK_LISTINGS,
   MOCK_DEMAND_REPORTS,
   MOCK_ADMIN_LICENSE_REVIEWS,
 } from "./data/mockData";
@@ -345,9 +344,7 @@ export default function App() {
 
   // Checkout modal state (Screen A4)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [checkoutListing, setCheckoutListing] = useState<HousingListing>(
-    MOCK_LISTINGS[0],
-  );
+  const [checkoutListing, setCheckoutListing] = useState<HousingListing | null>(null);
 
   // Dedicated search params state (Screen A2)
   const [searchParamsState, setSearchParamsState] = useState({
@@ -1041,7 +1038,7 @@ export default function App() {
                 onOpenSupport={() => setIsSupportOpen(true)}
                 savedListingIds={savedListingIds}
                 onToggleSave={handleToggleSaveListing}
-                allListings={MOCK_LISTINGS}
+                allListings={appData.listings}
                 activeBookings={bookingRequests}
                 currentUser={currentUser}
                 verificationData={verificationData}
@@ -1170,7 +1167,7 @@ export default function App() {
                 isNightShiftMode={isNightShiftMode}
                 onOpenGoogleSheets={handleOpenGoogleSheets}
                 bookingRequests={bookingRequests}
-                listings={MOCK_LISTINGS}
+                listings={appData.listings}
                 isDeveloper={false}
               />
             ) : (
@@ -1444,7 +1441,7 @@ export default function App() {
       />
 
       {/* Itemized Checkout Modal (Screen A4) - Lazy loaded only when requested */}
-      {isCheckoutOpen && (
+      {isCheckoutOpen && checkoutListing && (
         <Suspense fallback={<ModalLoadingFallback />}>
           <ItemizedCheckoutModal
             isOpen={isCheckoutOpen}
@@ -1541,7 +1538,7 @@ export default function App() {
             isNightShiftMode={isNightShiftMode}
             initialPreset={sheetsPreset}
             bookingRequests={bookingRequests}
-            listings={MOCK_LISTINGS}
+            listings={appData.listings}
             demandReports={MOCK_DEMAND_REPORTS}
             licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
             userRole={currentUser.role}

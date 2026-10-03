@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 import { PillowSaveButton } from './PillowSaveButton';
@@ -273,7 +272,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
-    return MOCK_LISTINGS.slice(0, 6);
+    const dbListings = db.getListings() || [];
+    return dbListings.slice(0, 6);
   }, []);
 
   const displayedFeaturedListings = useMemo(() => {
@@ -285,14 +285,14 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         (l) =>
           l.amenities?.daySleeperQuietHours ||
           l.amenities?.blackoutCurtains ||
-          l.highlightBadges?.some((b) => b.includes('Quiet') || b.includes('dB') || b.includes('Blackout'))
+          l.highlightBadges?.some((b: string) => b.includes('Quiet') || b.includes('dB') || b.includes('Blackout'))
       );
     }
     if (activeListingFilter === 'laundry') {
       return featuredListings.filter(
         (l) =>
           l.amenities?.washerDryerInUnit ||
-          l.highlightBadges?.some((b) => b.toLowerCase().includes('laundry'))
+          l.highlightBadges?.some((b: string) => b.toLowerCase().includes('laundry'))
       );
     }
     if (activeListingFilter === 'pets') {

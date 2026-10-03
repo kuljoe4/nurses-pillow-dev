@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 const HealthcareAmenitiesFilterModal = React.lazy(() => import('./HealthcareAmenitiesFilterModal').then((m) => ({ default: m.HealthcareAmenitiesFilterModal })));
@@ -253,10 +252,8 @@ useBodyScrollLock(isGsaModalOpen);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
-    // In a real app we would receive real properties from App via context/props.
-    // For now we map to the existing mock to preserve the component.
     const dbListings = db.getListings() || [];
-    let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
+    let list = dbListings;
 
     // ⚡ Bolt Performance Optimization: Single-pass early return filtering
     // Replaced chained .filter() arrays (O(M*N)) with a single loop (O(N))
@@ -326,7 +323,8 @@ useBodyScrollLock(isGsaModalOpen);
   ]);
 
   const selectedMapListing = useMemo(() => {
-    return MOCK_LISTINGS.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
+    if (!selectedMapListingId) return null;
+    return filteredListings.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || null;
   }, [selectedMapListingId, filteredListings]);
 
   const currentMapListingIndex = useMemo(() => {
