@@ -173,6 +173,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   // Mock state for Stripe connect button interactions if needed
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [payoutsEnabled, setPayoutsEnabled] = useState(currentUser?.payoutsEnabled || false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
   // Processing States for bookings
   const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
@@ -217,6 +218,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
   const handleConnectStripe = async () => {
     setIsConnectingStripe(true);
+    setStripeError(null);
     try {
       const res = await fetch('/api/stripe/account-link', {
         method: 'POST',
@@ -227,7 +229,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           refreshUrl: `${window.location.origin}${window.location.pathname}?stripe_refresh=true`,
         }),
       });
-      if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+
+      const isJson = res.headers.get('content-type')?.includes('application/json');
+
+      if (res.ok && isJson) {
         const data = await res.json();
         if (data.url) {
           window.location.href = data.url;
@@ -235,11 +240,23 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           setIsConnectingStripe(false);
         }
       } else {
-        console.error(`Failed to create account link: ${res.status} ${res.statusText}`);
+        if (isJson) {
+          const errorData = await res.json();
+          console.error(`Failed to create account link: ${res.status} ${res.statusText}`, errorData);
+          if (errorData.error === 'StripeInvalidRequestError') {
+             setStripeError('Payouts are currently unavailable because the platform owner needs to complete Stripe Connect onboarding.');
+          } else {
+             setStripeError(errorData.message || 'Failed to connect payouts. Please try again.');
+          }
+        } else {
+          console.error(`Failed to create account link: ${res.status} ${res.statusText}`);
+          setStripeError('Failed to connect payouts due to a server error.');
+        }
         setIsConnectingStripe(false);
       }
     } catch (err) {
       console.error('Failed to generate account link', err);
+      setStripeError('A network error occurred while connecting payouts.');
       setIsConnectingStripe(false);
     }
   };
@@ -1103,7 +1120,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   Direct deposit routing to receive automatic monthly disbursements on booking acceptance.
                 </p>
               </div>
-              <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550]">
+              <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550] flex flex-col gap-2">
                 {isConnectingStripe ? (
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
                     <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
@@ -1122,6 +1139,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
                     <span>Connect Payouts</span>
                   </button>
+                )}
+                {stripeError && (
+                  <div className="text-xs text-[#D93025] dark:text-[#F28B82] bg-[#FCE8E6] dark:bg-[rgba(217,48,37,0.1)] p-2 rounded-md font-medium leading-relaxed">
+                    <div className="flex items-start gap-1.5">
+                      <span className="material-symbols-outlined text-[14px] mt-0.5">error</span>
+                      <span>{stripeError}</span>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
