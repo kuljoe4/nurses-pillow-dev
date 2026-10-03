@@ -85,7 +85,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   );
 
   const isIdVerified = Boolean(
-    currentUser?.isIdVerified ||
+    (currentUser as any)?.isIdVerified ||
     verificationData?.isIdVerified
   );
 
@@ -317,7 +317,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                       <div className="sm:col-span-4 relative rounded-xl overflow-hidden aspect-[4/3] bg-gray-100 dark:bg-gray-800">
                         <img
                           src={
-                            listing?.images[0] ||
+                            listing?.images?.[0] ||
                             'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
                           }
                           alt={booking.listingTitle || 'Property housing'}
@@ -438,7 +438,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                   <div>
                     <div className="relative rounded-xl overflow-hidden aspect-video mb-2.5">
                       <img
-                        src={listing.images[0]}
+                        src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                         alt={listing.title}
                         className="w-full h-full object-cover"
                       />

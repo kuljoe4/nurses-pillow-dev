@@ -1414,7 +1414,7 @@ useBodyScrollLock(isGsaModalOpen);
                           </div>
                         )}
                         <img
-                          src={selectedMapListing.images[0]}
+                          src={selectedMapListing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                           alt={selectedMapListing.title}
                           className="w-14 h-14 rounded-xl object-cover shrink-0"
                         />

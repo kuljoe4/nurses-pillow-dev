@@ -275,7 +275,7 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
                       <div className="text-xs font-bold mb-2">Featured Near Hospital</div>
                       <div className="p-2.5 rounded-xl bg-white dark:bg-[#0B1626] border border-black/5 dark:border-white/10 flex gap-2.5 items-center">
                         <img
-                          src={MOCK_LISTINGS[0].images[0]}
+                          src={MOCK_LISTINGS[0]?.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                           alt="listing"
                           className="w-16 h-16 rounded-lg object-cover"
                         />

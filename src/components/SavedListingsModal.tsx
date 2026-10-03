@@ -123,7 +123,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
                   }}
                 >
                   <img
-                    src={listing.images[0]}
+                    src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                     alt={listing.title}
                     className="w-20 h-20 rounded-xl object-cover shrink-0"
                   />

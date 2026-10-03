@@ -125,7 +125,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
             <img
               src={
-                listing?.images[0] ||
+                listing?.images?.[0] ||
                 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'
               }
               alt={booking.listingTitle}

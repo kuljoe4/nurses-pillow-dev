@@ -18,6 +18,7 @@ export interface DbListingRow {
   pet_fee: number | string;
   parking_fee?: number | string;
   extra_options?: any;
+  images?: string[];
 }
 
 // Maps enterprise DB schema formats to the `HousingListing` format the frontend expects.
@@ -37,10 +38,7 @@ export function mapDbListingToFrontend(dbRow: DbListingRow) {
     beds: 1,
     baths: 1,
     sqft: 800,
-    images: [
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800'
-    ],
+    images: Array.isArray(dbRow.images) ? dbRow.images : [],
     nurseRating: 98,
     reviewsCount: 12,
     amenities: {
