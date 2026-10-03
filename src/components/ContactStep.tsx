@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {   useState , useEffect , useRef } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { VerificationStepperNav } from './VerificationStepperNav';
 
@@ -22,6 +22,13 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   onOpenTwilioOtp,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (errorMessage && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [errorMessage]);
 
   const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 10);
@@ -137,7 +144,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
+          <div ref={errorRef} className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
             <span className="material-symbols-outlined text-sm shrink-0">error</span>
             <span>{errorMessage}</span>
           </div>

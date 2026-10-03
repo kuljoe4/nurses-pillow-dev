@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useCallback } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import {
   NavigationTab,
   VerificationStepId,
@@ -1185,6 +1185,10 @@ export default function App() {
                   onNextStep={() => setVerificationStep(2)}
                   onSelectStep={(step) => setVerificationStep(step)}
                   isNightShiftMode={isNightShiftMode}
+                  onOpenAuth={(mode) => {
+                    setAuthModalMode(mode || "signup");
+                    setIsAuthModalOpen(true);
+                  }}
                 />
               )}
               {verificationStep === 2 && (

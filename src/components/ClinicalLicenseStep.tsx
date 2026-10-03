@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, {  useState, useRef , useEffect } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { PROFESSION_OPTIONS, STATE_BOARDS } from '../data/mockData';
 import { VerificationStepperNav } from './VerificationStepperNav';
@@ -22,6 +22,13 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (submitError && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [submitError]);
   const [isDragging, setIsDragging] = useState(false);
   const [savedNotification, setSavedNotification] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -176,7 +183,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
         </div>
 
         {submitError && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
+          <div ref={errorRef} className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold">
             {submitError}
           </div>
         )}

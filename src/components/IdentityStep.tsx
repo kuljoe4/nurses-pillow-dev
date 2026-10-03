@@ -1,9 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
 import { VerificationStepperNav } from './VerificationStepperNav';
 
+const STRIPE_PUBLISHABLE_KEY = process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+
 interface IdentityStepProps {
+  onOpenAuth?: (mode?: 'signin' | 'signup') => void;
   data: VerificationFormData;
   onChange: (updates: Partial<VerificationFormData>) => void;
   onNextStep: () => void;
@@ -17,10 +22,18 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
   onNextStep,
   onSelectStep,
   isNightShiftMode,
+  onOpenAuth,
 }) => {
   const [showSSN, setShowSSN] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (verificationError && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [verificationError]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateInputs = (): string | null => {
@@ -90,11 +103,22 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
       const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
       const userEmail = localStorage.getItem('np_user_email') || data.workEmail;
 
+      if (!token) {
+        if (onOpenAuth) {
+           onOpenAuth('signup');
+        } else {
+           throw new Error("Authorization Required: Please sign in or create an account.");
+        }
+        setIsVerifying(false);
+        return;
+      }
+
+      // 1. Send data to /api/verify/identity to persist input first
       const res = await fetch('/api/verify/identity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           legalFirstName: data.legalFirstName.trim(),
@@ -108,7 +132,33 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || 'Verification failed. Please check your details.');
+        throw new Error(result.error || 'Verification validation failed.');
+      }
+
+      // 2. Fetch Stripe Identity Session
+      const stripeRes = await fetch('/api/stripe/identity/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const stripeData = await stripeRes.json();
+      if (!stripeRes.ok) {
+         throw new Error(stripeData.error || 'Failed to initiate Stripe Identity Session.');
+      }
+
+      const stripe = await stripePromise;
+      if (!stripe) {
+         throw new Error('Stripe failed to load.');
+      }
+
+      // 3. Open Stripe Identity verification modal
+      const { error } = await stripe.verifyIdentity(stripeData.client_secret);
+
+      if (error) {
+         throw new Error(error.message || 'Stripe Identity verification failed.');
       }
 
       onChange({
@@ -177,7 +227,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         </div>
 
         {verificationError && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
+          <div ref={errorRef} className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-xs font-semibold flex items-center gap-2">
             <span className="material-symbols-outlined text-sm shrink-0">error</span>
             <span>{verificationError}</span>
           </div>
