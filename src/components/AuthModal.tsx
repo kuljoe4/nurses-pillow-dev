@@ -15,6 +15,7 @@ interface AuthModalProps {
     id?: string,
     isNurseVerified?: boolean,
     isHostVerified?: boolean,
+    isIdVerified?: boolean,
     skipAutoNavigate?: boolean
   ) => void | Promise<void>;
   onOpenEmailVerification?: (email?: string) => void;
@@ -110,6 +111,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         data.user.id,
         data.user.is_nurse_verified,
         data.user.is_host_verified,
+        data.user.identity_verified,
         true // skipAutoNavigate so flow continues to email-verification
       );
       if (onOpenEmailVerification) {
@@ -232,7 +234,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         data.user.email,
         data.user.id,
         data.user.is_nurse_verified,
-        data.user.is_host_verified
+        data.user.is_host_verified,
+        data.user.identity_verified
       );
       onClose();
     } catch (err: any) {
