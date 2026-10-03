@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 import { PillowSaveButton } from './PillowSaveButton';
@@ -73,7 +72,7 @@ const ObservedListingCard: React.FC<ObservedListingCardProps> = React.memo(({
       {/* Image Header */}
       <div className="relative h-60 w-full overflow-hidden bg-gray-100">
         <img
-          src={listing.images[0]}
+          src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
           alt={listing.title}
           loading="lazy"
           decoding="async"
@@ -273,7 +272,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
-    return MOCK_LISTINGS.slice(0, 6);
+    const dbListings = db.getListings() || [];
+    return dbListings.slice(0, 6);
   }, []);
 
   const displayedFeaturedListings = useMemo(() => {
@@ -285,14 +285,14 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
         (l) =>
           l.amenities?.daySleeperQuietHours ||
           l.amenities?.blackoutCurtains ||
-          l.highlightBadges?.some((b) => b.includes('Quiet') || b.includes('dB') || b.includes('Blackout'))
+          l.highlightBadges?.some((b: string) => b.includes('Quiet') || b.includes('dB') || b.includes('Blackout'))
       );
     }
     if (activeListingFilter === 'laundry') {
       return featuredListings.filter(
         (l) =>
           l.amenities?.washerDryerInUnit ||
-          l.highlightBadges?.some((b) => b.toLowerCase().includes('laundry'))
+          l.highlightBadges?.some((b: string) => b.toLowerCase().includes('laundry'))
       );
     }
     if (activeListingFilter === 'pets') {
@@ -609,7 +609,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                 </div>
 
                 {/* Search Housing Action Button */}
-                <div className="flex items-end">
+                <div className="flex items-end sm:col-span-2 md:col-span-1">
                   <motion.button
                     type="button"
                     onClick={() => {
@@ -1115,6 +1115,140 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
               </motion.div>
             )}
           </AnimatePresence>
+        </motion.div>
+      </section>
+
+      {/* 4.5 MARKETING & TRUST COMPARISON MATRIX */}
+      <section
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}
+        className="px-4 sm:px-6 lg:px-12 py-16 max-w-7xl mx-auto w-full"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0A6FA8]/10 text-[#0A6FA8] dark:bg-[#3E9AD1]/15 dark:text-[#3E9AD1] mb-3">
+            <span className="material-symbols-outlined text-[15px]">compare_arrows</span>
+            <span>Marketplace Transparency</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0B2559] dark:text-white tracking-tight mb-3">
+            Nurses Pillow vs. Traditional Directories (Furnished Finder)
+          </h2>
+          <p className="text-sm sm:text-base text-[#404850] dark:text-[#c0c7d1] max-w-2xl mx-auto leading-relaxed mb-10">
+            Verified healthcare professionals only. $0 to list — pay only when booked. No upfront paywalls or unvetted marketplace risks.
+          </p>
+
+          {/* Desktop & Tablet Table (Hidden on small mobile) */}
+          <div className="hidden sm:block overflow-hidden rounded-[24px] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-white dark:bg-[#111e33] shadow-md text-left">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#EFF6FB] dark:bg-[#15233a] border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550] text-[#0B2559] dark:text-white">
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3">Standard / Feature</th>
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3 bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    Nurses Pillow
+                  </th>
+                  <th className="p-4 sm:p-5 font-bold text-xs uppercase tracking-wider w-1/3 opacity-70">
+                    Traditional Directories
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="text-xs sm:text-sm text-[#404850] dark:text-[#c0c7d1]">
+                <tr className="border-b border-[rgba(11,37,89,0.04)] dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-bold text-[#0B2559] dark:text-white">Upfront Cost</td>
+                  <td className="p-4 sm:p-5 font-bold text-[#2F6E5E] dark:text-[#aff0db] bg-[#0A6FA8]/5 tabular-nums">
+                    $0 to list — pay only when booked
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80 tabular-nums">$199/yr. recurring upfront fee</td>
+                </tr>
+                <tr className="border-b border-[rgba(11,37,89,0.04)] dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-bold text-[#0B2559] dark:text-white">Traveler Identity</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0A6FA8]/5">
+                    <div className="flex items-center gap-1.5 text-[#2F6E5E] dark:text-[#aff0db] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">fingerprint</span>
+                      <span>Biometric ID Verified</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Unverified at signup</td>
+                </tr>
+                <tr className="border-b border-[rgba(11,37,89,0.04)] dark:border-white/5">
+                  <td className="p-4 sm:p-5 font-bold text-[#0B2559] dark:text-white">Professional Credentials</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0A6FA8]/5">
+                    <div className="flex items-center gap-1.5 text-[#2F6E5E] dark:text-[#aff0db] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">verified</span>
+                      <span>Official Registry/Board Verified</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Unchecked / Self-reported</td>
+                </tr>
+                <tr>
+                  <td className="p-4 sm:p-5 font-bold text-[#0B2559] dark:text-white">Booking &amp; Payments</td>
+                  <td className="p-4 sm:p-5 font-semibold text-[#0B2559] dark:text-white bg-[#0A6FA8]/5">
+                    <div className="flex items-center gap-1.5 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold">
+                      <span className="material-symbols-outlined text-[16px]">lock</span>
+                      <span>Secure Stripe Connect split</span>
+                    </div>
+                  </td>
+                  <td className="p-4 sm:p-5 opacity-80">Manual off-platform coordination</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Touch Cards (< 640px) */}
+          <div className="sm:hidden space-y-3 text-left">
+            {[
+              {
+                feature: 'Upfront Cost',
+                np: '$0 to list — pay only when booked',
+                trad: '$199/yr. recurring fee',
+                icon: 'payments',
+              },
+              {
+                feature: 'Traveler Identity',
+                np: 'Biometric ID Verified',
+                trad: 'Unverified at signup',
+                icon: 'fingerprint',
+              },
+              {
+                feature: 'Professional Credentials',
+                np: 'Official Registry/Board Verified',
+                trad: 'Unchecked / Self-reported',
+                icon: 'verified',
+              },
+              {
+                feature: 'Booking & Payments',
+                np: 'Secure Stripe Connect split',
+                trad: 'Manual off-platform coordination',
+                icon: 'lock',
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] bg-white dark:bg-[#111e33] shadow-xs"
+              >
+                <div className="text-xs font-bold uppercase tracking-wider text-[#404850] dark:text-[#93ccff] mb-2.5">
+                  {item.feature}
+                </div>
+                <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 mb-2">
+                  <div className="text-[10px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase mb-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                    Nurses Pillow
+                  </div>
+                  <div className="text-xs font-bold text-[#0B2559] dark:text-white flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[15px] text-[#2F6E5E] dark:text-[#aff0db]">{item.icon}</span>
+                    <span>{item.np}</span>
+                  </div>
+                </div>
+                <div className="px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/5 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-[10px] font-semibold uppercase text-gray-400 mb-0.5">Traditional Directories</div>
+                  <div>{item.trad}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </section>
 

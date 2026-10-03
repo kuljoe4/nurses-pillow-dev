@@ -16,9 +16,9 @@ interface HeaderProps {
   currentUser: { role: UserRole; name: string };
   isDeveloper?: boolean;
   onLogout?: () => void;
-  onLockPreview?: () => void;
   activeBooking?: BookingRequest | null;
   onOpenBookingDetail?: (booking: BookingRequest) => void;
+  onSwitchRole?: (role: UserRole) => void;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.png';
@@ -37,9 +37,9 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   isDeveloper = false,
   onLogout,
-  onLockPreview,
   activeBooking,
   onOpenBookingDetail,
+  onSwitchRole,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -221,6 +221,22 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Clinician Navigation */}
           {currentUser.role === 'nurse' && (
             <>
+              <button
+                onClick={() => onSelectTab('nurse-dashboard')}
+                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  currentTab === 'nurse-dashboard'
+                    ? isNightShiftMode
+                      ? 'bg-[#182840] text-[#93ccff] font-bold'
+                      : 'bg-[#eaedff] text-[#005684] font-bold'
+                    : isNightShiftMode
+                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
+                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
+                <span>My Dashboard</span>
+              </button>
+
               <button
                 onClick={() => onSelectTab('find-housing')}
                 className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
@@ -572,6 +588,69 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Live uptime &amp; system health metrics</div>
                   </div>
                 </button>
+
+                {/* Direct Portals & Dashboards Access */}
+                <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Portals &amp; Workspaces
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('nurse-dashboard');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    space_dashboard
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Clinician Dashboard
+                    </div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Bookings, saved stays &amp; credentials</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('host-dashboard');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    real_estate_agent
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Host Sanctuary Portal
+                    </div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Manage listings, payouts &amp; booking requests</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('admin-portal');
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
+                    admin_panel_settings
+                  </span>
+                  <div>
+                    <div className="font-bold text-[#001848] dark:text-white">
+                      Operations Hub (Admin)
+                    </div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Credential audits &amp; property approvals</div>
+                  </div>
+                </button>
               </div>
             )}
           </div>
@@ -843,6 +922,58 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   )}
 
+                  {/* Perspective / Role Switcher */}
+                  {onSwitchRole && (
+                    <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        <span>Role Perspective</span>
+                        <span className="text-[9px] text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold">One-click test</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5 text-[11px] font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchRole('nurse');
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'nurse' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                        >
+                          Clinician
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchRole('host');
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'host' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                        >
+                          Host
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchRole('super_admin');
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                        >
+                          Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSwitchRole('guest' as any);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === ('guest' as any) ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                        >
+                          Guest
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Unified Footer: Support & Log Out Aligned */}
                   <div className="pt-2.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between">
                     {onOpenSupport && (
@@ -1031,7 +1162,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (currentUser.role === 'nurse') onSelectTab('find-housing');
+                    if (currentUser.role === 'nurse') onSelectTab('nurse-dashboard');
                     else if (currentUser.role === 'host') onSelectTab('host-dashboard');
                     else if (currentUser.role === 'super_admin') onSelectTab('admin-portal');
                     setIsMobileMenuOpen(false);
@@ -1053,6 +1184,26 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Clinician Navigation */}
               {currentUser.role === 'nurse' && (
                 <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('nurse-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'nurse-dashboard'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'nurse-dashboard' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>space_dashboard</span>
+                      <span>My Dashboard</span>
+                    </div>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -1379,6 +1530,63 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
+              {/* Workspaces & Dashboards Direct Access */}
+              <div className="pt-1 mt-1 border-t border-gray-100 dark:border-[#233550]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('nurse-dashboard');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                    currentTab === 'nurse-dashboard'
+                      ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    space_dashboard
+                  </span>
+                  <span>Clinician Dashboard</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('host-dashboard');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                    currentTab === 'host-dashboard'
+                      ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                    real_estate_agent
+                  </span>
+                  <span>Host Sanctuary Portal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('admin-portal');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                    currentTab === 'admin-portal'
+                      ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
+                    admin_panel_settings
+                  </span>
+                  <span>Operations Hub (Admin)</span>
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1443,20 +1651,55 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Session Lock for Mobile (if staging is active) */}
-            {onLockPreview && (
-              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onLockPreview();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="py-2 px-3 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[15px]">lock</span>
-                  <span>Lock Preview Session</span>
-                </button>
+            {/* 5. ROLE PERSPECTIVE SWITCHER */}
+            {onSwitchRole && (
+              <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1.5">
+                <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center justify-between">
+                  <span>Role Perspective (Interactive Test)</span>
+                  <span className="text-[9px] text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold">{currentUser.role.toUpperCase()}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('nurse');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'nurse' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Clinician View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('host');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'host' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Host View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('super_admin');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Admin View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSwitchRole('guest' as UserRole);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'guest' as UserRole ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Guest View
+                  </button>
+                </div>
               </div>
             )}
 

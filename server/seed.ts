@@ -69,6 +69,30 @@ async function seed() {
         VALUES ${placeholders.join(', ')}
         ON CONFLICT (id) DO NOTHING;
       `, values);
+
+      const defaultImages = [
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
+      ];
+
+      let photoValues: any[] = [];
+      let photoPlaceholders: string[] = [];
+      let pIdx = 1;
+      for (const l of NC_LISTING_SEEDS) {
+        defaultImages.forEach((img, index) => {
+          photoPlaceholders.push(`($${pIdx++}, $${pIdx++}, $${pIdx++}, $${pIdx++})`);
+          photoValues.push(l.id, img, index, index === 0);
+        });
+      }
+
+      if (photoPlaceholders.length > 0) {
+        await db.query(`
+          INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+          VALUES ${photoPlaceholders.join(', ')}
+          ON CONFLICT DO NOTHING;
+        `, photoValues);
+      }
     }
 
     console.log('Seeding Complete');

@@ -186,7 +186,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
-      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-start"
+      className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-start"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -197,7 +197,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         initial={{ opacity: 0, scale: 0.96, y: 14 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-        className={`w-full max-w-lg my-auto rounded-3xl p-6 sm:p-8 shadow-lg relative border transition-colors ${
+        className={`w-full max-w-lg my-auto rounded-3xl p-5 sm:p-8 shadow-lg relative border transition-colors ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
             : 'bg-white border-[rgba(11,37,89,0.1)] text-[#001848]'

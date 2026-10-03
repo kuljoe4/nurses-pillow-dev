@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { db } from '../services/database';
 const ListingDetailModal = React.lazy(() => import('./ListingDetailModal').then((m) => ({ default: m.ListingDetailModal })));
 const HealthcareAmenitiesFilterModal = React.lazy(() => import('./HealthcareAmenitiesFilterModal').then((m) => ({ default: m.HealthcareAmenitiesFilterModal })));
@@ -253,10 +252,8 @@ useBodyScrollLock(isGsaModalOpen);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
-    // In a real app we would receive real properties from App via context/props.
-    // For now we map to the existing mock to preserve the component.
     const dbListings = db.getListings() || [];
-    let list = dbListings.length > 0 ? dbListings : [...MOCK_LISTINGS];
+    let list = dbListings;
 
     // ⚡ Bolt Performance Optimization: Single-pass early return filtering
     // Replaced chained .filter() arrays (O(M*N)) with a single loop (O(N))
@@ -326,7 +323,8 @@ useBodyScrollLock(isGsaModalOpen);
   ]);
 
   const selectedMapListing = useMemo(() => {
-    return MOCK_LISTINGS.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || MOCK_LISTINGS[0];
+    if (!selectedMapListingId) return null;
+    return filteredListings.find((l: HousingListing) => l.id === selectedMapListingId) || filteredListings[0] || null;
   }, [selectedMapListingId, filteredListings]);
 
   const currentMapListingIndex = useMemo(() => {
@@ -623,7 +621,8 @@ useBodyScrollLock(isGsaModalOpen);
                 </button>
               </div>
 
-              <div className="inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840]">
+              {/* Desktop View Mode Switcher */}
+              <div className="hidden lg:inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840]">
                 <button
                   type="button"
                   onClick={() => {
@@ -638,7 +637,7 @@ useBodyScrollLock(isGsaModalOpen);
                   title="View split map and listings"
                 >
                   <span className="material-symbols-outlined text-[15px]">vertical_split</span>
-                  <span className="hidden sm:inline">Split</span>
+                  <span>Split</span>
                 </button>
                 <button
                   type="button"
@@ -654,7 +653,7 @@ useBodyScrollLock(isGsaModalOpen);
                   title="Expand map to fullscreen (hide list)"
                 >
                   <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span className="hidden sm:inline">Full Map</span>
+                  <span>Full Map</span>
                 </button>
                 <button
                   type="button"
@@ -670,7 +669,40 @@ useBodyScrollLock(isGsaModalOpen);
                   title="View full grid layout"
                 >
                   <span className="material-symbols-outlined text-[15px]">grid_view</span>
-                  <span className="hidden sm:inline">Grid</span>
+                  <span>Grid</span>
+                </button>
+              </div>
+
+              {/* Mobile & Medium Device Segmented Switcher (< lg) */}
+              <div className="lg:hidden inline-flex items-center p-0.5 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                <button
+                  type="button"
+                  onClick={() => setIsMapExpanded(false)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    !isMapExpanded
+                      ? 'bg-[#0A6FA8] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                  aria-pressed={!isMapExpanded}
+                >
+                  <span className="material-symbols-outlined text-[15px]">list</span>
+                  <span>List ({filteredListings.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode('split-map');
+                    setIsMapExpanded(true);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all duration-150 ${
+                    isMapExpanded
+                      ? 'bg-[#0A6FA8] text-white shadow-xs'
+                      : 'text-[#404850] dark:text-[#c0c7d1]'
+                  }`}
+                  aria-pressed={isMapExpanded}
+                >
+                  <span className="material-symbols-outlined text-[15px]">map</span>
+                  <span>Map</span>
                 </button>
               </div>
             </div>
@@ -1266,8 +1298,8 @@ useBodyScrollLock(isGsaModalOpen);
                   id="split-map-canvas"
                   className={`${
                     isMapExpanded
-                      ? 'w-full h-[calc(100vh-130px)] min-h-[640px]'
-                      : 'lg:col-span-5 relative lg:sticky lg:top-14 lg:h-[calc(100vh-56px)] border-l'
+                      ? 'w-full h-[calc(100dvh-135px)] min-h-[520px]'
+                      : 'hidden lg:flex lg:col-span-5 relative lg:sticky lg:top-14 lg:h-[calc(100vh-56px)] border-l'
                   } bg-[#eef3f9] dark:bg-[#0a1424] border-[rgba(11,37,89,0.08)] dark:border-[#233550] p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition-all duration-300`}
                 >
                   {/* Map Canvas Header Overlay */}
@@ -1380,7 +1412,7 @@ useBodyScrollLock(isGsaModalOpen);
                           </div>
                         )}
                         <img
-                          src={selectedMapListing.images[0]}
+                          src={selectedMapListing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                           alt={selectedMapListing.title}
                           className="w-14 h-14 rounded-xl object-cover shrink-0"
                         />
@@ -1438,6 +1470,29 @@ useBodyScrollLock(isGsaModalOpen);
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Mobile & Medium Device Floating Map / List Toggle Button */}
+            {viewMode === 'split-map' && (
+              <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !isMapExpanded;
+                    setIsMapExpanded(next);
+                    if (next) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-[#001848] dark:bg-[#0A6FA8] text-white text-xs font-bold shadow-[0_8px_24px_rgba(11,37,89,0.3)] border border-white/20 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer select-none"
+                  aria-label={isMapExpanded ? "Show listing cards list" : "Show interactive hospital map"}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {isMapExpanded ? 'format_list_bulleted' : 'map'}
+                  </span>
+                  <span>{isMapExpanded ? `Show List (${filteredListings.length})` : `Show Map (${filteredListings.length})`}</span>
+                </button>
               </div>
             )}
 

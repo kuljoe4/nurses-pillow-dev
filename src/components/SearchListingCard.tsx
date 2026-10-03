@@ -79,7 +79,7 @@ export const SearchListingCard: React.FC<SearchListingCardProps> = React.memo(({
       {/* 1. VISUAL PHOTO BANNER */}
       <div className={`relative w-full overflow-hidden bg-gray-100 dark:bg-[#0c182c] ${isGrid ? 'h-52 sm:h-56' : 'h-44 sm:h-48'}`}>
         <img
-          src={listing.images[0]}
+          src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'}
           alt={listing.title}
           loading="lazy"
           decoding="async"

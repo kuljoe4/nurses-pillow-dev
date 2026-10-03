@@ -40,6 +40,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [hostContactStatus, setHostContactStatus] = useState<string | null>(null);
 
   // ⚡ Bolt Performance Optimization: Wrapped with useCallback to provide a stable reference
   // to PillowSaveButton which is wrapped in React.memo, preventing unnecessary re-renders.
@@ -110,10 +111,10 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
   // Sample photo mosaic collection if listing only has 1 or 2
   const galleryPhotos = [
-    listing.images[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
-    listing.images[1] || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
-    listing.images[2] || 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=80',
-    listing.images[3] || 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
+    listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
+    listing.images?.[1] || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    listing.images?.[2] || 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=80',
+    listing.images?.[3] || 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80',
   ];
 
@@ -184,17 +185,48 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
 
         {/* 5-Photo Mosaic Grid Layout */}
         <div className="relative mb-6 rounded-2xl overflow-hidden shadow-sm bg-gray-100 dark:bg-gray-800">
-          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96">
+          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-2 h-72 sm:h-96 relative">
             <div className="md:col-span-2 md:row-span-2 relative overflow-hidden group">
               <img
-                src={galleryPhotos[0]}
+                src={galleryPhotos[selectedImageIndex] || galleryPhotos[0]}
                 alt="Primary view"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                onClick={() => setSelectedImageIndex(0)}
+                onClick={() => setSelectedImageIndex((prev) => (prev + 1) % galleryPhotos.length)}
               />
               <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-white/90 dark:bg-black/80 text-xs font-semibold backdrop-blur-xs flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px] text-[#005684]">nights_stay</span>
                 <span>Daytime Sleep Sanctuary Guarantee</span>
+              </div>
+
+              {/* Mobile Photo Carousel Controls (< md) */}
+              <div className="md:hidden absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none z-10">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImageIndex((prev) => (prev > 0 ? prev - 1 : galleryPhotos.length - 1));
+                  }}
+                  className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto backdrop-blur-xs cursor-pointer shadow-md"
+                  aria-label="Previous photo"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImageIndex((prev) => (prev < galleryPhotos.length - 1 ? prev + 1 : 0));
+                  }}
+                  className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center pointer-events-auto backdrop-blur-xs cursor-pointer shadow-md"
+                  aria-label="Next photo"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+              </div>
+
+              {/* Photo Index Counter */}
+              <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-black/70 text-white text-[11px] font-bold backdrop-blur-xs tabular-nums select-none">
+                {selectedImageIndex + 1} / {galleryPhotos.length}
               </div>
             </div>
             {galleryPhotos.slice(1, 5).map((photo, idx) => (
@@ -210,10 +242,11 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
           </div>
           <button
             type="button"
+            onClick={() => setSelectedImageIndex((prev) => (prev + 1) % galleryPhotos.length)}
             className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-black/80 text-xs font-bold backdrop-blur-xs shadow-md flex items-center gap-1.5 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">grid_view</span>
-            <span>View all 24 photos</span>
+            <span>View all photos ({galleryPhotos.length})</span>
           </button>
         </div>
 
@@ -222,7 +255,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
           {/* Main Details (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Host Mini-Profile Banner */}
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex items-center justify-between gap-4">
+            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div className="relative shrink-0">
                   <img
@@ -247,14 +280,26 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => alert('Opening in-app chat thread with Host Sarah M.')}
-                className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer shrink-0"
-              >
-                Contact Sarah
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHostContactStatus('Connecting you with Host Sarah M...');
+                    setTimeout(() => setHostContactStatus(null), 3500);
+                  }}
+                  className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer shrink-0"
+                >
+                  Contact Sarah
+                </button>
+              </div>
             </div>
+
+            {hostContactStatus && (
+              <div className="p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] text-xs font-bold flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                <span>{hostContactStatus}</span>
+              </div>
+            )}
 
             {/* Unit Overview Stats Pills */}
             <div className="flex flex-wrap gap-2 text-xs">
@@ -644,6 +689,34 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Sticky Booking Bar (< lg) */}
+        <div className="lg:hidden sticky bottom-0 -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-3.5 sm:p-4 bg-white/95 dark:bg-[#0B1626]/95 backdrop-blur-md border-t border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex items-center justify-between gap-3 z-30 shadow-lg mt-6">
+          <div>
+            <div className="text-base sm:text-lg font-black text-[#0B2559] dark:text-white tabular-nums">
+              ${activeMonthlyRate.toLocaleString()}<span className="text-xs font-normal text-gray-500"> / mo</span>
+            </div>
+            <div className="text-[10px] text-[#2F6E5E] dark:text-[#aff0db] font-semibold flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]">verified</span>
+              <span>$0 fee • Shift-ready</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (onRequestToBook) {
+                const bookingListing = selectedRoom
+                  ? { ...listing, monthlyRate: activeMonthlyRate, title: `${listing.title} (${selectedRoom.name})` }
+                  : listing;
+                onRequestToBook(bookingListing);
+              }
+            }}
+            className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-[16px]">shield</span>
+            <span>Request to book</span>
+          </button>
         </div>
       </motion.div>
     </motion.div>

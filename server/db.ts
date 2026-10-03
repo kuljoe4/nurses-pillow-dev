@@ -152,6 +152,17 @@ export const db = {
           );
           CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
           CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
+
+          ALTER TABLE bookings
+          ADD COLUMN IF NOT EXISTS start_date DATE,
+          ADD COLUMN IF NOT EXISTS end_date DATE,
+          ADD COLUMN IF NOT EXISTS traveler_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS traveler_user_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS cleaning_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS pet_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS traveler_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS listing_title VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255);
         `);
         return;
       }
@@ -203,6 +214,17 @@ export const db = {
           );
           CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
           CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
+
+          ALTER TABLE bookings
+          ADD COLUMN IF NOT EXISTS start_date DATE,
+          ADD COLUMN IF NOT EXISTS end_date DATE,
+          ADD COLUMN IF NOT EXISTS traveler_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS traveler_user_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS cleaning_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS pet_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS traveler_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS listing_title VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255);
         `);
       } else {
         console.warn(`[PostgreSQL] Live database not yet connected: ${lastConnectionError || 'DATABASE_URL pending'}`);

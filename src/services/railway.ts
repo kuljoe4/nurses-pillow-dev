@@ -261,6 +261,7 @@ class RailwayDatabaseManager {
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT TRUE;
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS cancellation_policy VARCHAR(50) DEFAULT 'flexible';
         ALTER TABLE listings ADD COLUMN IF NOT EXISTS pet_fee DECIMAL(10, 2) DEFAULT 0.00;
+        ALTER TABLE listings ADD COLUMN IF NOT EXISTS parking_fee DECIMAL(10, 2) DEFAULT 0.00;
 
         -- Set default value for security_deposit_amount or make the column nullable
         ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;
@@ -290,6 +291,8 @@ class RailwayDatabaseManager {
           host_id VARCHAR(255) NOT NULL,
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
+
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parking_fee DECIMAL(10, 2) DEFAULT 0.00;
 
         CREATE TABLE IF NOT EXISTS audit_logs (
           id VARCHAR(255) PRIMARY KEY,
@@ -349,6 +352,30 @@ class RailwayDatabaseManager {
              ON CONFLICT (id) DO NOTHING;`,
             lParams
           );
+
+          const defaultImages = [
+            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
+          ];
+          const photoParams: any[] = [];
+          const photoValues: string[] = [];
+          let pIdx = 1;
+          for (const l of NC_LISTING_SEEDS) {
+            defaultImages.forEach((img, index) => {
+              photoValues.push(`($${pIdx++}, $${pIdx++}, $${pIdx++}, $${pIdx++})`);
+              photoParams.push(l.id, img, index, index === 0);
+            });
+          }
+
+          if (photoValues.length > 0) {
+            await this.pool.query(
+              `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
+               VALUES ${photoValues.join(', ')}
+               ON CONFLICT DO NOTHING;`,
+              photoParams
+            );
+          }
         }
         console.log('[Railway DB] ✅ Initial seed sync to Railway complete.');
       }

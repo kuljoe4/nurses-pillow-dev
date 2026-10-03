@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { HousingListing } from '../types';
-import { MOCK_LISTINGS } from '../data/mockData';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface SavedListingsModalProps {
@@ -39,7 +38,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const sourceListings = allListings && allListings.length > 0 ? allListings : MOCK_LISTINGS;
+  const sourceListings = allListings && allListings.length > 0 ? allListings : [];
   const savedListings = sourceListings.filter((item) =>
     savedListingIds.includes(item.id)
   );
@@ -123,7 +122,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
                   }}
                 >
                   <img
-                    src={listing.images[0]}
+                    src={listing.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80'}
                     alt={listing.title}
                     className="w-20 h-20 rounded-xl object-cover shrink-0"
                   />
