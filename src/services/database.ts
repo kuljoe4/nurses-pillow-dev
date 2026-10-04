@@ -830,6 +830,17 @@ class DatabaseService {
         return this.auditLogs;
       }
 
+      // Check user role before fetching to prevent 403 Forbidden errors
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.role !== 'admin' && payload.role !== 'super_admin') {
+          this.auditLogs = [];
+          return this.auditLogs;
+        }
+      } catch (e) {
+        // Ignore JSON parse errors, just try to fetch
+      }
+
       const headers: Record<string, string> = {};
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;

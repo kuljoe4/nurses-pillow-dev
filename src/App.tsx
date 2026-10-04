@@ -379,7 +379,7 @@ export default function App() {
         clinicianName: "Sarah Jenkins",
         clinicianTitle: "BSN, RN — PICU",
         clinicianAvatar:
-          "https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80",
+          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
         clinicianPhone: "+1 (919) 555-0198",
         hospitalName: "UCSF Medical Center - Mission Bay",
         unitSpecialty: "Pediatric ICU",

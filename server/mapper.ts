@@ -86,7 +86,7 @@ export function mapDbBookingToFrontend(b: any) {
     listingTitle: b.listing_title || b.listing_title_from_db || 'Sanctuary Suite',
     clinicianName: b.traveler_name || b.traveler_name_from_db || 'Sarah Jenkins, RN',
     clinicianTitle: 'BSN, RN — Travel Clinician',
-    clinicianAvatar: 'https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80',
+    clinicianAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
     clinicianPhone: b.traveler_phone_from_db || '+1 (919) 555-0198',
     hospitalName: b.hospital_name || 'Duke University Hospital',
     unitSpecialty: 'Critical Care / ICU',

@@ -143,7 +143,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         id: `np-book-${Date.now()}`,
         clinicianName: currentUser?.name || 'Travel Clinician',
         clinicianTitle: verificationData?.professionSpecialty || 'BSN, RN (Travel Specialist)',
-        clinicianAvatar: 'https://images.unsplash.com/photo-1594824813753-488b3f24bf7c?auto=format&fit=crop&w=256&q=80',
+        clinicianAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
         clinicianPhone: verificationData?.mobilePhone || '+1 (919) 555-0198',
         hospitalName: listing.nearestHospital || 'Assignment Hospital',
         unitSpecialty: verificationData?.professionSpecialty?.includes('PICU') ? 'Pediatric ICU' : 'Clinical Rotation',
