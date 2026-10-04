@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { UserRole } from '../types';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
@@ -19,8 +19,6 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
 }) => {
   useBodyScrollLock(isOpen);
 
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
-
   // Close modal on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,15 +29,6 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  // Focus the confirm or cancel button when opened
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        confirmButtonRef.current?.focus();
-      }, 50);
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -125,7 +114,6 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
           </button>
           <button
             id="confirm-logout-btn"
-            ref={confirmButtonRef}
             type="button"
             onClick={onConfirmLogout}
             className="px-5 py-2 rounded-full bg-[#A8452E] hover:bg-[#933C27] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#A8452E]"

@@ -4,7 +4,7 @@ import { VerificationFormData, VerificationStepId } from '../types';
 import { ClinicalDatePicker } from './ClinicalDatePicker';
 import { VerificationStepperNav } from './VerificationStepperNav';
 
-const STRIPE_PUBLISHABLE_KEY = process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
+const STRIPE_PUBLISHABLE_KEY = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 interface IdentityStepProps {

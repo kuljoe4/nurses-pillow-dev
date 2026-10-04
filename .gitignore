@@ -7,6 +7,32 @@ coverage/
 .env*
 !.env.example
 
+# Test Artifacts & Reports
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Vite & Bundler Caches
+.vite/
+dist-ssr/
+
+# TypeScript Incremental Build Information
+*.tsbuildinfo
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Thumbnail & Temporary Files
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+
 # Temporary utility and merge scripts
 all_remote_branches.txt
 check_merges.py
