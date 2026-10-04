@@ -535,6 +535,7 @@ async function startServer() {
   // In-memory commute cache (15-min TTL) to prevent redundant Google Maps billing
   const commuteCache = new Map<string, { data: any; timestamp: number }>();
   const COMMUTE_CACHE_TTL = 15 * 60 * 1000;
+  const MAX_COMMUTE_CACHE_SIZE = 2000;
 
   // Google Maps polyline encoding helper
   function encodeGooglePolyline(points: { lat: number; lng: number }[]): string {
@@ -667,6 +668,13 @@ async function startServer() {
                 steps,
               };
 
+              if (commuteCache.size >= MAX_COMMUTE_CACHE_SIZE) {
+                const firstKey = commuteCache.keys().next().value;
+                if (firstKey !== undefined) {
+                  commuteCache.delete(firstKey);
+                }
+              }
+
               commuteCache.set(cacheKey, { data: result, timestamp: Date.now() });
               return res.json(result);
             }
@@ -789,6 +797,13 @@ async function startServer() {
         steps,
       };
 
+      if (commuteCache.size >= MAX_COMMUTE_CACHE_SIZE) {
+        const firstKey = commuteCache.keys().next().value;
+        if (firstKey !== undefined) {
+          commuteCache.delete(firstKey);
+        }
+      }
+
       commuteCache.set(cacheKey, { data: result, timestamp: Date.now() });
       res.json(result);
     } catch (err: any) {
@@ -823,7 +838,13 @@ async function startServer() {
         l.cleaning_fee, l.is_published as is_active, l.cancellation_policy as cancellation_tier, l.pet_fee,
         COALESCE(
           (
-            SELECT json_agg(lp.photo_url ORDER BY lp.display_order ASC)
+            SELECT json_agg(
+              CASE
+                WHEN lp.photo_url LIKE 'data:image/%' THEN '/api/photos/' || lp.id
+                ELSE lp.photo_url
+              END
+              ORDER BY lp.display_order ASC
+            )
             FROM listing_photos lp
             WHERE lp.listing_id = l.id
           ),
@@ -1475,7 +1496,13 @@ async function startServer() {
               photo.displayOrder === 0 ? true : false
             ]
           );
-          uploadedPhotos.push(result.rows[0]);
+
+          const savedPhoto = result.rows[0];
+          // Replace raw base64 data in the response payload with the lightweight proxy URL
+          if (savedPhoto.photo_url && savedPhoto.photo_url.startsWith('data:image/')) {
+            savedPhoto.photo_url = `/api/photos/${savedPhoto.id}`;
+          }
+          uploadedPhotos.push(savedPhoto);
         }
 
         res.status(201).json({ photos: uploadedPhotos });
@@ -1486,13 +1513,65 @@ async function startServer() {
     }
   );
 
+  // Endpoint to get a specific photo directly (decodes base64 payload to binary and streams it)
+  app.get("/api/photos/:id", async (req, res) => {
+    try {
+      const photoId = req.params.id;
+
+      const result = await db.query(
+        `SELECT photo_url FROM listing_photos WHERE id = $1`,
+        [photoId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).send("Photo not found");
+      }
+
+      const photoUrl = result.rows[0].photo_url;
+
+      if (photoUrl && photoUrl.startsWith('data:image/')) {
+        // Base64 handling
+        const matches = photoUrl.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
+
+        if (!matches || matches.length !== 3) {
+           return res.status(500).send("Invalid image format in database");
+        }
+
+        const extension = matches[1];
+        const base64Data = matches[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        res.setHeader('Content-Type', `image/${extension}`);
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+        res.send(buffer);
+      } else {
+        // Handle normal URL string if the database doesn't actually have base64
+        if(photoUrl) {
+           res.redirect(photoUrl);
+        } else {
+           res.status(404).send("Photo not found");
+        }
+      }
+
+    } catch (error: any) {
+      console.error("Error serving photo:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
   // Endpoint to get listing photos
   app.get("/api/listings/:id/photos", async (req, res) => {
     try {
       const listingId = req.params.id;
 
       const result = await db.query(
-        `SELECT id, photo_url as url, display_order as "displayOrder", is_cover as "isCover"
+        `SELECT id,
+                CASE
+                  WHEN photo_url LIKE 'data:image/%' THEN '/api/photos/' || id
+                  ELSE photo_url
+                END as url,
+                display_order as "displayOrder",
+                is_cover as "isCover"
          FROM listing_photos
          WHERE listing_id = $1
          ORDER BY display_order ASC`,
