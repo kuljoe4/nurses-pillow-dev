@@ -14,3 +14,7 @@
 ## 2024-10-02 - Added ARIA label to password visibility toggle
 **Learning:** Found an icon-only button lacking an accessible label in AuthModal.tsx. Icon-only buttons must always have an aria-label to be readable by screen readers.
 **Action:** Always verify icon-only buttons (`<button><span class="material-symbols-outlined">...</span></button>`) have dynamic or static `aria-label`s.
+
+## 2025-10-27 - Icon-only buttons accessibility
+**Learning:** Added `aria-label` to three icon-only buttons in `SearchListingCard.tsx`. Icon-only buttons must always have an aria-label to be readable by screen readers.
+**Action:** Always verify icon-only buttons (`<button><span class="material-symbols-outlined">...</span></button>`) have dynamic or static `aria-label`s.
