@@ -310,7 +310,7 @@ export default function App() {
   };
 
   // Confirmed Logout handler: clears all active user sessions and resets state to Guest role
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     // 1. Clear session storage items related to user and developer sessions
     sessionStorage.removeItem("np_staging_user");
     sessionStorage.removeItem("np_user_session");
@@ -321,8 +321,10 @@ export default function App() {
     localStorage.removeItem("np_auth_token");
     localStorage.removeItem("np_user_email");
 
-    // Clear backend auth cookie
-    fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    // Clear backend auth cookie and await to prevent race conditions on re-render
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch((error) => {
+      console.error("[Logout Error] Failed to clear backend authentication cookie:", error);
+    });
 
     // 2. Reset currentUser state to Guest and clear active state
     setCurrentUser({ role: "guest", name: "Guest User" });
