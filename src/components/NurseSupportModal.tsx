@@ -43,7 +43,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/60 backdrop-blur-sm flex justify-center items-start"
+      className="fixed inset-0 z-[150] overflow-y-auto p-4 sm:p-6 pt-16 sm:pt-20 bg-black/60 backdrop-blur-sm flex justify-center items-start"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

@@ -1615,7 +1615,7 @@ useBodyScrollLock(isGsaModalOpen);
       {/* Interactive Clinical Date Range Picker Modal */}
       <AnimatePresence>
         {isDateRangeModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[150] flex items-start justify-center p-4 pt-16 sm:pt-20 bg-black/40 backdrop-blur-xs overflow-y-auto">
             <div
               className="fixed inset-0"
               onClick={() => setIsDateRangeModalOpen(false)}
@@ -1647,7 +1647,7 @@ useBodyScrollLock(isGsaModalOpen);
       {/* GSA Stipend Audit Modal */}
       {isGsaModalOpen && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/70 backdrop-blur-xs flex justify-center items-center"
+          className="fixed inset-0 z-[150] overflow-y-auto p-4 sm:p-6 pt-16 sm:pt-20 bg-black/70 backdrop-blur-xs flex justify-center items-start"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsGsaModalOpen(false);

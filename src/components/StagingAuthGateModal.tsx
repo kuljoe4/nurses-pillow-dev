@@ -54,7 +54,7 @@ export const StagingAuthGateModal: React.FC<StagingAuthGateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#0B2559]/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[150] overflow-y-auto pt-16 sm:pt-20 bg-[#0B2559]/80 backdrop-blur-sm flex items-start justify-center p-4">
       <div
         className={`w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-xl border transition-colors ${
           isNightShiftMode

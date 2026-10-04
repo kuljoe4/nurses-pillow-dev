@@ -279,7 +279,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/60 backdrop-blur-xs flex justify-center items-start"
+      className="fixed inset-0 z-[150] overflow-y-auto p-4 sm:p-6 pt-16 sm:pt-20 bg-black/60 backdrop-blur-xs flex justify-center items-start"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sheets-modal-title"
@@ -803,7 +803,7 @@ export const GoogleSheetsSyncModal: React.FC<GoogleSheetsSyncModalProps> = ({
         {/* Explicit User Confirmation Dialog (MANDATORY per Workspace guidelines) */}
         {showConfirmModal && (
           <div
-            className="fixed inset-0 z-60 bg-black/50 backdrop-blur-xs overflow-y-auto p-4 flex justify-center items-center"
+            className="fixed inset-0 z-[160] bg-black/50 backdrop-blur-xs overflow-y-auto p-4 pt-16 flex justify-center items-center"
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"

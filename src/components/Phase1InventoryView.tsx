@@ -232,7 +232,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
       {/* Modal for detailed screen preview if requested */}
       {selectedScreenForDetail && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs overflow-y-auto p-4 sm:p-6 flex justify-center items-start"
+          className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-xs overflow-y-auto p-4 sm:p-6 pt-16 sm:pt-20 flex justify-center items-start"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedScreenForDetail(null);

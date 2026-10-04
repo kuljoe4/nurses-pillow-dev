@@ -47,7 +47,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-detail-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-[150] flex items-start justify-center p-3 sm:p-4 pt-16 sm:pt-20 bg-black/60 backdrop-blur-xs transition-opacity duration-200 overflow-y-auto"
     >
       <div
         className={`w-full max-w-xl rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(11,37,89,0.2)] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] overflow-hidden transition-all duration-200 ${

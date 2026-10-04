@@ -45,7 +45,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-xs"
+      className="fixed inset-0 z-[150] flex items-center justify-end bg-black/50 backdrop-blur-xs"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

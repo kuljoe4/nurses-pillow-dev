@@ -22,6 +22,7 @@ import { ContactStep } from "./components/ContactStep";
 import { WorkContractStep } from "./components/WorkContractStep";
 import { FindHousingView } from "./components/FindHousingView";
 import { stripeConnect } from "./services/stripeConnect";
+import { db } from "./services/database";
 import { StagingAuthGateModal } from "./components/StagingAuthGateModal";
 import { Milestone2ScopeGate } from "./components/Milestone2ScopeGate";
 import { Breadcrumbs } from "./components/Breadcrumbs";
@@ -622,7 +623,6 @@ export default function App() {
   useEffect(() => {
     const initializeDb = async () => {
       try {
-        const { db } = await import("./services/database");
         await Promise.all([
           db.fetchHospitals(),
           db.fetchListings(),
