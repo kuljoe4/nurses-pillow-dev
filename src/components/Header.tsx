@@ -1055,7 +1055,6 @@ export const Header: React.FC<HeaderProps> = ({
       >
         {/* Backdrop Overlay with smooth fade */}
         <div
-<<<<<<< HEAD
           className={`absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
             isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
           }`}
@@ -1072,13 +1071,6 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
           style={{
             maxHeight: `calc(100dvh - ${headerHeight+ 8}px)`,
-=======
-          className="lg:hidden fixed inset-x-0 top-20 h-[calc(100vh-80px)] bg-black/40 backdrop-blur-xs z-[90] overflow-y-auto"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setIsMobileMenuOpen(false);
-            }
->>>>>>> b5ed8df (fix: resolve logo, custom contract duration, and mobile menu visibility)
           }}
           onClick={(e) => e.stopPropagation()}
         >
