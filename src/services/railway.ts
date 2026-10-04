@@ -269,6 +269,16 @@ class RailwayDatabaseManager {
         -- Sanitize existing listings records to enforce security_deposit defaults
         UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;
 
+        CREATE TABLE IF NOT EXISTS listing_photos (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+            photo_url TEXT NOT NULL,
+            caption VARCHAR(255),
+            display_order INT DEFAULT 0,
+            is_cover BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
         CREATE TABLE IF NOT EXISTS bookings (
           id VARCHAR(255) PRIMARY KEY,
           listing_id VARCHAR(255) NOT NULL,
