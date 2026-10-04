@@ -10,3 +10,6 @@
 ## 2025-10-04 - [Memoize Complex Computations In List Filtering]
 **Learning:** Found `calculateCommuteDuration` (which involves Haversine distance and complex string matching calculations) being called inside array `.filter()` and `useMemo` hooks for every element against every selected hospital. This led to thousands of identical redundant calculations during search filtering.
 **Action:** Always memoize computationally heavy functions that are called inside list iterators with a bounded Map cache to reduce complexity from O(M * N) recalculations to O(1) lookups.
+## 2026-10-04 - [Optimize Payload Size for Base64 Images]
+**Learning:** Found raw base64 string payloads stored in `photo_url` column being sent directly via `json_agg` inside the `/api/listings` endpoint. This resulted in massive data payloads and bloated network requests which drove up memory consumption on both Node process and PostgreSQL instance.
+**Action:** Replaced direct base64 string fetching with proxy endpoints (`GET /api/photos/:id`) and configured PostgreSQL to return the proxy URL strings instead. This streams the binary response with caching directly to the client.
