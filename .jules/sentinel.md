@@ -6,3 +6,8 @@
 **Vulnerability:** A hardcoded, insecure JWT secret fallback ('nurses_pillow_secret_2026') was present in 'src/server/phoneAuthMiddleware.ts', bypassing standard environment configurations.
 **Learning:** Middleware initialized independently of the main app lifecycle may inadvertently duplicate or loosen environment validation checks, leading to mismatched fallback credentials across services.
 **Prevention:** Ensure all services and middleware within a codebase source their environment variables and security fallbacks from a centralized, unified initialization script or explicitly mirror the main application's fail-safe behavior.
+
+## 2026-10-04 - Secure Random Value Generation
+**Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used to generate sensitive security tokens including email verification PINs, SMS OTPs, and Twilio Session IDs. This makes tokens predictable and vulnerable to brute-force or sequencing attacks.
+**Learning:** Both server-side Express routes and isomorphic API services were relying on `Math.floor(100000 + Math.random() * 900000)` for OTP generation.
+**Prevention:** Always use cryptographically secure pseudo-random number generators (CSPRNG). Use `crypto.randomInt()` or `crypto.randomBytes()` in Node.js environments, and `window.crypto.getRandomValues()` in browser environments.
