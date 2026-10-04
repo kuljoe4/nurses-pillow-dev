@@ -279,6 +279,9 @@ export function getListingCoordinates(listing: {
   };
 }
 
+const commuteDurationCache = new Map<string, CommuteCalculationResult>();
+const MAX_COMMUTE_CACHE_SIZE = 2000;
+
 /**
  * Calculates commute duration, drive times, transit estimates, and route details.
  */
@@ -293,6 +296,11 @@ export function calculateCommuteDuration(
   },
   selectedHospitalQuery: string
 ): CommuteCalculationResult {
+  const cacheKey = `${listing.id}_${(selectedHospitalQuery || '').toLowerCase()}`;
+  if (commuteDurationCache.has(cacheKey)) {
+    return commuteDurationCache.get(cacheKey)!;
+  }
+
   const hospital = resolveHospitalCoordinates(selectedHospitalQuery);
   const listingCoords = getListingCoordinates(listing);
 
@@ -363,7 +371,7 @@ export function calculateCommuteDuration(
   const nightDepHour = nightBuffer > 60 ? 5 : 6;
   const nightShiftDepartureEstimate = `${nightDepHour}:${nightDepMinute.toString().padStart(2, '0')} PM (for 7 PM shift)`;
 
-  return {
+  const result = {
     hospitalName: hospital.name,
     hospitalShortName: hospital.shortName,
     distanceMiles,
@@ -377,4 +385,15 @@ export function calculateCommuteDuration(
     nightShiftDepartureEstimate,
     travelModeSummary: `${calculatedDriveMinutes} min drive • ${distanceMiles} mi to ${hospital.shortName}`,
   };
+
+  if (commuteDurationCache.size >= MAX_COMMUTE_CACHE_SIZE) {
+    const firstKey = commuteDurationCache.keys().next().value;
+    if (firstKey !== undefined) {
+      commuteDurationCache.delete(firstKey);
+    }
+  }
+
+  commuteDurationCache.set(cacheKey, result);
+
+  return result;
 }

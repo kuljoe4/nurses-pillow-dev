@@ -7,3 +7,6 @@
 ## 2024-10-03 - [GoogleHospitalAutocomplete Debounce Optimization]
 **Learning:** `GoogleHospitalAutocomplete` uses the Places API via `placesLibrary?.AutocompleteSuggestion.fetchAutocompleteSuggestions` directly in the `handleInputChange` handler, which fires on every keystroke (`onChange`). This results in unnecessary network requests and API quota usage for every letter typed.
 **Action:** Implement a standard debounce pattern (e.g., using `setTimeout`) in the `handleInputChange` to reduce API calls to the Google Maps Places API, significantly improving performance and reducing quota.
+## 2025-10-04 - [Memoize Complex Computations In List Filtering]
+**Learning:** Found `calculateCommuteDuration` (which involves Haversine distance and complex string matching calculations) being called inside array `.filter()` and `useMemo` hooks for every element against every selected hospital. This led to thousands of identical redundant calculations during search filtering.
+**Action:** Always memoize computationally heavy functions that are called inside list iterators with a bounded Map cache to reduce complexity from O(M * N) recalculations to O(1) lookups.
