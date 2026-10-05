@@ -13,3 +13,6 @@
 ## 2026-10-04 - [Optimize Payload Size for Base64 Images]
 **Learning:** Found raw base64 string payloads stored in `photo_url` column being sent directly via `json_agg` inside the `/api/listings` endpoint. This resulted in massive data payloads and bloated network requests which drove up memory consumption on both Node process and PostgreSQL instance.
 **Action:** Replaced direct base64 string fetching with proxy endpoints (`GET /api/photos/:id`) and configured PostgreSQL to return the proxy URL strings instead. This streams the binary response with caching directly to the client.
+## 2026-10-05 - [Single-Pass Iteration for Multiple Metric Counts]
+**Learning:** Found an O(M*N) anti-pattern in `Phase1InventorySummaryTab.tsx` where `.filter().length` was called 17 times inside a `useMemo` block to calculate summary statistics.
+**Action:** Replace multiple chained/independent `.filter()` array operations that iterate over the same dataset with a single O(N) loop (e.g. `reduce` or `for...of`) that increments metric counters.
