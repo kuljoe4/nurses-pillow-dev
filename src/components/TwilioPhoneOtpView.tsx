@@ -83,13 +83,14 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
 
   const handleSavePhone = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phoneDraft && phoneDraft.trim().length >= 10) {
-      const cleaned = phoneDraft.trim();
-      setPhoneNumber(cleaned);
+    const cleanPhone = (phoneDraft || '').replace(/[^\d+]/g, '');
+    if (cleanPhone && cleanPhone.replace(/\D/g, '').length >= 7) {
+      setPhoneNumber(cleanPhone);
+      setPhoneDraft(cleanPhone);
       setIsEditingPhone(false);
       setDetailedError(null);
-      void twilioVerify.sendOtp(cleaned);
-      setResendStatus(`New code sent to ${cleaned}`);
+      void twilioVerify.sendOtp(cleanPhone);
+      setResendStatus(`New code sent to ${cleanPhone}`);
       setTimeLeft(60);
       setTimeout(() => setResendStatus(null), 4000);
     }
