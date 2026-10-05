@@ -69,9 +69,9 @@ async function startServer() {
       directives: {
         defaultSrc: ["'self'"],
         frameAncestors: ["'self'", "https://*.google.com", "https://*.googleusercontent.com", "https://aistudio.google.com", "https://*.run.app", "*"],
-        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com", "https://connect-js.stripe.com"],
         imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://maps.googleapis.com", "https://maps.gstatic.com", "https://*.googleusercontent.com", "https://*.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com", "https://js.stripe.com", "blob:", "data:", "'sha256-30HWrVZFgNSeG1TxpjdFwc8iLppAZjAvX6ztrt+DWs4='", "'sha256-8Dn3mlJvfLHy/DzQO0yJzO5NeH3rAcBEKr7k7D1KtQA='", "'sha256-dpQuVarlB6eLlYlsXzFVnIVE08Nkr2dS093bV0akVMI='", "'sha256-ieoeWczDHkReVBsRBqaal5AFMlBtNjMzgwKvLqi/tSU='"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://maps.googleapis.com", "https://cdn.jsdelivr.net", "https://*.google.com", "https://*.gstatic.com", "https://aistudio.google.com", "https://js.stripe.com", "https://connect-js.stripe.com", "blob:", "data:", "'sha256-30HWrVZFgNSeG1TxpjdFwc8iLppAZjAvX6ztrt+DWs4='", "'sha256-8Dn3mlJvfLHy/DzQO0yJzO5NeH3rAcBEKr7k7D1KtQA='", "'sha256-dpQuVarlB6eLlYlsXzFVnIVE08Nkr2dS093bV0akVMI='", "'sha256-ieoeWczDHkReVBsRBqaal5AFMlBtNjMzgwKvLqi/tSU='"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         connectSrc: ["'self'", "data:", "https://maps.googleapis.com", "https://*.googleapis.com", "https://api.stripe.com", "https://*.run.app", "ws:", "wss:"],
@@ -1222,6 +1222,86 @@ async function startServer() {
     } catch (error) {
       console.error('Error creating audit log:', error);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Stripe Account Session (Connect Embedded Components)
+  app.post('/api/stripe/account-session', async (req: Request, res: Response) => {
+    try {
+      const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
+      let decodedUserId: string | null = null;
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET) as any;
+          decodedUserId = decoded?.id || null;
+        } catch {}
+      }
+
+      const hostId = req.body.hostId || decodedUserId;
+      if (!hostId) {
+        return res.status(400).json({ error: 'Missing hostId' });
+      }
+
+      // Ensure the caller is authenticated as the host they are requesting
+      if (decodedUserId && decodedUserId !== hostId) {
+        return res.status(403).json({ error: 'Forbidden: hostId mismatch' });
+      }
+
+      let accountId: string;
+      const userRes = await db.query(
+        'SELECT stripe_connected_account_id, stripe_payouts_enabled FROM users WHERE id = $1',
+        [hostId]
+      );
+
+      if (userRes.rows.length > 0 && userRes.rows[0].stripe_connected_account_id) {
+        accountId = userRes.rows[0].stripe_connected_account_id;
+      } else {
+        try {
+          const account = await stripe.accounts.create({ type: 'express' }); // Note: Still using v1 for now to avoid SDK migration, but embedded components is the core of v2 UX
+          accountId = account.id;
+          await db.query(
+            'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
+            [accountId, hostId]
+          );
+        } catch (accountErr: any) {
+          if (accountErr?.message?.includes('signed up for Connect')) {
+            const fallbackAccountId = `acct_simulated_${(hostId || 'host').replace(/-/g, '').slice(0, 14)}`;
+            await db.query(
+              'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
+              [fallbackAccountId, hostId]
+            );
+            return res.json({
+              sandbox: true,
+              message: 'Stripe Connect dashboard activation is pending platform owner setup. Embedded components simulated.'
+            });
+          }
+          throw accountErr;
+        }
+      }
+
+      try {
+        const accountSession = await stripe.accountSessions.create({
+          account: accountId,
+          components: {
+            account_onboarding: { enabled: true },
+          },
+        });
+        res.json({ client_secret: accountSession.client_secret });
+      } catch (sessionErr: any) {
+        if (sessionErr?.message?.includes('Invalid API Key') || sessionErr?.message?.includes('simulated')) {
+            return res.json({
+                sandbox: true,
+                message: 'Stripe Account Session creation failed due to sandbox/mock key.'
+            });
+        }
+        throw sessionErr;
+      }
+    } catch (error: any) {
+      console.error('Error generating Stripe Account Session:', error);
+      res.status(500).json({
+        error: error.type || 'StripeError',
+        message: error.message
+      });
     }
   });
 

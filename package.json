@@ -17,6 +17,8 @@
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@googlemaps/markerclusterer": "^2.6.2",
+    "@stripe/connect-js": "^3.4.6",
+    "@stripe/react-connect-js": "^3.4.4",
     "@stripe/stripe-js": "^10.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/cors": "^2.8.19",
