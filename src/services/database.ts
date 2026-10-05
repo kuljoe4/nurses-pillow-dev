@@ -798,7 +798,7 @@ class DatabaseService {
     try {
       const response = await fetch('/api/hospitals');
       if (response.ok) {
-        this.hospitals = await response.json();
+        this.hospitals = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
       } else {
         console.error('[DatabaseService] Failed to fetch hospitals from PostgreSQL API');
       }
@@ -812,7 +812,7 @@ class DatabaseService {
     try {
       const response = await fetch('/api/listings');
       if (response.ok) {
-        this.listings = await response.json();
+        this.listings = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
       } else {
         console.error('[DatabaseService] Failed to fetch listings from PostgreSQL API');
       }
@@ -848,7 +848,7 @@ class DatabaseService {
 
       const response = await fetch('/api/audit-logs', { headers });
       if (response.ok) {
-        this.auditLogs = await response.json();
+        this.auditLogs = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
       } else if (response.status === 401 || response.status === 403) {
         // Silently ignore unauthorized/forbidden access to audit logs.
         // Unauthenticated or non-admin users shouldn't have access, and it shouldn't produce a console error.
@@ -956,7 +956,7 @@ class DatabaseService {
     });
 
     if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
+      const errData = (response.headers.get('content-type')?.includes('application/json') ? await response.json().catch(() => ({})) : {});
       throw new Error(errData.error || 'Failed to create booking in PostgreSQL database');
     }
 

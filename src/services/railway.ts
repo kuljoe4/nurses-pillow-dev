@@ -491,7 +491,7 @@ export const railwayClient = {
     try {
       const response = await fetch('/api/railway/status');
       if (response.ok) {
-        return await response.json();
+        return (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {}) as any;
       }
       throw new Error(`HTTP ${response.status}`);
     } catch (err: any) {
@@ -517,7 +517,7 @@ export const railwayClient = {
     try {
       const response = await fetch('/api/railway/reconnect', { method: 'POST' });
       if (response.ok) {
-        return await response.json();
+        return (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {}) as any;
       }
       throw new Error(`HTTP ${response.status}`);
     } catch {

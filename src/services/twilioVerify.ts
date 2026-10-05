@@ -78,7 +78,7 @@ class TwilioVerifyService {
         body: JSON.stringify({ phoneNumber: formattedPhone }),
       });
 
-      const data: SendOtpResponse = await res.json();
+      const data: SendOtpResponse = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       const dispatch: TwilioOtpDispatch = {
         sid: data.sid,
         to: data.to || formattedPhone,
@@ -169,13 +169,7 @@ class TwilioVerifyService {
       clearTimeout(timeoutId);
 
       // Parse JSON response
-      const data: VerifyOtpResponse = await res.json().catch(() => ({
-        success: false,
-        status: 'error' as const,
-        statusCode: res.status,
-        message: `HTTP Error ${res.status}: Unexpected response from verification service.`,
-        error: 'INVALID_REQUEST' as const,
-      }));
+      const data: VerifyOtpResponse = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({ success: false, status: 'error' as const, statusCode: res.status, message: `HTTP Error ${res.status}: Unexpected response from verification service.`, error: 'INVALID_REQUEST' as const })) : { success: false, status: 'error' as const, statusCode: res.status, message: `HTTP Error ${res.status}: Unexpected response from verification service.`, error: 'INVALID_REQUEST' as const });
 
       // Update local dispatch status on success
       if (data.success) {

@@ -421,7 +421,7 @@ router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: Authent
       body: params,
     });
 
-    const data = await response.json();
+    const data = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
     if (!response.ok) {
        console.error('[Twilio] Send OTP Error:', data);
        return res.status(response.status).json({ success: false, message: data.message || 'Failed to send OTP' });
@@ -469,7 +469,7 @@ router.post('/phone/verify-otp', authenticateToken, catchAsync(async (req: Authe
       body: params,
     });
 
-    const data = await response.json();
+    const data = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
     if (!response.ok) {
        console.error('[Twilio] Verify OTP Error:', data);
        return res.status(response.status).json({ success: false, message: data.message || 'Failed to verify OTP' });

@@ -98,7 +98,7 @@ export async function fetchLiveCommuteRoute(
     });
 
     if (response.ok) {
-      const data: LiveCommuteResult = await response.json();
+      const data: LiveCommuteResult = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
       return data;
     }
   } catch (error) {

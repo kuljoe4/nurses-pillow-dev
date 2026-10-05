@@ -107,7 +107,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
+        const errorData = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
         throw new Error(errorData.error || 'Verification service temporarily unavailable.');
       }
 

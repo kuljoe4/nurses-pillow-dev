@@ -64,11 +64,11 @@ export async function createSpreadsheet(
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to create spreadsheet: ${res.statusText}`);
   }
 
-  const data = await res.json();
+  const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
   return {
     spreadsheetId: data.spreadsheetId,
     spreadsheetUrl: data.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${data.spreadsheetId}/edit`,
@@ -95,11 +95,11 @@ export async function listUserSpreadsheets(): Promise<GoogleDriveFile[]> {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to list spreadsheets: ${res.statusText}`);
   }
 
-  const data = await res.json();
+  const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
   return data.files || [];
 }
 
@@ -130,11 +130,11 @@ export async function appendRows(
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to append rows to sheet: ${res.statusText}`);
   }
 
-  return await res.json();
+  return (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {}) as any;
 }
 
 /**
@@ -164,11 +164,11 @@ export async function updateRange(
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to update sheet range: ${res.statusText}`);
   }
 
-  return await res.json();
+  return (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {}) as any;
 }
 
 /**
@@ -187,11 +187,11 @@ export async function getSpreadsheetDetails(spreadsheetId: string): Promise<Shee
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to fetch spreadsheet details: ${res.statusText}`);
   }
 
-  return await res.json();
+  return (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {}) as any;
 }
 
 /**
@@ -218,11 +218,11 @@ export async function getSpreadsheetValues(
   );
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
+    const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
     throw new Error(err.error?.message || `Failed to read sheet values: ${res.statusText}`);
   }
 
-  const data = await res.json();
+  const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
   return data.values || [];
 }
 

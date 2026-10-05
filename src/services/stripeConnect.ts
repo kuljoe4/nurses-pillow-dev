@@ -441,7 +441,7 @@ class StripeConnectService {
         }),
       });
 
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       if (!res.ok) {
         throw new Error(data.error || 'Failed to create payment intent');
       }
@@ -515,7 +515,7 @@ class StripeConnectService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-    const data = await res.json();
+    const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
     if (!res.ok) {
       throw new Error(data.error || 'Failed to capture payment intent');
     }
@@ -527,7 +527,7 @@ class StripeConnectService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-    const data = await res.json();
+    const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
     if (!res.ok) {
       throw new Error(data.error || 'Failed to cancel payment intent');
     }

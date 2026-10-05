@@ -56,7 +56,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
         });
-        const data = await res.json();
+        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
         if (!res.ok && !isCancelled) {
           setError(data.error || 'Failed to send verification email.');
           if (data.pin) {
@@ -119,7 +119,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: updated }),
         });
-        const data = await res.json();
+        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
         if (!res.ok) {
           setError(data.error || 'Failed to send verification email.');
           if (data.pin) {
@@ -148,7 +148,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       if (!res.ok) {
         setError(data.error || 'Failed to send verification email.');
         if (data.pin) {
@@ -182,7 +182,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
         body: JSON.stringify({ email, pin: pinCode }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
       if (!res.ok) {
         throw new Error(data.error || 'Verification code did not match. Please check your inbox.');
       }

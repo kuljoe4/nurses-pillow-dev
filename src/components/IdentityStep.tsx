@@ -130,7 +130,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         }),
       });
 
-      const result = await res.json();
+      const result = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       if (!res.ok) {
         throw new Error(result.error || 'Verification validation failed.');
       }
@@ -144,7 +144,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         },
       });
 
-      const stripeData = await stripeRes.json();
+      const stripeData = (stripeRes.headers.get('content-type')?.includes('application/json') ? await stripeRes.json() : {});
       if (!stripeRes.ok) {
          throw new Error(stripeData.error || 'Failed to initiate Stripe Identity Session.');
       }
