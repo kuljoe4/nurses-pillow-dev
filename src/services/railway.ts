@@ -215,6 +215,65 @@ class RailwayDatabaseManager {
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
 
+        -- First create custom ENUM types if they don't exist
+        DO $$ BEGIN
+            CREATE TYPE verification_type AS ENUM (
+                'email_otp',
+                'twilio_sms_phone',
+                'stripe_identity_biometric',
+                'professional_license',
+                'host_authority_to_list',
+                'facility_assignment'
+            );
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+            CREATE TYPE verification_status AS ENUM (
+                'not_started',
+                'pending_review',
+                'action_needed',
+                'verified',
+                'rejected',
+                'expired'
+            );
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+            CREATE TYPE healthcare_profession AS ENUM (
+                'RN',
+                'LPN_LVN',
+                'APRN_NP',
+                'CRNA',
+                'CNM',
+                'CNA',
+                'MD_DO',
+                'PA',
+                'SURGEON',
+                'PHARMACIST',
+                'PHARMACY_TECHNICIAN',
+                'DENTISTRY',
+                'PT_OT',
+                'RESPIRATORY_THERAPIST',
+                'IMAGING_SURGICAL_TECH',
+                'LAB_PROFESSIONAL',
+                'SPEECH_HEARING',
+                'MENTAL_BEHAVIORAL_HEALTH',
+                'EMT_PARAMEDIC',
+                'NUTRITION_DIETETICS',
+                'OPTOMETRY',
+                'PODIATRY_CHIROPRACTIC',
+                'REHAB_CLINICAL_SERVICES',
+                'MEDICAL_ASSISTANT',
+                'OTHER_ALLIED_HEALTH'
+            );
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+
         CREATE TABLE IF NOT EXISTS users (
           id VARCHAR(255) PRIMARY KEY,
           role VARCHAR(50) NOT NULL DEFAULT 'nurse',
@@ -230,6 +289,39 @@ class RailwayDatabaseManager {
           stripe_payouts_enabled BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
+
+        CREATE TABLE IF NOT EXISTS verification_records (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            verification_type verification_type NOT NULL,
+            status verification_status NOT NULL DEFAULT 'pending_review',
+            profession healthcare_profession,
+            professional_title VARCHAR(150),
+            credential_type VARCHAR(50),
+            issuing_state VARCHAR(2) DEFAULT 'NC',
+            license_number_encrypted TEXT,
+            primary_source_name VARCHAR(150),
+            primary_source_url TEXT,
+            expiration_date DATE,
+            public_trust_badge_label VARCHAR(150),
+            verified_at TIMESTAMPTZ,
+            document_purged BOOLEAN DEFAULT FALSE,
+            document_purged_at TIMESTAMPTZ,
+            temporary_document_storage_url TEXT,
+            admin_reviewer_id VARCHAR(255) REFERENCES users(id),
+            admin_review_notes TEXT,
+            rejection_reason TEXT,
+            verification_provider VARCHAR(50) DEFAULT 'manual_admin',
+            external_vendor_reference_id VARCHAR(255),
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_verification_user ON verification_records(user_id);
+        CREATE INDEX IF NOT EXISTS idx_verification_status ON verification_records(status);
+
+        ALTER TABLE verification_records ADD COLUMN IF NOT EXISTS professional_title VARCHAR(150);
+        ALTER TABLE verification_records ADD COLUMN IF NOT EXISTS credential_type VARCHAR(50);
 
         CREATE TABLE IF NOT EXISTS listings (
           id VARCHAR(255) PRIMARY KEY,
@@ -324,6 +416,24 @@ class RailwayDatabaseManager {
         CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
         CREATE INDEX IF NOT EXISTS idx_favorites_listing ON favorites(listing_id);
       `);
+
+      // Alter ENUM to add missing types safely outside of transaction blocks
+      const newProfessions = [
+          'CRNA', 'CNM', 'SURGEON', 'PHARMACY_TECHNICIAN', 'DENTISTRY',
+          'SPEECH_HEARING', 'MENTAL_BEHAVIORAL_HEALTH', 'NUTRITION_DIETETICS',
+          'OPTOMETRY', 'PODIATRY_CHIROPRACTIC', 'REHAB_CLINICAL_SERVICES'
+      ];
+
+      for (const profession of newProfessions) {
+          try {
+              await this.pool.query(`ALTER TYPE healthcare_profession ADD VALUE IF NOT EXISTS '${profession}';`);
+          } catch (e: any) {
+              // Ignore duplicate object errors or syntax errors in older PG versions if IF NOT EXISTS fails
+              if (e.code !== '42710') {
+                 console.warn(`[Railway DB] Notice when adding ENUM ${profession}:`, e.message);
+              }
+          }
+      }
 
       // 2. Check if facilities table needs initial seeding
       const countRes = await this.pool.query('SELECT COUNT(*) as count FROM healthcare_facilities');

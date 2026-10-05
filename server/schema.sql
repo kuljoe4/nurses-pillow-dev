@@ -26,15 +26,26 @@ CREATE TYPE healthcare_profession AS ENUM (
     'RN',                      -- Registered Nurse
     'LPN_LVN',                 -- Licensed Practical / Vocational Nurse
     'APRN_NP',                 -- Advanced Practice Registered Nurse / Nurse Practitioner
+    'CRNA',                    -- Certified Registered Nurse Anesthetist
+    'CNM',                     -- Certified Nurse Midwife
     'CNA',                     -- Certified Nursing Assistant
     'MD_DO',                   -- Physician (MD / DO)
     'PA',                      -- Physician Assistant
+    'SURGEON',                 -- Surgeon
+    'PHARMACIST',              -- Pharmacist / RPh / PharmD
+    'PHARMACY_TECHNICIAN',     -- Pharmacy Technician
+    'DENTISTRY',               -- Dentist / Dental Hygienist / Dental Therapist
+    'PT_OT',                   -- Physical / Occupational Therapist / Assistant
     'RESPIRATORY_THERAPIST',   -- RT
-    'IMAGING_SURGICAL_TECH',   -- Radiology / Rad Tech / Scrub Tech
+    'IMAGING_SURGICAL_TECH',   -- Radiology / Rad Tech / Scrub Tech / MRI / CT / Ultrasound
     'LAB_PROFESSIONAL',        -- Medical Lab Scientist / Tech
-    'PT_OT',                   -- Physical / Occupational Therapist
-    'PHARMACIST',              -- RPh / PharmD
+    'SPEECH_HEARING',          -- Speech-Language Pathologist / Audiologist
+    'MENTAL_BEHAVIORAL_HEALTH',-- Psychologist / LCSW / LPC / LMFT
     'EMT_PARAMEDIC',           -- Emergency Medical Technician / Paramedic
+    'NUTRITION_DIETETICS',     -- Registered Dietitian / RDN
+    'OPTOMETRY',               -- Optometrist / Optician
+    'PODIATRY_CHIROPRACTIC',   -- Podiatrist / Chiropractor
+    'REHAB_CLINICAL_SERVICES', -- Athletic Trainer / Recreational Therapist / Genetic Counselor, etc.
     'MEDICAL_ASSISTANT',       -- CMA / RMA
     'OTHER_ALLIED_HEALTH'
 );
@@ -183,6 +194,8 @@ CREATE TABLE verification_records (
 
     -- Clinical Credential Specifics (Nurses & Healthcare Professionals)
     profession healthcare_profession,
+    professional_title VARCHAR(150), -- e.g. 'Certified Registered Nurse Anesthetist'
+    credential_type VARCHAR(50), -- 'licensed', 'certified', 'registered'
     issuing_state VARCHAR(2) DEFAULT 'NC',
     license_number_encrypted TEXT, -- Stored encrypted at rest; NEVER exposed to hosts
     primary_source_name VARCHAR(150), -- e.g. 'Nursys QuickConfirm', 'FSMB DocInfo', 'NC Board of Nursing'
