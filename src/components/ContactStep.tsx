@@ -31,11 +31,15 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   }, [errorMessage]);
 
   const formatPhoneNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 10);
-    if (cleaned.length >= 6) {
+    const cleaned = value.replace(/[^\d+]/g, '').slice(0, 16);
+    // If it's a 10 digit number without + prefix, format it nicely
+    if (cleaned.length === 10 && !cleaned.startsWith('+')) {
       return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-    } else if (cleaned.length >= 3) {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    } else if (cleaned.length > 3 && cleaned.length < 10 && !cleaned.startsWith('+')) {
+       if (cleaned.length > 6) {
+           return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+       }
+       return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
     }
     return cleaned;
   };
@@ -232,7 +236,7 @@ export const ContactStep: React.FC<ContactStepProps> = ({
                   setErrorMessage(null);
                   onChange({ mobilePhone: formatPhoneNumber(e.target.value) });
                 }}
-                placeholder="(555) 000-0000"
+                placeholder="+1 (555) 000-0000"
                 className={`w-full rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] tabular-nums ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550]'

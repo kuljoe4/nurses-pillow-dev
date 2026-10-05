@@ -66,7 +66,7 @@ export function createPhoneAuthMiddleware() {
       const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
       const isTestEnv = process.env.NODE_ENV === 'test';
 
-      // Fail fast in production/development if Twilio is not configured (unless in test env)
+      // Fail fast if Twilio is not configured (unless in test env)
       if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
         if (!isTestEnv) {
           res.statusCode = 500;
