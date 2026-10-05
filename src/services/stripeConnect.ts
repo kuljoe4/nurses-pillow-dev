@@ -428,6 +428,21 @@ class StripeConnectService {
     const split = this.calculateSplit(monthlyRent, cleaningFee, securityDeposit, customFeeRateOrPercent);
     const last4 = cardNumber.replace(/\D/g, '').slice(-4) || '4242';
 
+    // Secure random string generation helper
+    const getSecureRandomString = (length: number = 8) => {
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        return window.crypto.randomUUID().replace(/-/g, '').substring(0, length);
+      } else if (typeof require !== 'undefined') {
+        try {
+          const crypto = require('crypto');
+          return crypto.randomUUID().replace(/-/g, '').substring(0, length);
+        } catch (e) {
+          return Math.random().toString(36).substring(2, 2 + length);
+        }
+      }
+      return Math.random().toString(36).substring(2, 2 + length);
+    };
+
     try {
       const res = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
@@ -448,11 +463,11 @@ class StripeConnectService {
 
       const transaction: StripeSplitTransaction = {
         id: `txn_${Date.now()}`,
-        paymentIntentId: data.paymentIntentId || `pi_test_${Math.random().toString(36).substring(2, 10)}`,
-        chargeId: `ch_test_${Math.random().toString(36).substring(2, 10)}`,
-        transferId: `tr_test_${Math.random().toString(36).substring(2, 10)}`,
+        paymentIntentId: data.paymentIntentId || `pi_test_${getSecureRandomString(8)}`,
+        chargeId: `ch_test_${getSecureRandomString(8)}`,
+        transferId: `tr_test_${getSecureRandomString(8)}`,
         authorizationHoldId:
-          securityDeposit > 0 ? `hold_test_${Math.random().toString(36).substring(2, 10)}` : undefined,
+          securityDeposit > 0 ? `hold_test_${getSecureRandomString(8)}` : undefined,
         grossAmount: split.grossCharge,
         platformFeeAmount: split.platformFee,
         hostPayoutAmount: split.hostNetPayout,
@@ -466,7 +481,7 @@ class StripeConnectService {
           expMonth: '12',
           expYear: '2028',
         },
-        clientSecret: data.clientSecret || `pi_test_${Date.now()}_secret_${Math.random().toString(36).substring(2, 8)}`,
+        clientSecret: data.clientSecret || `pi_test_${Date.now()}_secret_${getSecureRandomString(6)}`,
         createdAt: new Date().toISOString(),
         receiptUrl: `https://pay.stripe.com/receipts/test/nurses-pillow-${Date.now()}`,
       };
@@ -478,11 +493,11 @@ class StripeConnectService {
       // Fallback for non-connected network environments (like sandbox previews)
       const transaction: StripeSplitTransaction = {
         id: `txn_${Date.now()}`,
-        paymentIntentId: `pi_test_${Math.random().toString(36).substring(2, 10)}`,
-        chargeId: `ch_test_${Math.random().toString(36).substring(2, 10)}`,
-        transferId: `tr_test_${Math.random().toString(36).substring(2, 10)}`,
+        paymentIntentId: `pi_test_${getSecureRandomString(8)}`,
+        chargeId: `ch_test_${getSecureRandomString(8)}`,
+        transferId: `tr_test_${getSecureRandomString(8)}`,
         authorizationHoldId:
-          securityDeposit > 0 ? `hold_test_${Math.random().toString(36).substring(2, 10)}` : undefined,
+          securityDeposit > 0 ? `hold_test_${getSecureRandomString(8)}` : undefined,
         grossAmount: split.grossCharge,
         platformFeeAmount: split.platformFee,
         hostPayoutAmount: split.hostNetPayout,
@@ -496,7 +511,7 @@ class StripeConnectService {
           expMonth: '12',
           expYear: '2028',
         },
-        clientSecret: `pi_test_${Date.now()}_secret_${Math.random().toString(36).substring(2, 8)}`,
+        clientSecret: `pi_test_${Date.now()}_secret_${getSecureRandomString(6)}`,
         createdAt: new Date().toISOString(),
         receiptUrl: `https://pay.stripe.com/receipts/test/nurses-pillow-${Date.now()}`,
       };
