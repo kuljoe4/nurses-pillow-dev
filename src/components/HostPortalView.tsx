@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ConnectComponentsProvider, ConnectAccountOnboarding } from '@stripe/react-connect-js';
+import { loadConnectAndInitialize } from '@stripe/connect-js';
 import { BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
@@ -175,6 +177,8 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
   const [payoutsEnabled, setPayoutsEnabled] = useState(currentUser?.payoutsEnabled || false);
   const [stripeError, setStripeError] = useState<string | null>(null);
+  const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
+  const [showEmbeddedOnboarding, setShowEmbeddedOnboarding] = useState(false);
 
   // Processing States for bookings
   const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
@@ -226,52 +230,62 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
+  const fetchClientSecret = async () => {
+    const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+    const res = await fetch('/api/stripe/account-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ hostId }),
+    });
+
+    const isJson = res.headers.get('content-type')?.includes('application/json');
+    if (!res.ok) {
+        if (isJson) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || 'Failed to create account session');
+        } else {
+            throw new Error('Failed to create account session due to a server error.');
+        }
+    }
+    const data = await res.json();
+    if (data.sandbox && !data.client_secret) {
+        throw new Error(data.message || 'Sandbox simulated mode, skipping Embedded UI');
+    }
+    return data.client_secret;
+  };
+
   const handleConnectStripe = async () => {
     setIsConnectingStripe(true);
     setStripeError(null);
     try {
-      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
-      const res = await fetch('/api/stripe/account-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      // First attempt to get the client secret to see if it fails due to mock key
+      await fetchClientSecret();
+
+      const VITE_STRIPE_PUBLISHABLE_KEY = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
+      const stripeConnect = loadConnectAndInitialize({
+        publishableKey: VITE_STRIPE_PUBLISHABLE_KEY,
+        fetchClientSecret,
+        appearance: {
+          overlays: 'dialog',
+          variables: {
+            colorPrimary: '#0A6FA8',
+          },
         },
-        body: JSON.stringify({
-          hostId,
-          returnUrl: `${window.location.origin}${window.location.pathname}?stripe_return=true`,
-          refreshUrl: `${window.location.origin}${window.location.pathname}?stripe_refresh=true`,
-        }),
       });
-
-      const isJson = res.headers.get('content-type')?.includes('application/json');
-
-      if (res.ok && isJson) {
-        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          setIsConnectingStripe(false);
-        }
+      setStripeConnectInstance(stripeConnect);
+      setShowEmbeddedOnboarding(true);
+    } catch (err: any) {
+      console.error('Failed to initialize Stripe Connect Embedded components', err);
+      if (err.message.includes('simulated')) {
+          setStripeError(err.message);
       } else {
-        if (isJson) {
-          const errorData = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-          console.error(`Failed to create account link: ${res.status} ${res.statusText}`, errorData);
-          if (errorData.error === 'StripeInvalidRequestError') {
-             setStripeError('Payouts are currently unavailable because the platform owner needs to complete Stripe Connect onboarding.');
-          } else {
-             setStripeError(errorData.message || 'Failed to connect payouts. Please try again.');
-          }
-        } else {
-          console.error(`Failed to create account link: ${res.status} ${res.statusText}`);
-          setStripeError('Failed to connect payouts due to a server error.');
-        }
-        setIsConnectingStripe(false);
+          setStripeError('A network error occurred while connecting payouts.');
       }
-    } catch (err) {
-      console.error('Failed to generate account link', err);
-      setStripeError('A network error occurred while connecting payouts.');
-      setIsConnectingStripe(false);
+    } finally {
+        setIsConnectingStripe(false);
     }
   };
 
@@ -1188,20 +1202,33 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <button
-                      onClick={handleConnectStripe}
-                      className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
-                      <span>Connect via Stripe</span>
-                    </button>
-                    <button
-                      onClick={handleDirectActivatePayouts}
-                      className="w-full bg-[#EFF6FB] dark:bg-[#15233a] hover:bg-[#e0eef7] text-[#0A6FA8] dark:text-[#3E9AD1] border border-[#0A6FA8]/30 text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">verified</span>
-                      <span>Verify &amp; Activate Direct Deposit</span>
-                    </button>
+                    {showEmbeddedOnboarding && stripeConnectInstance ? (
+                        <div className="w-full h-[600px] bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                            <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
+                                <ConnectAccountOnboarding onExit={() => {
+                                    setShowEmbeddedOnboarding(false);
+                                    fetchPayoutStatus();
+                                }} />
+                            </ConnectComponentsProvider>
+                        </div>
+                    ) : (
+                        <>
+                            <button
+                              onClick={handleConnectStripe}
+                              className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                            >
+                              <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
+                              <span>Connect via Stripe</span>
+                            </button>
+                            <button
+                              onClick={handleDirectActivatePayouts}
+                              className="w-full bg-[#EFF6FB] dark:bg-[#15233a] hover:bg-[#e0eef7] text-[#0A6FA8] dark:text-[#3E9AD1] border border-[#0A6FA8]/30 text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <span className="material-symbols-outlined text-[15px]">verified</span>
+                              <span>Verify &amp; Activate Direct Deposit</span>
+                            </button>
+                        </>
+                    )}
                   </div>
                 )}
                 {stripeError && (
