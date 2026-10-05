@@ -13,7 +13,6 @@ export type OtpErrorCode =
 export interface VerifyOtpRequestBody {
   phoneNumber: string;
   code: string;
-  simulateError?: 'expired' | 'network' | 'rate_limit' | 'invalid';
 }
 
 export interface VerifyOtpResponse {
@@ -61,20 +60,7 @@ class PhoneAuthStore {
   private sessions: Map<string, StoredOtpSession> = new Map();
 
   constructor() {
-    // Seed default session for demo/test phone
-    const defaultPhone = '+19195550198';
-    const now = Date.now();
-    this.sessions.set(defaultPhone, {
-      sid: 'VE_seed_duke_clinician',
-      phoneNumber: defaultPhone,
-      codeSent: '842199',
-      createdAt: now,
-      expiresAt: now + 10 * 60 * 1000,
-      attempts: 0,
-      maxAttempts: 5,
-      isLocked: false,
-      status: 'pending',
-    });
+    // No mock sessions
   }
 
   formatE164(phone: string): string {
@@ -116,23 +102,8 @@ class PhoneAuthStore {
 
   // Handle verify-otp request with thorough validation
   verifyOtp(body: VerifyOtpRequestBody, headers?: Record<string, string | string[] | undefined>): VerifyOtpResponse {
-    const simulateHeader = headers?.['x-simulate-error'];
-    const simulateError = body.simulateError || (typeof simulateHeader === 'string' ? simulateHeader : undefined);
 
-    // 1. Check for simulated Network Failure (for QA testing: code '999999' or simulated error)
-    if (simulateError === 'network' || body.code === '999999') {
-      return {
-        success: false,
-        status: 'error',
-        statusCode: 503,
-        error: 'NETWORK_FAILURE',
-        message: 'Unable to reach the verification network. Please check your connection and retry.',
-        diagnosticAdvice: 'Network communication timed out. Check your cellular signal or Wi-Fi connection.',
-        canResend: true,
-      };
-    }
-
-    // 2. Validate input parameters
+    // 1. Validate input parameters
     if (!body.phoneNumber || body.phoneNumber.trim().length < 7) {
       return {
         success: false,
@@ -159,46 +130,8 @@ class PhoneAuthStore {
     const formattedPhone = this.formatE164(body.phoneNumber);
     const session = this.sessions.get(formattedPhone);
 
-    // 3. Check for simulated Rate Limiting (code '888888' or simulated error)
-    if (simulateError === 'rate_limit' || cleanCode === '888888') {
-      return {
-        success: false,
-        status: 'rate_limited',
-        statusCode: 429,
-        error: 'RATE_LIMITED',
-        message: 'Too many incorrect attempts. For your account security, verification is locked for 60 seconds.',
-        retryAfterSeconds: 60,
-        diagnosticAdvice: 'Account lockout active after repeated attempts. Please wait 60 seconds.',
-      };
-    }
-
-    // 4. Check for simulated Expired Token (code '000000' or simulated error)
-    if (simulateError === 'expired' || cleanCode === '000000') {
-      return {
-        success: false,
-        status: 'expired',
-        statusCode: 410,
-        error: 'TOKEN_EXPIRED',
-        message: 'This verification code has expired after 10 minutes. Please request a new code.',
-        expiredAt: new Date(Date.now() - 30000).toISOString(),
-        canResend: true,
-        diagnosticAdvice: 'Security codes expire after 10 minutes to protect your account.',
-      };
-    }
-
-    // 5. Check if session exists in memory
+    // 2. Check if session exists in memory
     if (!session) {
-      // Allow universal sandbox test codes '842199' / '123456' even without active session
-      if (cleanCode === '842199' || cleanCode === '123456') {
-        return {
-          success: true,
-          status: 'approved',
-          statusCode: 200,
-          message: 'Mobile number verified successfully.',
-          verifiedAt: new Date().toISOString(),
-        };
-      }
-
       return {
         success: false,
         status: 'failed',
@@ -210,7 +143,7 @@ class PhoneAuthStore {
       };
     }
 
-    // 6. Check if session is currently locked due to rate limiting
+    // 3. Check if session is currently locked due to rate limiting
     const now = Date.now();
     if (session.isLocked && session.lockUntil && now < session.lockUntil) {
       const remainingSeconds = Math.ceil((session.lockUntil - now) / 1000);
@@ -230,7 +163,7 @@ class PhoneAuthStore {
       session.lockUntil = undefined;
     }
 
-    // 7. Check if actual session has expired (exceeded 10 minutes)
+    // 4. Check if actual session has expired (exceeded 10 minutes)
     if (now > session.expiresAt || session.status === 'expired') {
       session.status = 'expired';
       return {
@@ -245,11 +178,8 @@ class PhoneAuthStore {
       };
     }
 
-    // 8. Validate the code (Active session code or Sandbox universal codes)
-    const isCodeValid =
-      cleanCode === session.codeSent ||
-      cleanCode === '842199' ||
-      cleanCode === '123456';
+    // 5. Validate the code
+    const isCodeValid = cleanCode === session.codeSent;
 
     if (isCodeValid) {
       session.status = 'approved';
@@ -264,7 +194,7 @@ class PhoneAuthStore {
       };
     }
 
-    // 9. Invalid code: Increment attempts and evaluate lock out
+    // 6. Invalid code: Increment attempts and evaluate lock out
     session.attempts += 1;
     const attemptsRemaining = Math.max(0, session.maxAttempts - session.attempts);
 
@@ -293,7 +223,7 @@ class PhoneAuthStore {
       message: `Incorrect verification code. Please check your SMS and try again (${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining).`,
       attemptsUsed: session.attempts,
       attemptsRemaining,
-      diagnosticAdvice: 'Double-check the 6-digit code received via SMS. Universal sandbox test codes: 842199 or 123456.',
+      diagnosticAdvice: 'Double-check the 6-digit code received via SMS.',
     };
   }
 

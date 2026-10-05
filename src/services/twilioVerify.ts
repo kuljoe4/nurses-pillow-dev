@@ -105,7 +105,6 @@ class TwilioVerifyService {
     phoneNumber: string,
     code: string,
     options?: {
-      simulateError?: 'expired' | 'network' | 'rate_limit' | 'invalid';
       timeoutMs?: number;
     }
   ): Promise<VerifyOtpResult> {
@@ -120,20 +119,6 @@ class TwilioVerifyService {
         errorCode: 'NETWORK_FAILURE',
         message: 'No internet connection detected. Please check your Wi-Fi or cellular data.',
         diagnosticAdvice: 'The browser is offline. Please reconnect to verify your clinical phone number.',
-        canResend: true,
-      };
-    }
-
-    // Check for explicit simulated network error from options
-    if (options?.simulateError === 'network' || code === '999999') {
-      await new Promise((r) => setTimeout(r, 400));
-      return {
-        success: false,
-        status: 'error',
-        statusCode: 503,
-        errorCode: 'NETWORK_FAILURE',
-        message: 'Verification gateway timeout: Carrier SMS route unreachable.',
-        diagnosticAdvice: 'The verification service did not respond within the allocated timeout window. Please retry.',
         canResend: true,
       };
     }
@@ -155,13 +140,11 @@ class TwilioVerifyService {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          ...(options?.simulateError ? { 'x-simulate-error': options.simulateError } : {}),
         },
         body: JSON.stringify({
           phoneNumber: formattedPhone,
           code,
           email: userEmail,
-          simulateError: options?.simulateError,
         }),
         signal: controller.signal,
       });

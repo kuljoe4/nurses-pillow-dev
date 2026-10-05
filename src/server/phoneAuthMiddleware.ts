@@ -17,7 +17,7 @@ export function createPhoneAuthMiddleware() {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-simulate-error, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     if (req.method === 'OPTIONS') {
       res.statusCode = 204;
@@ -66,14 +66,15 @@ export function createPhoneAuthMiddleware() {
       // Route 1: /api/auth/phone/send-otp
       if (url.includes('/send-otp')) {
         const phoneNumber = body.phoneNumber;
-        if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.trim().length < 7) {
+        const cleanPhone = (phoneNumber || '').toString().trim();
+        if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
           res.statusCode = 400;
           res.end(
             JSON.stringify({
               success: false,
               statusCode: 400,
               error: 'INVALID_PHONE',
-              message: 'Please provide a valid mobile phone number.',
+              message: 'Please provide a valid 10-digit mobile phone number.',
             })
           );
           return;
@@ -101,28 +102,11 @@ export function createPhoneAuthMiddleware() {
       // Route 2: /api/auth/phone/verify-otp (Robust Error-Handling Layer)
       if (url.includes('/verify-otp')) {
         const headers = req.headers as Record<string, string | string[] | undefined>;
-        const simulateHeader = headers?.['x-simulate-error'];
-        const simulateError = body.simulateError || (typeof simulateHeader === 'string' ? simulateHeader : undefined);
 
-        // 1. Network Failure Check -> HTTP 503
-        if (simulateError === 'network' || body.code === '999999') {
-          res.statusCode = 503;
-          res.end(
-            JSON.stringify({
-              success: false,
-              status: 'error',
-              statusCode: 503,
-              error: 'NETWORK_FAILURE',
-              message: 'Unable to reach the verification network. Please check your connection and retry.',
-              canResend: true,
-              diagnosticAdvice: 'Network communication timed out. Check your cellular signal or Wi-Fi connection.',
-            })
-          );
-          return;
-        }
-
-        // 2. Parameter Presence & Validation -> HTTP 400
-        if (!body.phoneNumber || typeof body.phoneNumber !== 'string' || body.phoneNumber.trim().length < 7) {
+        const phoneNumber = body.phoneNumber;
+        const cleanPhone = (phoneNumber || '').toString().trim();
+        // 1. Parameter Presence & Validation -> HTTP 400
+        if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
           res.statusCode = 400;
           res.end(
             JSON.stringify({
@@ -130,7 +114,7 @@ export function createPhoneAuthMiddleware() {
               status: 'error',
               statusCode: 400,
               error: 'INVALID_PHONE',
-              message: 'Please provide a valid mobile number with country code.',
+              message: 'Please provide a valid 10-digit mobile phone number.',
               diagnosticAdvice: 'Enter your 10-digit mobile number to verify.',
             })
           );
@@ -153,42 +137,7 @@ export function createPhoneAuthMiddleware() {
           return;
         }
 
-        // 3. Expired Token Check -> HTTP 410
-        if (simulateError === 'expired' || cleanCode === '000000') {
-          res.statusCode = 410;
-          res.end(
-            JSON.stringify({
-              success: false,
-              status: 'expired',
-              statusCode: 410,
-              error: 'TOKEN_EXPIRED',
-              message: 'This verification code has expired after 10 minutes. Please request a new code.',
-              expiredAt: new Date(Date.now() - 30000).toISOString(),
-              canResend: true,
-              diagnosticAdvice: 'Security codes expire after 10 minutes to protect your account.',
-            })
-          );
-          return;
-        }
-
-        // 4. Rate Limiting Check -> HTTP 429
-        if (simulateError === 'rate_limit' || cleanCode === '888888') {
-          res.statusCode = 429;
-          res.end(
-            JSON.stringify({
-              success: false,
-              status: 'rate_limited',
-              statusCode: 429,
-              error: 'RATE_LIMITED',
-              message: 'Too many incorrect attempts. For your account security, verification is locked for 60 seconds.',
-              retryAfterSeconds: 60,
-              diagnosticAdvice: 'Account lockout active after repeated attempts. Please wait 60 seconds.',
-            })
-          );
-          return;
-        }
-
-        // 5. Verify against session store
+        // 2. Verify against session store
         const verificationResult = phoneAuthStore.verifyOtp(body, headers);
         if (verificationResult.success) {
           try {
