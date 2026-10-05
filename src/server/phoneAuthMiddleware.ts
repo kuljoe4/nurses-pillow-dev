@@ -63,7 +63,155 @@ export function createPhoneAuthMiddleware() {
         }
       }
 
-      // Route 1: /api/auth/phone/send-otp
+      const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID } = process.env;
+      const isTestEnv = process.env.NODE_ENV === 'test';
+
+      // Fail fast in production/development if Twilio is not configured (unless in test env)
+      if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_VERIFY_SERVICE_SID) {
+        if (!isTestEnv) {
+          res.statusCode = 500;
+          res.end(
+            JSON.stringify({
+              success: false,
+              statusCode: 500,
+              error: 'SERVICE_NOT_CONFIGURED',
+              message: 'SMS verification service is not configured.',
+            })
+          );
+          return;
+        }
+      }
+
+      // If Twilio credentials are configured, execute real Twilio API calls
+      if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_VERIFY_SERVICE_SID) {
+        const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
+
+        if (url.includes('/send-otp')) {
+          const phoneNumber = body.phoneNumber;
+          const cleanPhone = (phoneNumber || '').toString().trim();
+          if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ success: false, statusCode: 400, error: 'INVALID_PHONE', message: 'Please provide a valid 10-digit mobile phone number.' }));
+            return;
+          }
+
+          const params = new URLSearchParams();
+          params.append('To', cleanPhone);
+          params.append('Channel', 'sms');
+
+          const response = await fetch(`https://verify.twilio.com/v2/Services/${TWILIO_VERIFY_SERVICE_SID}/Verifications`, {
+            method: 'POST',
+            headers: {
+              'Authorization': authHeader,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params,
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+             res.statusCode = response.status;
+             res.end(JSON.stringify({ success: false, statusCode: response.status, error: 'TWILIO_ERROR', message: data.message || 'Failed to send OTP' }));
+             return;
+          }
+
+          res.statusCode = 200;
+          res.end(JSON.stringify({
+            success: true,
+            statusCode: 200,
+            sid: data.sid,
+            to: data.to,
+            status: data.status,
+            createdAt: data.date_created,
+            message: 'Verification code dispatched successfully.',
+          }));
+          return;
+        }
+
+        if (url.includes('/verify-otp')) {
+          const phoneNumber = body.phoneNumber;
+          const cleanPhone = (phoneNumber || '').toString().trim();
+          const cleanCode = (body.code || '').toString().trim().replace(/\D/g, '');
+
+          if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ success: false, statusCode: 400, error: 'INVALID_PHONE', message: 'Please provide a valid 10-digit mobile phone number.' }));
+            return;
+          }
+          if (!cleanCode || cleanCode.length !== 6) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ success: false, statusCode: 400, error: 'INVALID_CODE', message: 'Verification code must be exactly 6 digits.' }));
+            return;
+          }
+
+          const params = new URLSearchParams();
+          params.append('To', cleanPhone);
+          params.append('Code', cleanCode);
+
+          const response = await fetch(`https://verify.twilio.com/v2/Services/${TWILIO_VERIFY_SERVICE_SID}/VerificationCheck`, {
+            method: 'POST',
+            headers: {
+              'Authorization': authHeader,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params,
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+             res.statusCode = response.status;
+             res.end(JSON.stringify({ success: false, statusCode: response.status, error: 'TWILIO_ERROR', message: data.message || 'Failed to verify OTP' }));
+             return;
+          }
+
+          if (data.status === 'approved') {
+             try {
+               const { db } = await import('../../server/db.js');
+               let userId = body.userId;
+               let userEmail = body.email;
+
+               const headersRecord = req.headers as Record<string, string | string[] | undefined>;
+               const authHeaderVal = (headersRecord['authorization'] as string) || '';
+               const cookieHeaderVal = (headersRecord['cookie'] as string) || '';
+               let token = authHeaderVal.replace(/^Bearer\s+/i, '');
+               if (!token && cookieHeaderVal) {
+                 const match = cookieHeaderVal.match(/auth_token=([^;]+)/);
+                 if (match) token = match[1];
+               }
+               if (token) {
+                 try {
+                   const jwt = (await import('jsonwebtoken')).default;
+                   const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
+                   if (decoded?.id) userId = decoded.id;
+                   if (decoded?.email) userEmail = decoded.email;
+                 } catch {}
+               }
+
+               if (userId || userEmail) {
+                 await db.query(
+                   `UPDATE users
+                    SET phone_verified = true,
+                        phone_number = COALESCE($1, phone_number)
+                    WHERE id = $2 OR LOWER(email) = LOWER($3)`,
+                   [cleanPhone, userId || '', userEmail || '']
+                 );
+               }
+             } catch (dbErr: any) {
+               console.error('[Phone Middleware] Database sync error:', dbErr.message);
+             }
+
+             res.statusCode = 200;
+             res.end(JSON.stringify({ success: true, statusCode: 200, status: 'approved', phone_verified: true, message: 'Verification successful.' }));
+             return;
+          } else {
+             res.statusCode = 400;
+             res.end(JSON.stringify({ success: false, statusCode: 400, status: data.status, error: 'INVALID_CODE', message: 'Verification failed.' }));
+             return;
+          }
+        }
+      }
+
+      // Route 1: /api/auth/phone/send-otp (Test Mock Fallback)
       if (url.includes('/send-otp')) {
         const phoneNumber = body.phoneNumber;
         if (!phoneNumber || typeof phoneNumber !== 'string' || phoneNumber.trim().length < 7) {
@@ -98,7 +246,7 @@ export function createPhoneAuthMiddleware() {
         return;
       }
 
-      // Route 2: /api/auth/phone/verify-otp (Robust Error-Handling Layer)
+      // Route 2: /api/auth/phone/verify-otp (Test Mock Fallback Error-Handling Layer)
       if (url.includes('/verify-otp')) {
         const headers = req.headers as Record<string, string | string[] | undefined>;
         const simulateHeader = headers?.['x-simulate-error'];
@@ -208,8 +356,6 @@ export function createPhoneAuthMiddleware() {
             if (token) {
               try {
                 const jwt = (await import('jsonwebtoken')).default;
-                // Security: Fallback secret should only be used in development environments.
-                // The main server initialization in server/authRoutes.ts guarantees JWT_SECRET is present in production.
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
                 if (decoded?.id) userId = decoded.id;
                 if (decoded?.email) userEmail = decoded.email;
