@@ -11,3 +11,7 @@
 **Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used to generate sensitive security tokens including email verification PINs, SMS OTPs, and Twilio Session IDs. This makes tokens predictable and vulnerable to brute-force or sequencing attacks.
 **Learning:** Both server-side Express routes and isomorphic API services were relying on `Math.floor(100000 + Math.random() * 900000)` for OTP generation.
 **Prevention:** Always use cryptographically secure pseudo-random number generators (CSPRNG). Use `crypto.randomInt()` or `crypto.randomBytes()` in Node.js environments, and `window.crypto.getRandomValues()` in browser environments.
+## 2026-10-06 - Secure Random Value Generation
+**Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used across the application to generate sensitive security tokens, transaction IDs, escrow holds, OTP session IDs, and database audit logs. This predictability introduces severe vulnerabilities to token sequencing and brute-force attacks.
+**Learning:** Development-grade ID and token generators often leak into production if cryptographically secure replacements are not strictly enforced during code review.
+**Prevention:** Always rely on Node.js `crypto` (`crypto.randomBytes`, `crypto.randomUUID`) on the backend and `window.crypto` (`crypto.getRandomValues`, `crypto.randomUUID`) on the frontend to guarantee unpredictability in critical identifiers and tokens.

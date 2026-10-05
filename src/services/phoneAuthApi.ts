@@ -91,10 +91,42 @@ class PhoneAuthStore {
   createSession(phoneNumber: string): StoredOtpSession {
     const formatted = this.formatE164(phoneNumber);
     const now = Date.now();
-    const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Secure random generation
+    let rand = 0;
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      rand = array[0] / (0xffffffff + 1);
+    } else if (typeof require !== 'undefined') {
+      try {
+        const crypto = require('crypto');
+        rand = crypto.randomBytes(4).readUInt32LE(0) / (0xffffffff + 1);
+      } catch (e) {
+        rand = Math.random();
+      }
+    } else {
+      rand = Math.random();
+    }
+
+    const generatedCode = Math.floor(100000 + rand * 900000).toString();
+
+    let sidRand = '';
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+       sidRand = window.crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
+    } else if (typeof require !== 'undefined') {
+       try {
+         const crypto = require('crypto');
+         sidRand = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
+       } catch (e) {
+         sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
+       }
+    } else {
+       sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
 
     const session: StoredOtpSession = {
-      sid: `VE_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      sid: `VE_${sidRand}`,
       phoneNumber: formatted,
       codeSent: generatedCode,
       createdAt: now,

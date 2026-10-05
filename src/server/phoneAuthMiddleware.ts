@@ -108,7 +108,7 @@ export function createPhoneAuthMiddleware() {
             body: params,
           });
 
-          const data = await response.json();
+          const data = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
           if (!response.ok) {
              res.statusCode = response.status;
              res.end(JSON.stringify({ success: false, statusCode: response.status, error: 'TWILIO_ERROR', message: data.message || 'Failed to send OTP' }));
@@ -157,7 +157,7 @@ export function createPhoneAuthMiddleware() {
             body: params,
           });
 
-          const data = await response.json();
+          const data = (response.headers.get('content-type')?.includes('application/json') ? await response.json() : {});
           if (!response.ok) {
              res.statusCode = response.status;
              res.end(JSON.stringify({ success: false, statusCode: response.status, error: 'TWILIO_ERROR', message: data.message || 'Failed to verify OTP' }));
@@ -239,7 +239,7 @@ export function createPhoneAuthMiddleware() {
             codeSent: session.codeSent,
             createdAt: new Date(session.createdAt).toISOString(),
             expiresInSeconds: 600,
-            deliveryTimeMs: Math.floor(140 + Math.random() * 100),
+            deliveryTimeMs: Math.floor(140 + (typeof require !== 'undefined' ? (require('crypto').randomBytes(4).readUInt32LE(0) / (0xffffffff + 1)) : Math.random()) * 100),
             message: 'Verification code dispatched successfully.',
           })
         );

@@ -173,8 +173,21 @@ class PostmarkMailService {
         break;
     }
 
+    let randPart = '';
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      randPart = window.crypto.randomUUID().replace(/-/g, '').substring(0, 6);
+    } else if (typeof require !== 'undefined') {
+      try {
+        const crypto = require('crypto');
+        randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 6);
+      } catch (e) {
+        randPart = Math.random().toString(36).substring(2, 8);
+      }
+    } else {
+      randPart = Math.random().toString(36).substring(2, 8);
+    }
     const message: PostmarkMessage = {
-      messageId: `pm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+      messageId: `pm_${Date.now()}_${randPart}`,
       triggerType: trigger,
       from: 'notifications@nursespillow.com',
       to,

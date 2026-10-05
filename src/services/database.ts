@@ -997,9 +997,22 @@ class DatabaseService {
   }
 
   async logAuditAsync(log: Omit<DbAuditLog, 'id' | 'timestamp'>): Promise<DbAuditLog> {
+    let randPart = '';
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      randPart = window.crypto.randomUUID().replace(/-/g, '').substring(0, 4);
+    } else if (typeof require !== 'undefined') {
+      try {
+        const crypto = require('crypto');
+        randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
+      } catch (e) {
+        randPart = Math.random().toString(36).substring(2, 6);
+      }
+    } else {
+      randPart = Math.random().toString(36).substring(2, 6);
+    }
     const entry: DbAuditLog = {
       ...log,
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `log_${Date.now()}_${randPart}`,
       timestamp: new Date().toISOString(),
     };
 
@@ -1032,9 +1045,22 @@ class DatabaseService {
 
   logAudit(log: Omit<DbAuditLog, 'id' | 'timestamp'>): DbAuditLog {
     this.logAuditAsync(log).catch(console.error);
+    let randPart = '';
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      randPart = window.crypto.randomUUID().replace(/-/g, '').substring(0, 4);
+    } else if (typeof require !== 'undefined') {
+      try {
+        const crypto = require('crypto');
+        randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
+      } catch (e) {
+        randPart = Math.random().toString(36).substring(2, 6);
+      }
+    } else {
+      randPart = Math.random().toString(36).substring(2, 6);
+    }
     return {
       ...log,
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `log_${Date.now()}_${randPart}`,
       timestamp: new Date().toISOString(),
     };
   }
