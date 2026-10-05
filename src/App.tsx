@@ -201,10 +201,30 @@ export default function App() {
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>("find-housing");
   const [tabHistory, setTabHistory] = useState<NavigationTab[]>([]);
-  const [verificationStep, setVerificationStep] =
-    useState<VerificationStepId>(3);
   const [verificationData, setVerificationData] =
     useState<VerificationFormData>(BLANK_VERIFICATION_DATA);
+
+  const [verificationStepState, setVerificationStepState] = useState<VerificationStepId>(1);
+  const verificationStep = verificationStepState;
+
+  const setVerificationStep = useCallback((step: VerificationStepId | ((prev: VerificationStepId) => VerificationStepId)) => {
+    setVerificationStepState((prev) => {
+      const nextStep = typeof step === 'function' ? step(prev) : step;
+      const isProduction = import.meta.env.PROD;
+
+      // Allow moving backwards freely
+      if (nextStep <= prev) return nextStep;
+
+      // Enforce step completion in production before moving forward
+      if (isProduction) {
+        if (nextStep > 1 && !verificationData.isIdVerified) return 1;
+        if (nextStep > 2 && !(verificationData.phoneVerified && verificationData.isContactVerified)) return 2;
+        if (nextStep > 3 && verificationData.licenseStatus !== 'verified' && verificationData.licenseStatus !== 'pending_review') return 3;
+      }
+      return nextStep;
+    });
+  }, [verificationData]);
+
 
   // Proactive Role-Based Access Navigation Guard
   const handleNavigateTab = useCallback(
@@ -218,6 +238,14 @@ export default function App() {
       }
 
       if (tab === currentTab) return;
+
+      // Block unauthenticated users from verification flow and dashboards in production
+      const isProduction = import.meta.env.PROD;
+      if (isProduction && currentUser.role === "guest" && (tab === "verification" || tab === "email-verification" || tab === "phone-verification" || tab === "nurse-dashboard" || tab === "host-dashboard" || tab === "admin-portal")) {
+        setAuthModalMode("signin");
+        setIsAuthModalOpen(true);
+        return;
+      }
 
       // Allow open navigation across all workspaces and dashboards with interactive preview
       setTabHistory((prev) => [...prev, currentTab]);
