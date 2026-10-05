@@ -47,6 +47,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
           {steps.map((step) => {
             const isActive = currentStep === step.id;
 
+            const isProduction = import.meta.env.PROD;
             // Can only navigate to this step if it's the current step, or it's verified,
             // or the directly preceding step is completely verified.
             let canNavigate = false;
@@ -60,6 +61,13 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
               if (prevStep?.isVerified) {
                 canNavigate = true;
               }
+            }
+
+            // In production, strictly enforce sequential completion
+            if (isProduction) {
+              if (step.id > 1 && !isStep1Verified) canNavigate = false;
+              if (step.id > 2 && !isStep2Verified) canNavigate = false;
+              if (step.id > 3 && !isStep3Verified && !isStep3Pending) canNavigate = false;
             }
 
             const handleClick = () => {

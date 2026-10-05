@@ -69,14 +69,16 @@ export const ContactStep: React.FC<ContactStepProps> = ({
       setErrorMessage(error);
       return;
     }
-
     const isBothVerified = Boolean(data.isContactVerified && data.phoneVerified);
-    if (!isBothVerified) {
+    const isProduction = import.meta.env.PROD;
+
+    if (isProduction && !isBothVerified) {
       setErrorMessage("Please complete both email and phone verification before proceeding.");
       return;
     }
 
     setErrorMessage(null);
+
 
     // Save entered contact values without forging false verification
     onChange({
