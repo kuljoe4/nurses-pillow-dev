@@ -137,12 +137,20 @@ router.post('/login', catchAsync(async (req, res, next) => {
 }));
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('auth_token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
-  res.json({ message: 'Logged out successfully' });
+  console.log("[Backend Logout Flow] 1. Received POST /api/auth/logout request");
+  try {
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    console.log("[Backend Logout Flow] 2. Set-Cookie header added to clear 'auth_token', secure:", process.env.NODE_ENV === 'production');
+    res.json({ message: 'Logged out successfully' });
+    console.log("[Backend Logout Flow] 3. Responded with success");
+  } catch (error) {
+    console.error("[Backend Logout Flow] [ERROR] Failed to clear cookie:", error);
+    res.status(500).json({ error: 'Failed to log out' });
+  }
 });
 
 router.post('/forgot-password', catchAsync(async (req, res, next) => {
