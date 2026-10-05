@@ -509,9 +509,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
               <span className="text-[11px] font-medium text-gray-500 block">Direct Payouts</span>
               <div>
-                <span className="text-xs sm:text-sm font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                  <span>{payoutsEnabled ? 'Direct Active' : 'Connected'}</span>
+                <span className={`text-xs sm:text-sm font-bold flex items-center gap-1 ${payoutsEnabled ? 'text-[#2F6E5E] dark:text-[#aff0db]' : 'text-gray-400'}`}>
+                  <span className="material-symbols-outlined text-[16px]">{payoutsEnabled ? 'check_circle' : 'pending'}</span>
+                  <span>{payoutsEnabled ? 'Direct Active' : 'Not Connected'}</span>
                 </span>
                 <span className="text-[10px] text-gray-400 block mt-0.5">Automated direct deposit</span>
               </div>
