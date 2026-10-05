@@ -18,3 +18,6 @@
 ## 2025-10-27 - Icon-only buttons accessibility
 **Learning:** Added `aria-label` to three icon-only buttons in `SearchListingCard.tsx`. Icon-only buttons must always have an aria-label to be readable by screen readers.
 **Action:** Always verify icon-only buttons (`<button><span class="material-symbols-outlined">...</span></button>`) have dynamic or static `aria-label`s.
+## 2026-10-05 - ARIA labels for text-only symbols (like ✕)
+**Learning:** Discovered that 'icon-only' buttons are sometimes implemented using plain text symbols (like '✕' or '✓') rather than `<span className="material-symbols-outlined">`. These are effectively icon-only buttons for screen readers and strictly require `aria-label` attributes.
+**Action:** When auditing for missing ARIA labels, also look for buttons containing only non-alphanumeric text symbols.

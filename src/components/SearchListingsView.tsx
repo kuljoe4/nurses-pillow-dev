@@ -1670,6 +1670,7 @@ useBodyScrollLock(isGsaModalOpen);
                 type="button"
                 onClick={() => setIsGsaModalOpen(false)}
                 className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 cursor-pointer"
+                aria-label="Close GSA Stipend Comparison"
               >
                 ✕
               </button>

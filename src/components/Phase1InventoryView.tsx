@@ -250,6 +250,7 @@ export const Phase1InventoryView: React.FC<Phase1InventoryViewProps> = ({
               <button
                 onClick={() => setSelectedScreenForDetail(null)}
                 className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-sm font-bold"
+                aria-label="Close details"
               >
                 ✕
               </button>
