@@ -3,34 +3,45 @@ import { PHASE_1_SCREENS, getScreenBuildTier } from '../../data/phase1InventoryD
 
 export const Phase1InventorySummaryTab: React.FC = () => {
   const summaryStats = useMemo(() => {
-    const total = PHASE_1_SCREENS.length;
-    const m1 = PHASE_1_SCREENS.filter((s) => s.milestone === 'M1').length;
-    const m2 = PHASE_1_SCREENS.filter((s) => s.milestone === 'M2').length;
-    const m3 = PHASE_1_SCREENS.filter((s) => s.milestone === 'M3').length;
+    // ⚡ Bolt Performance Optimization: Single-pass iteration
+    // Replaced 17 separate O(N) array .filter() operations with a single O(N) loop
+    return PHASE_1_SCREENS.reduce(
+      (acc, s) => {
+        const tier = getScreenBuildTier(s);
 
-    const webOnly = PHASE_1_SCREENS.filter((s) => s.platform === 'Web').length;
-    const mobileOnly = PHASE_1_SCREENS.filter((s) => s.platform === 'Mobile').length;
-    const bothPlatform = PHASE_1_SCREENS.filter((s) => s.platform === 'Both').length;
+        if (s.milestone === 'M1') acc.m1++;
+        if (s.milestone === 'M2') acc.m2++;
+        if (s.milestone === 'M3') acc.m3++;
 
-    const must = PHASE_1_SCREENS.filter((s) => s.priority === 'Must').length;
-    const should = PHASE_1_SCREENS.filter((s) => s.priority === 'Should').length;
-    const could = PHASE_1_SCREENS.filter((s) => s.priority === 'Could').length;
+        if (s.platform === 'Web') acc.webOnly++;
+        if (s.platform === 'Mobile') acc.mobileOnly++;
+        if (s.platform === 'Both') acc.bothPlatform++;
 
-    const nurseRole = PHASE_1_SCREENS.filter((s) => s.role === 'Nurse').length;
-    const hostRole = PHASE_1_SCREENS.filter((s) => s.role === 'Host').length;
-    const adminRole = PHASE_1_SCREENS.filter((s) => s.role === 'Admin').length;
-    const sharedRole = PHASE_1_SCREENS.filter((s) => s.role === 'All' || s.role === 'Nurse / Host').length;
+        if (s.priority === 'Must') acc.must++;
+        if (s.priority === 'Should') acc.should++;
+        if (s.priority === 'Could') acc.could++;
 
-    const t1 = PHASE_1_SCREENS.filter((s) => getScreenBuildTier(s) === 'T1').length;
-    const t2 = PHASE_1_SCREENS.filter((s) => getScreenBuildTier(s) === 'T2').length;
-    const t3 = PHASE_1_SCREENS.filter((s) => getScreenBuildTier(s) === 'T3').length;
-    const t4 = PHASE_1_SCREENS.filter((s) => getScreenBuildTier(s) === 'T4').length;
+        if (s.role === 'Nurse') acc.nurseRole++;
+        if (s.role === 'Host') acc.hostRole++;
+        if (s.role === 'Admin') acc.adminRole++;
+        if (s.role === 'All' || s.role === 'Nurse / Host') acc.sharedRole++;
 
-    return {
-      total, m1, m2, m3, webOnly, mobileOnly, bothPlatform,
-      must, should, could, nurseRole, hostRole, adminRole, sharedRole,
-      t1, t2, t3, t4,
-    };
+        if (tier === 'T1') acc.t1++;
+        if (tier === 'T2') acc.t2++;
+        if (tier === 'T3') acc.t3++;
+        if (tier === 'T4') acc.t4++;
+
+        return acc;
+      },
+      {
+        total: PHASE_1_SCREENS.length,
+        m1: 0, m2: 0, m3: 0,
+        webOnly: 0, mobileOnly: 0, bothPlatform: 0,
+        must: 0, should: 0, could: 0,
+        nurseRole: 0, hostRole: 0, adminRole: 0, sharedRole: 0,
+        t1: 0, t2: 0, t3: 0, t4: 0,
+      }
+    );
   }, []);
 
   return (
