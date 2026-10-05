@@ -451,27 +451,72 @@ export default function App() {
         const data = await res.json();
         if (data.user) {
           const user = data.user;
-          setCurrentUser({
-            id: user.id,
-            role: user.role,
-            name: user.full_name || user.email,
-            email: user.email,
-            isNurseVerified: Boolean(user.is_nurse_verified),
-            isHostVerified: Boolean(user.is_host_verified),
-            isIdVerified: Boolean(user.identity_verified),
+          setCurrentUser((prev) => {
+            const next = {
+              id: user.id,
+              role: user.role,
+              name: user.full_name || user.email,
+              email: user.email,
+              isNurseVerified: Boolean(user.is_nurse_verified),
+              isHostVerified: Boolean(user.is_host_verified),
+              isIdVerified: Boolean(user.identity_verified),
+            };
+            if (
+              prev &&
+              prev.id === next.id &&
+              prev.role === next.role &&
+              prev.name === next.name &&
+              prev.email === next.email &&
+              prev.isNurseVerified === next.isNurseVerified &&
+              prev.isHostVerified === next.isHostVerified &&
+              prev.isIdVerified === next.isIdVerified
+            ) {
+              return prev;
+            }
+            return next;
           });
           // Synchronize verified database state into verification workflow
-          setVerificationData((prev) => ({
-            ...prev,
-            workEmail: user.email || prev.workEmail,
-            legalFirstName: (user.full_name || "").split(" ")[0] || prev.legalFirstName,
-            legalLastName: (user.full_name || "").split(" ").slice(1).join(" ") || prev.legalLastName,
-            isIdVerified: Boolean(user.identity_verified),
-            isContactVerified: Boolean(user.email_verified),
-            phoneVerified: Boolean(user.phone_verified),
-            mobilePhone: user.phone_number || prev.mobilePhone,
-            licenseStatus: user.is_nurse_verified ? "verified" : prev.licenseStatus,
-          }));
+          setVerificationData((prev) => {
+            const prevWorkEmail = prev?.workEmail || '';
+            const prevLegalFirstName = prev?.legalFirstName || '';
+            const prevLegalLastName = prev?.legalLastName || '';
+            const prevMobilePhone = prev?.mobilePhone || '';
+            const prevLicenseStatus = prev?.licenseStatus || 'unverified';
+
+            const workEmail = user.email || prevWorkEmail;
+            const legalFirstName = (user.full_name || "").split(" ")[0] || prevLegalFirstName;
+            const legalLastName = (user.full_name || "").split(" ").slice(1).join(" ") || prevLegalLastName;
+            const isIdVerified = Boolean(user.identity_verified);
+            const isContactVerified = Boolean(user.email_verified);
+            const phoneVerified = Boolean(user.phone_verified);
+            const mobilePhone = user.phone_number || prevMobilePhone;
+            const licenseStatus = user.is_nurse_verified ? "verified" : prevLicenseStatus;
+
+            if (
+                prev &&
+                prev.workEmail === workEmail &&
+                prev.legalFirstName === legalFirstName &&
+                prev.legalLastName === legalLastName &&
+                prev.isIdVerified === isIdVerified &&
+                prev.isContactVerified === isContactVerified &&
+                prev.phoneVerified === phoneVerified &&
+                prev.mobilePhone === mobilePhone &&
+                prev.licenseStatus === licenseStatus
+            ) {
+                return prev;
+            }
+            return {
+                ...prev,
+                workEmail,
+                legalFirstName,
+                legalLastName,
+                isIdVerified,
+                isContactVerified,
+                phoneVerified,
+                mobilePhone,
+                licenseStatus,
+            };
+          });
           if (user.email) {
             localStorage.setItem("np_user_email", user.email);
           }
@@ -483,12 +528,13 @@ export default function App() {
           const savedBookings = localStorage.getItem(bookingsKey);
           if (savedBookings !== null) {
             try {
-              setBookingRequests(JSON.parse(savedBookings));
+              const parsedBookings = JSON.parse(savedBookings);
+              setBookingRequests((prev) => JSON.stringify(prev) === JSON.stringify(parsedBookings) ? prev : parsedBookings);
             } catch {
-              setBookingRequests([]);
+              setBookingRequests((prev) => (prev && prev.length === 0) ? prev : []);
             }
           } else if (!isDemo) {
-            setBookingRequests([]);
+            setBookingRequests((prev) => (prev && prev.length === 0) ? prev : []);
           }
 
           // Load user's persisted saved pillows from localStorage & backend
@@ -496,10 +542,11 @@ export default function App() {
           const localPillows = localStorage.getItem(pillowsKey);
           if (localPillows !== null) {
             try {
-              setSavedListingIds(JSON.parse(localPillows));
+              const parsedPillows = JSON.parse(localPillows);
+              setSavedListingIds((prev) => JSON.stringify(prev) === JSON.stringify(parsedPillows) ? prev : parsedPillows);
             } catch {}
           } else if (!isDemo) {
-            setSavedListingIds([]);
+            setSavedListingIds((prev) => (prev && prev.length === 0) ? prev : []);
           }
 
           // Background sync from backend favorites endpoint
@@ -514,7 +561,7 @@ export default function App() {
             if (favRes.ok) {
               const favData = await favRes.json();
               if (Array.isArray(favData.listingIds)) {
-                setSavedListingIds(favData.listingIds);
+                setSavedListingIds((prev) => JSON.stringify(prev) === JSON.stringify(favData.listingIds) ? prev : favData.listingIds);
                 localStorage.setItem(pillowsKey, JSON.stringify(favData.listingIds));
               }
             }
@@ -545,7 +592,7 @@ export default function App() {
         if (res.ok) {
           const liveBookings = await res.json();
           if (Array.isArray(liveBookings) && liveBookings.length > 0) {
-            setBookingRequests(liveBookings);
+            setBookingRequests((prev) => JSON.stringify(prev) === JSON.stringify(liveBookings) ? prev : liveBookings);
             return liveBookings;
           }
         }
@@ -554,7 +601,7 @@ export default function App() {
       }
       return null;
     },
-    [currentUser],
+    [currentUser?.id, currentUser?.role],
   );
 
   // Seamless Perspective / Role Switcher for instant testing
@@ -642,9 +689,15 @@ export default function App() {
       }
     };
     initializeDb();
+  }, []);
+
+  useEffect(() => {
     fetchUserProfile();
+  }, [fetchUserProfile]);
+
+  useEffect(() => {
     fetchLiveBookings();
-  }, [fetchUserProfile, fetchLiveBookings]);
+  }, [fetchLiveBookings]);
 
   // Handle email verification / confirmation query parameters in URL
   useEffect(() => {
