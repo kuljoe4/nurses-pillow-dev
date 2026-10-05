@@ -1002,6 +1002,12 @@ async function startServer() {
   app.get('/api/bookings', async (req: Request, res: Response) => {
     try {
       const { userId, role, hostId } = req.query;
+
+      // Prevent guests or unauthenticated users from fetching all bookings
+      if (!role || role === 'guest') {
+        return res.json([]);
+      }
+
       let query = `
         SELECT b.*,
                l.title as listing_title_from_db,

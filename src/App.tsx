@@ -311,6 +311,9 @@ export default function App() {
 
   // Confirmed Logout handler: clears all active user sessions and resets state to Guest role
   const handleConfirmLogout = async () => {
+    console.log("[Logout Flow] 1. Initiating handleConfirmLogout()");
+    console.log("[Logout Flow] Initial currentUser:", currentUser);
+
     // 1. Clear session storage items related to user and developer sessions
     sessionStorage.removeItem("np_staging_user");
     sessionStorage.removeItem("np_user_session");
@@ -320,13 +323,21 @@ export default function App() {
     localStorage.removeItem("np_remembered_user");
     localStorage.removeItem("np_auth_token");
     localStorage.removeItem("np_user_email");
+    console.log("[Logout Flow] 2. Cleared local/session storage");
 
     // Clear backend auth cookie and await to prevent race conditions on re-render
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch((error) => {
-      console.error("[Logout Error] Failed to clear backend authentication cookie:", error);
-    });
+    try {
+      console.log("[Logout Flow] 3. Calling POST /api/auth/logout with credentials: 'include'");
+      const response = await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      console.log("[Logout Flow] 4. Backend responded with status:", response.status);
+      const text = await response.text();
+      console.log("[Logout Flow] 5. Backend response body:", text);
+    } catch (error) {
+      console.error("[Logout Flow] [ERROR] Failed to clear backend authentication cookie:", error);
+    }
 
     // 2. Reset currentUser state to Guest and clear active state
+    console.log("[Logout Flow] 6. Setting currentUser to Guest");
     setCurrentUser({ role: "guest", name: "Guest User" });
     setBookingRequests([]);
     setSavedListingIds([]);
