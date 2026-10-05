@@ -33,7 +33,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         if (res.ok) {
           const contentType = res.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
-            const data = await res.json();
+            const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
             const mappedReviews: AdminLicenseReview[] = data.map((d: any) => ({
               id: d.id,
               clinicianLegalName: d.full_name || d.email,

@@ -459,7 +459,7 @@ export default function App() {
         credentials: "include",
       });
       if (res.ok) {
-        const data = await res.json();
+        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
         if (data.user) {
           const user = data.user;
           setCurrentUser((prev) => {
@@ -570,7 +570,7 @@ export default function App() {
               credentials: "include",
             });
             if (favRes.ok) {
-              const favData = await favRes.json();
+              const favData = (favRes.headers.get('content-type')?.includes('application/json') ? await favRes.json() : {});
               if (Array.isArray(favData.listingIds)) {
                 setSavedListingIds((prev) => JSON.stringify(prev) === JSON.stringify(favData.listingIds) ? prev : favData.listingIds);
                 localStorage.setItem(pillowsKey, JSON.stringify(favData.listingIds));
@@ -601,7 +601,7 @@ export default function App() {
 
         const res = await fetch(`/api/bookings?${params.toString()}`);
         if (res.ok) {
-          const liveBookings = await res.json();
+          const liveBookings = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
           if (Array.isArray(liveBookings) && liveBookings.length > 0) {
             setBookingRequests((prev) => JSON.stringify(prev) === JSON.stringify(liveBookings) ? prev : liveBookings);
             return liveBookings;

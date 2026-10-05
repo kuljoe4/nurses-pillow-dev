@@ -94,7 +94,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         body: JSON.stringify({ email, password, fullName, role }),
       });
 
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
 
       if (!res.ok) {
         throw new Error(data.error || "Registration failed");
@@ -139,7 +139,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       if (!res.ok) {
         throw new Error(data.error || "Failed to send reset link");
       }
@@ -175,7 +175,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         body: JSON.stringify({ token: resetToken, newPassword: password }),
       });
 
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
       if (!res.ok) {
         throw new Error(data.error || "Failed to reset password");
       }
@@ -210,7 +210,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
 
       if (res.status === 403 && data.requiresVerification) {
         if (onOpenEmailVerification) {

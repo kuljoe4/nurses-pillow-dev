@@ -61,7 +61,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           });
 
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
-            const data = await res.json();
+            const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
             if (isMounted && data.listings && data.listings.length > 0) {
               setEditingListingId(data.listings[0].id);
             }
@@ -96,7 +96,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             signal: controller.signal
           });
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
-            const data = await res.json();
+            const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
             if (isMounted && data.photos) {
               setListingPhotos(data.photos.map((p: any) => ({
                 id: p.id,
@@ -216,7 +216,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     try {
       const res = await fetch(`/api/stripe/status/${hostId}`);
       if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
-        const data = await res.json();
+        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
         setPayoutsEnabled(data.payouts_enabled);
       } else if (!res.ok) {
         console.error(`Failed to fetch payout status: ${res.status} ${res.statusText}`);
@@ -247,7 +247,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       const isJson = res.headers.get('content-type')?.includes('application/json');
 
       if (res.ok && isJson) {
-        const data = await res.json();
+        const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
         if (data.url) {
           window.location.href = data.url;
         } else {
@@ -255,7 +255,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         }
       } else {
         if (isJson) {
-          const errorData = await res.json();
+          const errorData = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
           console.error(`Failed to create account link: ${res.status} ${res.statusText}`, errorData);
           if (errorData.error === 'StripeInvalidRequestError') {
              setStripeError('Payouts are currently unavailable because the platform owner needs to complete Stripe Connect onboarding.');
@@ -292,7 +292,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         setPayoutsEnabled(true);
         await fetchPayoutStatus();
       } else {
-        const err = await res.json().catch(() => ({}));
+        const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
         setStripeError(err.error || 'Failed to complete payout onboarding.');
       }
     } catch (e: any) {
@@ -344,7 +344,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       });
 
       if (listingRes.ok && listingRes.headers.get('content-type')?.includes('application/json')) {
-        const listingData = await listingRes.json();
+        const listingData = (listingRes.headers.get('content-type')?.includes('application/json') ? await listingRes.json() : {});
         currentListingId = listingData.listingId;
         if (!editingListingId) {
           setEditingListingId(currentListingId);
