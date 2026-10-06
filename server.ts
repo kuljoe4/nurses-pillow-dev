@@ -1263,7 +1263,7 @@ async function startServer() {
         accountId = userRes.rows[0].stripe_connected_account_id;
       } else {
         try {
-          const account = await stripe.accounts.create({ type: 'express' }); // Note: Still using v1 for now to avoid SDK migration, but embedded components is the core of v2 UX
+          const account = await stripe.v2.core.accounts.create();
           accountId = account.id;
           await db.query(
             'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
@@ -1339,7 +1339,7 @@ async function startServer() {
         accountId = userRes.rows[0].stripe_connected_account_id;
       } else {
         try {
-          const account = await stripe.accounts.create({ type: 'express' });
+          const account = await stripe.v2.core.accounts.create();
           accountId = account.id;
           await db.query(
             'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
