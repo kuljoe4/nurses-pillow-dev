@@ -17,6 +17,7 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
   const [ticketSubject, setTicketSubject] = useState('quiet_hours');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Close on Escape key
   useEffect(() => {
@@ -33,11 +34,12 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
     setTimeout(() => {
-      setIsSubmitted(false);
+      setIsSubmitting(false);
+      setIsSubmitted(true);
       setMessage('');
-      onClose();
+      setTimeout(() => onClose(), 2000);
     }, 2000);
   };
 
@@ -156,10 +158,20 @@ export const NurseSupportModal: React.FC<NurseSupportModalProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              disabled={isSubmitting}
+              className="w-full py-3 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
             >
-              <span>Send support request</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              {isSubmitting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                  <span>Sending...</span>
+                </>
+              ) : (
+                <>
+                  <span>Send support request</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </>
+              )}
             </button>
           </form>
         )}
