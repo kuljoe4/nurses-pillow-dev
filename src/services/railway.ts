@@ -274,6 +274,18 @@ class RailwayDatabaseManager {
             WHEN duplicate_object THEN null;
         END $$;
 
+
+        CREATE TABLE IF NOT EXISTS organizations (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name VARCHAR(255) NOT NULL,
+            organization_type VARCHAR(50) NOT NULL,
+            billing_email VARCHAR(255) NOT NULL,
+            phone_number VARCHAR(30),
+            is_verified BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
         CREATE TABLE IF NOT EXISTS users (
           id VARCHAR(255) PRIMARY KEY,
           role VARCHAR(50) NOT NULL DEFAULT 'nurse',
@@ -288,6 +300,48 @@ class RailwayDatabaseManager {
           stripe_connected_account_id VARCHAR(100),
           stripe_payouts_enabled BOOLEAN DEFAULT FALSE,
           created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL;
+
+
+        CREATE TABLE IF NOT EXISTS promo_codes (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            code VARCHAR(50) UNIQUE NOT NULL,
+            discount_type VARCHAR(20) NOT NULL,
+            discount_value DECIMAL(10, 2) NOT NULL,
+            min_booking_value DECIMAL(10, 2) DEFAULT 0.00,
+            max_uses INT,
+            times_used INT DEFAULT 0,
+            expires_at TIMESTAMPTZ,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS clinician_matching_profiles (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            preferred_hospital_id VARCHAR(255) REFERENCES healthcare_facilities(id),
+            max_commute_miles INT DEFAULT 15,
+            sleep_schedule VARCHAR(20) DEFAULT 'night_shift',
+            pet_present BOOLEAN DEFAULT FALSE,
+            max_budget_monthly DECIMAL(10, 2),
+            earliest_move_in DATE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS roommate_matching_profiles (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            is_opted_in BOOLEAN DEFAULT FALSE,
+            target_facility_id VARCHAR(255) REFERENCES healthcare_facilities(id),
+            target_start_date DATE,
+            target_end_date DATE,
+            budget_share_monthly DECIMAL(10, 2),
+            cleanliness_preference VARCHAR(50),
+            gender_preference VARCHAR(50),
+            created_at TIMESTAMPTZ DEFAULT NOW()
         );
 
         CREATE TABLE IF NOT EXISTS verification_records (
@@ -360,6 +414,33 @@ class RailwayDatabaseManager {
 
         -- Sanitize existing listings records to enforce security_deposit defaults
         UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;
+
+
+        CREATE TABLE IF NOT EXISTS listing_rooms (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+            room_name VARCHAR(100) NOT NULL,
+            description TEXT,
+            monthly_rent DECIMAL(10, 2) NOT NULL,
+            security_deposit_amount DECIMAL(10, 2) DEFAULT 0.00,
+            private_bathroom BOOLEAN DEFAULT FALSE,
+            is_available BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_rooms_listing ON listing_rooms(listing_id);
+
+        CREATE TABLE IF NOT EXISTS listing_gap_rules (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+            room_id UUID REFERENCES listing_rooms(id) ON DELETE CASCADE,
+            gap_start_date DATE NOT NULL,
+            gap_end_date DATE NOT NULL,
+            discount_percentage DECIMAL(5, 2) DEFAULT 10.00,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
 
         CREATE TABLE IF NOT EXISTS listing_photos (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
