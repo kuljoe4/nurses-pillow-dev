@@ -15,3 +15,7 @@
 **Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used across the application to generate sensitive security tokens, transaction IDs, escrow holds, OTP session IDs, and database audit logs. This predictability introduces severe vulnerabilities to token sequencing and brute-force attacks.
 **Learning:** Development-grade ID and token generators often leak into production if cryptographically secure replacements are not strictly enforced during code review.
 **Prevention:** Always rely on Node.js `crypto` (`crypto.randomBytes`, `crypto.randomUUID`) on the backend and `window.crypto` (`crypto.getRandomValues`, `crypto.randomUUID`) on the frontend to guarantee unpredictability in critical identifiers and tokens.
+## 2025-02-28 - Add authentication to admin endpoints
+**Vulnerability:** Admin endpoints (`/api/admin/verifications`, `/api/admin/verifications/:userId/approve`, etc.) lacked authentication and authorization checks, allowing unauthenticated requests to view and approve/reject clinical verifications and property listings.
+**Learning:** High-privilege API routes must explicitly include authentication middleware and role validation to ensure only authorized administrators can access or execute sensitive actions.
+**Prevention:** Always apply the `authenticateToken` middleware and verify `req.user.role` (e.g. `super_admin`, `admin`) for any newly added `/api/admin/*` endpoints.

@@ -428,17 +428,11 @@ async function startServer() {
 
 
   // Admin endpoint to list pending verifications from PostgreSQL
-  app.get('/api/admin/verifications', async (req: any, res) => {
+  app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
-      const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-      let userRole: string | null = null;
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET) as any;
-          userRole = decoded?.role || null;
-        } catch {}
-      }
-
       // Fetch live user verification state from PostgreSQL database
       const result = await db.query(`
         SELECT id, email, full_name, role,
@@ -461,7 +455,10 @@ async function startServer() {
   });
 
   // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
-  app.post('/api/admin/verifications/:userId/approve', async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
       const { userId } = req.params;
 
@@ -484,7 +481,10 @@ async function startServer() {
   });
 
   // Admin endpoint to reject verification
-  app.post('/api/admin/verifications/:userId/reject', async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
       const { userId } = req.params;
 
@@ -504,7 +504,10 @@ async function startServer() {
   });
 
   // Admin endpoint to approve property listing
-  app.post('/api/admin/listings/:id/approve', async (req: any, res) => {
+  app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
       const { id } = req.params;
       await db.query(
@@ -519,7 +522,10 @@ async function startServer() {
   });
 
   // Admin endpoint to reject/unverify property listing
-  app.post('/api/admin/listings/:id/reject', async (req: any, res) => {
+  app.post('/api/admin/listings/:id/reject', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
     try {
       const { id } = req.params;
       await db.query(
