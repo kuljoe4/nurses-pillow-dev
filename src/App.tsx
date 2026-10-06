@@ -202,7 +202,11 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>("find-housing");
   const [tabHistory, setTabHistory] = useState<NavigationTab[]>([]);
   const [verificationData, setVerificationData] =
-    useState<VerificationFormData>(BLANK_VERIFICATION_DATA);
+    useState<VerificationFormData>(
+      import.meta.env.VITE_USE_MOCK_DATA === 'true'
+        ? INITIAL_VERIFICATION_DATA
+        : BLANK_VERIFICATION_DATA
+    );
 
   const [verificationStepState, setVerificationStepState] = useState<VerificationStepId>(1);
   const verificationStep = verificationStepState;

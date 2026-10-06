@@ -122,9 +122,9 @@ export const db = {
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
           ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
-          ADD COLUMN IF NOT EXISTS dob VARCHAR(20),
-          ADD COLUMN IF NOT EXISTS last_four_ssn VARCHAR(4),
-          ADD COLUMN IF NOT EXISTS id_document_name VARCHAR(255),
+
+
+
           ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
@@ -184,9 +184,9 @@ export const db = {
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
           ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
-          ADD COLUMN IF NOT EXISTS dob VARCHAR(20),
-          ADD COLUMN IF NOT EXISTS last_four_ssn VARCHAR(4),
-          ADD COLUMN IF NOT EXISTS id_document_name VARCHAR(255),
+
+
+
           ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),

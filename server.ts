@@ -266,7 +266,7 @@ async function startServer() {
   // Identity Verification Endpoint (NV-01, NV-02)
   app.post('/api/verify/identity', async (req: any, res: Response) => {
     try {
-      const { legalFirstName, legalLastName, dob, lastFourSSN, idDocumentName } = req.body;
+      const { legalFirstName, legalLastName } = req.body;
       
       let userId = req.user?.id || req.body?.userId;
       let email = req.user?.email || req.body?.email;
@@ -287,26 +287,6 @@ async function startServer() {
       }
       if (!legalLastName || typeof legalLastName !== 'string' || legalLastName.trim().length < 2) {
         return res.status(400).json({ error: 'Legal last name is required and must be at least 2 characters.' });
-      }
-      if (!dob || typeof dob !== 'string') {
-        return res.status(400).json({ error: 'Date of birth is required.' });
-      }
-      const dobDate = new Date(dob);
-      if (isNaN(dobDate.getTime())) {
-        return res.status(400).json({ error: 'Date of birth must be a valid date.' });
-      }
-      const ageDiffMs = Date.now() - dobDate.getTime();
-      const ageDate = new Date(ageDiffMs);
-      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-      if (age < 18 || dobDate > new Date()) {
-        return res.status(400).json({ error: 'You must be at least 18 years of age to complete clinician verification.' });
-      }
-      const cleanSSN = (lastFourSSN || '').toString().trim().replace(/\D/g, '');
-      if (cleanSSN.length !== 4) {
-        return res.status(400).json({ error: 'Last 4 digits of SSN must be exactly 4 numbers.' });
-      }
-      if (!idDocumentName || typeof idDocumentName !== 'string') {
-        return res.status(400).json({ error: 'A government-issued ID document is required for verification.' });
       }
 
       // 2. Identify user from auth token, session cookie, or body
@@ -334,9 +314,6 @@ async function startServer() {
         verified: true,
         identity_verified: true,
         fullName,
-        dob,
-        lastFourSSN: cleanSSN,
-        idDocumentName,
         message: 'Legal identity verified successfully.',
       });
     } catch (err: any) {

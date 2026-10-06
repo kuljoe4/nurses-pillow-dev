@@ -92,9 +92,6 @@ export interface VerificationFormData {
   // Step 1: Identity
   legalFirstName: string;
   legalLastName: string;
-  dob: string;
-  lastFourSSN: string;
-  idDocumentName?: string;
   isIdVerified: boolean;
 
   // Step 2: Email & Phone

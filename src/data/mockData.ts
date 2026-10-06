@@ -4,9 +4,6 @@ export const BLANK_VERIFICATION_DATA: VerificationFormData = {
   // Step 1: Identity
   legalFirstName: '',
   legalLastName: '',
-  dob: '',
-  lastFourSSN: '',
-  idDocumentName: undefined,
   isIdVerified: false,
 
   // Step 2: Email & Phone
@@ -36,9 +33,6 @@ export const INITIAL_VERIFICATION_DATA: VerificationFormData = {
   // Step 1: Identity
   legalFirstName: 'Sarah',
   legalLastName: 'Jenkins',
-  dob: '1992-04-18',
-  lastFourSSN: '7821',
-  idDocumentName: 'DL_California_Sarah_Jenkins.pdf',
   isIdVerified: true,
 
   // Step 2: Email & Phone
