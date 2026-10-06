@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLicenseReview, BookingRequest, HousingListing } from '../types';
+import { getProfessionLabel } from '../lib/professionConstants';
 
 interface AdminPortalViewProps {
   currentUser?: any;
@@ -297,7 +298,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         <div className="text-[10px] text-gray-400 font-normal">{r.submittedAt}</div>
                       </td>
                       <td className="py-3.5 px-3">
-                        <span className="px-2 py-0.5 rounded-md bg-[#EFF6FB] dark:bg-[#182840] font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
+                        <span className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-bold font-mono text-gray-700 dark:text-gray-300" title={getProfessionLabel(r.profession)}>
                           {r.profession}
                         </span>
                       </td>
@@ -309,7 +310,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         {r.hospitalAffiliation}
                       </td>
                       <td className="py-3.5 px-3">
-                        {r.profession === 'MD' || r.profession === 'DO' ? (
+                        {['MD_DO', 'SURGEON'].includes(r.profession) ? (
                           <a
                             href="https://www.docinfo.org"
                             target="_blank"
@@ -319,15 +320,15 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                             <span>FSMB DocInfo</span>
                             <span className="material-symbols-outlined text-[14px]">open_in_new</span>
                           </a>
-                        ) : r.profession?.toUpperCase().includes('CNA') ? (
+                        ) : ['CNA'].includes(r.profession) ? (
                           <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
                             <span>State Nurse Aide Registry</span>
                           </span>
-                        ) : r.profession?.toUpperCase() === 'PA' || r.profession?.toUpperCase().includes('PHYSICIAN ASSISTANT') ? (
+                        ) : ['PA', 'MD_DO', 'SURGEON'].includes(r.profession) ? (
                           <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
                             <span>State Medical Board</span>
                           </span>
-                        ) : r.profession && !['RN', 'LPN', 'LVN', 'NP', 'CRNA', 'CNM', 'APRN'].some(p => r.profession!.toUpperCase().includes(p)) ? (
+                        ) : !['RN', 'LPN_LVN', 'APRN_NP', 'CRNA', 'CNM'].includes(r.profession) ? (
                           <span className="inline-flex items-center gap-1 text-[#0A6FA8] font-bold">
                             <span>State Professional Registry</span>
                           </span>
