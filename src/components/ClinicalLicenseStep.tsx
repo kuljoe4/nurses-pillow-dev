@@ -1,7 +1,8 @@
 import React, {  useState, useRef , useEffect } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
-import { PROFESSION_OPTIONS, STATE_BOARDS } from '../data/mockData';
+import { STATE_BOARDS } from '../data/mockData';
 import { VerificationStepperNav } from './VerificationStepperNav';
+import { getProfessionOptionsGroupedByCategory, HealthcareProfessionEnum } from '../lib/professionConstants';
 
 interface ClinicalLicenseStepProps {
   data: VerificationFormData;
@@ -100,6 +101,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
         body: JSON.stringify({
           licenseNumber: data.licenseNumber,
           stateBoard: data.issuingStateBoard,
+          profession: data.profession,
           specialty: data.professionSpecialty,
           documentName: data.uploadedDocument?.name || 'document.pdf',
           email: userEmail,
@@ -216,22 +218,34 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                 isNightShiftMode ? 'text-[#E6ECF7]' : 'text-[#001848]'
               }`}
             >
-              Profession / Specialty
+                Profession / Category
             </label>
             <div className="relative">
               <select
-                value={data.professionSpecialty}
-                onChange={(e) => onChange({ professionSpecialty: e.target.value })}
+                  value={data.profession}
+                  onChange={(e) => {
+                    const enumValue = e.target.value as HealthcareProfessionEnum;
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    const label = selectedOption.text;
+                    onChange({ profession: enumValue, professionSpecialty: label });
+                  }}
                 className={`w-full appearance-none rounded-xl px-4 py-3.5 pr-10 text-sm font-medium transition-all duration-200 ease-in-out focus:outline-none shadow-xs cursor-pointer ${
                   isNightShiftMode
                     ? 'bg-[#15233a] text-white border border-[#233550] focus:border-[#3E9AD1]'
                     : 'bg-[#f2f3ff] text-[#001848] border border-transparent focus:border-[#0a6fa8] focus:bg-white'
                 }`}
               >
-                {PROFESSION_OPTIONS.map((prof) => (
-                  <option key={prof} value={prof} className={isNightShiftMode ? 'bg-[#0E1A2E]' : 'bg-white'}>
-                    {prof}
+                  <option value="" disabled className={isNightShiftMode ? 'bg-[#0E1A2E]' : 'bg-white'}>
+                    Select your profession
                   </option>
+                  {getProfessionOptionsGroupedByCategory().map((group) => (
+                    <optgroup key={group.category} label={group.category} className={isNightShiftMode ? 'bg-[#15233a] text-white' : 'bg-gray-100 text-[#001848]'}>
+                      {group.professions.map((prof) => (
+                        <option key={prof.enumValue} value={prof.enumValue} className={isNightShiftMode ? 'bg-[#0E1A2E]' : 'bg-white'}>
+                          {prof.label}
+                        </option>
+                      ))}
+                    </optgroup>
                 ))}
               </select>
               <div

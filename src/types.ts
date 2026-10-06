@@ -56,7 +56,7 @@ export interface BookingRequest {
 export interface AdminLicenseReview {
   id: string;
   clinicianLegalName: string;
-  profession: 'RN' | 'MD' | 'DO' | 'PA' | 'NP' | 'PT' | 'CRNA';
+  profession: string;
   issuingState: string;
   licenseNumber: string;
   licenseStatus: 'pending_review' | 'verified' | 'rejected' | 'info_requested';
@@ -101,6 +101,7 @@ export interface VerificationFormData {
   isContactVerified: boolean;
 
   // Step 3: Clinical License (Exact screen)
+  profession: string;
   professionSpecialty: string;
   licenseNumber: string;
   issuingStateBoard: string;

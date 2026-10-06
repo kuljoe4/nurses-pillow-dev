@@ -325,7 +325,7 @@ async function startServer() {
   // Clinical License Verification Endpoint (NV-03)
   app.post('/api/verify/license', async (req: any, res: Response) => {
     try {
-      const { licenseNumber, stateBoard, specialty, documentName } = req.body;
+      const { licenseNumber, stateBoard, profession, specialty, documentName } = req.body;
       let userId = req.user?.id || req.body?.userId;
       let email = req.user?.email || req.body?.email;
       if (!userId && !email) {
@@ -382,12 +382,13 @@ async function startServer() {
           `UPDATE users
            SET clinical_license_number = $1,
                clinical_state_board = $2,
+               profession_type = $8,
                profession_specialty = $3,
                clinical_document_url = $4,
                verification_status = 'pending_review',
                primary_source_name = $7
            WHERE id = $5 OR LOWER(email) = LOWER($6)`,
-          [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '', primarySourceName]
+          [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '', primarySourceName, (profession || 'RN').trim()]
         );
       }
 

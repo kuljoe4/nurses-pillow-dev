@@ -13,6 +13,7 @@ export const BLANK_VERIFICATION_DATA: VerificationFormData = {
   isContactVerified: false,
 
   // Step 3: Clinical License
+  profession: '',
   professionSpecialty: 'Registered Nurse (RN) - Travel ICU/Telemetry',
   licenseNumber: '',
   issuingStateBoard: '',
@@ -42,6 +43,7 @@ export const INITIAL_VERIFICATION_DATA: VerificationFormData = {
   isContactVerified: true,
 
   // Step 3: Clinical License (exact match to screenshot)
+  profession: 'RN',
   professionSpecialty: 'Registered Nurse (RN) - Travel ICU/Telemetry',
   licenseNumber: 'RN-9482015-CA',
   issuingStateBoard: 'California (BRN)',
