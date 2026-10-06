@@ -296,7 +296,13 @@ useBodyScrollLock(isGsaModalOpen);
 
     // Sort listings
     if (sortOption === 'closest') {
-      list.sort((a: HousingListing, b: HousingListing) => a.driveTimeMinutes - b.driveTimeMinutes);
+      // ⚡ Bolt Performance Optimization: Map distance recalculations
+      // Replaced redundant nested calculateCommuteDuration loop O(N log N) with an O(N) map
+      const distanceMap = new Map<string, number>();
+      for (let i = 0; i < list.length; i++) {
+        distanceMap.set(list[i].id, calculateCommuteDuration(list[i], selectedHospital).driveMinutes);
+      }
+      list.sort((a: HousingListing, b: HousingListing) => (distanceMap.get(a.id) || 0) - (distanceMap.get(b.id) || 0));
     } else if (sortOption === 'price_low') {
       list.sort((a: HousingListing, b: HousingListing) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {
