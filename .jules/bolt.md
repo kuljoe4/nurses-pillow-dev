@@ -16,3 +16,6 @@
 ## 2026-10-05 - [Single-Pass Iteration for Multiple Metric Counts]
 **Learning:** Found an O(M*N) anti-pattern in `Phase1InventorySummaryTab.tsx` where `.filter().length` was called 17 times inside a `useMemo` block to calculate summary statistics.
 **Action:** Replace multiple chained/independent `.filter()` array operations that iterate over the same dataset with a single O(N) loop (e.g. `reduce` or `for...of`) that increments metric counters.
+## 2026-10-06 - [Avoid Re-calculating Inside Sort]
+**Learning:** Found `calculateCommuteDuration` being redundantly calculated during array sorting, which caused an O(N log N) overhead, even when the function was memoized.
+**Action:** Prevent redundant calculations during sorting loops. Pre-calculate values or memoize properly to reduce sorting overhead.
