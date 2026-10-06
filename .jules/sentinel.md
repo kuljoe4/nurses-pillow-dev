@@ -20,3 +20,7 @@
 **Vulnerability:** Collection of sensitive PII (SSN, DOB, Manual Document Uploads) in the database and frontend which increases legal liability and potential attack surface.
 **Learning:** Handling sensitive PII and identity documents should be outsourced to secure third parties (e.g., Stripe Identity) rather than building internal flows and storing the data in our own Postgres database.
 **Prevention:** Scrub the schema, server endpoints, and frontend of all ssn, dob, and id_document references and leverage external KYC flows.
+## 2025-02-28 - Add authentication to admin endpoints
+**Vulnerability:** Admin endpoints (`/api/admin/verifications`, `/api/admin/verifications/:userId/approve`, etc.) lacked authentication and authorization checks, allowing unauthenticated requests to view and approve/reject clinical verifications and property listings.
+**Learning:** High-privilege API routes must explicitly include authentication middleware and role validation to ensure only authorized administrators can access or execute sensitive actions.
+**Prevention:** Always apply the `authenticateToken` middleware and verify `req.user.role` (e.g. `super_admin`, `admin`) for any newly added `/api/admin/*` endpoints.

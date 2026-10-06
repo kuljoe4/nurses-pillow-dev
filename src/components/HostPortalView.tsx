@@ -289,34 +289,6 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const handleDirectActivatePayouts = async () => {
-    setIsConnectingStripe(true);
-    setStripeError(null);
-    try {
-      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
-      const res = await fetch('/api/stripe/complete-onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ hostId }),
-      });
-      if (res.ok) {
-        setPayoutsEnabled(true);
-        await fetchPayoutStatus();
-      } else {
-        const err = (res.headers.get('content-type')?.includes('application/json') ? await res.json().catch(() => ({})) : {});
-        setStripeError(err.error || 'Failed to complete payout onboarding.');
-      }
-    } catch (e: any) {
-      setStripeError(e.message || 'Network error completing onboarding.');
-    } finally {
-      setIsConnectingStripe(false);
-    }
-  };
-
-
   const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploading(true);
@@ -431,14 +403,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#0A6FA8] dark:text-[#3E9AD1]">
-              Portal B • Host Console
+              Host Dashboard
             </span>
             <span className="px-2 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[10px] font-bold">
               ~95% Net Payout Partner
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0B2559] dark:text-white">
-            Host Dashboard
+            Welcome back
           </h1>
         </div>
 
@@ -496,7 +468,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 <span className="text-xl sm:text-2xl font-bold text-[#A8452E] dark:text-[#F4E2DC] tabular-nums">
                   {pendingBookings.length}
                 </span>
-                <span className="text-[10px] text-gray-400 block mt-0.5">24-hr SLA window</span>
+                <span className="text-[10px] text-gray-400 block mt-0.5">24-hr response window</span>
               </div>
             </div>
 
@@ -551,7 +523,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
             {bookingRequests.length === 0 ? (
               <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-8 text-center text-xs text-gray-400 shadow-[0_2px_12px_rgba(11,37,89,0.06)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                No pending requests. Incoming traveling clinician bids will appear here with instant alerts.
+                No pending requests. Incoming traveling clinician requests will appear here with instant alerts.
               </div>
             ) : (
               <div className="space-y-3.5">
@@ -721,10 +693,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             {/* Step 1: Property Basics */}
             {editorStep === 1 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                {/* Card 1: Setup Topology */}
+                {/* Card 1: Property Layout */}
                 <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
                   <label className="block text-xs font-bold text-gray-500 uppercase">
-                    Step 1: Property Topology
+                    Step 1: Property Layout
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -903,7 +875,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     </div>
                     <div className="sm:col-span-2 mt-2">
                       <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
-                        Custom Extra Options (JSON array) e.g. [{`{"name": "Grocery", "price": 50}`}]
+                        Custom Extra Options
                       </label>
                       <textarea
                         value={extraOptionsStr}
@@ -1219,13 +1191,6 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                             >
                               <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
                               <span>Connect via Stripe</span>
-                            </button>
-                            <button
-                              onClick={handleDirectActivatePayouts}
-                              className="w-full bg-[#EFF6FB] dark:bg-[#15233a] hover:bg-[#e0eef7] text-[#0A6FA8] dark:text-[#3E9AD1] border border-[#0A6FA8]/30 text-xs font-bold py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <span className="material-symbols-outlined text-[15px]">verified</span>
-                              <span>Verify &amp; Activate Direct Deposit</span>
                             </button>
                         </>
                     )}
