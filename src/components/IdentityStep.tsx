@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { VerificationFormData, VerificationStepId } from '../types';
-import { ClinicalDatePicker } from './ClinicalDatePicker';
 import { VerificationStepperNav } from './VerificationStepperNav';
 
 const STRIPE_PUBLISHABLE_KEY = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
@@ -24,7 +23,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
   isNightShiftMode,
   onOpenAuth,
 }) => {
-  const [showSSN, setShowSSN] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -34,7 +32,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
       errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [verificationError]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateInputs = (): string | null => {
     const firstName = (data.legalFirstName || '').trim();
@@ -47,44 +44,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
       return 'Please enter your legal last name (minimum 2 characters).';
     }
 
-    if (!data.dob) {
-      return 'Please enter your date of birth.';
-    }
-
-    const dobDate = new Date(data.dob);
-    if (isNaN(dobDate.getTime())) {
-      return 'Please enter a valid date of birth.';
-    }
-
-    const ageDiffMs = Date.now() - dobDate.getTime();
-    const ageDate = new Date(ageDiffMs);
-    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-    if (age < 18 || dobDate > new Date()) {
-      return 'You must be at least 18 years of age to complete clinician verification.';
-    }
-
-    const ssn = (data.lastFourSSN || '').trim().replace(/\D/g, '');
-    if (ssn.length !== 4) {
-      return 'Please enter the exact 4 digits of your SSN.';
-    }
-
-    if (!data.idDocumentName) {
-      return 'Please upload a photo or scan of your government-issued ID (Driver License or Passport).';
-    }
-
     return null;
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setVerificationError('Document file size must be under 10MB.');
-        return;
-      }
-      setVerificationError(null);
-      onChange({ idDocumentName: file.name });
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,9 +83,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         body: JSON.stringify({
           legalFirstName: data.legalFirstName.trim(),
           legalLastName: data.legalLastName.trim(),
-          dob: data.dob,
-          lastFourSSN: data.lastFourSSN.trim().replace(/\D/g, ''),
-          idDocumentName: data.idDocumentName,
           email: userEmail,
         }),
       });
@@ -174,8 +131,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         isIdVerified: true,
         legalFirstName: data.legalFirstName.trim(),
         legalLastName: data.legalLastName.trim(),
-        lastFourSSN: data.lastFourSSN.trim().replace(/\D/g, ''),
-        dob: data.dob,
       });
 
       setTimeout(() => {
@@ -282,120 +237,19 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <ClinicalDatePicker
-                value={data.dob}
-                onChange={(newDob) => {
-                  setVerificationError(null);
-                  onChange({ dob: newDob });
-                }}
-                maxDate={new Date().toISOString().split('T')[0]}
-                showPresets={false}
-                isNightShiftMode={isNightShiftMode}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-1.5">SSN (Last 4 Digits) *</label>
-              <div className="relative">
-                <input
-                  type={showSSN ? "text" : "password"}
-                  maxLength={4}
-                  required
-                  placeholder="••••"
-                  value={data.lastFourSSN}
-                  onChange={(e) => {
-                    setVerificationError(null);
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                    onChange({ lastFourSSN: val });
-                  }}
-                  className={`w-full rounded-xl pl-4 pr-10 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0A6FA8] tabular-nums ${
-                    isNightShiftMode
-                      ? 'bg-[#15233a] text-white border border-[#233550]'
-                      : 'bg-[#EFF6FB] text-[#0B2559]'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSSN(!showSSN)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none rounded-full cursor-pointer"
-                  aria-label={showSSN ? "Hide SSN" : "Show SSN"}
-                >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showSSN ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Government ID Document Upload */}
           <div className="pt-2">
-            <label className="block text-sm font-semibold mb-1.5">Government-Issued Photo ID *</label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".pdf,.png,.jpg,.jpeg"
-              className="hidden"
-            />
-
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`p-4 rounded-2xl flex items-center justify-between gap-3 border transition-colors cursor-pointer ${
-                data.idDocumentName
-                  ? data.isIdVerified
-                    ? isNightShiftMode
-                      ? 'bg-[#15233a] border-[#233550]'
-                      : 'bg-[#E1EFE9] border-[#2F6E5E]/20 text-[#0B2559]'
-                    : isNightShiftMode
-                    ? 'bg-[#15233a] border-[#3E9AD1]/40'
-                    : 'bg-[#EFF6FB] border-[#0A6FA8]/30'
-                  : isNightShiftMode
-                  ? 'bg-[#15233a]/60 border-dashed border-[#233550] hover:border-[#3E9AD1]'
-                  : 'bg-[#EFF6FB]/60 border-dashed border-[#0A6FA8]/30 hover:border-[#0A6FA8]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    data.isIdVerified
-                      ? 'bg-[#2F6E5E] text-white'
-                      : 'bg-[#0A6FA8] text-white'
-                  }`}
-                >
-                  <span className="material-symbols-outlined">
-                    {data.isIdVerified ? 'check_circle' : 'id_card'}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-sm font-bold flex items-center gap-1.5">
-                    <span>{data.idDocumentName || 'Upload Driver License or Passport'}</span>
-                    {data.isIdVerified && (
-                      <span className="material-symbols-outlined text-[#2F6E5E] dark:text-[#aff0db] text-base">
-                        check_circle
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                    {data.idDocumentName
-                      ? data.isIdVerified
-                        ? 'Government RealID Verified'
-                        : 'Document attached • Ready to verify'
-                      : 'Supported formats: PDF, PNG, JPG (Max 10MB)'}
-                  </div>
-                </div>
+            <div className={`p-4 rounded-2xl flex items-start gap-3 border ${
+              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#EFF6FB] border-[#0A6FA8]/20'
+            }`}>
+              <div className="mt-0.5 text-[#0A6FA8] dark:text-[#3E9AD1]">
+                <span className="material-symbols-outlined text-xl">shield_person</span>
               </div>
-              <button
-                type="button"
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full shrink-0 transition-colors ${
-                  data.isIdVerified
-                    ? 'bg-[#2F6E5E] text-white'
-                    : 'bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white'
-                }`}
-              >
-                {data.isIdVerified ? 'Verified' : data.idDocumentName ? 'Change File' : 'Browse File'}
-              </button>
+              <div>
+                <h4 className="text-sm font-bold mb-1 text-[#0B2559] dark:text-white">Secure Identity Verification</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Upon continuing, you will be redirected to our secure partner, <strong>Stripe Identity</strong>. You will be asked to securely upload a government-issued photo ID and take a real-time selfie. We do not store your documents.
+                </p>
+              </div>
             </div>
           </div>
 
