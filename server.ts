@@ -1272,6 +1272,26 @@ async function startServer() {
         });
         res.json({ client_secret: accountSession.client_secret });
       } catch (sessionErr: any) {
+        if (sessionErr?.message?.includes('No such account')) {
+          // Recover missing account
+          try {
+            const account = await stripe.v2.core.accounts.create();
+            accountId = account.id;
+            await db.query(
+              'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
+              [accountId, hostId]
+            );
+            const accountSession = await stripe.accountSessions.create({
+              account: accountId,
+              components: {
+                account_onboarding: { enabled: true },
+              },
+            });
+            return res.json({ client_secret: accountSession.client_secret });
+          } catch (retryErr: any) {
+            return res.status(500).json({ error: 'StripeError', message: retryErr.message || 'Failed to recover missing account.' });
+          }
+        }
         if (sessionErr?.message?.includes('Invalid API Key') || sessionErr?.message?.includes('simulated')) {
             return res.json({
                 sandbox: true,
@@ -1349,7 +1369,27 @@ async function startServer() {
         });
         res.json({ url: accountLink.url });
       } catch (linkErr: any) {
-        if (linkErr?.message?.includes('signed up for Connect') || linkErr?.message?.includes('No such account')) {
+        if (linkErr?.message?.includes('No such account')) {
+          // Recover missing account
+          try {
+            const account = await stripe.v2.core.accounts.create();
+            accountId = account.id;
+            await db.query(
+              'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
+              [accountId, hostId]
+            );
+            const accountLink = await stripe.accountLinks.create({
+              account: accountId,
+              refresh_url: refreshUrl || `${process.env.APP_URL || 'http://localhost:3000'}/host/stripe/refresh`,
+              return_url: returnUrl || `${process.env.APP_URL || 'http://localhost:3000'}/host/stripe/return`,
+              type: 'account_onboarding',
+            });
+            return res.json({ url: accountLink.url });
+          } catch (retryErr: any) {
+            return res.status(500).json({ error: 'StripeError', message: retryErr.message || 'Failed to recover missing account.' });
+          }
+        }
+        if (linkErr?.message?.includes('signed up for Connect') || linkErr?.message?.includes('simulated')) {
           return res.json({
             url: `${returnUrl || '/host-dashboard'}?stripe_return=true&simulated=true`,
             sandbox: true,
