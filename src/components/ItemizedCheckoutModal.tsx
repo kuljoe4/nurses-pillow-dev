@@ -131,6 +131,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       // Execute Stripe Connect split payment in sandbox mode with final effective rate
       const splitTxn = await stripeConnect.processSplitPayment({
         monthlyRent,
+        listingId: listing.id,
         cleaningFee,
         securityDeposit,
         cardNumber,
