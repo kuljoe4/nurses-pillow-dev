@@ -1428,38 +1428,63 @@ async function startServer() {
       const host = userRes.rows[0];
       let accountId = host.stripe_connected_account_id;
 
-      const createV2EmbeddedAccount = async (): Promise<string> => {
-        const account = await stripe.accounts.create({
-          type: 'express',
-          country: 'US',
-          email: host.email || undefined,
-          business_type: 'individual',
-          business_profile: {
-            mcc: '7011',
-            url: `https://nursespillow.com/hosts/${host.id}`,
-            product_description: 'Furnished mid-term housing accommodations for traveling healthcare professionals',
+      // Helper: Call the Accounts v2 API endpoint directly
+      const createV2Account = async (): Promise<string> => {
+        const response = await fetch('https://api.stripe.com/v2/core/accounts', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+            'Stripe-Version': '2025-02-24.acacia',
           },
-          capabilities: {
-            card_payments: { requested: true },
-            transfers: { requested: true },
-          },
+          body: JSON.stringify({
+            contact_email: host.email || undefined,
+            display_name: host.full_name || 'Nurses Pillow Host',
+            identity: {
+              country: 'us',
+              entity_type: 'individual',
+            },
+            dashboard: 'none', // Embedded components handle host management in-app
+            configuration: {
+              merchant: {},    // Enables direct card payment acceptance
+            },
+            defaults: {
+              currency: 'usd',
+              responsibilities: {
+                fees_collector: 'stripe',
+                losses_collector: 'stripe', // Platform shielded from host negative balances
+              },
+              locales: ['en-US'],
+            },
+            metadata: {
+              host_id: String(host.id),
+              platform: 'Nurses Pillow',
+            },
+          }),
         });
+
+        const accountData = await response.json();
+        if (!response.ok) {
+          throw new Error(accountData.error?.message || `Accounts v2 creation failed: ${JSON.stringify(accountData)}`);
+        }
 
         await db.query(
           'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
-          [account.id, host.id]
+          [accountData.id, host.id]
         );
 
-        return account.id;
+        return accountData.id;
       };
 
+      // 2. Ensure account exists
       if (!accountId) {
-        accountId = await createV2EmbeddedAccount();
+        accountId = await createV2Account();
       }
 
-      const createSession = async (targetAccountId: string) => {
+      // Helper: Create Account Session (strictly account + components)
+      const createSession = async (targetId: string) => {
         return await stripe.accountSessions.create({
-          account: targetAccountId,
+          account: targetId,
           components: {
             account_onboarding: {
               enabled: true,
@@ -1474,6 +1499,7 @@ async function startServer() {
         });
       };
 
+      // 3. Generate session with auto-recovery for missing/deleted test accounts
       let session;
       try {
         session = await createSession(accountId);
@@ -1483,8 +1509,7 @@ async function startServer() {
           sessionErr.message?.includes('No such account') ||
           sessionErr.message?.includes('does not exist')
         ) {
-          console.warn(`[Stripe] Stale account ID detected (${accountId}). Re-provisioning v2 account...`);
-          accountId = await createV2EmbeddedAccount();
+          accountId = await createV2Account();
           session = await createSession(accountId);
         } else {
           throw sessionErr;
@@ -1493,11 +1518,8 @@ async function startServer() {
 
       return res.json({ client_secret: session.client_secret });
     } catch (error: any) {
-      console.error('Stripe Account Session creation failure:', error);
-      return res.status(500).json({
-        error: error.type || 'StripeError',
-        message: error.message || 'Failed to initialize payout onboarding session',
-      });
+      console.error('Stripe Account Session creation error:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
     }
   });
 

@@ -101,10 +101,10 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const isListingOverrideActive = listing.customFeeOverridePercent !== undefined;
 
   // Verification Checkpoint lock
-  const isIdentityVerified = verificationData?.isIdentityVerified === true;
-  const isPhoneVerified = verificationData?.isPhoneVerified === true;
-  const isLicenseVerified = verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review' || currentUser?.role === 'nurse';
-  const isCheckoutLocked = !isIdentityVerified || !isPhoneVerified || !isLicenseVerified;
+  const isIdentityVerified = verificationData?.isIdVerified === true || verificationData?.isIdentityVerified === true || (currentUser as any)?.isIdVerified === true;
+  const isContactAndPhoneVerified = (verificationData?.phoneVerified === true && verificationData?.isContactVerified === true) || (currentUser as any)?.phoneVerified === true;
+  const isLicenseVerified = verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review' || (currentUser as any)?.isNurseVerified === true || currentUser?.role === 'nurse';
+  const isCheckoutLocked = !isIdentityVerified || !isContactAndPhoneVerified || !isLicenseVerified;
 
   // Split calculation preview based on final effective fee rate
   const splitPreview = stripeConnect.calculateSplit(
