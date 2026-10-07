@@ -137,6 +137,7 @@ export const db = {
 
         // Set default value for security_deposit_amount
         await railwayDb.query(`ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;`);
+        await railwayDb.query(`ALTER TABLE listings ADD COLUMN IF NOT EXISTS extra_options JSONB DEFAULT '[]'::jsonb;`);
 
         // Sanitize existing listings records to enforce security_deposit defaults
         await railwayDb.query(`UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;`);
@@ -199,6 +200,7 @@ export const db = {
 
         // Set default value for security_deposit_amount
         await pool.query(`ALTER TABLE listings ALTER COLUMN security_deposit_amount SET DEFAULT 0;`);
+        await pool.query(`ALTER TABLE listings ADD COLUMN IF NOT EXISTS extra_options JSONB DEFAULT '[]'::jsonb;`);
 
         // Sanitize existing listings records to enforce security_deposit defaults
         await pool.query(`UPDATE listings SET security_deposit_amount = 0 WHERE security_deposit_amount IS NULL;`);

@@ -88,6 +88,23 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
     setIsSubmitting(true);
     setSubmitError(null);
 
+    const licenseNum = (data.licenseNumber || '').trim();
+    if (!licenseNum || licenseNum.length < 3) {
+      setSubmitError('Please enter a valid clinical license number (at least 3 characters).');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!data.issuingStateBoard || !data.issuingStateBoard.trim()) {
+      setSubmitError('Please select your issuing state board.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!data.profession || !data.profession.trim()) {
+      setSubmitError('Please select your healthcare profession.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
       const userEmail = localStorage.getItem('np_user_email') || data.workEmail;
@@ -99,10 +116,11 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          licenseNumber: data.licenseNumber,
-          stateBoard: data.issuingStateBoard,
-          profession: data.profession,
-          specialty: data.professionSpecialty,
+          licenseNumber: licenseNum,
+          stateBoard: data.issuingStateBoard.trim(),
+          profession: data.profession.trim(),
+          specialty: (data.professionSpecialty || '').trim(),
+          credentialType: 'Licensed',
           documentName: data.uploadedDocument?.name || 'document.pdf',
           email: userEmail,
         }),

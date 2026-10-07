@@ -179,6 +179,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [stripeError, setStripeError] = useState<string | null>(null);
   const [stripeConnectInstance, setStripeConnectInstance] = useState<any>(null);
   const [showEmbeddedOnboarding, setShowEmbeddedOnboarding] = useState(false);
+  const [isStripeLoading, setIsStripeLoading] = useState(false);
 
   // Processing States for bookings
   const [processingBookingId, setProcessingBookingId] = useState<string | null>(null);
@@ -230,62 +231,59 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const fetchClientSecret = async () => {
-    const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
-    const res = await fetch('/api/stripe/account-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ hostId }),
-    });
+  useEffect(() => {
+    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51NursesPillow_SandboxKey94821';
+    if (!publishableKey) return;
 
-    const isJson = res.headers.get('content-type')?.includes('application/json');
-    if (!res.ok) {
-        if (isJson) {
-            const errorData = await res.json();
-            throw new Error(errorData.message || 'Failed to create account session');
-        } else {
-            throw new Error('Failed to create account session due to a server error.');
-        }
+    try {
+      const instance = loadConnectAndInitialize({
+        publishableKey,
+        fetchClientSecret: async () => {
+          const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+          const res = await fetch('/api/stripe/account-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ hostId }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || 'Unable to establish payout session');
+          }
+          return data.client_secret;
+        },
+        appearance: {
+          variables: {
+            colorPrimary: '#0B2559',
+            colorBackground: '#FFFFFF',
+            colorText: '#1E293B',
+            borderRadius: '8px',
+          },
+        },
+      });
+      setStripeConnectInstance(instance);
+    } catch (err) {
+      console.error('Failed to initialize ConnectJS:', err);
     }
-    const data = await res.json();
-    if (data.sandbox && !data.client_secret) {
-        throw new Error(data.message || 'Sandbox simulated mode, skipping Embedded UI');
-    }
-    return data.client_secret;
-  };
+  }, [hostId]);
 
   const handleConnectStripe = async () => {
     setIsConnectingStripe(true);
     setStripeError(null);
+    setIsStripeLoading(true);
     try {
-      // First attempt to get the client secret to see if it fails due to mock key
-      await fetchClientSecret();
-
-      const VITE_STRIPE_PUBLISHABLE_KEY = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx';
-      const stripeConnect = loadConnectAndInitialize({
-        publishableKey: VITE_STRIPE_PUBLISHABLE_KEY,
-        fetchClientSecret,
-        appearance: {
-          overlays: 'dialog',
-          variables: {
-            colorPrimary: '#0A6FA8',
-          },
-        },
-      });
-      setStripeConnectInstance(stripeConnect);
       setShowEmbeddedOnboarding(true);
+      setTimeout(() => {
+        setIsStripeLoading(false);
+      }, 700);
     } catch (err: any) {
-      console.error('Failed to initialize Stripe Connect Embedded components', err);
-      if (err.message.includes('simulated')) {
-          setStripeError(err.message);
-      } else {
-          setStripeError('A network error occurred while connecting payouts.');
-      }
+      console.error('Stripe onboarding error:', err);
+      setStripeError(err.message || 'Unable to connect Stripe account.');
+      setIsStripeLoading(false);
     } finally {
-        setIsConnectingStripe(false);
+      setIsConnectingStripe(false);
     }
   };
 
@@ -1174,26 +1172,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {showEmbeddedOnboarding && stripeConnectInstance ? (
-                        <div className="w-full h-[600px] bg-white rounded-lg border border-neutral-200 overflow-hidden">
-                            <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
-                                <ConnectAccountOnboarding onExit={() => {
-                                    setShowEmbeddedOnboarding(false);
-                                    fetchPayoutStatus();
-                                }} />
-                            </ConnectComponentsProvider>
-                        </div>
-                    ) : (
-                        <>
-                            <button
-                              onClick={handleConnectStripe}
-                              className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
-                            >
-                              <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
-                              <span>Connect via Stripe</span>
-                            </button>
-                        </>
-                    )}
+                    <button
+                      onClick={handleConnectStripe}
+                      className="w-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">account_balance_wallet</span>
+                      <span>Connect via Stripe</span>
+                    </button>
                   </div>
                 )}
                 {stripeError && (
@@ -1205,6 +1190,60 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stripe Connect Onboarding Scrollable Modal */}
+      {showEmbeddedOnboarding && stripeConnectInstance && (
+        <div className="fixed inset-0 z-[150] bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 pt-20 sm:pt-24 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0B1626] rounded-3xl w-full max-w-3xl my-auto max-h-[85vh] flex flex-col shadow-2xl border border-[rgba(11,37,89,0.16)] dark:border-[#233550] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#0E1A2E]/50 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#0A6FA8]/10 text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">account_balance</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#0B2559] dark:text-white">Stripe Payout Verification</h3>
+                  <p className="text-xs text-gray-500">Secure Identity & Bank Account Setup</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEmbeddedOnboarding(false);
+                  fetchPayoutStatus();
+                }}
+                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center justify-center font-bold transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {isStripeLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <div className="w-12 h-12 rounded-full border-4 border-[#0A6FA8]/20 border-t-[#0A6FA8] animate-spin"></div>
+                  <div className="text-center space-y-1">
+                    <p className="text-sm font-bold text-[#0B2559] dark:text-white">Establishing Secure Stripe Session...</p>
+                    <p className="text-xs text-gray-500">Initializing Stripe Connect Accounts v2</p>
+                  </div>
+                  <div className="w-full max-w-md space-y-3 pt-4">
+                    <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+                    <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+                    <div className="h-28 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+                  </div>
+                </div>
+              ) : (
+                <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
+                  <ConnectAccountOnboarding
+                    onExit={() => {
+                      setShowEmbeddedOnboarding(false);
+                      fetchPayoutStatus();
+                    }}
+                  />
+                </ConnectComponentsProvider>
+              )}
             </div>
           </div>
         </div>
