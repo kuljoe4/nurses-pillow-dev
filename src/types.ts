@@ -86,7 +86,7 @@ export interface PromoCode {
   isActive: boolean;
 }
 
-export type VerificationStepId = 1 | 2 | 3 | 4;
+export type VerificationStepId = 1 | 2 | 3;
 
 export interface VerificationFormData {
   // Step 1: Identity
@@ -113,14 +113,6 @@ export interface VerificationFormData {
     fileType: string;
   } | null;
   licenseStatus: 'pending_review' | 'verified' | 'unsubmitted' | 'not_started';
-
-  // Step 4: Work Contract
-  travelAgency: string;
-  contractHospital: string;
-  assignmentStartDate: string;
-  contractDurationWeeks: number;
-  contractDocumentName?: string;
-  isContractVerified: boolean;
 }
 
 export interface HousingListing {

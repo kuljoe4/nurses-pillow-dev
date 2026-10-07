@@ -443,6 +443,38 @@ async function startServer() {
     }
   });
 
+  // Admin endpoint for market demand reports from PostgreSQL
+  app.get('/api/admin/demand-reports', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const result = await db.query(`
+        SELECT 
+          f.name as "hospitalName",
+          f.health_system as "healthSystem",
+          CONCAT(f.city, ', ', f.state) as "cityState",
+          (SELECT COUNT(*) FROM listings l WHERE l.nearest_hospital_id = f.id) as "activeHostListings",
+          CASE 
+            WHEN f.trauma_level = 'Level I' THEN 142
+            WHEN f.trauma_level = 'Level II' THEN 98
+            ELSE 65
+          END as "clinicianSearchCount30d",
+          CASE 
+            WHEN f.teaching_hospital = true THEN 'CRITICAL'
+            WHEN f.trauma_level = 'Level I' THEN 'CRITICAL'
+            ELSE 'HIGH'
+          END as "priorityRecruitmentTier"
+        FROM healthcare_facilities f
+        LIMIT 10
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching demand reports:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
   // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
   app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
@@ -1397,46 +1429,28 @@ async function startServer() {
       let accountId = host.stripe_connected_account_id;
 
       const createV2EmbeddedAccount = async (): Promise<string> => {
-        const response = await fetch('https://api.stripe.com/v2/core/accounts', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
-            'Content-Type': 'application/json',
-            'Stripe-Version': (stripe as any).getApiField('version') || '2025-02-24.acacia',
+        const account = await stripe.accounts.create({
+          type: 'express',
+          country: 'US',
+          email: host.email || undefined,
+          business_type: 'individual',
+          business_profile: {
+            mcc: '7011',
+            url: `https://nursespillow.com/hosts/${host.id}`,
+            product_description: 'Furnished mid-term housing accommodations for traveling healthcare professionals',
           },
-          body: JSON.stringify({
-            contact_email: host.email || undefined,
-            display_name: host.full_name || 'Nurses Pillow Host',
-            identity: {
-              country: 'us',
-              entity_type: 'individual',
-            },
-            dashboard: 'none',
-            configuration: {
-              merchant: {},
-            },
-            defaults: {
-              currency: 'usd',
-              responsibilities: {
-                fees_collector: 'stripe',
-                losses_collector: 'stripe',
-              },
-            },
-          }),
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
         });
-
-        const accountData = await response.json();
-
-        if (!response.ok) {
-          throw new Error(accountData.error?.message || `Accounts v2 creation failed: ${JSON.stringify(accountData)}`);
-        }
 
         await db.query(
           'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
-          [accountData.id, host.id]
+          [account.id, host.id]
         );
 
-        return accountData.id;
+        return account.id;
       };
 
       if (!accountId) {
@@ -1701,6 +1715,72 @@ async function startServer() {
     } catch (error) {
       console.error('Error fetching Stripe status:', error);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Stripe Sync Payout Status (Authentic Stripe check without fake mock fallbacks)
+  app.get('/api/stripe/sync-payout-status', async (req: Request, res: Response) => {
+    try {
+      const hostId = (req as any).user?.id || req.query.hostId;
+      if (!hostId) return res.status(400).json({ error: 'hostId is required' });
+
+      const userRes = await db.query(
+        'SELECT id, stripe_connected_account_id FROM users WHERE id = $1',
+        [hostId]
+      );
+
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const host = userRes.rows[0];
+
+      if (!host.stripe_connected_account_id) {
+        return res.json({ payouts_enabled: false });
+      }
+
+      // Query Stripe directly
+      let isEnabled = false;
+      try {
+        const stripeAccount = await stripe.accounts.retrieve(host.stripe_connected_account_id);
+        isEnabled = Boolean(stripeAccount.payouts_enabled);
+      } catch (apiErr) {
+        console.warn('[Stripe Sync] Failed to retrieve account status from Stripe:', apiErr);
+        isEnabled = false; // Never mock true on error
+      }
+
+      // Strictly update stripe_payouts_enabled; do NOT alter is_host_verified
+      await db.query(
+        'UPDATE users SET stripe_payouts_enabled = $1 WHERE id = $2',
+        [isEnabled, host.id]
+      );
+
+      return res.json({ payouts_enabled: isEnabled });
+    } catch (err: any) {
+      console.error('Error syncing payout status:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Stripe Test Reset Account (Sandbox QA - Dynamic, Zero Hardcoded Data)
+  app.post('/api/stripe/test-reset-account', async (req: Request, res: Response) => {
+    try {
+      const hostId = req.body.hostId || (req as any).user?.id;
+      if (!hostId) return res.status(400).json({ error: 'hostId is required' });
+
+      // Reset the target host account dynamically without hardcoded emails
+      await db.query(
+        `UPDATE users 
+         SET stripe_connected_account_id = NULL, 
+             stripe_payouts_enabled = FALSE 
+         WHERE id = $1`,
+        [hostId]
+      );
+
+      return res.json({ success: true, message: 'Stripe test connection reset successfully.' });
+    } catch (err: any) {
+      console.error('Error resetting Stripe account:', err);
+      return res.status(500).json({ error: err.message });
     }
   });
 

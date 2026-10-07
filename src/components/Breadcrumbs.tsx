@@ -168,8 +168,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         return 'Step 2: Contact & Auth';
       case 3:
         return 'Step 3: Primary Source Clinical License';
-      case 4:
-        return 'Step 4: Assignment Work Contract';
     }
   };
 

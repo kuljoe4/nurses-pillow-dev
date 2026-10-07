@@ -20,14 +20,6 @@ export const BLANK_VERIFICATION_DATA: VerificationFormData = {
   licenseExpirationDate: '',
   uploadedDocument: null,
   licenseStatus: 'unsubmitted',
-
-  // Step 4: Work Contract
-  travelAgency: '',
-  contractHospital: '',
-  assignmentStartDate: '',
-  contractDurationWeeks: 13,
-  contractDocumentName: undefined,
-  isContractVerified: false,
 };
 
 export const INITIAL_VERIFICATION_DATA: VerificationFormData = {
@@ -55,14 +47,6 @@ export const INITIAL_VERIFICATION_DATA: VerificationFormData = {
     fileType: 'application/pdf',
   },
   licenseStatus: 'pending_review',
-
-  // Step 4: Work Contract
-  travelAgency: 'Aya Healthcare',
-  contractHospital: 'Stanford Health Care - Main Hospital',
-  assignmentStartDate: '2026-10-15',
-  contractDurationWeeks: 13,
-  contractDocumentName: undefined,
-  isContractVerified: false,
 };
 
 export const PROFESSION_OPTIONS = [

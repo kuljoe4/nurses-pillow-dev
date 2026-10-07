@@ -21,7 +21,53 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const [activeAdminTab, setActiveAdminTab] = useState<'clinicians' | 'properties' | 'bookings'>('clinicians');
   const [reviews, setReviews] = useState<AdminLicenseReview[]>([]);
   const [managedListings, setManagedListings] = useState<HousingListing[]>(listings);
+  const [dbBookings, setDbBookings] = useState<BookingRequest[]>(bookingRequests);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+
+  // Fetch live bookings from backend API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+        const res = await fetch('/api/bookings', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped: BookingRequest[] = data.map((b: any) => ({
+              id: b.id,
+              clinicianName: b.traveler_name || b.traveler_id || 'Travel Clinician',
+              clinicianTitle: 'Travel Healthcare Professional',
+              clinicianAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
+              clinicianPhone: b.phone_number || '+1 (919) 555-0198',
+              hospitalName: b.hospital_name || 'Assignment Hospital',
+              unitSpecialty: 'Clinical Unit',
+              listingId: b.listing_id,
+              listingTitle: b.listing_title || 'Sanctuary Listing',
+              startDate: b.start_date || '2026-10-15',
+              endDate: b.end_date || '2026-11-15',
+              durationWeeks: b.duration_weeks || 13,
+              monthlyRent: Number(b.monthly_rent || b.total_traveler_charged || 1950),
+              securityDeposit: 0,
+              cleaningFee: Number(b.cleaning_fee || 150),
+              petFee: Number(b.pet_fee || 0),
+              travelerFee: 0,
+              totalInitialCharge: Number(b.total_traveler_charged || 2100),
+              hostNetPayout: Number(b.monthly_rent || 1950) * 0.95,
+              status: b.status || 'pending_host_approval',
+              submittedAt: 'Recently',
+              deadlineHoursRemaining: 24,
+            }));
+            setDbBookings(mapped);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch admin bookings:', err);
+      }
+    };
+    fetchBookings();
+  }, []);
 
   // Fetch pending clinician license submissions from Railway PostgreSQL DB
   useEffect(() => {
@@ -239,7 +285,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           >
             <span>Booking Authorizations</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#0A6FA8]/20 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold tabular-nums">
-              {bookingRequests.length}
+              {dbBookings.length}
             </span>
           </button>
         </div>
@@ -495,11 +541,11 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 </p>
               </div>
               <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
-                {bookingRequests.length} Recorded Requests
+                {dbBookings.length} Recorded Requests
               </span>
             </div>
 
-            {bookingRequests.length === 0 ? (
+            {dbBookings.length === 0 ? (
               <div className="py-12 text-center text-xs text-gray-400">
                 No active booking pre-authorizations recorded yet. Requests from traveling nurses will stream here.
               </div>
@@ -518,7 +564,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {bookingRequests.map((b) => (
+                    {dbBookings.map((b) => (
                       <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-[#14233a] transition-colors">
                         <td className="py-3.5 px-3 font-mono font-bold text-[#0B2559] dark:text-white">
                           {b.id}

@@ -1189,6 +1189,32 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     </div>
                   </div>
                 )}
+                {/* Sandbox QA Reset Utility */}
+                <div className="pt-2 border-t border-[rgba(11,37,89,0.05)] dark:border-[#233550] flex items-center justify-between text-[11px] text-gray-400">
+                  <span>Sandbox Test Mode</span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (confirm('Disconnect Stripe test account and start afresh?')) {
+                        try {
+                          await fetch('/api/stripe/test-reset-account', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ hostId }),
+                          });
+                          setPayoutsEnabled(false);
+                          setStripeConnectInstance(null);
+                          setShowEmbeddedOnboarding(false);
+                        } catch (e) {
+                          console.error('Reset failed:', e);
+                        }
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-700 underline font-medium cursor-pointer"
+                  >
+                    Reset Stripe Connection
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1210,8 +1236,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => {
+                onClick={async () => {
                   setShowEmbeddedOnboarding(false);
+                  try {
+                    const res = await fetch(`/api/stripe/sync-payout-status?hostId=${hostId}`);
+                    const data = await res.json();
+                    if (data.payouts_enabled) {
+                      setPayoutsEnabled(true);
+                    }
+                  } catch (e) {}
                   fetchPayoutStatus();
                 }}
                 className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center justify-center font-bold transition-colors cursor-pointer"
@@ -1237,8 +1270,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               ) : (
                 <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
                   <ConnectAccountOnboarding
-                    onExit={() => {
+                    onExit={async () => {
                       setShowEmbeddedOnboarding(false);
+                      try {
+                        const res = await fetch(`/api/stripe/sync-payout-status?hostId=${hostId}`);
+                        const data = await res.json();
+                        if (data.payouts_enabled) {
+                          setPayoutsEnabled(true);
+                        }
+                      } catch (e) {}
                       fetchPayoutStatus();
                     }}
                   />

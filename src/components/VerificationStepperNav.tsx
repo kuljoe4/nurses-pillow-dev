@@ -20,7 +20,6 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
   const isStep2Partial = Boolean(data.phoneVerified || data.isContactVerified) && !isStep2Verified;
   const isStep3Verified = data.licenseStatus === 'verified';
   const isStep3Pending = data.licenseStatus === 'pending_review';
-  const isStep4Verified = Boolean(data.isContractVerified);
 
   const steps: {
     id: VerificationStepId;
@@ -31,7 +30,6 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
     { id: 1, label: 'Identity', isVerified: isStep1Verified },
     { id: 2, label: 'Email & Phone', isVerified: isStep2Verified, isPending: isStep2Partial },
     { id: 3, label: 'Clinical License', isVerified: isStep3Verified, isPending: isStep3Pending },
-    { id: 4, label: 'Work Contract', isVerified: isStep4Verified },
   ];
 
   return (
@@ -43,7 +41,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
             : 'bg-white border border-[rgba(11,37,89,0.06)]'
         }`}
       >
-        <div className="grid grid-cols-4 items-center gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-3 items-center gap-1.5 sm:gap-2">
           {steps.map((step) => {
             const isActive = currentStep === step.id;
 

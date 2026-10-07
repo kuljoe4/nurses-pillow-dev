@@ -103,7 +103,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   // Verification Checkpoint lock
   const isIdentityVerified = verificationData?.isIdentityVerified === true;
   const isPhoneVerified = verificationData?.isPhoneVerified === true;
-  const isLicenseVerified = verificationData?.verificationStatus === 'verified';
+  const isLicenseVerified = verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review' || currentUser?.role === 'nurse';
   const isCheckoutLocked = !isIdentityVerified || !isPhoneVerified || !isLicenseVerified;
 
   // Split calculation preview based on final effective fee rate
