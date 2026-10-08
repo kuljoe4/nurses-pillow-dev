@@ -28,6 +28,7 @@ import { Breadcrumbs } from "./components/Breadcrumbs";
 import { ScrollProgressIndicator } from "./components/ScrollProgressIndicator";
 import type { AdminSheetsPreset } from "./components/GoogleSheetsSyncModal";
 import { Stethoscope, Building2, ShieldAlert } from "lucide-react";
+import { HostPublicProfileView } from "./components/HostPublicProfileView";
 
 // Code-split secondary views & heavy feature modules to eliminate initial bundle bloat
 const SearchListingsView = React.lazy(() =>
@@ -105,6 +106,11 @@ const GoogleSheetsSyncModal = React.lazy(() =>
 const ItemizedCheckoutModal = React.lazy(() =>
   import("./components/ItemizedCheckoutModal").then((m) => ({
     default: m.ItemizedCheckoutModal,
+  })),
+);
+const ListingDetailModal = React.lazy(() =>
+  import("./components/ListingDetailModal").then((m) => ({
+    default: m.ListingDetailModal,
   })),
 );
 const VerificationSuccessModal = React.lazy(() =>
@@ -199,6 +205,65 @@ export default function App() {
 
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>("find-housing");
+  const [publicHostId, setPublicHostId] = useState<string | null>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/hosts/unique/')) {
+      return path.replace('/hosts/unique/', '').trim();
+    } else if (path.startsWith('/unique/hosts/')) {
+      return path.replace('/unique/hosts/', '').trim();
+    } else if (path.startsWith('/hosts/')) {
+      return path.replace('/hosts/', '').trim();
+    }
+    return null;
+  });
+
+  const [publicListingId, setPublicListingId] = useState<string | null>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/listings/')) {
+      return path.replace('/listings/', '').trim();
+    }
+    return null;
+  });
+
+  const [detailListing, setDetailListing] = useState<HousingListing | null>(null);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/hosts/unique/')) {
+        setPublicHostId(path.replace('/hosts/unique/', '').trim());
+        setPublicListingId(null);
+        setDetailListing(null);
+      } else if (path.startsWith('/unique/hosts/')) {
+        setPublicHostId(path.replace('/unique/hosts/', '').trim());
+        setPublicListingId(null);
+        setDetailListing(null);
+      } else if (path.startsWith('/hosts/')) {
+        setPublicHostId(path.replace('/hosts/', '').trim());
+        setPublicListingId(null);
+        setDetailListing(null);
+      } else if (path.startsWith('/listings/')) {
+        setPublicListingId(path.replace('/listings/', '').trim());
+        setPublicHostId(null);
+      } else {
+        setPublicHostId(null);
+        setPublicListingId(null);
+        setDetailListing(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (publicListingId && appData.listings.length > 0) {
+      const found = appData.listings.find((l) => l.id === publicListingId);
+      if (found) {
+        setDetailListing(found);
+      }
+    }
+  }, [publicListingId, appData.listings]);
+
   const [tabHistory, setTabHistory] = useState<NavigationTab[]>([]);
   const [verificationData, setVerificationData] =
     useState<VerificationFormData>(
@@ -844,28 +909,28 @@ export default function App() {
   }, []);
 
   const handleConfirmCheckout = useCallback(async (booking: BookingRequest) => {
-    // 1. Persist booking in live PostgreSQL database
+    // 1. Persist booking and create Stripe payment intent via backend production endpoint
     try {
       const token = localStorage.getItem("np_auth_token");
-      await fetch("/api/bookings", {
+      const res = await fetch("/api/checkout/create-booking-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          id: booking.id,
-          traveler_id: currentUser?.id || "usr_guest_traveler",
-          traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
           listing_id: booking.listingId,
           start_date: booking.startDate,
           end_date: booking.endDate,
-          duration_weeks: booking.durationWeeks || 13,
-          status: "pending_host_approval",
-          total_traveler_charged: booking.totalInitialCharge || 2100,
-          monthly_rent: booking.monthlyRent || 1950,
+          traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
         }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.booking && data.paymentIntentId) {
+          booking.paymentIntentId = data.paymentIntentId;
+        }
+      }
     } catch (dbErr) {
       console.warn("Failed to persist booking in PostgreSQL DB:", dbErr);
     }
@@ -1012,6 +1077,27 @@ export default function App() {
     },
     [fetchUserProfile, handleNavigateTab]
   );
+
+  if (publicHostId) {
+    return (
+      <HostPublicProfileView
+        hostId={publicHostId}
+        isNightShiftMode={isNightShiftMode}
+        onClose={() => {
+          setPublicHostId(null);
+          window.history.pushState({}, document.title, "/");
+        }}
+        onSelectListing={(listing) => {
+          setPublicHostId(null);
+          window.history.pushState({}, document.title, "/");
+          setDetailListing(listing);
+        }}
+        savedListingIds={savedListingIds}
+        onToggleSave={handleToggleSaveListing}
+        selectedHospital={searchParamsState.hospital || 'Duke University Hospital'}
+      />
+    );
+  }
 
   return (
     <div
@@ -1681,6 +1767,48 @@ export default function App() {
             onGoToHousing={() => {
               setIsBookingDetailOpen(false);
               setCurrentTab("find-housing");
+            }}
+            onOpenHostProfile={(hostId) => {
+              setIsBookingDetailOpen(false);
+              setDetailListing(null);
+              setPublicListingId(null);
+              setPublicHostId(hostId);
+              window.history.pushState({}, document.title, `${window.location.origin}/hosts/unique/${hostId}`);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Listing Detail Modal (Mirrored view for /listings/:listingId URLs) */}
+      {detailListing && (
+        <Suspense fallback={<ModalLoadingFallback />}>
+          <ListingDetailModal
+            listing={detailListing}
+            onClose={() => {
+              setDetailListing(null);
+              setPublicListingId(null);
+              window.history.pushState({}, document.title, "/");
+            }}
+            isNightShiftMode={isNightShiftMode}
+            isSaved={savedListingIds.includes(detailListing.id)}
+            onToggleSave={handleToggleSaveListing}
+            isVerified={verificationData.licenseStatus === "verified"}
+            onGoToVerification={() => {
+              setDetailListing(null);
+              handleNavigateTab("verification");
+              setVerificationStep(3);
+            }}
+            onRequestToBook={(listing) => {
+              setDetailListing(null);
+              setCheckoutListing(listing);
+              setIsCheckoutOpen(true);
+            }}
+            selectedHospital={searchParamsState.hospital || "Duke University Hospital"}
+            onOpenHostProfile={(hostId) => {
+              setDetailListing(null);
+              setPublicListingId(null);
+              setPublicHostId(hostId);
+              window.history.pushState({}, document.title, `${window.location.origin}/hosts/unique/${hostId}`);
             }}
           />
         </Suspense>

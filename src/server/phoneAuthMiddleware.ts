@@ -82,8 +82,8 @@ export function createPhoneAuthMiddleware() {
         }
       }
 
-      // If Twilio credentials are configured, execute real Twilio API calls
-      if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_VERIFY_SERVICE_SID) {
+      // If Twilio credentials are configured and not in test environment, execute real Twilio API calls
+      if (!isTestEnv && TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_VERIFY_SERVICE_SID) {
         const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
 
         if (url.includes('/send-otp')) {

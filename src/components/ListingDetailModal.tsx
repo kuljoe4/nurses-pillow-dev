@@ -20,6 +20,7 @@ interface ListingDetailModalProps {
   commuteMode?: 'transit' | 'drive';
   checkInDate?: string;
   checkOutDate?: string;
+  onOpenHostProfile?: (hostId: string) => void;
 }
 
 export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
@@ -35,6 +36,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
   commuteMode = 'transit',
   checkInDate = '2026-10-05',
   checkOutDate = '2027-01-04',
+  onOpenHostProfile,
 }) => {
   useBodyScrollLock(!!listing);
 
@@ -281,6 +283,15 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {onOpenHostProfile && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenHostProfile(listing?.hostId || 'host-sarah-m')}
+                    className="px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-xs hover:bg-[#0C7EBF] transition-colors cursor-pointer shrink-0"
+                  >
+                    View Host Profile
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {

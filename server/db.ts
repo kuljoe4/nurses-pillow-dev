@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { railwayDb } from '../src/services/railway.js';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,16 +17,21 @@ let lastConnectionError: string | null = null;
 // Initialize Postgres pool only with real connection string
 if (process.env.DATABASE_URL) {
   try {
+    const rawDbUrl = process.env.DATABASE_URL;
+    const connectionString = rawDbUrl.startsWith('postgresql+asyncpg://')
+      ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
+      : rawDbUrl;
+
     const isRemoteDb =
       process.env.NODE_ENV === 'production' ||
-      process.env.DATABASE_URL.includes('rlwy.net') ||
-      process.env.DATABASE_URL.includes('railway') ||
-      process.env.DATABASE_URL.includes('supabase') ||
-      process.env.DATABASE_URL.includes('neon.tech') ||
-      process.env.DATABASE_URL.includes('sslmode=require');
+      connectionString.includes('rlwy.net') ||
+      connectionString.includes('railway') ||
+      connectionString.includes('supabase') ||
+      connectionString.includes('neon.tech') ||
+      connectionString.includes('sslmode=require');
 
     pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
       ssl: isRemoteDb ? { rejectUnauthorized: false } : false,
       connectionTimeoutMillis: 5000,
     });

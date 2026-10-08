@@ -133,24 +133,74 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [extraOptionsStr, setExtraOptionsStr] = useState<string>('[]');
 
   const [listingPhotos, setListingPhotos] = useState<{ id?: string, url: string, file?: File }[]>([]);
+  const [listingDocuments, setListingDocuments] = useState<{ id?: string, name: string, url: string, file?: File }[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
 
 
   const removePhoto = (indexToRemove: number) => {
     setListingPhotos((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
+  const removeDocument = (indexToRemove: number) => {
+    setListingDocuments((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    setUploadError(null);
 
-    const newPhotos = Array.from(files).map((file) => ({
-      url: URL.createObjectURL(file),
-      file,
-    }));
+    if (listingPhotos.length + files.length > 25) {
+      setUploadError('Maximum photo limit is 25 per listing.');
+      return;
+    }
 
-    setListingPhotos((prev) => [...prev, ...newPhotos]);
+    const validPhotos: { url: string; file: File }[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError(`Photo "${file.name}" exceeds the 5MB size limit (Max 5MB per photo, auto-compressed to WebP/JPEG).`);
+        return;
+      }
+      validPhotos.push({
+        url: URL.createObjectURL(file),
+        file,
+      });
+    }
+
+    setListingPhotos((prev) => [...prev, ...validPhotos]);
+  };
+
+  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadError(null);
+
+    if (listingDocuments.length + files.length > 5) {
+      setUploadError('Maximum document limit is 5 PDF attachments per listing.');
+      return;
+    }
+
+    const validDocs: { name: string; url: string; file: File }[] = [];
+    for (const file of Array.from(files)) {
+      if (file.type !== 'application/pdf') {
+        setUploadError(`Document "${file.name}" must be a PDF file.`);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError(`Document "${file.name}" exceeds the 10MB limit.`);
+        return;
+      }
+      validDocs.push({
+        name: file.name,
+        url: URL.createObjectURL(file),
+        file,
+      });
+    }
+
+    setListingDocuments((prev) => [...prev, ...validDocs]);
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -1008,18 +1058,43 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             {/* Step 3: Media Hub */}
             {editorStep === 3 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                {uploadError && (
+                  <div className="p-3 rounded-xl bg-[#F4E2DC] text-[#A8452E] dark:bg-[#F4E2DC]/20 dark:text-[#F4E2DC] text-xs font-semibold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">error</span>
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+
                 {/* Media Hub: Photo Uploads */}
                 <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-[#0B2559] dark:text-white uppercase tracking-wider">
-                      Step 3: Media Hub (Photos)
-                    </label>
-                    <span className="text-[10px] text-gray-500">{listingPhotos.length} / 10 photos</span>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white uppercase tracking-wider">
+                        Step 3: Media Hub (Photos)
+                      </label>
+                      <p className="text-[11px] text-gray-500 mt-0.5">Showcase your property for traveling nurses &amp; allied clinicians</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">{listingPhotos.length} / 25 photos</span>
+                  </div>
+
+                  {/* Recommended Photo Breakdown Guide */}
+                  <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                    <div className="font-bold text-[#0B2559] dark:text-white mb-1 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-[#0A6FA8]">info</span>
+                      <span>Recommended Photo Breakdown (Max 5MB per image, auto-compressed to WebP/JPEG):</span>
+                    </div>
+                    <ul className="list-disc list-inside text-[11px] space-y-0.5 text-gray-500 dark:text-gray-400 pl-1">
+                      <li><strong>Bedrooms:</strong> 2–3 photos per bedroom</li>
+                      <li><strong>Bathrooms:</strong> 1–2 photos per bathroom</li>
+                      <li><strong>Kitchen &amp; Living Area:</strong> 3–4 photos</li>
+                      <li><strong>Exterior, Parking &amp; Neighborhood:</strong> 2–3 photos</li>
+                      <li><strong>Hospital Proximity / Commute markers:</strong> 1–2 photos</li>
+                    </ul>
                   </div>
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     multiple
                     className="hidden"
                     id="photo-upload"
@@ -1038,7 +1113,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                           <button
                             type="button"
                             onClick={() => removePhoto(index)}
-                            className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                            className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                             aria-label="Remove photo"
                           >
                             <span className="material-symbols-outlined text-[16px]">close</span>
@@ -1050,13 +1125,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                           )}
                         </div>
                       ))}
-                      {listingPhotos.length < 10 && (
+                      {listingPhotos.length < 25 && (
                         <label
                           htmlFor="photo-upload"
                           className="aspect-square rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all"
                         >
                           <span className="material-symbols-outlined text-2xl mb-1">add_a_photo</span>
-                          <span className="text-xs font-medium">Add More</span>
+                          <span className="text-xs font-medium">Add Photos</span>
                         </label>
                       )}
                     </div>
@@ -1066,8 +1141,72 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                       className="w-full h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all"
                     >
                       <span className="material-symbols-outlined text-3xl mb-2">cloud_upload</span>
-                      <span className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-1">Click to upload photos</span>
-                      <span className="text-xs text-gray-400">Drag and drop supported</span>
+                      <span className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-1">Click to upload photos (Max 25 photos, 5MB each)</span>
+                      <span className="text-xs text-gray-400">JPEG, PNG, WEBP supported</span>
+                    </label>
+                  )}
+                </div>
+
+                {/* Media Hub: Document & Floor Plan Attachments */}
+                <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <label className="block text-xs font-bold text-[#0B2559] dark:text-white uppercase tracking-wider">
+                          Document &amp; Floor Plan Attachments (PDF)
+                        </label>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-bold">Optional</span>
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-0.5">Floor plans, parking instructions, or lease addendums</p>
+                    </div>
+                    <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">{listingDocuments.length} / 5 docs</span>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    className="hidden"
+                    id="doc-upload"
+                    onChange={handleDocumentUpload}
+                  />
+
+                  {listingDocuments.length > 0 ? (
+                    <div className="space-y-2">
+                      {listingDocuments.map((doc, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#0E1A2E] border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-2.5">
+                            <span className="material-symbols-outlined text-[#0A6FA8]">picture_as_pdf</span>
+                            <span className="text-xs font-bold text-[#0B2559] dark:text-white truncate max-w-xs">{doc.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeDocument(index)}
+                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                            aria-label="Remove document"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
+                      ))}
+                      {listingDocuments.length < 5 && (
+                        <label
+                          htmlFor="doc-upload"
+                          className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2 text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all text-xs font-bold"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                          <span>Upload PDF Document (Max 10MB)</span>
+                        </label>
+                      )}
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="doc-upload"
+                      className="w-full h-28 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center text-gray-400 hover:text-[#0A6FA8] hover:border-[#0A6FA8] hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] cursor-pointer transition-all"
+                    >
+                      <span className="material-symbols-outlined text-2xl mb-1">picture_as_pdf</span>
+                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300 mb-0.5">Click to upload floor plans or lease addendums</span>
+                      <span className="text-[10px] text-gray-400">3 to 5 PDF documents up to 10MB each</span>
                     </label>
                   )}
                 </div>

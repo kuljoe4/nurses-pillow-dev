@@ -6,6 +6,8 @@ import crypto from 'crypto';
 import { db } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
 import { TokenPayload, authenticateToken, AuthenticatedRequest } from './authMiddleware.js';
+import { registerSchema, loginSchema, validateBody } from './validation.js';
+import { authLimiter } from './rateLimit.js';
 
 type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<any>;
 
@@ -37,13 +39,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_on
 
 const SALT_ROUNDS = 12;
 
-router.post('/register', catchAsync(async (req, res, next) => {
+router.post('/register', authLimiter, validateBody(registerSchema), catchAsync(async (req, res, next) => {
     const { email, password, fullName, role } = req.body;
-
-    if (!email || !password || !fullName || !role) {
-      res.status(400).json({ error: 'Missing required fields' });
-      return;
-    }
 
     const cleanEmail = email.trim().toLowerCase();
 
@@ -90,13 +87,8 @@ router.post('/register', catchAsync(async (req, res, next) => {
     res.status(201).json({ user, token });
 }));
 
-router.post('/login', catchAsync(async (req, res, next) => {
+router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: 'Missing email or password' });
-      return;
-    }
 
     const cleanEmail = email.trim().toLowerCase();
     const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE LOWER(email) = $1', [cleanEmail]);

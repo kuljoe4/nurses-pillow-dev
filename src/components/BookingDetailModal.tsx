@@ -9,6 +9,7 @@ interface BookingDetailModalProps {
   isNightShiftMode: boolean;
   onCancelBooking: (bookingId: string) => Promise<void> | void;
   onGoToHousing: () => void;
+  onOpenHostProfile?: (hostId: string) => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
@@ -19,6 +20,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   isNightShiftMode,
   onCancelBooking,
   onGoToHousing,
+  onOpenHostProfile,
 }) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -169,6 +171,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 Your request has been delivered to your host. We&apos;ll notify you via email the moment they respond. If the host doesn&apos;t reply within 24 hours, the authorization hold releases automatically.
               </p>
             </div>
+          )}
+
+          {onOpenHostProfile && (
+            <button
+              type="button"
+              onClick={() => onOpenHostProfile(listing?.hostId || 'host-sarah-m')}
+              className="w-full py-2.5 rounded-full bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-gray-700 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[16px]">verified</span>
+              <span>View Verified Host Profile</span>
+            </button>
           )}
 
           {/* Itemized Transparent Pricing Breakdown */}
