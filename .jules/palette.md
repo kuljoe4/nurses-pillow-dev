@@ -1,3 +1,6 @@
 ## 2023-10-25 - [Fix] Support Modal Submit Button Lacks Loading State
 **Learning:** During asynchronous form submissions inside modals, like the `NurseSupportModal`, users can repeatedly click the 'Send' button because it lacks an explicit loading state (`isSubmitting`) or disabled property. This omission can result in multiple unintended API requests or redundant logic execution.
 **Action:** When working on modals with asynchronous logic (like `setTimeout` or actual API calls), ensure a proper `isSubmitting` state is maintained. Disable the submit button and provide clear visual feedback (e.g. "Sending..." or a spinner animation) to prevent concurrent submissions and reassure the user that their request is being processed.
+## 2024-10-08 - Add accessibility attributes to expand/collapse panels
+**Learning:** React components using `AnimatePresence` and `motion.div` for progressive disclosure often miss critical screen reader linkages. Toggle buttons need `aria-expanded` reflecting the open state, and `aria-controls` pointing to the `id` of the expanding region to ensure assistive technologies can announce the relationship and state changes.
+**Action:** When implementing expand/collapse UI, consistently add `id` to the toggled container and `aria-controls`/`aria-expanded` to the button that controls it.
