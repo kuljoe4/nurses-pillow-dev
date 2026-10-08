@@ -384,11 +384,28 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     }
   };
 
-  const pendingBookings = bookingRequests.filter((b) => b.status === 'pending_host_approval');
-  const confirmedBookings = bookingRequests.filter((b) => b.status === 'approved' || b.status === 'active');
-  const totalMonthlyNet = bookingRequests
-    .filter((b) => b.status !== 'declined')
-    .reduce((sum, b) => sum + (b.hostNetPayout || 0), 0);
+  // ⚡ Bolt Performance Optimization: Single-pass booking aggregation
+  // Replaced 3 independent O(N) array traversals (.filter x2, .filter+.reduce)
+  // with a single O(N) memoized loop to prevent excessive recalculations on render.
+  const { pendingBookings, confirmedBookings, totalMonthlyNet } = React.useMemo(() => {
+    const pending: BookingRequest[] = [];
+    const confirmed: BookingRequest[] = [];
+    let net = 0;
+
+    for (let i = 0; i < bookingRequests.length; i++) {
+      const b = bookingRequests[i];
+      if (b.status === 'pending_host_approval') {
+        pending.push(b);
+      }
+      if (b.status === 'approved' || b.status === 'active') {
+        confirmed.push(b);
+      }
+      if (b.status !== 'declined') {
+        net += (b.hostNetPayout || 0);
+      }
+    }
+    return { pendingBookings: pending, confirmedBookings: confirmed, totalMonthlyNet: net };
+  }, [bookingRequests]);
 
   return (
     <div
