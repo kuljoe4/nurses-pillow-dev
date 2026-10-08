@@ -259,7 +259,7 @@ router.post('/send-verification-email', authenticateToken, catchAsync(async (req
     const cleanEmail = email.trim().toLowerCase();
     const userResult = await db.query('SELECT id, full_name FROM users WHERE LOWER(email) = $1', [cleanEmail]);
 
-    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    const pin = crypto.randomInt(100000, 1000000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
     const fullName = userResult.rows.length > 0 ? userResult.rows[0].full_name : 'Clinician';
 

@@ -257,6 +257,8 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
                 e.stopPropagation();
                 setIsDetailsOpen(!isDetailsOpen);
               }}
+              aria-expanded={isDetailsOpen}
+              aria-controls="shift-departure-advisor"
               className="w-full py-1 text-[11px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center justify-center gap-1 cursor-pointer"
             >
               <span>{isDetailsOpen ? 'Hide shift departure schedule' : 'View shift departure advisor'}</span>
@@ -272,6 +274,7 @@ export const GoogleMapsTravelTimeDisplay: React.FC<GoogleMapsTravelTimeDisplayPr
             <AnimatePresence>
               {isDetailsOpen && (
                 <motion.div
+                  id="shift-departure-advisor"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
