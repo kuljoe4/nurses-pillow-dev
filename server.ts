@@ -1026,13 +1026,27 @@ async function startServer() {
   });
 
   // GET /api/bookings - Fetch live bookings from PostgreSQL DB
-  app.get('/api/bookings', async (req: Request, res: Response) => {
+  app.get('/api/bookings', authenticateToken, async (req: any, res: Response) => {
     try {
       const { userId, role, hostId } = req.query;
 
       // Prevent guests or unauthenticated users from fetching all bookings
       if (!role || role === 'guest') {
         return res.json([]);
+      }
+
+      // Prevent IDOR: Ensure users can only fetch their own bookings, unless they are admin
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
+        if (role === 'host') {
+          if (hostId !== req.user?.id && userId !== req.user?.id) {
+            return res.status(403).json({ error: 'Forbidden: Cannot access bookings for another user' });
+          }
+        } else {
+          // Default for nurse or any other role string that reaches this point
+          if (userId !== req.user?.id) {
+            return res.status(403).json({ error: 'Forbidden: Cannot access bookings for another user' });
+          }
+        }
       }
 
       let query = `
@@ -1065,9 +1079,22 @@ async function startServer() {
   });
 
   // PATCH /api/bookings/:id/status - Update booking status in PostgreSQL DB
-  app.patch('/api/bookings/:id/status', async (req: Request, res: Response) => {
+  app.patch('/api/bookings/:id/status', authenticateToken, async (req: any, res: Response) => {
     try {
       const { id } = req.params;
+
+      // Prevent IDOR: Verify ownership before allowing update
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
+        const bookingRes = await db.query('SELECT host_id, traveler_id, traveler_user_id FROM bookings WHERE id = $1', [id]);
+        if (bookingRes.rows.length === 0) {
+          return res.status(404).json({ error: 'Booking not found' });
+        }
+        const booking = bookingRes.rows[0];
+        if (booking.host_id !== req.user?.id && booking.traveler_id !== req.user?.id && booking.traveler_user_id !== req.user?.id) {
+          return res.status(403).json({ error: 'Forbidden: Cannot modify booking for another user' });
+        }
+      }
+
       const { status } = req.body;
       if (!status) {
         return res.status(400).json({ error: 'Status is required' });
@@ -1089,7 +1116,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/bookings', async (req: any, res) => {
+  app.post('/api/bookings', authenticateToken, async (req: any, res) => {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
 
@@ -1101,6 +1128,13 @@ async function startServer() {
       }
 
       const booking = validationResult.data;
+
+      // Prevent IDOR: Ensure users can only create bookings for themselves
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
+        if (booking.traveler_id !== req.user?.id) {
+          return res.status(403).json({ error: 'Forbidden: Cannot create booking for another user' });
+        }
+      }
 
       // Calculate pricing server-side
       const listingRes = await db.query('SELECT title, monthly_rent, cleaning_fee, security_deposit_amount, host_id FROM listings WHERE id = $1', [booking.listing_id]);
