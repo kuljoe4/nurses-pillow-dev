@@ -19,7 +19,6 @@ import { Footer } from "./components/Footer";
 import { ClinicalLicenseStep } from "./components/ClinicalLicenseStep";
 import { IdentityStep } from "./components/IdentityStep";
 import { ContactStep } from "./components/ContactStep";
-import { WorkContractStep } from "./components/WorkContractStep";
 import { FindHousingView } from "./components/FindHousingView";
 import { stripeConnect } from "./services/stripeConnect";
 import { db } from "./services/database";
@@ -207,6 +206,23 @@ export default function App() {
         ? INITIAL_VERIFICATION_DATA
         : BLANK_VERIFICATION_DATA
     );
+
+  const [demandReports, setDemandReports] = useState(MOCK_DEMAND_REPORTS);
+
+  useEffect(() => {
+    fetch('/api/admin/demand-reports', {
+      headers: {
+        ...(localStorage.getItem('np_auth_token') ? { Authorization: `Bearer ${localStorage.getItem('np_auth_token')}` } : {})
+      }
+    })
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setDemandReports(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [verificationStepState, setVerificationStepState] = useState<VerificationStepId>(1);
   const verificationStep = verificationStepState;
@@ -1351,19 +1367,10 @@ export default function App() {
                 <ClinicalLicenseStep
                   data={verificationData}
                   onChange={handleUpdateVerification}
-                  onNextStep={() => setVerificationStep(4)}
+                  onNextStep={() => {}}
                   onSelectStep={(step) => setVerificationStep(step)}
                   isNightShiftMode={isNightShiftMode}
                   onOpenSuccessModal={() => setIsSuccessModalOpen(true)}
-                />
-              )}
-              {verificationStep === 4 && (
-                <WorkContractStep
-                  data={verificationData}
-                  onChange={handleUpdateVerification}
-                  onSelectStep={(step) => setVerificationStep(step)}
-                  onOpenSuccessModal={() => setIsSuccessModalOpen(true)}
-                  isNightShiftMode={isNightShiftMode}
                 />
               )}
             </>
@@ -1641,7 +1648,7 @@ export default function App() {
             initialPreset={sheetsPreset}
             bookingRequests={bookingRequests}
             listings={appData.listings}
-            demandReports={MOCK_DEMAND_REPORTS}
+            demandReports={demandReports}
             licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
             userRole={currentUser.role}
           />

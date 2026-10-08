@@ -55,8 +55,8 @@ export const ContactStep: React.FC<ContactStepProps> = ({
     }
 
     const rawPhone = (data.mobilePhone || '').replace(/\D/g, '');
-    if (!rawPhone || rawPhone.length !== 10) {
-      return 'Please enter a valid 10-digit mobile phone number.';
+    if (!rawPhone || rawPhone.length < 7 || rawPhone.length > 15) {
+      return 'Please enter a valid mobile phone number (7 to 15 digits).';
     }
 
     return null;

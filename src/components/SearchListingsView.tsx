@@ -520,6 +520,8 @@ useBodyScrollLock(isGsaModalOpen);
                   : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e]'
               }`}
               title="Edit move-in date, contract rotation length, or commute radius"
+              aria-expanded={isAssignmentDrawerExpanded}
+              aria-controls="assignment-drawer-panel"
             >
               <span className="material-symbols-outlined text-[16px] text-[#0A6FA8] dark:text-[#3E9AD1]">
                 calendar_today
@@ -550,6 +552,8 @@ useBodyScrollLock(isGsaModalOpen);
                   : 'bg-[#EFF6FB] dark:bg-[#182840] text-[#0B2559] dark:text-[#E6ECF7] hover:bg-[#e2edf7] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#e2edf7] dark:hover:bg-[#20324e] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#20324e]'
               }`}
               title="Filter by rent ceiling, day-sleeper quiet score, and shift logistics"
+              aria-expanded={isFilterPanelExpanded}
+              aria-controls="search-filter-panel"
             >
               <span className="material-symbols-outlined text-[16px]">tune</span>
               <span>Filters</span>
@@ -718,6 +722,7 @@ useBodyScrollLock(isGsaModalOpen);
           <AnimatePresence initial={false}>
             {isAssignmentDrawerExpanded && (
               <motion.div
+                id="assignment-drawer-panel"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{
                   height: 'auto',
