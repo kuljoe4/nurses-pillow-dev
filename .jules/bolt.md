@@ -19,6 +19,9 @@
 ## 2026-10-06 - [Avoid Re-calculating Inside Sort]
 **Learning:** Found `calculateCommuteDuration` being redundantly calculated during array sorting, which caused an O(N log N) overhead, even when the function was memoized.
 **Action:** Prevent redundant calculations during sorting loops. Pre-calculate values or memoize properly to reduce sorting overhead.
+## 2025-01-01 - [Optimize string initials calculation]
+**Learning:** Found an $O(N)$ string calculation logic that chained `.split().map().filter().slice().join()` causing intermediate arrays to be created on every render.
+**Action:** Replaced chained array functions with a single pass `for` loop to prevent unnecessary intermediate object/array allocations while keeping internationalization support. Attempting to use Regex matching for this specific problem led to internationalization bugs, so a plain single-pass loop is preferred to ensure correctness and speed.
 ## 2024-05-18 - Optimized Array Filters & Reducers in HostPortalView
 **Learning:** Chained array methods (like `.filter().map()` or multiple independent `.filter()` and `.reduce()` calls) can cause a performance issue if executed on every render, due to redundant iterations over the same collection (O(M * N) instead of O(N)) and excessive temporary object allocations, which slows down garbage collection.
 **Action:** Replaced chained `.filter().reduce()` and multiple `.filter()` executions with a single O(N) iterative loop wrapped in a `useMemo` block. This reduces time complexity from O(3N) to O(N) and prevents reallocation on every React re-render.

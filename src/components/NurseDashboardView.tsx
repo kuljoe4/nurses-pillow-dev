@@ -71,13 +71,21 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
   const displayName = currentUser?.name || currentUser?.email?.split('@')[0] || (isDemoAccount ? 'Sarah Jenkins' : 'Travel Clinician');
   const displayEmail = currentUser?.email || verificationData?.workEmail || '';
-  const initials = displayName
-    .split(' ')
-    .map((w: string) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || 'RN';
+
+  // ⚡ Bolt Performance Optimization: Prevent multiple intermediate array allocations
+  // Replaced chained .split().map().filter() with a single pass loop for initials
+  let calculatedInitials = '';
+  let isNewWord = true;
+  for (let i = 0; i < displayName.length && calculatedInitials.length < 2; i++) {
+    const char = displayName[i];
+    if (char === ' ') {
+      isNewWord = true;
+    } else if (isNewWord) {
+      calculatedInitials += char;
+      isNewWord = false;
+    }
+  }
+  const initials = calculatedInitials.toUpperCase() || 'RN';
 
   const userIsVerified = Boolean(
     currentUser?.isNurseVerified ||
