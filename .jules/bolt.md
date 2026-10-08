@@ -19,3 +19,6 @@
 ## 2026-10-06 - [Avoid Re-calculating Inside Sort]
 **Learning:** Found `calculateCommuteDuration` being redundantly calculated during array sorting, which caused an O(N log N) overhead, even when the function was memoized.
 **Action:** Prevent redundant calculations during sorting loops. Pre-calculate values or memoize properly to reduce sorting overhead.
+## 2025-01-01 - [Optimize string initials calculation]
+**Learning:** Found an $O(N)$ string calculation logic that chained `.split().map().filter().slice().join()` causing intermediate arrays to be created on every render.
+**Action:** Replaced chained array functions with a single pass `for` loop to prevent unnecessary intermediate object/array allocations while keeping internationalization support. Attempting to use Regex matching for this specific problem led to internationalization bugs, so a plain single-pass loop is preferred to ensure correctness and speed.
