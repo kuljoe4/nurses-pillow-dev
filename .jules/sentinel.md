@@ -15,7 +15,10 @@
 **Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used across the application to generate sensitive security tokens, transaction IDs, escrow holds, OTP session IDs, and database audit logs. This predictability introduces severe vulnerabilities to token sequencing and brute-force attacks.
 **Learning:** Development-grade ID and token generators often leak into production if cryptographically secure replacements are not strictly enforced during code review.
 **Prevention:** Always rely on Node.js `crypto` (`crypto.randomBytes`, `crypto.randomUUID`) on the backend and `window.crypto` (`crypto.getRandomValues`, `crypto.randomUUID`) on the frontend to guarantee unpredictability in critical identifiers and tokens.
-## 2024-10-18 - [Removal of SSN and DOB handling] \n**Vulnerability:** Collection of sensitive PII (SSN, DOB, Manual Document Uploads) in the database and frontend which increases legal liability and potential attack surface. \n**Learning:** Handling sensitive PII and identity documents should be outsourced to secure third parties (e.g., Stripe Identity) rather than building internal flows and storing the data in our own Postgres database. \n**Prevention:** Scrub the schema, server endpoints, and frontend of all , , and  references and leverage external KYC flows.
+## 2024-10-18 - [Removal of SSN and DOB handling]
+**Vulnerability:** Collection of sensitive PII (SSN, DOB, Manual Document Uploads) in the database and frontend which increases legal liability and potential attack surface.
+**Learning:** Handling sensitive PII and identity documents should be outsourced to secure third parties (e.g., Stripe Identity) rather than building internal flows and storing the data in our own Postgres database.
+**Prevention:** Scrub the schema, server endpoints, and frontend of all , , and  references and leverage external KYC flows.
 ## 2024-10-18 - [Removal of SSN and DOB handling]
 **Vulnerability:** Collection of sensitive PII (SSN, DOB, Manual Document Uploads) in the database and frontend which increases legal liability and potential attack surface.
 **Learning:** Handling sensitive PII and identity documents should be outsourced to secure third parties (e.g., Stripe Identity) rather than building internal flows and storing the data in our own Postgres database.
@@ -24,3 +27,7 @@
 **Vulnerability:** Admin endpoints (`/api/admin/verifications`, `/api/admin/verifications/:userId/approve`, etc.) lacked authentication and authorization checks, allowing unauthenticated requests to view and approve/reject clinical verifications and property listings.
 **Learning:** High-privilege API routes must explicitly include authentication middleware and role validation to ensure only authorized administrators can access or execute sensitive actions.
 **Prevention:** Always apply the `authenticateToken` middleware and verify `req.user.role` (e.g. `super_admin`, `admin`) for any newly added `/api/admin/*` endpoints.
+## 2026-10-08 - [CRITICAL] Fix insecure random PIN generation
+**Vulnerability:** Weak pseudo-random number generator (`Math.random()`) was used to generate email verification PINs. This makes tokens predictable and vulnerable to brute-force or sequencing attacks.
+**Learning:** Server-side Express routes were relying on `Math.floor(100000 + Math.random() * 900000)` for OTP generation.
+**Prevention:** Always use cryptographically secure pseudo-random number generators (CSPRNG). Use `crypto.randomInt()` or `crypto.randomBytes()` in Node.js environments.
