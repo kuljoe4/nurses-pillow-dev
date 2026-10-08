@@ -5,3 +5,6 @@
 ## 2026-10-07 - Accessible Progressive Disclosure
 **Learning:** When using Framer Motion's AnimatePresence for progressive disclosure (expand/collapse) in React, the toggle button inherently lacks semantic connection to the animated content. Screen readers cannot announce the expanded state or locate the revealed content without explicit ARIA attributes.
 **Action:** Always link the toggle button and the motion.div using `aria-controls` and an `id`, and reflect the current state using `aria-expanded={isOpen}` on the button.
+## 2024-10-08 - Add accessibility attributes to expand/collapse panels
+**Learning:** React components using `AnimatePresence` and `motion.div` for progressive disclosure often miss critical screen reader linkages. Toggle buttons need `aria-expanded` reflecting the open state, and `aria-controls` pointing to the `id` of the expanding region to ensure assistive technologies can announce the relationship and state changes.
+**Action:** When implementing expand/collapse UI, consistently add `id` to the toggled container and `aria-controls`/`aria-expanded` to the button that controls it.

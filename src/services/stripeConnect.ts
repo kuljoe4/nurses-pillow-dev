@@ -410,6 +410,7 @@ class StripeConnectService {
   // Execute sandbox split payment intent
   async processSplitPayment(params: {
     monthlyRent: number;
+    listingId: string;
     cleaningFee: number;
     securityDeposit: number;
     cardNumber?: string;
@@ -418,6 +419,7 @@ class StripeConnectService {
   }): Promise<StripeSplitTransaction> {
     const {
       monthlyRent,
+      listingId,
       cleaningFee,
       securityDeposit,
       cardNumber = '4242',
@@ -449,6 +451,7 @@ class StripeConnectService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           monthlyRent,
+          listingId,
           cleaningFee,
           securityDeposit,
           hostConnectedAccountId,
