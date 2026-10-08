@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   ci-checks:
@@ -29,3 +32,6 @@ jobs:
 
       - name: Run build
         run: npm run build
+
+      - name: Run tests
+        run: npm test
