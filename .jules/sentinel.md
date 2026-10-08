@@ -24,3 +24,8 @@
 **Vulnerability:** Admin endpoints (`/api/admin/verifications`, `/api/admin/verifications/:userId/approve`, etc.) lacked authentication and authorization checks, allowing unauthenticated requests to view and approve/reject clinical verifications and property listings.
 **Learning:** High-privilege API routes must explicitly include authentication middleware and role validation to ensure only authorized administrators can access or execute sensitive actions.
 **Prevention:** Always apply the `authenticateToken` middleware and verify `req.user.role` (e.g. `super_admin`, `admin`) for any newly added `/api/admin/*` endpoints.
+
+## 2024-05-24 - [IDOR in Bookings API]
+**Vulnerability:** The `/api/bookings` endpoints (GET, POST, PATCH) were missing authentication and authorization checks. This allowed unauthenticated users to query, create, or modify bookings belonging to any user just by passing arbitrary `userId` or `hostId` parameters.
+**Learning:** Even when API routes aren't explicitly public, relying on client-side logic or simply expecting standard frontend usage leaves endpoints vulnerable. Direct database operations must validate the acting user against the `user_id` or `host_id` of the manipulated record.
+**Prevention:** Always wrap sensitive resource endpoints with `authenticateToken` middleware and strictly enforce ownership (e.g., verifying `req.user.id === requested_resource.user_id`) unless the requesting user has elevated privileges (admin/super_admin).
