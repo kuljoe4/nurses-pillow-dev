@@ -8,3 +8,10 @@
 ## 2024-10-08 - Add accessibility attributes to expand/collapse panels
 **Learning:** React components using `AnimatePresence` and `motion.div` for progressive disclosure often miss critical screen reader linkages. Toggle buttons need `aria-expanded` reflecting the open state, and `aria-controls` pointing to the `id` of the expanding region to ensure assistive technologies can announce the relationship and state changes.
 **Action:** When implementing expand/collapse UI, consistently add `id` to the toggled container and `aria-controls`/`aria-expanded` to the button that controls it.
+
+## 2026-10-08 16:57 - Toggle Button Accessibility (`aria-pressed`)
+**Metric Impact:** +1 accessible toggle button.
+**Overall Progress:** 4th iteration, accessibility score improved.
+**Learning:** Custom components serving as toggle buttons (like the `PillowSaveButton` for saving/unsaving) rely on `aria-pressed` to communicate their current active state to screen readers. Relying solely on `aria-label` is insufficient for true toggle semantics.
+**Action:** Added the `aria-pressed={isSaved}` attribute to the Framer Motion button in `PillowSaveButton.tsx`.
+**Next Scheduled Target:** Target a specific modal or filter panel to eliminate redundant introductory phrasing and simplify visual hierarchy.
