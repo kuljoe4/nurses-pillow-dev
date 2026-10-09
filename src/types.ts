@@ -30,6 +30,8 @@ export interface BookingRequest {
   hospitalName: string;
   unitSpecialty: string;
   listingId: string;
+  roomId?: string;
+
   listingTitle: string;
   startDate: string;
   endDate: string;
