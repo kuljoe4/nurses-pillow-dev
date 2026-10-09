@@ -524,26 +524,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </button>
 
-                {currentUser.role !== 'host' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('verification');
-                      setIsMoreMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
-                      verified_user
-                    </span>
-                    <div>
-                      <div className="font-bold text-[#001848] dark:text-white">
-                        Clinician Credentialing
-                      </div>
-                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
-                    </div>
-                  </button>
-                )}
+
 
                 {/* Standards & Protections */}
                 <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
@@ -551,24 +532,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Standards &amp; Policies
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('legal-policies');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
-                    policy
-                  </span>
-                  <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Sanctuary Standards &amp; Policies
-                    </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Quiet guarantee, contract flex &amp; auto-purge</div>
-                  </div>
-                </button>
+
 
                 <button
                   type="button"
@@ -1382,143 +1346,12 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                   <span>Verified Hospitals Directory</span>
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium">
-                  NC Focus
-                </span>
+
               </button>
 
-              {currentUser.role !== 'host' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('verification');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                    currentTab === 'verification'
-                      ? 'bg-emerald-50 dark:bg-[#182840] text-[#195b4c] dark:text-[#aff0db] font-bold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
-                      verified_user
-                    </span>
-                    <span>Clinician Credentialing (Nursys)</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
-                    Step 4
-                  </span>
-                </button>
-              )}
 
-              {/* Workspaces & Dashboards Direct Access */}
-              <div className="pt-1 mt-1 border-t border-gray-100 dark:border-[#233550]">
-                {(currentUser.role === 'nurse' || currentUser.role === 'super_admin') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('nurse-dashboard');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                      currentTab === 'nurse-dashboard'
-                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                      space_dashboard
-                    </span>
-                    <span>Clinician Dashboard</span>
-                  </button>
-                )}
 
-                {(currentUser.role === 'host' || currentUser.role === 'super_admin') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('host-dashboard');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                      currentTab === 'host-dashboard'
-                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                      real_estate_agent
-                    </span>
-                    <span>Host Sanctuary Portal</span>
-                  </button>
-                )}
-
-                {currentUser.role === 'super_admin' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('admin-portal');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                      currentTab === 'admin-portal'
-                        ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 font-bold'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
-                      admin_panel_settings
-                    </span>
-                    <span>Operations Hub (Admin)</span>
-                  </button>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('legal-policies');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                  currentTab === 'legal-policies'
-                    ? 'bg-gray-100 dark:bg-[#182840] text-[#001848] dark:text-white font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px] text-gray-500">
-                  policy
-                </span>
-                <span>Sanctuary Standards &amp; Policies</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('system-status');
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                  currentTab === 'system-status'
-                    ? 'bg-emerald-50 dark:bg-[#182840] text-emerald-800 dark:text-emerald-300 font-bold'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
-                    dns
-                  </span>
-                  <span>Platform Reliability &amp; Status</span>
-                </div>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  99.9%
-                </span>
-              </button>
-            </div>
-
-            {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
+              {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
             <div className="pt-2 border-t border-gray-100 dark:border-[#233550] grid grid-cols-1 gap-2">
 
 
