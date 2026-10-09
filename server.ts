@@ -2022,6 +2022,8 @@ async function startServer() {
                   currency: 'usd',
                   payment_method_types: ['card'],
                };
+               // Remove application fee and transfer data because destination charges aren't supported without transfer capability
+               // In destination charges, if we remove transfer_data we must also remove application_fee_amount
                const fallbackIntent = await stripe.paymentIntents.create(fallbackIntentArgs);
                return res.json({ clientSecret: fallbackIntent.client_secret, paymentIntentId: fallbackIntent.id });
             } catch (fallbackErr: any) {
