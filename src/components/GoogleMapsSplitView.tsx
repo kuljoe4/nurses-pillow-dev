@@ -530,10 +530,14 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
   }, [selectedListingId, commuteMode]);
 
   // Ensure selected listing is always included in markers
+  // ⚡ Bolt Performance Optimization: Optimize selected listing prioritization
+  // Replaced multiple O(N) array scans (.slice, .some, .find) with a single O(N) .findIndex lookup
+  // and prevented unnecessary object duplication
   const activeListingPool = [...listings];
-  if (selectedListingId && !activeListingPool.slice(0, 10).some((l) => l.id === selectedListingId)) {
-    const selectedObj = activeListingPool.find((l) => l.id === selectedListingId);
-    if (selectedObj) {
+  if (selectedListingId) {
+    const selectedIdx = activeListingPool.findIndex((l) => l.id === selectedListingId);
+    if (selectedIdx > 9) {
+      const [selectedObj] = activeListingPool.splice(selectedIdx, 1);
       activeListingPool.unshift(selectedObj);
     }
   }
