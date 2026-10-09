@@ -939,6 +939,7 @@ export default function App() {
           start_date: booking.startDate,
           end_date: booking.endDate,
           traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
+          room_id: booking.roomId || undefined,
         }),
       });
       if (res.ok) {

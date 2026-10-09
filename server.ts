@@ -993,6 +993,28 @@ async function startServer() {
         return res.status(400).json({ error: 'Missing listing_id, start_date, or end_date' });
       }
 
+
+      const { room_id } = req.body;
+      const roomQuery = room_id ? "AND room_id = $4" : "AND room_id IS NULL";
+      const overlapParams = [listing_id, start_date, end_date];
+      if (room_id) overlapParams.push(room_id);
+
+      const overlapRes = await db.query(
+        `
+        SELECT id FROM bookings
+        WHERE listing_id = $1
+        ${roomQuery}
+        AND status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval')
+        AND (start_date < $3 AND end_date > $2)
+        LIMIT 1
+        `,
+        overlapParams
+      );
+
+      if (overlapRes.rows.length > 0) {
+        return res.status(409).json({ error: 'These dates are no longer available. Please select different dates.' });
+      }
+
       const traveler_id = req.user?.id;
       if (!traveler_id) {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
@@ -1229,6 +1251,27 @@ async function startServer() {
         if (booking.traveler_id !== req.user?.id) {
           return res.status(403).json({ error: 'Forbidden: Cannot create booking for another user' });
         }
+      }
+
+
+      const overlapQuery = booking.room_id ? "AND room_id = $4" : "AND room_id IS NULL";
+      const overlapParams2 = [booking.listing_id, booking.start_date, booking.end_date];
+      if (booking.room_id) overlapParams2.push(booking.room_id);
+
+      const overlapResBookings = await db.query(
+        `
+        SELECT id FROM bookings
+        WHERE listing_id = $1
+        ${overlapQuery}
+        AND status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval')
+        AND (start_date < $3 AND end_date > $2)
+        LIMIT 1
+        `,
+        overlapParams2
+      );
+
+      if (overlapResBookings.rows.length > 0) {
+        return res.status(409).json({ error: 'These dates are no longer available. Please select different dates.' });
       }
 
       // Calculate pricing server-side with fallback if listing is not in DB
@@ -2206,7 +2249,7 @@ async function startServer() {
 
   // Endpoint to save/upsert a listing for the current user
   app.post(
-    "/api/listings/my-listing",
+    "/api/listings",
     authenticateToken,
     express.json(),
     async (req: AuthenticatedRequest, res: Response) => {
@@ -2314,7 +2357,7 @@ async function startServer() {
 
   // Endpoint to fetch current user's listings
   app.get(
-    "/api/listings/my-listings",
+    "/api/host-listings",
     authenticateToken,
     async (req: AuthenticatedRequest, res: Response) => {
       try {

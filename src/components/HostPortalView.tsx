@@ -45,6 +45,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   // Note: For prototype purposes we use a fixed listing ID, or would extract it from context.
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
+  const [hostListings, setHostListings] = useState<any[]>([]);
 
   // Fetch host's listing on load to get the ID
   useEffect(() => {
@@ -57,16 +58,18 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
           if (!token) return;
 
-          const res = await fetch('/api/listings/my-listings', {
+          const res = await fetch('/api/host-listings', {
             headers: { 'Authorization': `Bearer ${token}` },
             signal: controller.signal
           });
 
           if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
             const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-            if (isMounted && data.listings && data.listings.length > 0) {
-              setEditingListingId(data.listings[0].id);
+            if (isMounted && data.listings) {
+              setHostListings(data.listings);
+              // We'll let the user choose or hit 'Create New Listing'
             }
+
           } else if (!res.ok) {
              console.error(`Failed to fetch host listings: ${res.status} ${res.statusText}`);
           }
@@ -344,7 +347,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     try {
       // Create listing update payload
       const listingPayload = {
-        listingId: editingListingId, // Pass ID to update instead of insert
+        listingId: editingListingId === 'new' ? undefined : editingListingId, // Pass ID to update instead of insert
         propertyType,
         roomCount,
         roomAPrice,
@@ -368,7 +371,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       // Save listing payload
       let currentListingId = editingListingId;
-      const listingRes = await fetch('/api/listings/my-listing', {
+      const listingRes = await fetch('/api/listings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -712,8 +715,39 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         </div>
       )}
 
+      {/* Listings List Selector */}
+      {activeHostTab === 'editor' && !editingListingId && hostListings.length > 0 && (
+        <div className="mb-6 space-y-4">
+          <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Your Listings</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {hostListings.map(l => (
+              <div key={l.id} onClick={() => setEditingListingId(l.id)} className="p-4 bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] rounded-2xl cursor-pointer hover:border-[#0A6FA8] transition-all">
+                <h3 className="font-bold text-[#0B2559] dark:text-white">{l.title || l.address_line1 || 'Sanctuary Stay'}</h3>
+                <p className="text-xs text-gray-500">{l.city}, {l.state}</p>
+              </div>
+            ))}
+            <div onClick={() => setEditingListingId('new')} className="p-4 bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-dashed border-[#0A6FA8] rounded-2xl cursor-pointer flex items-center justify-center flex-col gap-2 hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-all">
+              <span className="material-symbols-outlined text-[#0A6FA8]">add_circle</span>
+              <span className="text-sm font-bold text-[#0A6FA8]">Create New Listing</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeHostTab === 'editor' && hostListings.length === 0 && !editingListingId && (
+        <div className="mb-6 space-y-4">
+          <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Your Listings</h2>
+           <div className="grid gap-4 md:grid-cols-2">
+             <div onClick={() => setEditingListingId('new')} className="p-4 bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-dashed border-[#0A6FA8] rounded-2xl cursor-pointer flex items-center justify-center flex-col gap-2 hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-all">
+              <span className="material-symbols-outlined text-[#0A6FA8]">add_circle</span>
+              <span className="text-sm font-bold text-[#0A6FA8]">Create New Listing</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Listing & Room Calendar Editor - Responsive Card Grid Layout */}
-      {activeHostTab === 'editor' && (
+      {activeHostTab === 'editor' && editingListingId && (
         <form onSubmit={(e) => { e.preventDefault(); if (editorStep === 3) handleSaveListing(e); else setEditorStep(prev => (prev + 1) as 1 | 2 | 3); }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
