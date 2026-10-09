@@ -267,12 +267,17 @@ export default function App() {
         return;
       }
 
+      // Enforce role-based access for dashboards
+      if (tab === "nurse-dashboard" && currentUser.role !== "nurse" && currentUser.role !== "super_admin") return;
+      if (tab === "host-dashboard" && currentUser.role !== "host" && currentUser.role !== "super_admin") return;
+      if (tab === "admin-portal" && currentUser.role !== "super_admin") return;
+
       // Allow open navigation across all workspaces and dashboards with interactive preview
       setTabHistory((prev) => [...prev, currentTab]);
       setCurrentTab(tab);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [currentTab],
+    [currentTab, currentUser],
   );
 
   const handleGoBack = () => {
