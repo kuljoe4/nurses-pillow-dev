@@ -15,3 +15,11 @@
 **Learning:** Custom components serving as toggle buttons (like the `PillowSaveButton` for saving/unsaving) rely on `aria-pressed` to communicate their current active state to screen readers. Relying solely on `aria-label` is insufficient for true toggle semantics.
 **Action:** Added the `aria-pressed={isSaved}` attribute to the Framer Motion button in `PillowSaveButton.tsx`.
 **Next Scheduled Target:** Target a specific modal or filter panel to eliminate redundant introductory phrasing and simplify visual hierarchy.
+---
+# UI/UX & Copy Review Metrics Tracker
+
+This section acts as the memory tracker for the regular UI/UX interval reviews. It maintains the overall progress and learning metrics.
+
+## Baseline (Init)
+**Overall Progress:** 0 iterations completed.
+**Baseline State:** Initializing tracking protocol for copy redundancy, visual hierarchy, and accessibility metrics.
