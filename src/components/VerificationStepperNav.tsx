@@ -41,7 +41,7 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
             : 'bg-white border border-[rgba(11,37,89,0.06)]'
         }`}
       >
-        <div className="grid grid-cols-3 items-center gap-1.5 sm:gap-2">
+        <div className={`grid grid-cols-${steps.length} items-center gap-1.5 sm:gap-2`}>
           {steps.map((step) => {
             const isActive = currentStep === step.id;
 
@@ -63,9 +63,12 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
 
             // In production, strictly enforce sequential completion
             if (isProduction) {
-              if (step.id > 1 && !isStep1Verified) canNavigate = false;
-              if (step.id > 2 && !isStep2Verified) canNavigate = false;
-              if (step.id > 3 && !isStep3Verified && !isStep3Pending) canNavigate = false;
+              for (let i = 0; i < steps.indexOf(step); i++) {
+                if (!steps[i].isVerified) {
+                  canNavigate = false;
+                  break;
+                }
+              }
             }
 
             const handleClick = () => {

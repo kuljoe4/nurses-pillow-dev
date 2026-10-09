@@ -2,7 +2,7 @@
 // Implements connection parsing, SSL pooling, schema migration, and seed synchronization
 // Prioritizes production Railway PostgreSQL over the local in-memory fallback store.
 
-import { NC_HOSPITAL_SEEDS, NC_LISTING_SEEDS } from './database.ts';
+import { NC_HOSPITAL_SEEDS, NC_LISTING_SEEDS } from './seedData.ts';
 
 export interface RailwayConnectionConfig {
   connectionString: string;
@@ -155,6 +155,8 @@ class RailwayDatabaseManager {
         connectionTimeoutMillis: 5000,
         max: 10,
         idleTimeoutMillis: 30000,
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
       });
 
       this.pool.on('error', (err: any) => {

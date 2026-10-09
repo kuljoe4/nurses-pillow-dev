@@ -589,68 +589,8 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </button>
 
-                {/* Direct Portals & Dashboards Access */}
+                {/* Separator was here, removed with Portals & Workspaces section */}
                 <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Portals &amp; Workspaces
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('nurse-dashboard');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    space_dashboard
-                  </span>
-                  <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Clinician Dashboard
-                    </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Bookings, saved stays &amp; credentials</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('host-dashboard');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    real_estate_agent
-                  </span>
-                  <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Host Sanctuary Portal
-                    </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Manage listings, payouts &amp; booking requests</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('admin-portal');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
-                    admin_panel_settings
-                  </span>
-                  <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Operations Hub (Admin)
-                    </div>
-                    <div className="text-[11px] text-gray-500 dark:text-gray-400">Credential audits &amp; property approvals</div>
-                  </div>
-                </button>
               </div>
             )}
           </div>
@@ -1532,59 +1472,65 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* Workspaces & Dashboards Direct Access */}
               <div className="pt-1 mt-1 border-t border-gray-100 dark:border-[#233550]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('nurse-dashboard');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                    currentTab === 'nurse-dashboard'
-                      ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    space_dashboard
-                  </span>
-                  <span>Clinician Dashboard</span>
-                </button>
+                {(currentUser.role === 'nurse' || currentUser.role === 'super_admin') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('nurse-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                      currentTab === 'nurse-dashboard'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                      space_dashboard
+                    </span>
+                    <span>Clinician Dashboard</span>
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('host-dashboard');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                    currentTab === 'host-dashboard'
-                      ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
-                    real_estate_agent
-                  </span>
-                  <span>Host Sanctuary Portal</span>
-                </button>
+                {(currentUser.role === 'host' || currentUser.role === 'super_admin') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('host-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                      currentTab === 'host-dashboard'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] font-bold'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#0A6FA8] dark:text-[#3E9AD1]">
+                      real_estate_agent
+                    </span>
+                    <span>Host Sanctuary Portal</span>
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('admin-portal');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
-                    currentTab === 'admin-portal'
-                      ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 font-bold'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
-                    admin_panel_settings
-                  </span>
-                  <span>Operations Hub (Admin)</span>
-                </button>
+                {currentUser.role === 'super_admin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('admin-portal');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors cursor-pointer ${
+                      currentTab === 'admin-portal'
+                        ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 font-bold'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">
+                      admin_panel_settings
+                    </span>
+                    <span>Operations Hub (Admin)</span>
+                  </button>
+                )}
               </div>
 
               <button

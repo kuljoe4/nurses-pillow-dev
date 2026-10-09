@@ -111,11 +111,35 @@ CREATE TYPE ticket_status AS ENUM (
 );
 
 -- ============================================================================
--- 2. CORE USERS & ORGANIZATIONS
+-- 2. HEALTHCARE FACILITIES & PROXIMITY ENGINE (HOSPITAL FIRST)
 -- ============================================================================
 
--- Future-proofing: Supports Phase 2 Staffing Agency & Property Manager accounts
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users (LOWER(email));
+CREATE TABLE healthcare_facilities (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL, -- e.g. 'Duke University Hospital'
+    health_system VARCHAR(255), -- e.g. 'Duke Health', 'UNC Health'
+    address_line1 VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL DEFAULT 'NC', -- North Carolina gated
+    postal_code VARCHAR(20) NOT NULL,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    place_id VARCHAR(255) UNIQUE, -- Google Maps Places Autocomplete ID
+    is_active BOOLEAN DEFAULT TRUE,
+    trauma_level VARCHAR(100),
+    teaching_hospital BOOLEAN DEFAULT FALSE,
+    parking_type VARCHAR(255),
+    nurse_feedback_score INTEGER CHECK (nurse_feedback_score >= 0 AND nurse_feedback_score <= 100),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_facilities_coords ON healthcare_facilities(latitude, longitude);
+CREATE INDEX idx_facilities_city_state ON healthcare_facilities(city, state);
+
+-- ============================================================================
+-- 3. CORE USERS & ORGANIZATIONS
+-- ============================================================================
 
 CREATE TABLE organizations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -179,6 +203,7 @@ CREATE TABLE users (
 );
 
 CREATE INDEX idx_users_email ON users(email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_lower ON users (LOWER(email));
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_referral_code ON users(referral_code);
 
@@ -226,34 +251,7 @@ CREATE INDEX idx_verification_user ON verification_records(user_id);
 CREATE INDEX idx_verification_status ON verification_records(status);
 
 -- ============================================================================
--- 4. HEALTHCARE FACILITIES & PROXIMITY ENGINE (HOSPITAL FIRST)
--- ============================================================================
-
-CREATE TABLE healthcare_facilities (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL, -- e.g. 'Duke University Hospital'
-    health_system VARCHAR(255), -- e.g. 'Duke Health', 'UNC Health'
-    address_line1 VARCHAR(255) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(2) NOT NULL DEFAULT 'NC', -- North Carolina gated
-    postal_code VARCHAR(20) NOT NULL,
-    latitude DECIMAL(10, 8) NOT NULL,
-    longitude DECIMAL(11, 8) NOT NULL,
-    place_id VARCHAR(255) UNIQUE, -- Google Maps Places Autocomplete ID
-    is_active BOOLEAN DEFAULT TRUE,
-    trauma_level VARCHAR(100),
-    teaching_hospital BOOLEAN DEFAULT FALSE,
-    parking_type VARCHAR(255),
-    nurse_feedback_score INTEGER CHECK (nurse_feedback_score >= 0 AND nurse_feedback_score <= 100),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX idx_facilities_coords ON healthcare_facilities(latitude, longitude);
-CREATE INDEX idx_facilities_city_state ON healthcare_facilities(city, state);
-
--- ============================================================================
--- 5. LISTINGS, ROOM UNITS & HEALTHCARE AMENITIES
+-- 4. LISTINGS, ROOM UNITS & HEALTHCARE AMENITIES
 -- ============================================================================
 
 CREATE TABLE listings (

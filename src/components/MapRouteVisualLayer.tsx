@@ -1,5 +1,5 @@
 // Source: Google Maps Platform Code Assist
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useId } from 'react';
 import { useMap, AdvancedMarker } from '@vis.gl/react-google-maps';
 import { fetchLiveCommuteRoute, decodePolyline, LiveCommuteResult, LiveRouteStep } from '../services/liveCommuteApi';
 import { HousingListing } from '../types';
@@ -46,6 +46,7 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
   const [routeData, setRouteData] = useState<LiveCommuteResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStepsOpen, setIsStepsOpen] = useState(false);
+  const routeStepsListId = useId();
 
   // Fetch live turn-by-turn road polyline and steps from Google Maps Routes API
   useEffect(() => {
@@ -270,6 +271,8 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
             <button
               type="button"
               onClick={() => setIsStepsOpen(!isStepsOpen)}
+              aria-expanded={isStepsOpen}
+              aria-controls={routeStepsListId}
               className="w-full px-3 py-1.5 text-[11px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-gray-50 dark:hover:bg-[#182840] transition-colors flex items-center justify-between cursor-pointer"
             >
               <span>{isStepsOpen ? 'Hide route steps' : `View ${routeData.steps.length} route turns & stops`}</span>
@@ -283,7 +286,7 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
             </button>
 
             {isStepsOpen && (
-              <div className="px-3 py-2 max-h-48 overflow-y-auto space-y-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] text-[11px]">
+              <div id={routeStepsListId} className="px-3 py-2 max-h-48 overflow-y-auto space-y-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] text-[11px]">
                 {routeData.steps.map((step: LiveRouteStep, idx: number) => (
                   <div key={idx} className="flex items-start gap-2">
                     <span className="w-4 h-4 rounded-full bg-[#EFF6FB] dark:bg-[#182840] text-[#0A6FA8] dark:text-[#3E9AD1] font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">

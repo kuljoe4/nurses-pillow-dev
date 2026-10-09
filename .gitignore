@@ -45,3 +45,7 @@ merge_remaining_ours.py
 pr_merge_status.txt
 remaining_branches.txt
 remaining_status.txt
+
+# Lockfiles
+package-lock.json
+bun.lock

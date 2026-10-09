@@ -1,5 +1,5 @@
 // Source: Google Maps Platform Code Assist
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useId } from "react";
 import { Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { HousingListing } from "../types";
@@ -513,6 +513,7 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
   const [activeZoom, setActiveZoom] = useState(13);
   const [isStepsExpanded, setIsStepsExpanded] = useState(false);
   const [cameraMode, setCameraMode] = useState<'property' | 'corridor'>('property');
+  const routeStepsContainerId = useId();
 
   // Sync center when hospital changes
   useEffect(() => {
@@ -529,10 +530,14 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
   }, [selectedListingId, commuteMode]);
 
   // Ensure selected listing is always included in markers
+  // ⚡ Bolt Performance Optimization: Optimize selected listing prioritization
+  // Replaced multiple O(N) array scans (.slice, .some, .find) with a single O(N) .findIndex lookup
+  // and prevented unnecessary object duplication
   const activeListingPool = [...listings];
-  if (selectedListingId && !activeListingPool.slice(0, 10).some((l) => l.id === selectedListingId)) {
-    const selectedObj = activeListingPool.find((l) => l.id === selectedListingId);
-    if (selectedObj) {
+  if (selectedListingId) {
+    const selectedIdx = activeListingPool.findIndex((l) => l.id === selectedListingId);
+    if (selectedIdx > 9) {
+      const [selectedObj] = activeListingPool.splice(selectedIdx, 1);
       activeListingPool.unshift(selectedObj);
     }
   }
@@ -697,6 +702,8 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsStepsExpanded(!isStepsExpanded)}
+                  aria-expanded={isStepsExpanded}
+                  aria-controls={routeStepsContainerId}
                   className="text-[10px] font-bold text-[#aff0db] hover:underline flex items-center gap-0.5 cursor-pointer"
                 >
                   <span>{isStepsExpanded ? 'Hide Steps' : `${activeRouteInfo.steps.length} Steps`}</span>
@@ -720,7 +727,10 @@ export const GoogleMapsSplitView: React.FC<GoogleMapsSplitViewProps> = ({
 
           {/* Expandable Turn-by-Turn Directions */}
           {isStepsExpanded && activeRouteInfo?.steps && (
-            <div className="mt-2 pt-2 border-t border-white/15 max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin text-[11px]">
+            <div
+              id={routeStepsContainerId}
+              className="mt-2 pt-2 border-t border-white/15 max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin text-[11px]"
+            >
               {activeRouteInfo.steps.map((step, idx) => (
                 <div key={idx} className="flex items-start gap-1.5 text-gray-200">
                   <span className="w-4 h-4 rounded-full bg-white/10 text-[9px] font-bold flex items-center justify-center shrink-0 mt-0.5">

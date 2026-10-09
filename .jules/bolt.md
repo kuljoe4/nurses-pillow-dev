@@ -25,3 +25,6 @@
 ## 2024-05-18 - Optimized Array Filters & Reducers in HostPortalView
 **Learning:** Chained array methods (like `.filter().map()` or multiple independent `.filter()` and `.reduce()` calls) can cause a performance issue if executed on every render, due to redundant iterations over the same collection (O(M * N) instead of O(N)) and excessive temporary object allocations, which slows down garbage collection.
 **Action:** Replaced chained `.filter().reduce()` and multiple `.filter()` executions with a single O(N) iterative loop wrapped in a `useMemo` block. This reduces time complexity from O(3N) to O(N) and prevents reallocation on every React re-render.
+## 2026-10-09 - [Optimize Array Methods in GoogleMapsSplitView]
+**Learning:** Replaced multiple O(N) array scans (`.slice`, `.some`, `.find`) with a single O(N) `.findIndex` lookup to prevent unnecessary object duplication and array traversals.
+**Action:** Use `.findIndex` directly when checking for existence and retrieving the element in the same context to optimize performance.
