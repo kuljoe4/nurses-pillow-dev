@@ -167,7 +167,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
           <div className="flex items-center justify-between gap-4 mb-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
               <span className="material-symbols-outlined text-[15px]">badge</span>
-              Step 1 of 4 • Identity
+              Step 1 of 3 • Identity
             </span>
             {data.isIdVerified ? (
               <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] flex items-center gap-1">

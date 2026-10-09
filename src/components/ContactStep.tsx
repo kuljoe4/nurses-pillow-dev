@@ -1,6 +1,7 @@
-import React, {   useState , useEffect , useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { VerificationFormData, VerificationStepId } from '../types';
 import { VerificationStepperNav } from './VerificationStepperNav';
+import { twilioVerify } from '../services/twilioVerify';
 
 interface ContactStepProps {
   data: VerificationFormData;
@@ -24,6 +25,17 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
 
+  // Inline verification states
+  const [verifyingEmailInline, setVerifyingEmailInline] = useState(false);
+  const [inlineEmailPin, setInlineEmailPin] = useState('');
+  const [inlineEmailMsg, setInlineEmailMsg] = useState<string | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+
+  const [verifyingPhoneInline, setVerifyingPhoneInline] = useState(false);
+  const [inlinePhonePin, setInlinePhonePin] = useState('');
+  const [inlinePhoneMsg, setInlinePhoneMsg] = useState<string | null>(null);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+
   useEffect(() => {
     if (errorMessage && errorRef.current) {
       errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -32,7 +44,6 @@ export const ContactStep: React.FC<ContactStepProps> = ({
 
   const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/[^\d+]/g, '').slice(0, 16);
-    // If it's a 10 digit number without + prefix, format it nicely
     if (cleaned.length === 10 && !cleaned.startsWith('+')) {
       return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
     } else if (cleaned.length > 3 && cleaned.length < 10 && !cleaned.startsWith('+')) {
@@ -42,6 +53,107 @@ export const ContactStep: React.FC<ContactStepProps> = ({
        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
     }
     return cleaned;
+  };
+
+  const handleStartEmailVerify = async () => {
+    const email = (data.workEmail || '').trim();
+    if (!email || !email.includes('@')) {
+      setErrorMessage('Please enter a valid work email first.');
+      return;
+    }
+    setVerifyingEmailInline(true);
+    setVerifyingPhoneInline(false);
+    setInlineEmailMsg('Sending 6-digit verification code...');
+    try {
+      const res = await fetch('/api/auth/send-verification-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const resData = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setInlineEmailMsg(resData.error || 'Failed to send verification code.');
+        if (resData.pin) {
+          setInlineEmailMsg(`Preview PIN: ${resData.pin}`);
+        }
+      } else {
+        setInlineEmailMsg(resData.pin ? `Verification code sent! (Preview PIN: ${resData.pin})` : `Verification code sent to ${email}`);
+      }
+    } catch (err) {
+      setInlineEmailMsg('Network error contacting verification service.');
+    }
+  };
+
+  const handleConfirmEmailPin = async () => {
+    if (inlineEmailPin.trim().length !== 6) {
+      setInlineEmailMsg('Please enter the 6-digit verification PIN.');
+      return;
+    }
+    setEmailLoading(true);
+    try {
+      const res = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.workEmail, pin: inlineEmailPin.trim() }),
+      });
+      const resData = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setInlineEmailMsg(resData.error || 'Invalid verification PIN.');
+      } else {
+        onChange({ isContactVerified: true });
+        setInlineEmailMsg('Email verified successfully!');
+        setTimeout(() => {
+          setVerifyingEmailInline(false);
+          setInlineEmailPin('');
+        }, 1200);
+      }
+    } catch (err) {
+      setInlineEmailMsg('Verification failed. Please try again.');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleStartPhoneVerify = async () => {
+    const rawPhone = (data.mobilePhone || '').replace(/[^\d+]/g, '');
+    if (!rawPhone || rawPhone.length < 7) {
+      setErrorMessage('Please enter a valid mobile phone number first.');
+      return;
+    }
+    setVerifyingPhoneInline(true);
+    setVerifyingEmailInline(false);
+    setInlinePhoneMsg('Sending SMS verification code...');
+    try {
+      const dispatch = await twilioVerify.sendOtp(data.mobilePhone);
+      setInlinePhoneMsg(dispatch.codeSent ? `SMS OTP sent! (Preview Code: ${dispatch.codeSent})` : `SMS verification code sent to ${data.mobilePhone}`);
+    } catch (err) {
+      setInlinePhoneMsg('Failed to send SMS verification code.');
+    }
+  };
+
+  const handleConfirmPhonePin = async () => {
+    if (inlinePhonePin.trim().length !== 6) {
+      setInlinePhoneMsg('Please enter the 6-digit OTP code.');
+      return;
+    }
+    setPhoneLoading(true);
+    try {
+      const result = await twilioVerify.verifyOtp(data.mobilePhone, inlinePhonePin.trim());
+      if (!result.success) {
+        setInlinePhoneMsg(result.message || 'Invalid verification code.');
+      } else {
+        onChange({ phoneVerified: true });
+        setInlinePhoneMsg('Mobile phone verified successfully!');
+        setTimeout(() => {
+          setVerifyingPhoneInline(false);
+          setInlinePhonePin('');
+        }, 1200);
+      }
+    } catch (err) {
+      setInlinePhoneMsg('Verification failed. Please try again.');
+    } finally {
+      setPhoneLoading(false);
+    }
   };
 
   const validateInputs = (): string | null => {
@@ -79,8 +191,6 @@ export const ContactStep: React.FC<ContactStepProps> = ({
 
     setErrorMessage(null);
 
-
-    // Save entered contact values without forging false verification
     onChange({
       workEmail: data.workEmail.trim(),
       mobilePhone: data.mobilePhone.trim(),
@@ -170,10 +280,10 @@ export const ContactStep: React.FC<ContactStepProps> = ({
               ) : (
                 <button
                   type="button"
-                  onClick={onOpenPostmarkEmail}
+                  onClick={handleStartEmailVerify}
                   className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
                 >
-                  Verify Email
+                  {verifyingEmailInline ? 'Resend Code' : 'Verify Email'}
                 </button>
               )}
             </div>
@@ -206,6 +316,48 @@ export const ContactStep: React.FC<ContactStepProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Inline Email Verification Drawer */}
+            {verifyingEmailInline && !data.isContactVerified && (
+              <div className="mt-3 p-4 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">mark_email_read</span>
+                    Enter 6-Digit Email Verification PIN
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setVerifyingEmailInline(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+                {inlineEmailMsg && (
+                  <p className="text-xs text-[#0B2559] dark:text-gray-200 font-medium bg-white/80 dark:bg-black/20 p-2 rounded-lg">
+                    {inlineEmailMsg}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={inlineEmailPin}
+                    onChange={(e) => setInlineEmailPin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="flex-1 rounded-xl px-3 py-2 text-sm tracking-widest font-bold text-center bg-white dark:bg-[#0B1626] text-[#0B2559] dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
+                  />
+                  <button
+                    type="button"
+                    disabled={emailLoading || inlineEmailPin.length !== 6}
+                    onClick={handleConfirmEmailPin}
+                    className="px-4 py-2 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
+                  >
+                    {emailLoading ? 'Verifying...' : 'Confirm PIN'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -221,10 +373,10 @@ export const ContactStep: React.FC<ContactStepProps> = ({
               ) : (
                 <button
                   type="button"
-                  onClick={onOpenTwilioOtp}
+                  onClick={handleStartPhoneVerify}
                   className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline cursor-pointer"
                 >
-                  Verify Phone
+                  {verifyingPhoneInline ? 'Resend OTP' : 'Verify Phone'}
                 </button>
               )}
             </div>
@@ -257,6 +409,48 @@ export const ContactStep: React.FC<ContactStepProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Inline Phone Verification Drawer */}
+            {verifyingPhoneInline && !data.phoneVerified && (
+              <div className="mt-3 p-4 rounded-2xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">sms</span>
+                    Enter 6-Digit SMS Verification Code
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setVerifyingPhoneInline(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+                {inlinePhoneMsg && (
+                  <p className="text-xs text-[#0B2559] dark:text-gray-200 font-medium bg-white/80 dark:bg-black/20 p-2 rounded-lg">
+                    {inlinePhoneMsg}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={inlinePhonePin}
+                    onChange={(e) => setInlinePhonePin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    className="flex-1 rounded-xl px-3 py-2 text-sm tracking-widest font-bold text-center bg-white dark:bg-[#0B1626] text-[#0B2559] dark:text-white border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0A6FA8]"
+                  />
+                  <button
+                    type="button"
+                    disabled={phoneLoading || inlinePhonePin.length !== 6}
+                    onClick={handleConfirmPhonePin}
+                    className="px-4 py-2 rounded-xl bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
+                  >
+                    {phoneLoading ? 'Verifying...' : 'Confirm Code'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Real Status Card */}
@@ -303,53 +497,12 @@ export const ContactStep: React.FC<ContactStepProps> = ({
             ) : (
               <button
                 type="button"
-                onClick={onOpenTwilioOtp}
+                onClick={handleStartPhoneVerify}
                 className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white shrink-0 cursor-pointer"
               >
                 Send Code
               </button>
             )}
-          </div>
-
-          {/* Interactive Verification Flow Launchers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onOpenPostmarkEmail}
-              className="p-3.5 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] bg-white/60 dark:bg-[#15233a] text-left transition-all cursor-pointer group"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">mark_email_read</span>
-                  Hospital Email Verification
-                </span>
-                <span className="material-symbols-outlined text-xs text-[#0A6FA8] dark:text-[#3E9AD1] group-hover:translate-x-0.5 transition-transform">
-                  arrow_forward
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                {data.isContactVerified ? 'Email confirmed. Click to change.' : 'Confirm your hospital email with a 6-digit PIN.'}
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={onOpenTwilioOtp}
-              className="p-3.5 rounded-xl border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] bg-white/60 dark:bg-[#15233a] text-left transition-all cursor-pointer group"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">sms</span>
-                  Mobile Phone Verification
-                </span>
-                <span className="material-symbols-outlined text-xs text-[#0A6FA8] dark:text-[#3E9AD1] group-hover:translate-x-0.5 transition-transform">
-                  arrow_forward
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                {data.phoneVerified ? 'Phone confirmed. Click to change.' : 'Verify your mobile line for check-in codes.'}
-              </p>
-            </button>
           </div>
 
           <div className="pt-4 flex items-center justify-between gap-3">

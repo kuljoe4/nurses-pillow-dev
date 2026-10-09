@@ -38,9 +38,13 @@ export const TwilioPhoneOtpView: React.FC<TwilioPhoneOtpViewProps> = ({
   const [lockoutCooldown, setLockoutCooldown] = useState<number | null>(null);
   const [shakeInputs, setShakeInputs] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const lastSentPhoneRef = useRef<string | null>(null);
 
   // Send OTP on initial mount
   useEffect(() => {
+    if (!phoneNumber) return;
+    if (lastSentPhoneRef.current === phoneNumber) return;
+    lastSentPhoneRef.current = phoneNumber;
     void twilioVerify.sendOtp(phoneNumber);
   }, [phoneNumber]);
 

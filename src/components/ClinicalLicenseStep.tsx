@@ -179,7 +179,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
           <div className="flex items-center justify-between gap-4 mb-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EFF6FB] dark:bg-[#15233a] text-[#0A6FA8] dark:text-[#3E9AD1]">
               <span className="material-symbols-outlined text-[15px]">verified_user</span>
-              Step 3 of 4 • Clinical License
+              Step 3 of 3 • Clinical License
             </span>
             <span className="text-xs font-medium text-gray-500">
               ~2 min

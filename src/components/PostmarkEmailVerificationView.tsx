@@ -35,6 +35,7 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
     }
   }, [error]);
   const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const lastSentEmailRef = useRef<string | null>(null);
 
   // Synchronize email if prop changes after mount
   useEffect(() => {
@@ -47,6 +48,9 @@ export const PostmarkEmailVerificationView: React.FC<PostmarkEmailVerificationVi
   // Send transactional email code on mount or email update
   useEffect(() => {
     if (!email) return;
+    if (lastSentEmailRef.current === email) return;
+    lastSentEmailRef.current = email;
+
     let isCancelled = false;
     const sendInitialEmail = async () => {
       try {

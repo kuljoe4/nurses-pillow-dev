@@ -307,12 +307,9 @@ async function startServer() {
         await db.query(
           `UPDATE users
            SET identity_verified = true,
-               full_name = COALESCE($1, full_name),
-               dob = $2,
-               last_four_ssn = $3,
-               id_document_name = $4
-           WHERE id = $5 OR LOWER(email) = LOWER($6)`,
-          [fullName, dob.trim(), cleanSSN, idDocumentName.trim(), targetUserId || '', targetEmail || '']
+               full_name = COALESCE($1, full_name)
+           WHERE id = $2 OR LOWER(email) = LOWER($3)`,
+          [fullName, targetUserId || '', targetEmail || '']
         );
       }
 
