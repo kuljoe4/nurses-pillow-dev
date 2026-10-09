@@ -275,9 +275,11 @@ export default function App() {
   const [demandReports, setDemandReports] = useState(MOCK_DEMAND_REPORTS);
 
   useEffect(() => {
+    const token = localStorage.getItem('np_auth_token');
+    if (!token) return;
     fetch('/api/admin/demand-reports', {
       headers: {
-        ...(localStorage.getItem('np_auth_token') ? { Authorization: `Bearer ${localStorage.getItem('np_auth_token')}` } : {})
+        Authorization: `Bearer ${token}`
       }
     })
       .then(res => res.ok ? res.json() : Promise.reject())
@@ -711,13 +713,22 @@ export default function App() {
   const fetchLiveBookings = useCallback(
     async (targetUser?: { id?: string; role?: string; email?: string }) => {
       try {
+        const token = localStorage.getItem('np_auth_token');
+        if (!token) return null;
+
         const user = targetUser || currentUser;
+        if (!user.role || user.role === 'guest') return null;
+
         const params = new URLSearchParams();
         if (user.id) params.append("userId", user.id);
         if (user.role) params.append("role", user.role);
         if (user.role === "host" && user.id) params.append("hostId", user.id);
 
-        const res = await fetch(`/api/bookings?${params.toString()}`);
+        const res = await fetch(`/api/bookings?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         if (res.ok) {
           const liveBookings = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
           if (Array.isArray(liveBookings) && liveBookings.length > 0) {
