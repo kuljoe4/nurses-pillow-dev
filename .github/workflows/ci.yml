@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  NODE_OPTIONS: "--disable-warning=DEP0040"
+
 jobs:
   ci-checks:
     runs-on: ubuntu-latest
@@ -28,7 +31,6 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/testdb
-      NODE_OPTIONS: "--disable-warning=DEP0040"
 
     steps:
       - name: Checkout code
@@ -38,21 +40,35 @@ jobs:
 
       - name: Debug Environment Details
         run: |
-          echo "Node version:"
-          node -v || true
-          echo "NPM version:"
-          npm -v || true
+          echo "=== Debug Information ==="
+          echo "Node version: $(node -v || true)"
+          echo "NPM version: $(npm -v || true)"
           echo "NPM Cache Directory:"
           npm config get cache || true
-          echo "Working Directory Listing:"
+          echo "NODE_OPTIONS: ${NODE_OPTIONS:-'Not set'}"
+          echo "Directory Listing:"
           ls -la || true
+          echo "Lock files present:"
+          ls -la *lock* || true
 
       - name: Setup Node.js
+        id: setup-node
         uses: actions/setup-node@v4
+        continue-on-error: true
         with:
           node-version: 22
           cache: 'npm'
           cache-dependency-path: package-lock.json
+
+      - name: Post-Setup Diagnostic Dump
+        if: steps.setup-node.outcome == 'failure'
+        run: |
+          echo "::error::setup-node failed! Dumping workspace to understand missing paths."
+          echo "Full tree:"
+          find . -maxdepth 2 -type f
+          echo "git status:"
+          git status
+          exit 1
 
       - name: Install dependencies
         run: npm ci
