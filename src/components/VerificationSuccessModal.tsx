@@ -71,7 +71,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             License {data.licenseNumber} · {data.issuingStateBoard}
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 max-w-sm mx-auto leading-relaxed">
-            Your professional credentials have been submitted and are pending admin review. Once approved, you will have access to verified clinician privileges on Nurse&apos;s Pillow.
+            Your professional credentials have been submitted and are pending admin review. You will be notified once you have access to verified clinician privileges.
           </p>
         </div>
 
