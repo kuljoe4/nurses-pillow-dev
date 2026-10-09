@@ -21,3 +21,6 @@
 ## 2026-10-05 - ARIA labels for text-only symbols (like ✕)
 **Learning:** Discovered that 'icon-only' buttons are sometimes implemented using plain text symbols (like '✕' or '✓') rather than `<span className="material-symbols-outlined">`. These are effectively icon-only buttons for screen readers and strictly require `aria-label` attributes.
 **Action:** When auditing for missing ARIA labels, also look for buttons containing only non-alphanumeric text symbols.
+## 2026-10-27 - Progressive Disclosure
+**Learning:** When using expand/collapse UI patterns (like `conditionally rendered UI`), it is critical for accessibility to properly link the toggle button and the expandable container using `aria-controls` and `id`, and to reflect the state with `aria-expanded` on the button. This allows screen readers to know a container is controlled by the button and its current visibility state.
+**Action:** Always verify expand/collapse toggle buttons include `aria-expanded` and `aria-controls` linked to the container `id`.
