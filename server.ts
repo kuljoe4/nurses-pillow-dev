@@ -1056,14 +1056,25 @@ async function startServer() {
         }
       };
 
-      if (stripeConnectedAccountId) {
-        paymentIntentArgs.application_fee_amount = platformFeeAmount;
-        paymentIntentArgs.transfer_data = {
-          destination: stripeConnectedAccountId
-        };
+      let paymentIntent;
+      try {
+        if (stripeConnectedAccountId) {
+          paymentIntentArgs.application_fee_amount = platformFeeAmount;
+          paymentIntentArgs.transfer_data = {
+            destination: stripeConnectedAccountId
+          };
+        }
+        paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
+      } catch (stripeErr: any) {
+         if (stripeErr.code === 'insufficient_capabilities_for_transfer') {
+             console.warn('[Stripe] Host account lacks transfer capability. Falling back to platform-held escrow intent without immediate transfer data.');
+             delete paymentIntentArgs.application_fee_amount;
+             delete paymentIntentArgs.transfer_data;
+             paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
+         } else {
+             throw stripeErr;
+         }
       }
-
-      const paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
 
       const bookingId = `bk-${uuidv4()}`;
       const result = await db.query(
@@ -2003,6 +2014,21 @@ async function startServer() {
         });
         return res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
       } catch (stripeErr: any) {
+        if (stripeErr.code === 'insufficient_capabilities_for_transfer') {
+            console.warn('[Stripe] Host account lacks transfer capability. Falling back to platform-held escrow intent without immediate transfer data.');
+            try {
+               const fallbackIntentArgs = {
+                  amount: totalAmount,
+                  currency: 'usd',
+                  payment_method_types: ['card'],
+               };
+               const fallbackIntent = await stripe.paymentIntents.create(fallbackIntentArgs);
+               return res.json({ clientSecret: fallbackIntent.client_secret, paymentIntentId: fallbackIntent.id });
+            } catch (fallbackErr: any) {
+               console.error('[Stripe] Fallback payment intent creation failed:', fallbackErr.message);
+               return res.status(500).json({ error: fallbackErr.message || 'Payment processing failed on fallback.' });
+            }
+        }
         console.error('[Stripe] Payment intent creation failed:', stripeErr.message);
         return res.status(500).json({ error: stripeErr.message || 'Payment processing failed.' });
       }
