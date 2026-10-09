@@ -524,13 +524,28 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </button>
 
+                {currentUser.role !== 'host' && !isVerified && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('verification');
+                      setIsMoreMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c] dark:text-[#aff0db]">
+                      verified_user
+                    </span>
+                    <div>
+                      <div className="font-bold text-[#001848] dark:text-white">
+                        Clinician Credentialing
+                      </div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Nursys compact &amp; license verification</div>
+                    </div>
+                  </button>
+                )}
 
 
-                {/* Standards & Protections */}
-                <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Standards &amp; Policies
-                </div>
 
 
 
@@ -1349,9 +1364,55 @@ export const Header: React.FC<HeaderProps> = ({
 
               </button>
 
+              {currentUser.role !== 'host' && !isVerified && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectTab('verification');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                    currentTab === 'verification'
+                      ? 'bg-emerald-50 dark:bg-[#182840] text-[#195b4c] dark:text-[#aff0db] font-bold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[18px] text-[#195b4c]">
+                      verified_user
+                    </span>
+                    <span>Clinician Credentialing (Nursys)</span>
+                  </div>
 
+                </button>
+              )}
 
-              {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectTab('system-status');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                  currentTab === 'system-status'
+                    ? 'bg-emerald-50 dark:bg-[#182840] text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
+                    dns
+                  </span>
+                  <span>Platform Reliability &amp; Status</span>
+                </div>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  99.9%
+                </span>
+              </button>
+            </div>
+
+            {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
             <div className="pt-2 border-t border-gray-100 dark:border-[#233550] grid grid-cols-1 gap-2">
 
 
