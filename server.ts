@@ -1585,6 +1585,13 @@ async function startServer() {
             dashboard: 'none', // Embedded components handle host management in-app
             configuration: {
               merchant: {},    // Enables direct card payment acceptance
+              recipient: {
+                capabilities: {
+                  stripe_balance: {
+                    stripe_transfers: { requested: true },
+                  },
+                },
+              },
             },
             defaults: {
               currency: 'usd',
@@ -1661,8 +1668,8 @@ async function startServer() {
     }
   });
 
-  // POST /api/checkout/create-booking-request (Two-Stage Manual Capture Hold)
-  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: any, res: Response) => {
+  // POST /api/checkout/capture-booking-hold (Two-Stage Manual Capture Hold)
+  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: any, res: Response) => {
     try {
       const { bookingId } = req.body;
       if (!bookingId) {
