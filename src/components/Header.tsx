@@ -758,64 +758,6 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* Primary Workspace Action */}
-                  <div className="space-y-1.5 pt-0.5">
-                    {currentUser.role === 'nurse' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (activeBooking && onOpenBookingDetail) {
-                            onOpenBookingDetail(activeBooking);
-                          } else {
-                            onSelectTab('nurse-dashboard');
-                          }
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
-                          <span>{activeBooking ? 'View active stay request' : 'Open Clinician Dashboard'}</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-                      </button>
-                    )}
-
-                    {currentUser.role === 'host' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSelectTab('host-dashboard');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full py-2 px-3.5 rounded-full bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
-                          <span>Open Host Portal</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-                      </button>
-                    )}
-
-                    {currentUser.role === 'super_admin' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onSelectTab('admin-portal');
-                          setIsProfileMenuOpen(false);
-                        }}
-                        className="w-full py-2 px-3.5 rounded-full bg-[#0B2559] dark:bg-[#0A6FA8] text-white font-bold flex items-center justify-between hover:bg-[#12357a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
-                          <span>Open Admin Operations Hub</span>
-                        </div>
-                        <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
-                      </button>
-                    )}
-                  </div>
-
                   {/* Active Clinician Reservation Status (Not Gated for M1) */}
                   {currentUser.role === 'nurse' && activeBooking && (
                     <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1.5">
