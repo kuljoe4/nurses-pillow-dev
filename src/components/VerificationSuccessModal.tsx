@@ -65,13 +65,13 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             <span className="material-symbols-outlined text-[24px]">verified</span>
           </div>
           <h2 className="text-xl font-bold tracking-tight text-[#0B2559] dark:text-white mb-1">
-            License verified
+            Verification submitted
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             License {data.licenseNumber} · {data.issuingStateBoard}
           </p>
           <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 max-w-sm mx-auto leading-relaxed">
-            Your professional credentials are confirmed. You now have access to verified clinician privileges on Nurse&apos;s Pillow.
+            Your professional credentials have been submitted and are pending admin review. Once approved, you will have access to verified clinician privileges on Nurse&apos;s Pillow.
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             onClick={onClose}
             className="px-4 py-2.5 rounded-full border border-gray-200 dark:border-[#233550] text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
           >
-            Done
+            Close
           </button>
           <button
             type="button"
@@ -108,7 +108,7 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             }}
             className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
           >
-            <span>Search housing</span>
+            <span>Search verified housing</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>
