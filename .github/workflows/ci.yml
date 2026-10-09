@@ -28,12 +28,24 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/testdb
+      NODE_OPTIONS: "--disable-warning=DEP0040"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Debug Environment Details
+        run: |
+          echo "Node version:"
+          node -v || true
+          echo "NPM version:"
+          npm -v || true
+          echo "NPM Cache Directory:"
+          npm config get cache || true
+          echo "Working Directory Listing:"
+          ls -la || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
