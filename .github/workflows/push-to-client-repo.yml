@@ -30,8 +30,11 @@ jobs:
           
           # Stage and commit the changes
           git add .
-          git commit -m "Update from source repository workflow"
-          
-          # Push to the remote using the token for authentication
-          # Format: https://<token>@github.com/<target-account>/<target-repo>.git
-          git push https://x-access-token:${TARGET_PAT}@://github.com HEAD:main
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Update from source repository workflow"
+            
+            # Push to the remote using the token for authentication
+            git push https://x-access-token:${TARGET_PAT}@github.com/NursesPillow/nurses-pillow-dev.git HEAD:main
+          else
+            echo "Working tree clean. Nothing to push."
+          fi
