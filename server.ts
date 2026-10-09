@@ -506,6 +506,26 @@ async function startServer() {
   });
 
   // Admin endpoint to reject verification
+  app.delete('/api/admin/users/:userId', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const { userId } = req.params;
+
+      const deleteResult = await db.query('DELETE FROM users WHERE id = $1 RETURNING *', [userId]);
+
+      if (deleteResult.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({ success: true, message: 'User successfully deleted in PostgreSQL.' });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
   app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: any, res) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });

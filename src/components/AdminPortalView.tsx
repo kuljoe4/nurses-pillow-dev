@@ -175,6 +175,29 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
     setTimeout(() => setActionNotice(null), 5000);
   };
 
+  // Handle User Deletion
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this user? This action cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        setReviews((prev) => prev.filter((r) => r.id !== userId));
+        setActionNotice('User permanently deleted from PostgreSQL database.');
+        setTimeout(() => setActionNotice(null), 4000);
+      } else {
+        const data = await res.json();
+        setActionNotice(data.error || 'Failed to delete user.');
+        setTimeout(() => setActionNotice(null), 4000);
+      }
+    } catch (err) {
+      console.warn('API delete call error:', err);
+    }
+  };
+
   // Handle Clinician License Rejection
   const handleRejectClinician = async (reviewId: string) => {
     try {
@@ -409,26 +432,37 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                         )}
                       </td>
                       <td className="py-3.5 px-3 text-right">
-                        {r.licenseStatus === 'pending_review' ? (
-                          <div className="inline-flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleApproveClinician(r.id)}
-                              className="px-3 py-1 rounded-full bg-[#0B2559] hover:bg-[#0A6FA8] text-white text-[11px] font-bold cursor-pointer transition-colors"
-                            >
-                              Approve &amp; Purge
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRejectClinician(r.id)}
-                              className="px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:text-[#A8452E] text-[11px] font-bold cursor-pointer transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[11px] text-gray-400">Processed</span>
-                        )}
+                        <div className="flex flex-col items-end gap-1.5">
+                          {r.licenseStatus === 'pending_review' ? (
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleApproveClinician(r.id)}
+                                className="px-3 py-1 rounded-full bg-[#0B2559] hover:bg-[#0A6FA8] text-white text-[11px] font-bold cursor-pointer transition-colors"
+                              >
+                                Approve &amp; Purge
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRejectClinician(r.id)}
+                                className="px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:text-[#A8452E] text-[11px] font-bold cursor-pointer transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-400">Processed</span>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUser(r.id)}
+                            className="px-2.5 py-1 mt-1 rounded-full border border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-bold cursor-pointer transition-colors inline-flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">delete</span>
+                            Delete User
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
