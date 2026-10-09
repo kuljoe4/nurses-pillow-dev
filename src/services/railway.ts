@@ -306,6 +306,28 @@ class RailwayDatabaseManager {
 
 
         ALTER TABLE users ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS profession_type VARCHAR(100);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS specialty VARCHAR(150);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS primary_hospital_id VARCHAR(255) REFERENCES healthcare_facilities(id);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS shift_preference VARCHAR(20);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS clinical_document_url TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified';
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT FALSE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS suspension_reason TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS document_purged BOOLEAN DEFAULT FALSE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS document_purged_at TIMESTAMPTZ;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(100);
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(50) UNIQUE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_user_id VARCHAR(255) REFERENCES users(id) ON DELETE SET NULL;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 
 
         CREATE TABLE IF NOT EXISTS promo_codes (
