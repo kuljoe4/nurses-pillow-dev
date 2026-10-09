@@ -1349,6 +1349,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               </button>
 
+            </div>
 
 
               {/* 4. UTILITIES (Saved & Night Shift Toggle) */}
