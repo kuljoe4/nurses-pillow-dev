@@ -35,6 +35,7 @@ export const PillowSaveButton: React.FC<PillowSaveButtonProps> = React.memo(({
       transition={{ type: 'spring', stiffness: 450, damping: 22 }}
       className={`group relative inline-flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] transition-colors cursor-pointer select-none ${className}`}
       aria-label={isSaved ? 'Remove from saved pillows' : 'Save to my pillows'}
+      aria-pressed={isSaved}
       title={isSaved ? 'Saved to your Pillows' : 'Save to your Pillows'}
     >
       <motion.div
