@@ -548,6 +548,51 @@ async function startServer() {
     }
   });
 
+
+  // Admin endpoint to approve a host (after Stripe KYC)
+  app.post('/api/admin/hosts/:userId/approve', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const { userId } = req.params;
+
+      await db.query(`
+        UPDATE users
+        SET
+          is_host_verified = true
+        WHERE id = $1
+      `, [userId]);
+
+      res.json({ success: true, message: 'Host approved.' });
+    } catch (error) {
+      console.error('Error approving host:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Admin endpoint to reject/revoke a host
+  app.post('/api/admin/hosts/:userId/reject', authenticateToken, async (req: any, res) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const { userId } = req.params;
+
+      await db.query(`
+        UPDATE users
+        SET
+          is_host_verified = false
+        WHERE id = $1
+      `, [userId]);
+
+      res.json({ success: true, message: 'Host revoked.' });
+    } catch (error) {
+      console.error('Error rejecting host:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
   // Admin endpoint to approve property listing
   app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: any, res) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
@@ -1877,8 +1922,10 @@ async function startServer() {
       if (!hostId) return res.status(400).json({ error: 'hostId is required' });
 
       const accountId = req.body.accountId || `acct_express_${uuidv4().replace(/-/g, '').slice(0, 16)}`;
+      // We no longer automatically set is_host_verified to true. Admin must approve.
+      // We also don't automatically set stripe_payouts_enabled to true without syncing from Stripe.
       await db.query(
-        'UPDATE users SET stripe_connected_account_id = $1, stripe_payouts_enabled = true, is_host_verified = true WHERE id = $2',
+        'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
         [accountId, hostId]
       );
       res.json({ success: true, payouts_enabled: true, accountId });
@@ -2303,6 +2350,14 @@ async function startServer() {
                 listingId
               ]
             );
+
+            // Fetch host status to sync is_published
+            const hostCheck = await db.query('SELECT is_host_verified, stripe_payouts_enabled FROM users WHERE id = $1', [req.user.id]);
+            const canPublish = hostCheck.rows.length > 0 && hostCheck.rows[0].is_host_verified && hostCheck.rows[0].stripe_payouts_enabled;
+            if (!canPublish) {
+              await db.query("UPDATE listings SET is_published = false WHERE id = $1", [listingId]);
+            }
+
           } else {
              return res.status(403).json({ error: "Forbidden: Not the owner of this listing." });
           }
