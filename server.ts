@@ -1558,7 +1558,7 @@ async function startServer() {
   });
 
   // POST /api/checkout/create-booking-request (Two-Stage Manual Capture Hold)
-  app.post('/api/checkout/create-booking-request', async (req: Request, res: Response) => {
+  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: any, res: Response) => {
     try {
       const { bookingId } = req.body;
       if (!bookingId) {
@@ -1623,12 +1623,17 @@ async function startServer() {
   });
 
   // POST /api/bookings/:id/accept (HB-04)
-  app.post('/api/bookings/:id/accept', async (req: Request, res: Response) => {
+  app.post('/api/bookings/:id/accept', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const bookingRes = await db.query('SELECT * FROM bookings WHERE id = $1', [id]);
       if (bookingRes.rows.length === 0) return res.status(404).json({ error: 'Booking not found' });
       const booking = bookingRes.rows[0];
+
+      // Authorization Check
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin' && booking.host_id !== req.user?.id) {
+        return res.status(403).json({ error: 'Forbidden: Cannot accept this booking' });
+      }
 
       if (booking.stripe_payment_intent_id) {
         await stripe.paymentIntents.capture(booking.stripe_payment_intent_id);
@@ -1646,12 +1651,17 @@ async function startServer() {
   });
 
   // POST /api/bookings/:id/decline (HB-03)
-  app.post('/api/bookings/:id/decline', async (req: Request, res: Response) => {
+  app.post('/api/bookings/:id/decline', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const bookingRes = await db.query('SELECT * FROM bookings WHERE id = $1', [id]);
       if (bookingRes.rows.length === 0) return res.status(404).json({ error: 'Booking not found' });
       const booking = bookingRes.rows[0];
+
+      // Authorization Check
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin' && booking.host_id !== req.user?.id) {
+        return res.status(403).json({ error: 'Forbidden: Cannot decline this booking' });
+      }
 
       if (booking.stripe_payment_intent_id) {
         await stripe.paymentIntents.cancel(booking.stripe_payment_intent_id);
@@ -1669,12 +1679,17 @@ async function startServer() {
   });
 
   // POST /api/bookings/:id/cancel (Cancellation Engine with Reverse Transfer)
-  app.post('/api/bookings/:id/cancel', async (req: Request, res: Response) => {
+  app.post('/api/bookings/:id/cancel', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const bookingRes = await db.query('SELECT * FROM bookings WHERE id = $1', [id]);
       if (bookingRes.rows.length === 0) return res.status(404).json({ error: 'Booking not found' });
       const booking = bookingRes.rows[0];
+
+      // Authorization Check
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin' && booking.traveler_id !== req.user?.id && booking.traveler_user_id !== req.user?.id && booking.host_id !== req.user?.id) {
+        return res.status(403).json({ error: 'Forbidden: Cannot cancel this booking' });
+      }
 
       if (booking.status === 'requested' && booking.stripe_payment_intent_id) {
         await stripe.paymentIntents.cancel(booking.stripe_payment_intent_id);
