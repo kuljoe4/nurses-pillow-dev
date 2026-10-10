@@ -145,7 +145,7 @@ router.post('/logout', (req, res) => {
   }
 });
 
-router.post('/forgot-password', catchAsync(async (req, res, next) => {
+router.post('/forgot-password', authLimiter, catchAsync(async (req, res, next) => {
     const { email } = req.body;
     if (!email) {
       res.status(400).json({ error: 'Email is required' });
@@ -207,7 +207,7 @@ router.post('/forgot-password', catchAsync(async (req, res, next) => {
     res.json({ message: 'If an account exists, a password reset link has been sent.' });
 }));
 
-router.post('/reset-password', catchAsync(async (req, res, next) => {
+router.post('/reset-password', authLimiter, catchAsync(async (req, res, next) => {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
       res.status(400).json({ error: 'Token and new password are required' });
