@@ -23,3 +23,10 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## Baseline (Init)
 **Overall Progress:** 0 iterations completed.
 **Baseline State:** Initializing tracking protocol for copy redundancy, visual hierarchy, and accessibility metrics.
+
+## 2023-10-25 - Accessible Progressive Disclosure popovers
+**Metric Impact:** +2 accessible progressive disclosure UI components.
+**Overall Progress:** 5th iteration, accessibility score improved.
+**Learning:** In Framer Motion's AnimatePresence logic, toggle buttons for dynamically expanded content (like popovers and drawers) need proper semantic linkages using `aria-controls` pointing to a unique `id` on the content container to ensure screen readers can navigate and announce relationships effectively.
+**Action:** Added `id="dates-popover"` and `id="distance-popover"` to the respective `motion.div` containers in `FindHousingView.tsx`, and updated the respective toggle buttons with `aria-controls` bindings (already had `aria-expanded`).
+**Next Scheduled Target:** Target filter and assignment panels in SearchListingsView for similar semantic linkages.
