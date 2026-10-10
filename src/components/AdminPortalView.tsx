@@ -20,6 +20,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
 }) => {
   const [activeAdminTab, setActiveAdminTab] = useState<'clinicians' | 'properties' | 'bookings'>('clinicians');
   const [reviews, setReviews] = useState<AdminLicenseReview[]>([]);
+  const [hostReviews, setHostReviews] = useState<any[]>([]);
   const [managedListings, setManagedListings] = useState<HousingListing[]>(listings);
   const [dbBookings, setDbBookings] = useState<BookingRequest[]>(bookingRequests);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -491,6 +492,73 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               </span>
             </div>
 
+            <div className="mb-8">
+              <h3 className="text-md font-bold text-[#0B2559] dark:text-white mb-3">Host Authority (Stripe KYC)</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-400 font-bold uppercase text-[10px]">
+                      <th className="py-3 px-3">Host Name</th>
+                      <th className="py-3 px-3">Stripe Account</th>
+                      <th className="py-3 px-3">Payouts Enabled</th>
+                      <th className="py-3 px-3">Authority Status</th>
+                      <th className="py-3 px-3 text-right">Gate Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {hostReviews.map((h) => (
+                      <tr key={'host-'+h.id} className="hover:bg-gray-50 dark:hover:bg-[#14233a] transition-colors">
+                        <td className="py-3.5 px-3 font-bold text-[#0B2559] dark:text-white">{h.hostName}</td>
+                        <td className="py-3.5 px-3 font-mono text-gray-500">{h.stripeAccountId || 'None'}</td>
+                        <td className="py-3.5 px-3">
+                           {h.stripePayoutsEnabled ? (
+                             <span className="text-green-600 font-bold">Yes</span>
+                           ) : (
+                             <span className="text-amber-500 font-bold">No</span>
+                           )}
+                        </td>
+                        <td className="py-3.5 px-3">
+                           {h.isHostVerified ? (
+                             <span className="px-2.5 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] font-bold text-[10px]">Approved</span>
+                           ) : (
+                             <span className="px-2.5 py-0.5 rounded-full bg-[#FBF0D6] text-[#B9822E] font-bold text-[10px]">Pending</span>
+                           )}
+                        </td>
+                        <td className="py-3.5 px-3 text-right">
+                           {!h.isHostVerified ? (
+                             <button
+                               onClick={async () => {
+                                 const token = localStorage.getItem('np_auth_token');
+                                 await fetch(`/api/admin/hosts/${h.id}/approve`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                                 setHostReviews(prev => prev.map(host => host.id === h.id ? { ...host, isHostVerified: true } : host));
+                                 setActionNotice('Host approved successfully.');
+                               }}
+                               className="px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold cursor-pointer transition-colors"
+                             >
+                               Approve Host
+                             </button>
+                           ) : (
+                             <button
+                               onClick={async () => {
+                                 const token = localStorage.getItem('np_auth_token');
+                                 await fetch(`/api/admin/hosts/${h.id}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                                 setHostReviews(prev => prev.map(host => host.id === h.id ? { ...host, isHostVerified: false } : host));
+                                 setActionNotice('Host revoked successfully.');
+                               }}
+                               className="px-3 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-700 text-[11px] font-bold cursor-pointer transition-colors"
+                             >
+                               Revoke
+                             </button>
+                           )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <h3 className="text-md font-bold text-[#0B2559] dark:text-white mb-3 mt-4">Property Listings</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>

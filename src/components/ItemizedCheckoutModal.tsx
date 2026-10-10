@@ -131,7 +131,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       // Execute Stripe Connect split payment in sandbox mode with prorated rent and extra options
       const splitTxn = await stripeConnect.processSplitPayment({
         monthlyRent: accommodationTotal + extraOptionsFee,
-        listingId: listing.id,
+        listingId: listing.id || (listing as any).listing_id || 'unknown',
         cleaningFee,
         securityDeposit,
         cardNumber,
@@ -148,7 +148,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         clinicianPhone: verificationData?.mobilePhone || '+1 (919) 555-0198',
         hospitalName: listing.nearestHospital || 'Assignment Hospital',
         unitSpecialty: verificationData?.professionSpecialty?.includes('PICU') ? 'Pediatric ICU' : 'Clinical Rotation',
-        listingId: listing.id,
+        listingId: listing.id || (listing as any).listing_id || 'unknown',
         listingTitle: listing.title,
         startDate: checkInDate,
         endDate: checkOutDate,

@@ -1254,17 +1254,24 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   >
                     Back
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isUploading}
-                    className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {isUploading ? (
-                      <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
-                    ) : (
-                      <><span className="material-symbols-outlined text-[18px]">publish</span> Publish Listing</>
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      type="submit"
+                      disabled={isUploading}
+                      className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isUploading ? (
+                        <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+                      ) : (
+                        <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
+                      )}
+                    </button>
+                    {(!currentUser?.isHostVerified || !payoutsEnabled) && (
+                      <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
+                        Cannot publish until Stripe & Admin verification complete.
+                      </div>
                     )}
-                  </button>
+                  </div>
                 </div>
               </div>
             )}
