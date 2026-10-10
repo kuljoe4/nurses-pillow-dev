@@ -124,6 +124,7 @@ export const db = {
       if (railwayOk) {
         // Ensure extensions exist
         await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+        await railwayDb.query(`CREATE EXTENSION IF NOT EXISTS "btree_gist";`);
 
         // Ensure reset password & verification columns exist
         await railwayDb.query(`
@@ -187,6 +188,7 @@ export const db = {
         }
 
         await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
+        await pool.query(`CREATE EXTENSION IF NOT EXISTS "btree_gist";`);
 
         // Ensure reset password & verification columns exist
         await pool.query(`
