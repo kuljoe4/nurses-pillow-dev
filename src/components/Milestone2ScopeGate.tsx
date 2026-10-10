@@ -71,7 +71,7 @@ export const Milestone2ScopeGate: React.FC<Milestone2ScopeGateProps> = ({
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#195b4c] font-bold">✓</span>
-                <span>Itemized Checkout w/ Host-Controlled Security Deposit</span>
+                <span>Transparent Itemized Checkout ($0 Deposit)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#195b4c] font-bold">✓</span>
