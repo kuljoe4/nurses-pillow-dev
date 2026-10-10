@@ -44,3 +44,11 @@
 **Vulnerability:** The password reset request (/forgot-password) and processing (/reset-password) routes lacked rate limiting.
 **Learning:** High-value authentication routes handling emails or verifying tokens are prime targets for automated abuse (e.g., brute-forcing tokens or exhausting email quotas). Relying on generic API limits is insufficient for these flows.
 **Prevention:** Always apply specific authentication rate-limiters (like `authLimiter`) to password recovery, OTP generation, and token verification endpoints.
+## 2026-10-10 - Prevent Email Enumeration Securely
+**Vulnerability:** Email enumeration was possible on the `/register` endpoint by throwing a 409 error if an email already existed, allowing attackers to harvest user accounts.
+**Learning:** Simply suppressing the error and returning a generic 201 response is insufficient if the success path sets a `Set-Cookie` header and the fake path does not. The presence or absence of the cookie becomes a side-channel oracle.
+**Prevention:** To truly prevent enumeration, both the success and fake success paths must return identical HTTP responses, including setting a dummy cookie if the true path sets one. Additionally, the existing user must be notified via a background email that a duplicate registration was attempted so they are not left wondering why their password reset isn't working if they simply forgot they already had an account.
+## 2026-10-10 - Database EXCLUDE Constraints for Date Ranges
+**Vulnerability:** Application-level validation is insufficient to prevent double-booking race conditions.
+**Learning:** PostgreSQL `EXCLUDE USING gist` is the most robust way to prevent overlapping dates. However, using `[]` (inclusive start, inclusive end) in `daterange(start_date, end_date, '[]')` prevents back-to-back bookings where one reservation ends on the exact same date another begins.
+**Prevention:** Always use `[)` (inclusive start, exclusive end) for booking date ranges in PostgreSQL `EXCLUDE` constraints to natively support same-day check-in/check-out for consecutive reservations.
