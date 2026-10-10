@@ -26,3 +26,10 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2024-10-10 - Fix Security Deposit UI Discrepancies
 **Learning:** Security deposits were permanently eliminated platform-wide. Residual text referencing $200.00 and $250.00 holds generated copy redundancy and contradiction.
 **Action:** Changed remaining security deposit UI and email receipt values to explicit $0.00 items, and removed the obsolete Escrow Compliance text.
+
+## 2023-10-25 - Accessible Progressive Disclosure popovers
+**Metric Impact:** +2 accessible progressive disclosure UI components.
+**Overall Progress:** 5th iteration, accessibility score improved.
+**Learning:** In Framer Motion's AnimatePresence logic, toggle buttons for dynamically expanded content (like popovers and drawers) need proper semantic linkages using `aria-controls` pointing to a unique `id` on the content container to ensure screen readers can navigate and announce relationships effectively.
+**Action:** Added `id="dates-popover"` and `id="distance-popover"` to the respective `motion.div` containers in `FindHousingView.tsx`, and updated the respective toggle buttons with `aria-controls` bindings (already had `aria-expanded`).
+**Next Scheduled Target:** Target filter and assignment panels in SearchListingsView for similar semantic linkages.

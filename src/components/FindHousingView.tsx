@@ -499,6 +499,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       setActiveSearchStep(next ? 'dates' : null);
                       setIsDistancePopoverOpen(false);
                     }}
+                    aria-expanded={isDatesPopoverOpen}
+                    aria-controls="dates-popover"
                     className={`w-full h-[52px] px-3.5 sm:px-4 rounded-xl border transition-all duration-200 flex items-center justify-between text-left cursor-pointer group ${
                       activeSearchStep === 'dates' || isDatesPopoverOpen
                         ? 'bg-white dark:bg-[#182840] border-[#0A6FA8] ring-2 ring-[#0A6FA8]/25 shadow-md'
@@ -537,6 +539,8 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       setActiveSearchStep(next ? 'distance' : null);
                       setIsDatesPopoverOpen(false);
                     }}
+                    aria-expanded={isDistancePopoverOpen}
+                    aria-controls="distance-popover"
                     className={`w-full h-[52px] px-3.5 sm:px-4 rounded-xl border transition-all duration-300 flex items-center justify-between text-left cursor-pointer group ${
                       activeSearchStep === 'distance' || isDistancePopoverOpen
                         ? 'bg-white dark:bg-[#182840] border-[#0A6FA8] ring-2 ring-[#0A6FA8]/30 shadow-md scale-[1.01]'
@@ -566,6 +570,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                           }}
                         />
                         <motion.div
+                      id="distance-popover"
                           initial={{ opacity: 0, y: -6, scale: 0.98 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: -6, scale: 0.98 }}
@@ -663,6 +668,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       }}
                     />
                     <motion.div
+                      id="dates-popover"
                       initial={{ opacity: 0, y: -6, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
