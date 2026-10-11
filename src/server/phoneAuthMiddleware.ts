@@ -181,7 +181,7 @@ export function createPhoneAuthMiddleware() {
                if (token) {
                  try {
                    const jwt = (await import('jsonwebtoken')).default;
-                   const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
+                   const decoded = jwt.verify(token, process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })())) as any;
                    if (decoded?.id) userId = decoded.id;
                    if (decoded?.email) userEmail = decoded.email;
                  } catch {}
@@ -356,7 +356,7 @@ export function createPhoneAuthMiddleware() {
             if (token) {
               try {
                 const jwt = (await import('jsonwebtoken')).default;
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_for_development_only') as any;
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })())) as any;
                 if (decoded?.id) userId = decoded.id;
                 if (decoded?.email) userEmail = decoded.email;
               } catch {}
