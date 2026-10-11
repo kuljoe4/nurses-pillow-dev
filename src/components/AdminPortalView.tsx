@@ -82,7 +82,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           const contentType = res.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-            const mappedReviews: AdminLicenseReview[] = data.map((d: any) => ({
+            const mappedReviews: AdminLicenseReview[] = data.filter((d: any) => d.role !== 'host').map((d: any) => ({
               id: d.id,
               clinicianLegalName: d.full_name || d.email,
               profession: d.profession || d.profession_specialty || 'RN',
@@ -94,7 +94,17 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
               nursysLookupUrl: 'https://www.nursys.com',
               documentPurged: Boolean(d.document_purged || d.is_nurse_verified),
             }));
-            setReviews(mappedReviews);
+            setReviews(mappedReviews); // Proper check to separate hosts and nurses based on role
+
+            const hosts = data.filter((d: any) => d.role === 'host').map((d: any) => ({
+              id: d.id,
+              hostName: d.full_name || d.email,
+              stripeAccountId: d.stripe_account_id,
+              stripePayoutsEnabled: d.stripe_payouts_enabled,
+              isHostVerified: d.is_host_verified,
+            }));
+            setHostReviews(hosts);
+
             return;
           }
         }
