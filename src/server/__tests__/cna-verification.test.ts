@@ -65,7 +65,7 @@ app.post('/api/verify/license', authenticateToken, async (req: AuthenticatedRequ
 
 app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: any) => {
   try {
-    if (req.user.role !== 'super_admin') {
+    if (req.user?.role !== 'super_admin') {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
     }
 
