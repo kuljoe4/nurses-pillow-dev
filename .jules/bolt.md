@@ -28,3 +28,6 @@
 ## 2026-10-09 - [Optimize Array Methods in GoogleMapsSplitView]
 **Learning:** Replaced multiple O(N) array scans (`.slice`, `.some`, `.find`) with a single O(N) `.findIndex` lookup to prevent unnecessary object duplication and array traversals.
 **Action:** Use `.findIndex` directly when checking for existence and retrieving the element in the same context to optimize performance.
+## 2025-01-01 - [HostAddressMapping Debounce Optimization]
+**Learning:** `HostAddressMapping` uses the Places API via `placesLibrary?.AutocompleteSuggestion.fetchAutocompleteSuggestions` directly in the `handleInputChange` handler, which fires on every keystroke. This results in unnecessary network requests and API quota usage for every letter typed.
+**Action:** Implement a standard debounce pattern in the `handleInputChange` to reduce API calls to the Google Maps Places API, significantly improving performance and reducing quota.
