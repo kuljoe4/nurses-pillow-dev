@@ -63,6 +63,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   const placesLibrary = useMapsLibrary("places");
   const sessionTokenRef =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleInputChange = (text: string) => {
     setAddressInput(text);
@@ -70,34 +71,41 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
     setIsDropdownOpen(true);
 
     const trimmed = text.trim();
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
     if (trimmed.length > 2 && placesLibrary?.AutocompleteSuggestion) {
       setIsSearching(true);
 
-      // Create Places API (New) session token
-      if (!sessionTokenRef.current && placesLibrary.AutocompleteSessionToken) {
-        sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
-      }
+      debounceTimerRef.current = setTimeout(() => {
+        // Create Places API (New) session token
+        if (!sessionTokenRef.current && placesLibrary.AutocompleteSessionToken) {
+          sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
+        }
 
-      const request: google.maps.places.AutocompleteRequest = {
-        input: trimmed,
-        sessionToken: sessionTokenRef.current ?? undefined,
-        includedRegionCodes: ["us"],
-      };
+        const request: google.maps.places.AutocompleteRequest = {
+          input: trimmed,
+          sessionToken: sessionTokenRef.current ?? undefined,
+          includedRegionCodes: ["us"],
+        };
 
-      placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
-        .then((res) => {
-          if (res?.suggestions) {
-            setPlacesSuggestions(res.suggestions);
-          } else {
+        placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
+          .then((res) => {
+            if (res?.suggestions) {
+              setPlacesSuggestions(res.suggestions);
+            } else {
+              setPlacesSuggestions([]);
+            }
+          })
+          .catch(() => {
             setPlacesSuggestions([]);
-          }
-        })
-        .catch(() => {
-          setPlacesSuggestions([]);
-        })
-        .finally(() => {
-          setIsSearching(false);
-        });
+          })
+          .finally(() => {
+            setIsSearching(false);
+          });
+      }, 300);
     } else {
       setPlacesSuggestions([]);
       setIsSearching(false);
