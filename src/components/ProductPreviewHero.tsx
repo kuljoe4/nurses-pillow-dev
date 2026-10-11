@@ -200,6 +200,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
                 type="button"
                 onClick={() => setShowFeeBreakdown(!showFeeBreakdown)}
                 aria-expanded={showFeeBreakdown}
+                aria-pressed={showFeeBreakdown}
                 aria-controls="fee-breakdown-panel"
                 className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center gap-0.5 cursor-pointer"
               >
