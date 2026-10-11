@@ -271,7 +271,7 @@ async function startServer() {
   // Identity Verification Endpoint (NV-01, NV-02)
   // TODO: Integrate Stripe Identity for real biometric & ID verification.
   // Identity Verification Endpoint (NV-01, NV-02)
-  app.post('/api/verify/identity', async (req: any, res: Response) => {
+  app.post('/api/verify/identity', async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const { legalFirstName, legalLastName } = req.body;
       
@@ -330,7 +330,7 @@ async function startServer() {
   });
 
   // Clinical License Verification Endpoint (NV-03)
-  app.post('/api/verify/license', async (req: any, res: Response) => {
+  app.post('/api/verify/license', async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const { licenseNumber, stateBoard, profession, specialty, credentialType, documentName } = req.body;
       let userId = req.user?.id || req.body?.userId;
@@ -421,7 +421,7 @@ async function startServer() {
 
 
   // Admin endpoint to list pending verifications from PostgreSQL
-  app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+  app.get('/api/admin/verifications', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -448,7 +448,7 @@ async function startServer() {
   });
 
   // Admin endpoint for market demand reports from PostgreSQL
-  app.get('/api/admin/demand-reports', authenticateToken, async (req: any, res) => {
+  app.get('/api/admin/demand-reports', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -480,7 +480,7 @@ async function startServer() {
   });
 
   // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
-  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -506,7 +506,7 @@ async function startServer() {
   });
 
   // Admin endpoint to reject verification
-  app.delete('/api/admin/users/:userId', authenticateToken, async (req: any, res) => {
+  app.delete('/api/admin/users/:userId', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -526,7 +526,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -550,7 +550,7 @@ async function startServer() {
 
 
   // Admin endpoint to approve a host (after Stripe KYC)
-  app.post('/api/admin/hosts/:userId/approve', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/hosts/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -572,7 +572,7 @@ async function startServer() {
   });
 
   // Admin endpoint to reject/revoke a host
-  app.post('/api/admin/hosts/:userId/reject', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/hosts/:userId/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -594,7 +594,7 @@ async function startServer() {
   });
 
   // Admin endpoint to approve property listing
-  app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -612,7 +612,7 @@ async function startServer() {
   });
 
   // Admin endpoint to reject/unverify property listing
-  app.post('/api/admin/listings/:id/reject', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/listings/:id/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -1028,7 +1028,7 @@ async function startServer() {
 
   // Bookings Creation
 
-  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {
@@ -1202,7 +1202,7 @@ async function startServer() {
   });
 
   // GET /api/bookings - Fetch live bookings from PostgreSQL DB
-  app.get('/api/bookings', authenticateToken, async (req: any, res: Response) => {
+  app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const { userId, role, hostId } = req.query;
 
@@ -1255,7 +1255,7 @@ async function startServer() {
   });
 
   // PATCH /api/bookings/:id/status - Update booking status in PostgreSQL DB
-  app.patch('/api/bookings/:id/status', authenticateToken, async (req: any, res: Response) => {
+  app.patch('/api/bookings/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const { id } = req.params;
 
@@ -1292,7 +1292,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/bookings', authenticateToken, async (req: any, res) => {
+  app.post('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
 
@@ -1431,7 +1431,7 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
+  app.get('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -1444,7 +1444,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const log = req.body;
 
@@ -1768,7 +1768,7 @@ async function startServer() {
   });
 
   // POST /api/checkout/capture-booking-hold (Two-Stage Manual Capture Hold)
-  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const { bookingId } = req.body;
       if (!bookingId) {
@@ -2068,7 +2068,7 @@ async function startServer() {
   });
 
   // Stripe Payment Intent (Split Payment & Escrow Hold)
-  app.post('/api/stripe/payment-intent', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/stripe/payment-intent', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {

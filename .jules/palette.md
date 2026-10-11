@@ -37,3 +37,6 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2024-10-25 - [Missing aria-expanded and aria-controls on Expandable UI Elements]
 **Learning:** React components using simple conditional rendering (like `showFeeBreakdown && ...` in `ProductPreviewHero.tsx`) often miss the standard `aria-expanded` and `aria-controls` attributes on their toggle buttons. This leaves screen reader users unaware of the button's purpose and state.
 **Action:** When implementing toggle buttons that control the visibility of another element, always add `aria-expanded={boolean}` and `aria-controls="unique-id"` to the button, and the matching `id="unique-id"` to the controlled container.
+## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
+**Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
+**Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.

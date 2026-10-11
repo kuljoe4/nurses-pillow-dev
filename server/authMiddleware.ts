@@ -12,7 +12,7 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development' && process
   console.error('FATAL ERROR: JWT_SECRET environment variable is not set in ' + process.env.NODE_ENV + '.');
   process.exit(1);
 }
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_only';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })());
 
 export interface TokenPayload {
   id: string;
