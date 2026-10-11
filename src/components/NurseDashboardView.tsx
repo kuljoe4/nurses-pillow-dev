@@ -100,7 +100,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   const userIsVerified = Boolean(
     currentUser?.isNurseVerified ||
     (isVerified !== undefined ? isVerified : false) ||
-    verificationData?.licenseStatus === 'verified'
+    verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review'
   );
 
   const isIdVerified = Boolean(
