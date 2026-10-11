@@ -1205,7 +1205,7 @@ export default function App() {
         isNightShiftMode={isNightShiftMode}
         onToggleNightShift={() => setIsNightShiftMode(!isNightShiftMode)}
         onOpenSupport={() => setIsSupportOpen(true)}
-        isVerified={verificationData.licenseStatus === "verified"}
+        isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
         onOpenAuth={(mode = "signup") => {
           setAuthModalMode(mode);
           setIsAuthModalOpen(true);
@@ -1246,7 +1246,7 @@ export default function App() {
             (currentUser.role === "nurse" || currentUser.role === "super_admin" ? (
               <NurseDashboardView
                 isNightShiftMode={isNightShiftMode}
-                isVerified={currentUser.isNurseVerified || verificationData.licenseStatus === "verified"}
+                isVerified={currentUser.isNurseVerified || verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
                 onGoToVerification={() => {
                   handleNavigateTab("verification");
                   setVerificationStep(3);
@@ -1485,7 +1485,7 @@ export default function App() {
               isNightShiftMode={isNightShiftMode}
               savedListingIds={savedListingIds}
               onToggleSave={handleToggleSaveListing}
-              isVerified={verificationData.licenseStatus === "verified"}
+              isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
               onGoToVerification={() => {
                 handleNavigateTab("verification");
                 setVerificationStep(3);
@@ -1527,7 +1527,7 @@ export default function App() {
               isNightShiftMode={isNightShiftMode}
               savedListingIds={savedListingIds}
               onToggleSave={handleToggleSaveListing}
-              isVerified={verificationData.licenseStatus === "verified"}
+              isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
               onGoToVerification={() => {
                 handleNavigateTab("verification");
                 setVerificationStep(3);
@@ -1809,7 +1809,7 @@ export default function App() {
             isNightShiftMode={isNightShiftMode}
             isSaved={savedListingIds.includes(detailListing.id)}
             onToggleSave={handleToggleSaveListing}
-            isVerified={verificationData.licenseStatus === "verified"}
+            isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
             onGoToVerification={() => {
               setDetailListing(null);
               handleNavigateTab("verification");
