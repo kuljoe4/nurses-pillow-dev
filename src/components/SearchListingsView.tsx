@@ -259,50 +259,51 @@ useBodyScrollLock(isGsaModalOpen);
     // Replaced chained .filter() arrays (O(M*N)) with a single loop (O(N))
     const targetWeeks = selectedDuration === 'custom' ? (customDuration || 13) : parseInt(selectedDuration, 10);
 
-    list = list.filter((l: HousingListing) => {
+    const filtered = [];
+    for (let i = 0; i < list.length; i++) {
+      const l = list[i];
       // 1. Quick chip filter
-      if (activeFilterChip === 'entire' && !(l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'))) return false;
-      if (activeFilterChip === 'private' && !(l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'))) return false;
-      if (activeFilterChip === 'blackout' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains)) return false;
-      if (activeFilterChip === 'laundry' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit)) return false;
-      if (activeFilterChip === 'parking' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking)) return false;
+      if (activeFilterChip === 'entire' && !(l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'))) continue;
+      if (activeFilterChip === 'private' && !(l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'))) continue;
+      if (activeFilterChip === 'blackout' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains)) continue;
+      if (activeFilterChip === 'laundry' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit)) continue;
+      if (activeFilterChip === 'parking' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking)) continue;
 
       // 2. Commute Buffer
       if (commuteBuffer && commuteBuffer < 15) {
         const commute = calculateCommuteDuration(l, selectedHospital);
-        if (commute.distanceMiles > commuteBuffer) return false;
+        if (commute.distanceMiles > commuteBuffer) continue;
       }
 
       // 3. Assignment Duration
       if (targetWeeks) {
         const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
-        if (targetWeeks < minWeeks || targetWeeks > maxWeeks) return false;
+        if (targetWeeks < minWeeks || targetWeeks > maxWeeks) continue;
       }
 
       // 4. Extended filter criteria
-      if (maxPrice < 3500 && l.monthlyRate > maxPrice) return false;
-      if (minRating > 0 && l.nurseRating < minRating) return false;
-      if (filterBlackout && !(l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')))) return false;
-      if (filterScrubWasher && !(l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')))) return false;
-      if (filterQuietDay && !(l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')))) return false;
-      if (filterSoundMachine && !l.amenities?.whiteNoiseMachine) return false;
-      if (filterDedicatedParking && !(l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')))) return false;
-      if (filterPetFriendly && !l.amenities?.petFriendly) return false;
-      if (filterContractFlex && !l.contractFlexProtection) return false;
+      if (maxPrice < 3500 && l.monthlyRate > maxPrice) continue;
+      if (minRating > 0 && l.nurseRating < minRating) continue;
+      if (filterBlackout && !(l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')))) continue;
+      if (filterScrubWasher && !(l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')))) continue;
+      if (filterQuietDay && !(l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')))) continue;
+      if (filterSoundMachine && !l.amenities?.whiteNoiseMachine) continue;
+      if (filterDedicatedParking && !(l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')))) continue;
+      if (filterPetFriendly && !l.amenities?.petFriendly) continue;
+      if (filterContractFlex && !l.contractFlexProtection) continue;
 
-      return true; // Passed all active filters
-    });
+      filtered.push(l); // Passed all active filters
+    }
+    list = filtered;
 
     // Sort listings
     if (sortOption === 'closest') {
       // ⚡ Bolt Performance Optimization: Map distance recalculations
-      // Replaced redundant nested calculateCommuteDuration loop O(N log N) with an O(N) map
-      const distanceMap = new Map<string, number>();
-      for (let i = 0; i < list.length; i++) {
-        distanceMap.set(list[i].id, calculateCommuteDuration(list[i], selectedHospital).driveMinutes);
-      }
-      list.sort((a: HousingListing, b: HousingListing) => (distanceMap.get(a.id) || 0) - (distanceMap.get(b.id) || 0));
+      // Replaced redundant nested calculateCommuteDuration loop O(N log N) with a Schwartzian transform
+      list = list.map(item => ({ item, dist: calculateCommuteDuration(item, selectedHospital).driveMinutes }))
+                 .sort((a, b) => a.dist - b.dist)
+                 .map(({ item }) => item);
     } else if (sortOption === 'price_low') {
       list.sort((a: HousingListing, b: HousingListing) => a.monthlyRate - b.monthlyRate);
     } else if (sortOption === 'quiet_score') {

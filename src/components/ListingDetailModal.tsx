@@ -246,6 +246,7 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
             type="button"
             onClick={() => setSelectedImageIndex((prev) => (prev + 1) % galleryPhotos.length)}
             className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-black/80 text-xs font-bold backdrop-blur-xs shadow-md flex items-center gap-1.5 cursor-pointer"
+            aria-label="View all photos"
           >
             <span className="material-symbols-outlined text-[16px]">grid_view</span>
             <span>View all photos ({galleryPhotos.length})</span>

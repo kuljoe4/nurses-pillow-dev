@@ -8,8 +8,10 @@ const app = express();
 app.use(express.json());
 
 // Mock authenticateToken middleware
-const mockAuthenticateToken = (req: any, res: any, next: any) => {
-  req.user = { id: 'mock-user-id' };
+import { AuthenticatedRequest } from '../../../server/authMiddleware.js';
+
+const mockAuthenticateToken = (req: AuthenticatedRequest, res: any, next: any) => {
+  req.user = { id: 'mock-user-id', role: 'host', email: 'test@example.com' };
   next();
 };
 

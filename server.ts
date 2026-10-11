@@ -271,7 +271,7 @@ async function startServer() {
   // Identity Verification Endpoint (NV-01, NV-02)
   // TODO: Integrate Stripe Identity for real biometric & ID verification.
   // Identity Verification Endpoint (NV-01, NV-02)
-  app.post('/api/verify/identity', async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/verify/identity', async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { legalFirstName, legalLastName } = req.body;
       
@@ -330,7 +330,7 @@ async function startServer() {
   });
 
   // Clinical License Verification Endpoint (NV-03)
-  app.post('/api/verify/license', async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/verify/license', async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { licenseNumber, stateBoard, profession, specialty, credentialType, documentName } = req.body;
       let userId = req.user?.id || req.body?.userId;
@@ -1028,14 +1028,14 @@ async function startServer() {
 
   // Bookings Creation
 
-  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {
         return res.status(503).json({ error: 'Stripe Secret Key is not configured. Production payment processing is unavailable.' });
       }
 
-      const { listing_id, start_date, end_date, traveler_name } = req.body;
+      const { listing_id, start_date, end_date, traveler_name, traveler_user_id } = req.body;
 
       if (!listing_id || !start_date || !end_date) {
         return res.status(400).json({ error: 'Missing listing_id, start_date, or end_date' });
@@ -1066,6 +1066,11 @@ async function startServer() {
       const traveler_id = req.user?.id;
       if (!traveler_id) {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      }
+
+      // Prevent IDOR: Ensure the traveler creating the booking matches the authenticated user
+      if (traveler_user_id !== traveler_id) {
+        return res.status(403).json({ error: 'Forbidden: traveler_user_id must match the authenticated user.' });
       }
 
       const listingRes = await db.query(
@@ -1202,7 +1207,7 @@ async function startServer() {
   });
 
   // GET /api/bookings - Fetch live bookings from PostgreSQL DB
-  app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { userId, role, hostId } = req.query;
 
@@ -1255,7 +1260,7 @@ async function startServer() {
   });
 
   // PATCH /api/bookings/:id/status - Update booking status in PostgreSQL DB
-  app.patch('/api/bookings/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.patch('/api/bookings/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
 
@@ -1431,7 +1436,7 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.get('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -1444,7 +1449,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const log = req.body;
 
@@ -1768,7 +1773,7 @@ async function startServer() {
   });
 
   // POST /api/checkout/capture-booking-hold (Two-Stage Manual Capture Hold)
-  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { bookingId } = req.body;
       if (!bookingId) {
@@ -2068,7 +2073,7 @@ async function startServer() {
   });
 
   // Stripe Payment Intent (Split Payment & Escrow Hold)
-  app.post('/api/stripe/payment-intent', authenticateToken, async (req: AuthenticatedRequest, res: Response: Response) => {
+  app.post('/api/stripe/payment-intent', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {
@@ -2112,8 +2117,10 @@ async function startServer() {
                   currency: 'usd',
                   payment_method_types: ['card'],
                };
-               // Remove application fee and transfer data because destination charges aren't supported without transfer capability
-               // In destination charges, if we remove transfer_data we must also remove application_fee_amount
+
+               // The application_fee_amount and transfer_data are explicitly NOT added to fallbackIntentArgs
+               // so we are already safely avoiding destination charge errors here.
+
                const fallbackIntent = await stripe.paymentIntents.create(fallbackIntentArgs);
                return res.json({ clientSecret: fallbackIntent.client_secret, paymentIntentId: fallbackIntent.id });
             } catch (fallbackErr: any) {

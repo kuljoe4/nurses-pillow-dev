@@ -117,15 +117,9 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
       // In non-production environments, mockups can fallback gracefully.
       const { error } = await stripe.verifyIdentity(stripeData.client_secret);
 
-      const isProduction = import.meta.env.PROD;
       if (error) {
-         if (isProduction) {
-            throw new Error(error.message || 'Stripe Identity verification failed.');
-         } else {
-            console.warn("Stripe verification failed but proceeding for development. Prod would block this.");
-         }
+         throw new Error(error.message || 'Stripe Identity verification failed.');
       }
-
 
       onChange({
         isIdVerified: true,

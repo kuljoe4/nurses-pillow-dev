@@ -144,11 +144,23 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
 
   const removePhoto = (indexToRemove: number) => {
-    setListingPhotos((prev) => prev.filter((_, i) => i !== indexToRemove));
+    setListingPhotos((prev) => {
+      const newPhotos = [];
+      for (let i = 0; i < prev.length; i++) {
+        if (i !== indexToRemove) newPhotos.push(prev[i]);
+      }
+      return newPhotos;
+    });
   };
 
   const removeDocument = (indexToRemove: number) => {
-    setListingDocuments((prev) => prev.filter((_, i) => i !== indexToRemove));
+    setListingDocuments((prev) => {
+      const newDocs = [];
+      for (let i = 0; i < prev.length; i++) {
+        if (i !== indexToRemove) newDocs.push(prev[i]);
+      }
+      return newDocs;
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,7 +403,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       }
 
       // Handle photos - process the new files
-      const newPhotosToUpload = listingPhotos.filter(p => p.file);
+      const newPhotosToUpload = [];
+      for (let i = 0; i < listingPhotos.length; i++) {
+        if (listingPhotos[i].file) newPhotosToUpload.push(listingPhotos[i]);
+      }
 
       if (newPhotosToUpload.length > 0) {
         // In a real app, this would be a multipart/form-data POST request

@@ -3,7 +3,7 @@ import request from 'supertest';
 import express from 'express';
 import { db } from '../../../server/db.js';
 import jwt from 'jsonwebtoken';
-import { authenticateToken } from '../../../server/authMiddleware.js';
+import { authenticateToken, AuthenticatedRequest } from '../../../server/authMiddleware.js';
 
 // Setup local app that replicates the endpoint logic using the real db
 // This avoids starting the massive server.ts which binds to port 3000 and connects to Stripe, etc.
@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 
 // Duplicate logic from server.ts for /api/verify/license
-app.post('/api/verify/license', authenticateToken, async (req: any, res: any) => {
+app.post('/api/verify/license', authenticateToken, async (req: AuthenticatedRequest, res: any) => {
   try {
     const { licenseNumber, stateBoard, specialty, documentName } = req.body;
     const userId = req.user?.id;
@@ -63,7 +63,7 @@ app.post('/api/verify/license', authenticateToken, async (req: any, res: any) =>
   }
 });
 
-app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res: any) => {
+app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: any) => {
   try {
     if (req.user.role !== 'super_admin') {
       return res.status(403).json({ error: 'Forbidden. Admin access required.' });
@@ -91,7 +91,9 @@ app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (r
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })());
 const testToken = jwt.sign({ id: 'test-cna-user', email: 'testcna@example.com', role: 'super_admin' }, JWT_SECRET);
 
-describe('CNA Verification API (Real DB)', () => {
+const runTests = process.env.DATABASE_URL ? describe : describe.skip;
+
+runTests('CNA Verification API (Real DB)', () => {
   beforeAll(async () => {
     // Insert a test user
     await db.query(`
