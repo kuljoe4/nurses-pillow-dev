@@ -435,7 +435,9 @@ async function startServer() {
                profession_specialty,
                document_purged,
                primary_source_name,
-               verification_status
+               verification_status,
+               stripe_payouts_enabled,
+               stripe_connected_account_id as stripe_account_id
         FROM users
         ORDER BY created_at DESC
       `);
