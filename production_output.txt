@@ -1,0 +1,22 @@
+
+> nurses-pillow@0.0.0 start
+> tsx server.ts
+
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+[PostgreSQL] ❌ Database connection failed:
+[Railway DB] ⚠️ Connection attempt failed:  — Application continuing with in-memory fallback store.
+[PostgreSQL] Schema initialization warning:
+[Nurses Pillow] Serving static production build from dist
+[Nurses Pillow] Server active and listening on http://0.0.0.0:3000
+[PostgreSQL] Query execution error:
+Error fetching hospitals from PostgreSQL:
+[PostgreSQL] Query execution error:
+Error fetching listings from PostgreSQL:
+[PostgreSQL] Query execution error:
+Error fetching hospitals from PostgreSQL:
+[PostgreSQL] Query execution error:
+Error fetching listings from PostgreSQL:
+[PostgreSQL] Query execution error:
+Error fetching hospitals from PostgreSQL:
+[PostgreSQL] Query execution error:
+Error fetching listings from PostgreSQL:
