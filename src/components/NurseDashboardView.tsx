@@ -61,7 +61,17 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'bookings' | 'saved' | 'verification'>('bookings');
 
-  const savedListings = allListings.filter((l) => savedListingIds.includes(l.id));
+  const savedListings = React.useMemo(() => {
+    // Single pass using Set for O(N) lookup instead of array includes O(N * M)
+    const savedIdsSet = new Set(savedListingIds);
+    const result = [];
+    for (let i = 0; i < allListings.length; i++) {
+      if (savedIdsSet.has(allListings[i].id)) {
+        result.push(allListings[i]);
+      }
+    }
+    return result;
+  }, [allListings, savedListingIds]);
 
   const isDemoAccount = Boolean(
     currentUser?.id?.startsWith('usr_demo') ||

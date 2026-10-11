@@ -144,11 +144,23 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
 
   const removePhoto = (indexToRemove: number) => {
-    setListingPhotos((prev) => prev.filter((_, i) => i !== indexToRemove));
+    setListingPhotos((prev) => {
+      const newPhotos = [];
+      for (let i = 0; i < prev.length; i++) {
+        if (i !== indexToRemove) newPhotos.push(prev[i]);
+      }
+      return newPhotos;
+    });
   };
 
   const removeDocument = (indexToRemove: number) => {
-    setListingDocuments((prev) => prev.filter((_, i) => i !== indexToRemove));
+    setListingDocuments((prev) => {
+      const newDocs = [];
+      for (let i = 0; i < prev.length; i++) {
+        if (i !== indexToRemove) newDocs.push(prev[i]);
+      }
+      return newDocs;
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -391,7 +403,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       }
 
       // Handle photos - process the new files
-      const newPhotosToUpload = listingPhotos.filter(p => p.file);
+      const newPhotosToUpload = [];
+      for (let i = 0; i < listingPhotos.length; i++) {
+        if (listingPhotos[i].file) newPhotosToUpload.push(listingPhotos[i]);
+      }
 
       if (newPhotosToUpload.length > 0) {
         // In a real app, this would be a multipart/form-data POST request
@@ -1254,17 +1269,24 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   >
                     Back
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isUploading}
-                    className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {isUploading ? (
-                      <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
-                    ) : (
-                      <><span className="material-symbols-outlined text-[18px]">publish</span> Publish Listing</>
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      type="submit"
+                      disabled={isUploading}
+                      className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isUploading ? (
+                        <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+                      ) : (
+                        <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
+                      )}
+                    </button>
+                    {(!currentUser?.isHostVerified || !payoutsEnabled) && (
+                      <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
+                        Cannot publish until Stripe & Admin verification complete.
+                      </div>
                     )}
-                  </button>
+                  </div>
                 </div>
               </div>
             )}

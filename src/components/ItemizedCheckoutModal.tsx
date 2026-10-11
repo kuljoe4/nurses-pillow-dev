@@ -131,7 +131,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       // Execute Stripe Connect split payment in sandbox mode with prorated rent and extra options
       const splitTxn = await stripeConnect.processSplitPayment({
         monthlyRent: accommodationTotal + extraOptionsFee,
-        listingId: listing.id,
+        listingId: listing.id || (listing as any).listing_id || 'unknown',
         cleaningFee,
         securityDeposit,
         cardNumber,
@@ -148,7 +148,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
         clinicianPhone: verificationData?.mobilePhone || '+1 (919) 555-0198',
         hospitalName: listing.nearestHospital || 'Assignment Hospital',
         unitSpecialty: verificationData?.professionSpecialty?.includes('PICU') ? 'Pediatric ICU' : 'Clinical Rotation',
-        listingId: listing.id,
+        listingId: listing.id || (listing as any).listing_id || 'unknown',
         listingTitle: listing.title,
         startDate: checkInDate,
         endDate: checkOutDate,
@@ -470,7 +470,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     <button
                       type="submit"
                       disabled={isSubmitting || !agreedToPolicy}
-                      className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] disabled:opacity-50 text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isSubmitting ? (
                         <>

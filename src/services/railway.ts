@@ -197,6 +197,7 @@ class RailwayDatabaseManager {
       // 1. Ensure extensions and core tables exist
       await this.pool.query(`
         CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+        CREATE EXTENSION IF NOT EXISTS "btree_gist";
 
         CREATE TABLE IF NOT EXISTS healthcare_facilities (
           id VARCHAR(255) PRIMARY KEY,
@@ -501,6 +502,26 @@ class RailwayDatabaseManager {
         );
 
         ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parking_fee DECIMAL(10, 2) DEFAULT 0.00;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS start_date DATE;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS end_date DATE;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS room_id UUID;
+
+        -- Safely add the overlapping bookings constraint if it doesn't already exist
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM pg_constraint
+                WHERE conname = 'no_overlapping_bookings'
+            ) THEN
+                ALTER TABLE bookings
+                ADD CONSTRAINT no_overlapping_bookings EXCLUDE USING gist (
+                    listing_id WITH =,
+                    COALESCE(room_id, '00000000-0000-0000-0000-000000000000'::uuid) WITH =,
+                    daterange(start_date, end_date, '[)') WITH &&
+                ) WHERE (status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval'));
+            END IF;
+        END $$;
 
         CREATE TABLE IF NOT EXISTS audit_logs (
           id VARCHAR(255) PRIMARY KEY,

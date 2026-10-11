@@ -35,7 +35,7 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'development') {
   console.error('FATAL ERROR: JWT_SECRET environment variable is not set in ' + process.env.NODE_ENV + '.');
   process.exit(1);
 }
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development_only';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })());
 
 const SALT_ROUNDS = 12;
 
@@ -54,9 +54,57 @@ router.post('/register', authLimiter, validateBody(registerSchema), catchAsync(a
     }
 
     // Check if user exists
-    const existingUser = await db.query('SELECT id FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const existingUser = await db.query('SELECT id, email, full_name, role FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     if (existingUser.rows.length > 0) {
-      res.status(409).json({ error: 'Email already registered' });
+      // To prevent email enumeration securely, we MUST send the same response as a true success,
+      // including setting a dummy cookie so attackers can't use the `Set-Cookie` header as an oracle.
+      // We also trigger a generic email to the existing user so they aren't blackholed.
+
+      const user = existingUser.rows[0];
+      const postmarkServerToken = process.env.POSTMARK_SERVER_TOKEN || process.env.VITE_POSTMARK_SERVER_TOKEN;
+      if (postmarkServerToken) {
+        // Send a background "You already have an account" email
+        fetch('https://api.postmarkapp.com/email', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Postmark-Server-Token': postmarkServerToken,
+          },
+          body: JSON.stringify({
+            From: 'support@nursespillow.com',
+            To: user.email,
+            Subject: 'Registration Attempt - Nurses Pillow',
+            TextBody: `Hello ${user.full_name},\n\nSomeone (hopefully you) just tried to register an account with this email address. Since you already have an account, no further action is needed.\n\nIf you forgot your password, you can reset it on the login page.\n\nThanks,\nThe Nurses Pillow Team`,
+            HtmlBody: `<p>Hello ${user.full_name},</p><p>Someone (hopefully you) just tried to register an account with this email address. Since you already have an account, no further action is needed.</p><p>If you forgot your password, you can reset it on the login page.</p><p>Thanks,<br>The Nurses Pillow Team</p>`,
+          }),
+        }).catch(err => console.error('[Postmark] Duplicate registration email error:', err));
+      }
+
+      // Generate a dummy JWT just for the cookie to match the success path
+      const dummyToken = jwt.sign({ dummy: 'token' }, JWT_SECRET, { expiresIn: '7d' });
+      res.cookie('auth_token', dummyToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      res.status(201).json({
+        user: {
+          id: `usr_pending_${uuidv4()}`,
+          email: cleanEmail,
+          full_name: fullName,
+          role: role,
+          is_nurse_verified: false,
+          is_host_verified: false,
+          email_verified: false,
+          phone_verified: false,
+          identity_verified: false,
+        },
+        token: dummyToken,
+        message: 'Registration successful. Please check your email to verify your account.'
+      });
       return;
     }
 
@@ -145,7 +193,7 @@ router.post('/logout', (req, res) => {
   }
 });
 
-router.post('/forgot-password', catchAsync(async (req, res, next) => {
+router.post('/forgot-password', authLimiter, catchAsync(async (req, res, next) => {
     const { email } = req.body;
     if (!email) {
       res.status(400).json({ error: 'Email is required' });
@@ -207,7 +255,7 @@ router.post('/forgot-password', catchAsync(async (req, res, next) => {
     res.json({ message: 'If an account exists, a password reset link has been sent.' });
 }));
 
-router.post('/reset-password', catchAsync(async (req, res, next) => {
+router.post('/reset-password', authLimiter, catchAsync(async (req, res, next) => {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) {
       res.status(400).json({ error: 'Token and new password are required' });

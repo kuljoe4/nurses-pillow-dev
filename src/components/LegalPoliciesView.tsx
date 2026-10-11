@@ -536,13 +536,6 @@ export const LegalPoliciesView: React.FC<LegalPoliciesViewProps> = ({
               </p>
             </section>
 
-            <section className="space-y-2 text-sm leading-relaxed opacity-90">
-              <h3 className="text-base font-bold text-[#001848] dark:text-[#E6ECF7]">Security Deposit Escrow Compliance</h3>
-              <p>
-                Security deposits collected for North Carolina properties are deposited into an insured trust account with a federally insured North Carolina banking institution, strictly segregating guest deposits from operating capital until checkout settlement.
-              </p>
-            </section>
-
             <div className="p-4 rounded-xl border border-dashed border-amber-500/50 bg-amber-500/5 text-xs text-amber-800 dark:text-amber-200">
               [Configurable North Carolina Addendum: Attorney to provide final wording on Wake/Durham/Mecklenburg county local tax exemptions].
             </div>

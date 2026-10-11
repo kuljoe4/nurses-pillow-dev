@@ -199,6 +199,9 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
               <button
                 type="button"
                 onClick={() => setShowFeeBreakdown(!showFeeBreakdown)}
+                aria-expanded={showFeeBreakdown}
+                aria-pressed={showFeeBreakdown}
+                aria-controls="fee-breakdown-panel"
                 className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline flex items-center gap-0.5 cursor-pointer"
               >
                 <span>{showFeeBreakdown ? 'Hide itemization' : 'View itemization'}</span>
@@ -209,7 +212,7 @@ export const ProductPreviewHero: React.FC<ProductPreviewHeroProps> = ({
             </div>
 
             {showFeeBreakdown && (
-              <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1 text-[11px] text-[#404850] dark:text-[#c0c7d1]">
+              <div id="fee-breakdown-panel" className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1 text-[11px] text-[#404850] dark:text-[#c0c7d1]">
                 <div className="flex justify-between">
                   <span>Monthly rent</span>
                   <span className="font-semibold tabular-nums text-[#0B2559] dark:text-white">${monthlyRent.toLocaleString()}.00</span>

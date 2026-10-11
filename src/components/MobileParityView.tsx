@@ -321,12 +321,12 @@ export const MobileParityView: React.FC<MobileParityViewProps> = ({
                             <span>$0.00 (Waived)</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Escrow Security Deposit</span>
-                            <span>$200.00</span>
+                            <span>Security Deposit Hold</span>
+                            <span className="text-emerald-600 font-semibold">$0.00</span>
                           </div>
                           <div className="flex justify-between font-bold pt-1 border-t border-black/5">
                             <span>Total Due Now</span>
-                            <span>$3,150.00</span>
+                            <span>$2,950.00</span>
                           </div>
                         </div>
                       </div>

@@ -164,7 +164,7 @@ class PostmarkMailService {
                 <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 8px 0;">First Month Lodging</td><td style="text-align: right; font-weight: bold;">${amountFormatted}</td></tr>
                 <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 8px 0;">Scrub Sanitization Cleaning Fee</td><td style="text-align: right; font-weight: bold;">$150.00</td></tr>
                 <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 8px 0;">Traveler Platform Fee</td><td style="text-align: right; font-weight: bold; color: #195b4c;">$0.00 (Free)</td></tr>
-                <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 8px 0;">Security Deposit Pre-Auth Hold</td><td style="text-align: right; font-weight: bold; color: #64748b;">$250.00 (Hold only, not charged)</td></tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 8px 0;">Security Deposit Hold</td><td style="text-align: right; font-weight: bold; color: #64748b;">$0.00 (Platform Waived)</td></tr>
               </table>
               <p style="font-size: 11px; color: #64748b;">Payment processed via Stripe Connect Escrow. Funds are protected until 24 hours post check-in.</p>
             </div>

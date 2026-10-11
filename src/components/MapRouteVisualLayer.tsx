@@ -174,6 +174,7 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
                         : 'text-gray-500 hover:text-[#0B2559] dark:hover:text-white'
                     }`}
                     title="Switch to Public Transit Route"
+                    aria-pressed={commuteMode === 'transit'}
                   >
                     <span className="material-symbols-outlined text-[12px]">directions_bus</span>
                     <span className="hidden xs:inline">Transit</span>
@@ -187,6 +188,7 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
                         : 'text-gray-500 hover:text-[#0B2559] dark:hover:text-white'
                     }`}
                     title="Switch to Driving Route"
+                    aria-pressed={commuteMode === 'drive'}
                   >
                     <span className="material-symbols-outlined text-[12px]">directions_car</span>
                     <span className="hidden xs:inline">Drive</span>
@@ -272,6 +274,7 @@ export const MapRouteVisualLayer: React.FC<MapRouteVisualLayerProps> = ({
               type="button"
               onClick={() => setIsStepsOpen(!isStepsOpen)}
               aria-expanded={isStepsOpen}
+              aria-pressed={isStepsOpen}
               aria-controls={routeStepsListId}
               className="w-full px-3 py-1.5 text-[11px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:bg-gray-50 dark:hover:bg-[#182840] transition-colors flex items-center justify-between cursor-pointer"
             >

@@ -276,7 +276,7 @@ export default function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('np_auth_token');
-    if (!token) return;
+    if (!token || ((currentUser?.role as any) !== 'admin' && (currentUser?.role as any) !== 'super_admin')) return;
     fetch('/api/admin/demand-reports', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -289,7 +289,7 @@ export default function App() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [currentUser?.role]);
 
   const [verificationStepState, setVerificationStepState] = useState<VerificationStepId>(1);
   const verificationStep = verificationStepState;

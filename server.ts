@@ -271,7 +271,7 @@ async function startServer() {
   // Identity Verification Endpoint (NV-01, NV-02)
   // TODO: Integrate Stripe Identity for real biometric & ID verification.
   // Identity Verification Endpoint (NV-01, NV-02)
-  app.post('/api/verify/identity', async (req: any, res: Response) => {
+  app.post('/api/verify/identity', async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { legalFirstName, legalLastName } = req.body;
       
@@ -327,7 +327,7 @@ async function startServer() {
   });
 
   // Clinical License Verification Endpoint (NV-03)
-  app.post('/api/verify/license', async (req: any, res: Response) => {
+  app.post('/api/verify/license', async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { licenseNumber, stateBoard, profession, specialty, credentialType, documentName } = req.body;
       let userId = req.user?.id || req.body?.userId;
@@ -418,7 +418,7 @@ async function startServer() {
 
 
   // Admin endpoint to list pending verifications from PostgreSQL
-  app.get('/api/admin/verifications', authenticateToken, async (req: any, res) => {
+  app.get('/api/admin/verifications', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -432,7 +432,9 @@ async function startServer() {
                profession_specialty,
                document_purged,
                primary_source_name,
-               verification_status
+               verification_status,
+               stripe_payouts_enabled,
+               stripe_connected_account_id as stripe_account_id
         FROM users
         ORDER BY created_at DESC
       `);
@@ -445,7 +447,7 @@ async function startServer() {
   });
 
   // Admin endpoint for market demand reports from PostgreSQL
-  app.get('/api/admin/demand-reports', authenticateToken, async (req: any, res) => {
+  app.get('/api/admin/demand-reports', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -477,7 +479,7 @@ async function startServer() {
   });
 
   // Admin endpoint to approve verification and trigger data purge (NV-04, NV-06)
-  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -503,7 +505,7 @@ async function startServer() {
   });
 
   // Admin endpoint to reject verification
-  app.delete('/api/admin/users/:userId', authenticateToken, async (req: any, res) => {
+  app.delete('/api/admin/users/:userId', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -523,7 +525,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/verifications/:userId/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -545,8 +547,53 @@ async function startServer() {
     }
   });
 
+
+  // Admin endpoint to approve a host (after Stripe KYC)
+  app.post('/api/admin/hosts/:userId/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const { userId } = req.params;
+
+      await db.query(`
+        UPDATE users
+        SET
+          is_host_verified = true
+        WHERE id = $1
+      `, [userId]);
+
+      res.json({ success: true, message: 'Host approved.' });
+    } catch (error) {
+      console.error('Error approving host:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  // Admin endpoint to reject/revoke a host
+  app.post('/api/admin/hosts/:userId/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+    if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+    try {
+      const { userId } = req.params;
+
+      await db.query(`
+        UPDATE users
+        SET
+          is_host_verified = false
+        WHERE id = $1
+      `, [userId]);
+
+      res.json({ success: true, message: 'Host revoked.' });
+    } catch (error) {
+      console.error('Error rejecting host:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
   // Admin endpoint to approve property listing
-  app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/listings/:id/approve', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -564,7 +611,7 @@ async function startServer() {
   });
 
   // Admin endpoint to reject/unverify property listing
-  app.post('/api/admin/listings/:id/reject', authenticateToken, async (req: any, res) => {
+  app.post('/api/admin/listings/:id/reject', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -980,14 +1027,14 @@ async function startServer() {
 
   // Bookings Creation
 
-  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/checkout/create-booking-request', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {
         return res.status(503).json({ error: 'Stripe Secret Key is not configured. Production payment processing is unavailable.' });
       }
 
-      const { listing_id, start_date, end_date, traveler_name } = req.body;
+      const { listing_id, start_date, end_date, traveler_name, traveler_user_id } = req.body;
 
       if (!listing_id || !start_date || !end_date) {
         return res.status(400).json({ error: 'Missing listing_id, start_date, or end_date' });
@@ -1018,6 +1065,11 @@ async function startServer() {
       const traveler_id = req.user?.id;
       if (!traveler_id) {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
+      }
+
+      // Prevent IDOR: Ensure the traveler creating the booking matches the authenticated user
+      if (traveler_user_id !== traveler_id) {
+        return res.status(403).json({ error: 'Forbidden: traveler_user_id must match the authenticated user.' });
       }
 
       const listingRes = await db.query(
@@ -1075,14 +1127,25 @@ async function startServer() {
         }
       };
 
-      if (stripeConnectedAccountId) {
-        paymentIntentArgs.application_fee_amount = platformFeeAmount;
-        paymentIntentArgs.transfer_data = {
-          destination: stripeConnectedAccountId
-        };
+      let paymentIntent;
+      try {
+        if (stripeConnectedAccountId) {
+          paymentIntentArgs.application_fee_amount = platformFeeAmount;
+          paymentIntentArgs.transfer_data = {
+            destination: stripeConnectedAccountId
+          };
+        }
+        paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
+      } catch (stripeErr: any) {
+         if (stripeErr.code === 'insufficient_capabilities_for_transfer') {
+             console.warn('[Stripe] Host account lacks transfer capability. Falling back to platform-held escrow intent without immediate transfer data.');
+             delete paymentIntentArgs.application_fee_amount;
+             delete paymentIntentArgs.transfer_data;
+             paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
+         } else {
+             throw stripeErr;
+         }
       }
-
-      const paymentIntent = await stripe.paymentIntents.create(paymentIntentArgs);
 
       const bookingId = `bk-${uuidv4()}`;
       const result = await db.query(
@@ -1143,7 +1206,7 @@ async function startServer() {
   });
 
   // GET /api/bookings - Fetch live bookings from PostgreSQL DB
-  app.get('/api/bookings', authenticateToken, async (req: any, res: Response) => {
+  app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { userId, role, hostId } = req.query;
 
@@ -1196,7 +1259,7 @@ async function startServer() {
   });
 
   // PATCH /api/bookings/:id/status - Update booking status in PostgreSQL DB
-  app.patch('/api/bookings/:id/status', authenticateToken, async (req: any, res: Response) => {
+  app.patch('/api/bookings/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
 
@@ -1233,7 +1296,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/bookings', authenticateToken, async (req: any, res) => {
+  app.post('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const validationResult = BookingSchema.safeParse(req.body);
 
@@ -1372,7 +1435,7 @@ async function startServer() {
   });
 
   // Audit Logs (GET / POST)
-  app.get('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
+  app.get('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     if (req.user?.role !== 'super_admin' && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admins only' });
     }
@@ -1385,7 +1448,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/audit-logs', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/audit-logs', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const log = req.body;
 
@@ -1709,7 +1772,7 @@ async function startServer() {
   });
 
   // POST /api/checkout/capture-booking-hold (Two-Stage Manual Capture Hold)
-  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/checkout/capture-booking-hold', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { bookingId } = req.body;
       if (!bookingId) {
@@ -1906,8 +1969,10 @@ async function startServer() {
       if (!hostId) return res.status(400).json({ error: 'hostId is required' });
 
       const accountId = req.body.accountId || `acct_express_${uuidv4().replace(/-/g, '').slice(0, 16)}`;
+      // We no longer automatically set is_host_verified to true. Admin must approve.
+      // We also don't automatically set stripe_payouts_enabled to true without syncing from Stripe.
       await db.query(
-        'UPDATE users SET stripe_connected_account_id = $1, stripe_payouts_enabled = true, is_host_verified = true WHERE id = $2',
+        'UPDATE users SET stripe_connected_account_id = $1 WHERE id = $2',
         [accountId, hostId]
       );
       res.json({ success: true, payouts_enabled: true, accountId });
@@ -2007,7 +2072,7 @@ async function startServer() {
   });
 
   // Stripe Payment Intent (Split Payment & Escrow Hold)
-  app.post('/api/stripe/payment-intent', authenticateToken, async (req: any, res: Response) => {
+  app.post('/api/stripe/payment-intent', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const isLiveKey = process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('mock') && !process.env.STRIPE_SECRET_KEY.includes('test_mock');
       if (!isLiveKey) {
@@ -2043,6 +2108,25 @@ async function startServer() {
         });
         return res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
       } catch (stripeErr: any) {
+        if (stripeErr.code === 'insufficient_capabilities_for_transfer') {
+            console.warn('[Stripe] Host account lacks transfer capability. Falling back to platform-held escrow intent without immediate transfer data.');
+            try {
+               const fallbackIntentArgs = {
+                  amount: totalAmount,
+                  currency: 'usd',
+                  payment_method_types: ['card'],
+               };
+
+               // The application_fee_amount and transfer_data are explicitly NOT added to fallbackIntentArgs
+               // so we are already safely avoiding destination charge errors here.
+
+               const fallbackIntent = await stripe.paymentIntents.create(fallbackIntentArgs);
+               return res.json({ clientSecret: fallbackIntent.client_secret, paymentIntentId: fallbackIntent.id });
+            } catch (fallbackErr: any) {
+               console.error('[Stripe] Fallback payment intent creation failed:', fallbackErr.message);
+               return res.status(500).json({ error: fallbackErr.message || 'Payment processing failed on fallback.' });
+            }
+        }
         console.error('[Stripe] Payment intent creation failed:', stripeErr.message);
         return res.status(500).json({ error: stripeErr.message || 'Payment processing failed.' });
       }
@@ -2315,6 +2399,14 @@ async function startServer() {
                 listingId
               ]
             );
+
+            // Fetch host status to sync is_published
+            const hostCheck = await db.query('SELECT is_host_verified, stripe_payouts_enabled FROM users WHERE id = $1', [req.user.id]);
+            const canPublish = hostCheck.rows.length > 0 && hostCheck.rows[0].is_host_verified && hostCheck.rows[0].stripe_payouts_enabled;
+            if (!canPublish) {
+              await db.query("UPDATE listings SET is_published = false WHERE id = $1", [listingId]);
+            }
+
           } else {
              return res.status(403).json({ error: "Forbidden: Not the owner of this listing." });
           }

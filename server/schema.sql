@@ -7,6 +7,7 @@
 -- 0. EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "btree_gist"; -- Required for overlapping date EXCLUDE constraints
 -- Enable PostGIS for geospatial hospital distance lookups if supported
 -- CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE;
 
@@ -443,7 +444,15 @@ CREATE TABLE bookings (
     cancelled_at TIMESTAMPTZ,
     completed_at TIMESTAMPTZ,
 
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- STRICT DATA INTEGRITY: Prevent overlapping bookings for the same room or listing
+    -- Only active or approved bookings are checked. Canceled/rejected bookings can overlap.
+    CONSTRAINT no_overlapping_bookings EXCLUDE USING gist (
+        listing_id WITH =,
+        COALESCE(room_id, '00000000-0000-0000-0000-000000000000'::uuid) WITH =,
+        daterange(start_date, end_date, '[)') WITH &&
+    ) WHERE (status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval'))
 );
 
 CREATE INDEX idx_bookings_traveler ON bookings(traveler_id);
