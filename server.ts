@@ -2347,6 +2347,11 @@ async function startServer() {
         const parkingFee = req.body.parkingFee || 0;
         const extraOptions = JSON.stringify(req.body.extraOptions || []);
 
+
+        const addressData = req.body.addressData || {};
+        const listingTitle = req.body.listingTitle || "New Sanctuary Stay";
+        const roomPrices = req.body.roomPrices || [1950, 1850];
+
         if (listingId) {
           // Verify listing belongs to host before updating
           const verifyRes = await db.query(
@@ -2368,22 +2373,24 @@ async function startServer() {
                    state = $9,
                    postal_code = $10,
                    latitude = $11,
-                   longitude = $12
+                   longitude = $12,
+                   title = $14
                WHERE id = $13`,
               [
                 req.body.propertyType,
-                req.body.roomAPrice || req.body.monthlyRate,
+                roomPrices[0] || req.body.monthlyRate || 1950,
                 150,
                 petFee,
                 parkingFee,
                 extraOptions,
-                req.body.addressLine1 || "123 Healing Way",
-                req.body.city || "Durham",
-                state,
-                req.body.postalCode || "27705",
-                req.body.lat || 36.0,
-                req.body.lng || -78.9,
-                listingId
+                addressData.formattedAddress || req.body.addressLine1 || "123 Healing Way",
+                addressData.city || req.body.city || "Durham",
+                addressData.state || state,
+                addressData.zipCode || req.body.postalCode || "27705",
+                addressData.lat || req.body.lat || 36.0,
+                addressData.lng || req.body.lng || -78.9,
+                listingId,
+                listingTitle
               ]
             );
 
@@ -2398,23 +2405,23 @@ async function startServer() {
              return res.status(403).json({ error: "Forbidden: Not the owner of this listing." });
           }
         } else {
-          listingId = `list-${uuidv4()}`;
+          listingId = `lst_${uuidv4()}`;
           const newListingRes = await db.query(
             `INSERT INTO listings (id, host_id, title, property_type, address_line1, city, state, postal_code, latitude, longitude, nearest_hospital_id, monthly_rent, security_deposit_amount, cleaning_fee, pet_fee, parking_fee, extra_options, is_published)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id`,
             [
-              `lst_${uuidv4()}`,
+              listingId,
               req.user.id,
-              "New Sanctuary Stay",
+              listingTitle,
               req.body.propertyType || "individual_rooms",
-              req.body.addressLine1 || "123 Healing Way",
-              req.body.city || "Durham",
-              state,
-              req.body.postalCode || "27705",
-              req.body.lat || 36.0,
-              req.body.lng || -78.9,
+              addressData.formattedAddress || req.body.addressLine1 || "123 Healing Way",
+              addressData.city || req.body.city || "Durham",
+              addressData.state || state,
+              addressData.zipCode || req.body.postalCode || "27705",
+              addressData.lat || req.body.lat || 36.0,
+              addressData.lng || req.body.lng || -78.9,
               "hosp-duke",
-              req.body.roomAPrice || 1950,
+              roomPrices[0] || 1950,
               0,
               150,
               petFee,
@@ -2424,6 +2431,28 @@ async function startServer() {
             ]
           );
           listingId = newListingRes.rows[0].id;
+        }
+
+        // Sync room configurations
+        if (req.body.propertyType === 'individual_rooms' && req.body.roomCount) {
+          // Delete old rooms for idempotency
+          await db.query("DELETE FROM listing_rooms WHERE listing_id = $1", [listingId]);
+
+          for (let i = 0; i < req.body.roomCount; i++) {
+            const letter = String.fromCharCode(65 + i);
+            await db.query(
+              `INSERT INTO listing_rooms (listing_id, room_name, monthly_rent)
+               VALUES ($1, $2, $3)`,
+              [
+                listingId,
+                `Room ${letter}`,
+                roomPrices[i] || 1850
+              ]
+            );
+          }
+        } else {
+          // Clear rooms if changed to entire property
+          await db.query("DELETE FROM listing_rooms WHERE listing_id = $1", [listingId]);
         }
 
         res.json({ listingId });

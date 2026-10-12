@@ -127,10 +127,11 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   }, [activeHostTab, editingListingId]);
 
   // Screen B2 Editor Form State
+  const [listingTitle, setListingTitle] = useState<string>('Sanctuary Stay');
+  const [addressData, setAddressData] = useState<any>(null);
   const [propertyType, setPropertyType] = useState<'entire_property' | 'individual_rooms'>('individual_rooms');
   const [roomCount, setRoomCount] = useState<number>(2);
-  const [roomAPrice, setRoomAPrice] = useState<number>(1950);
-  const [roomBPrice, setRoomBPrice] = useState<number>(1850);
+  const [roomPrices, setRoomPrices] = useState<number[]>([1950, 1850, 1750, 1650, 1550]);
   const [petFee, setPetFee] = useState<number>(0);
   const [parkingFee, setParkingFee] = useState<number>(0);
   const [extraOptionsStr, setExtraOptionsStr] = useState<string>('[]');
@@ -362,8 +363,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         listingId: editingListingId === 'new' ? undefined : editingListingId, // Pass ID to update instead of insert
         propertyType,
         roomCount,
-        roomAPrice,
-        roomBPrice,
+        roomPrices,
+        listingTitle,
+        addressData,
         petFee,
         parkingFee,
         extraOptions: (() => { try { return JSON.parse(extraOptionsStr); } catch { return []; } })(),
@@ -880,6 +882,27 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                       </div>
                     </div>
                   )}
+
+                  <div className="space-y-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-2">
+                        Listing Title
+                      </label>
+                      <input
+                        type="text"
+                        value={listingTitle}
+                        onChange={(e) => setListingTitle(e.target.value)}
+                        placeholder="E.g., Cozy Retreat near Duke Hospital"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm outline-none focus:border-[#0A6FA8] transition-colors"
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <HostAddressMapping
+                        isNightShiftMode={isNightShiftMode}
+                        onAddressConfirmed={(data) => setAddressData(data)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Navigation Buttons */}
@@ -904,6 +927,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                     Step 2: Base Monthly Rates
                   </label>
 
+
                   {propertyType === 'entire_property' ? (
                     <div>
                       <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
@@ -913,42 +937,38 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                         <input
                           type="number"
-                          value={roomAPrice}
-                          onChange={(e) => setRoomAPrice(Number(e.target.value))}
+                          value={roomPrices[0]}
+                          onChange={(e) => {
+                            const newPrices = [...roomPrices];
+                            newPrices[0] = Number(e.target.value);
+                            setRoomPrices(newPrices);
+                          }}
                           className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
-                          Room A Monthly Rate
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                          <input
-                            type="number"
-                            value={roomAPrice}
-                            onChange={(e) => setRoomAPrice(Number(e.target.value))}
-                            className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
-                          />
+                      {Array.from({ length: roomCount }).map((_, i) => (
+                        <div key={i}>
+                          <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
+                            Room {String.fromCharCode(65 + i)} Monthly Rate
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                            <input
+                              type="number"
+                              value={roomPrices[i]}
+                              onChange={(e) => {
+                                const newPrices = [...roomPrices];
+                                newPrices[i] = Number(e.target.value);
+                                setRoomPrices(newPrices);
+                              }}
+                              className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">
-                          Room B Monthly Rate
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                          <input
-                            type="number"
-                            value={roomBPrice}
-                            onChange={(e) => setRoomBPrice(Number(e.target.value))}
-                            className="w-full pl-7 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-semibold outline-none focus:border-[#0A6FA8] transition-colors"
-                          />
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
