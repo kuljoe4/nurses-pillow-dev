@@ -377,7 +377,7 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className={`absolute top-full mt-2 ${
               align === 'right' ? 'right-0' : 'left-0'
-            } w-[320px] sm:w-[350px] max-w-[calc(100vw-32px)] p-4 bg-white dark:bg-[#0E1A2E] rounded-2xl shadow-[0_12px_36px_rgba(11,37,89,0.18)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.6)] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] z-50`}
+            } w-[280px] sm:w-[350px] max-w-[calc(100%-32px)] p-4 bg-white dark:bg-[#0E1A2E] rounded-2xl shadow-[0_12px_36px_rgba(11,37,89,0.18)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.6)] border border-[rgba(11,37,89,0.12)] dark:border-[#233550] z-50`}
           >
             {/* Header: Month/Year navigation */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-[#233550]">

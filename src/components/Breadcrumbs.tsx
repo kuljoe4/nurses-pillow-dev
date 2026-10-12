@@ -649,7 +649,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     <div
                       ref={ellipsisMenuRef}
                       role="menu"
-                      className={`absolute left-0 top-full mt-1.5 min-w-[210px] max-w-xs max-h-60 overflow-y-auto overscroll-contain custom-scrollbar rounded-xl shadow-lg border p-1.5 z-50 text-xs space-y-1 ${
+                      className={`absolute left-0 top-full mt-1.5 min-w-[180px] max-w-xs max-h-60 overflow-y-auto overscroll-contain custom-scrollbar rounded-xl shadow-lg border p-1.5 z-50 text-xs space-y-1 ${
                         isNightShiftMode
                           ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'
                           : 'bg-white border-gray-200 text-gray-800'
