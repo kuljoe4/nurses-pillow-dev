@@ -673,7 +673,7 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-                      className="fixed inset-x-3 top-20 sm:absolute sm:inset-x-auto sm:top-[calc(100%+8px)] sm:left-0 md:left-1/2 md:-translate-x-1/2 z-50 w-[calc(100vw-24px)] sm:w-full md:w-[700px] lg:w-[720px] max-w-full drop-shadow-2xl"
+                      className="fixed inset-x-3 top-20 sm:absolute sm:inset-x-auto sm:top-[calc(100%+8px)] sm:left-0 md:left-1/2 md:-translate-x-1/2 z-50 w-[calc(100%-24px)] sm:w-full md:w-[700px] lg:w-[720px] max-w-full drop-shadow-2xl"
                     >
                       <ClinicalDateRangePicker
                         startDate={earliestCheckIn}

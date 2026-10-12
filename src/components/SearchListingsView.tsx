@@ -405,7 +405,7 @@ useBodyScrollLock(isGsaModalOpen);
           {/* Main Controls Row: Single Compact Responsive Bar */}
           <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 sm:gap-2.5">
             {/* Hospital Selector (Primary Clinical Anchor) */}
-            <div ref={hospitalDropdownRef} className="relative flex-1 min-w-[220px] sm:min-w-[260px]">
+            <div ref={hospitalDropdownRef} className="relative flex-1 min-w-[180px] sm:min-w-[260px]">
               <div
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="w-full h-10 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#182840] border border-transparent hover:border-[#0A6FA8]/30 dark:hover:border-[#3E9AD1]/40 transition-colors flex items-center justify-between cursor-pointer group"
