@@ -50,6 +50,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const [lastSplitTxn, setLastSplitTxn] = useState<StripeSplitTransaction | null>(null);
   const [showCancellationDetails, setShowCancellationDetails] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Selected policy tier (defaulting to flexible_30d)
   const cancellationTier: CancellationTier = (listing as any).cancellationTier || 'flexible_30d';
@@ -174,8 +175,9 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
 
       setIsSuccess(true);
       onBookingSubmitted(newBooking);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Stripe Split Payment Error:', err);
+      setCheckoutError(err.message || 'Payment processing failed. Please try again or contact support.');
     } finally {
       setIsSubmitting(false);
     }
@@ -189,7 +191,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
       transition={{ duration: 0.18 }}
       className="fixed inset-0 z-[150] overflow-y-auto p-3 sm:p-6 pt-16 sm:pt-20 bg-black/65 backdrop-blur-xs flex justify-center items-start"
       onClick={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !isSuccess) {
           onClose();
         }
       }}
@@ -435,6 +437,25 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                       </div>
                     </div>
 
+                    {/* Error State */}
+                    <AnimatePresence>
+                      {checkoutError && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 flex gap-3 text-red-700 dark:text-red-400 text-xs">
+                            <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                            <div className="leading-relaxed font-medium">
+                              {checkoutError}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     {/* Note to Host */}
                     <div>
                       <label className="block text-xs font-bold text-[#001848] dark:text-white mb-1">
@@ -508,7 +529,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Initial Auth Hold:</span>
-                <span className="font-bold text-[#005684]">${totalInitialCharge.toLocaleString()}.00 (Escrow)</span>
+                <span className="font-bold text-[#005684]">${totalInitialCharge.toLocaleString()}.00 (Direct Charge)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Unit Arrival Code:</span>

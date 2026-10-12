@@ -446,9 +446,21 @@ class StripeConnectService {
     };
 
     try {
+      // Extract the JWT token from cookies since backend requires authentication
+      const getCookie = (name: string) => {
+        if (typeof document === 'undefined') return undefined;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+      };
+      const token = getCookie('auth_token');
+
       const res = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           monthlyRent,
           listingId,

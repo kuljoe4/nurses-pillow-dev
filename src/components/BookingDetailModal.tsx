@@ -168,7 +168,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <span>Waiting for Host Response (24-Hour SLA)</span>
               </div>
               <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-                Your request has been delivered to your host. We&apos;ll notify you via email the moment they respond. If the host doesn&apos;t reply within 24 hours, the authorization hold releases automatically.
+                Your request has been delivered to your host. We&apos;ll notify you via email the moment they respond. If the host doesn&apos;t reply within 24 hours, the authorization hold releases automatically. (Hosts see this as an uncaptured direct charge requiring approval).
               </p>
             </div>
           )}

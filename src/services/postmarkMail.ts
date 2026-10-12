@@ -100,8 +100,8 @@ class PostmarkMailService {
               <p>Hello ${host},</p>
               <p>Verified clinician <strong>${clinician}</strong> has submitted a 13-week stay request for <strong>${listing}</strong> near <strong>${hospital}</strong>.</p>
               <div style="background: #f8fafc; padding: 16px; border-radius: 8px; font-size: 13px; line-height: 1.6;">
-                <div><strong>Initial Escrow Total:</strong> ${amountFormatted}</div>
-                <div><strong>Host Net Payout (~95%):</strong> Sent via Stripe Connect Express</div>
+                <div><strong>Initial Hold Amount:</strong> ${amountFormatted} (Direct Charge)</div>
+                <div><strong>Host Net Payout (~95%):</strong> Bypasses escrow, settled directly to your Stripe Connect Express account</div>
                 <div><strong>Response SLA:</strong> 24 hours remaining to accept or decline</div>
               </div>
             </div>

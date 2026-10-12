@@ -920,9 +920,13 @@ export default function App() {
   }, []);
 
   const handleOpenCheckout = useCallback((listing: HousingListing) => {
+    if (currentUser?.id && listing.hostId === currentUser.id) {
+      alert("You cannot request to book your own listing.");
+      return;
+    }
     setCheckoutListing(listing);
     setIsCheckoutOpen(true);
-  }, []);
+  }, [currentUser]);
 
   const handleConfirmCheckout = useCallback(async (booking: BookingRequest) => {
     // 1. Persist booking and create Stripe payment intent via backend production endpoint
