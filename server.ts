@@ -271,22 +271,12 @@ async function startServer() {
   // Identity Verification Endpoint (NV-01, NV-02)
   // TODO: Integrate Stripe Identity for real biometric & ID verification.
   // Identity Verification Endpoint (NV-01, NV-02)
-  app.post('/api/verify/identity', async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/verify/identity', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { legalFirstName, legalLastName } = req.body;
       
-      let userId = req.user?.id || req.body?.userId;
-      let email = req.user?.email || req.body?.email;
-      if (!userId && !email) {
-        const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-        if (token) {
-          try {
-            const decoded = jwt.verify(token, JWT_SECRET) as any;
-            userId = decoded?.id;
-            email = decoded?.email;
-          } catch {}
-        }
-      }
+      const userId = req.user?.id;
+      const email = req.user?.email;
 
       // 1. Strict Input Validation
       if (!legalFirstName || typeof legalFirstName !== 'string' || legalFirstName.trim().length < 2) {
@@ -296,9 +286,9 @@ async function startServer() {
         return res.status(400).json({ error: 'Legal last name is required and must be at least 2 characters.' });
       }
 
-      // 2. Identify user from auth token, session cookie, or body
-      let targetUserId = userId;
-      let targetEmail = email;
+      // 2. Identify user from auth token
+      const targetUserId = userId;
+      const targetEmail = email;
 
       const fullName = `${legalFirstName.trim()} ${legalLastName.trim()}`;
 
@@ -311,6 +301,8 @@ async function startServer() {
            WHERE id = $2 OR LOWER(email) = LOWER($3)`,
           [fullName, targetUserId || '', targetEmail || '']
         );
+      } else {
+         return res.status(401).json({ error: 'Unauthorized user.' });
       }
 
       return res.json({
@@ -327,21 +319,11 @@ async function startServer() {
   });
 
   // Clinical License Verification Endpoint (NV-03)
-  app.post('/api/verify/license', async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/verify/license', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { licenseNumber, stateBoard, profession, specialty, credentialType, documentName } = req.body;
-      let userId = req.user?.id || req.body?.userId;
-      let email = req.user?.email || req.body?.email;
-      if (!userId && !email) {
-        const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-        if (token) {
-          try {
-            const decoded = jwt.verify(token, JWT_SECRET) as any;
-            userId = decoded?.id;
-            email = decoded?.email;
-          } catch {}
-        }
-      }
+      const userId = req.user?.id;
+      const email = req.user?.email;
 
       if (!licenseNumber || !licenseNumber.toString().trim()) {
         return res.status(400).json({ error: 'Clinical license number is required.' });
@@ -363,8 +345,8 @@ async function startServer() {
       const professionType = validProfessions.includes(cleanedProfession) ? cleanedProfession : 'RN';
       const sanitizedCredentialType = ['Licensed', 'Certified', 'Registered'].includes(credentialType) ? credentialType : 'Licensed';
 
-      let targetUserId = userId;
-      let targetEmail = email;
+      const targetUserId = userId;
+      const targetEmail = email;
 
       let primarySourceName = 'Nursys QuickConfirm'; // Default
       const specCheck = (specialty || profession || '').toString().toUpperCase();
@@ -402,6 +384,8 @@ async function startServer() {
            WHERE id = $5 OR LOWER(email) = LOWER($6)`,
           [licenseNumber.trim(), stateBoard.trim(), (specialty || '').trim(), documentName || 'license.pdf', targetUserId || '', targetEmail || '', primarySourceName, professionType]
         );
+      } else {
+         return res.status(401).json({ error: 'Unauthorized user.' });
       }
 
       res.json({
