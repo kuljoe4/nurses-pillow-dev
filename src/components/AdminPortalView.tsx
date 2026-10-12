@@ -82,27 +82,39 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
           const contentType = res.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-            const mappedReviews: AdminLicenseReview[] = data.filter((d: any) => d.role !== 'host').map((d: any) => ({
-              id: d.id,
-              clinicianLegalName: d.full_name || d.email,
-              profession: d.profession || d.profession_specialty || 'RN',
-              issuingState: d.state_board || d.clinical_state_board || 'NC',
-              licenseNumber: d.license_number || d.clinical_license_number || 'PENDING',
-              licenseStatus: d.verification_status || (d.is_nurse_verified ? 'verified' : 'pending_review'),
-              hospitalAffiliation: d.contract_hospital || 'Duke University Hospital',
-              submittedAt: 'Recently',
-              nursysLookupUrl: 'https://www.nursys.com',
-              documentPurged: Boolean(d.document_purged || d.is_nurse_verified),
-            }));
-            setReviews(mappedReviews); // Proper check to separate hosts and nurses based on role
 
-            const hosts = data.filter((d: any) => d.role === 'host').map((d: any) => ({
-              id: d.id,
-              hostName: d.full_name || d.email,
-              stripeAccountId: d.stripe_account_id,
-              stripePayoutsEnabled: d.stripe_payouts_enabled,
-              isHostVerified: d.is_host_verified,
-            }));
+            // ⚡ Bolt Performance Optimization: Single-pass processing for both collections
+            // Replaced two chained data.filter().map() arrays (O(4N)) with a single loop (O(N))
+            const mappedReviews: AdminLicenseReview[] = [];
+            const hosts: any[] = [];
+
+            for (let i = 0; i < data.length; i++) {
+              const d = data[i];
+              if (d.role !== 'host') {
+                mappedReviews.push({
+                  id: d.id,
+                  clinicianLegalName: d.full_name || d.email,
+                  profession: d.profession || d.profession_specialty || 'RN',
+                  issuingState: d.state_board || d.clinical_state_board || 'NC',
+                  licenseNumber: d.license_number || d.clinical_license_number || 'PENDING',
+                  licenseStatus: d.verification_status || (d.is_nurse_verified ? 'verified' : 'pending_review'),
+                  hospitalAffiliation: d.contract_hospital || 'Duke University Hospital',
+                  submittedAt: 'Recently',
+                  nursysLookupUrl: 'https://www.nursys.com',
+                  documentPurged: Boolean(d.document_purged || d.is_nurse_verified),
+                });
+              } else {
+                hosts.push({
+                  id: d.id,
+                  hostName: d.full_name || d.email,
+                  stripeAccountId: d.stripe_account_id,
+                  stripePayoutsEnabled: d.stripe_payouts_enabled,
+                  isHostVerified: d.is_host_verified,
+                });
+              }
+            }
+
+            setReviews(mappedReviews); // Proper check to separate hosts and nurses based on role
             setHostReviews(hosts);
 
             return;

@@ -31,3 +31,6 @@
 ## 2025-01-01 - [HostAddressMapping Debounce Optimization]
 **Learning:** `HostAddressMapping` uses the Places API via `placesLibrary?.AutocompleteSuggestion.fetchAutocompleteSuggestions` directly in the `handleInputChange` handler, which fires on every keystroke. This results in unnecessary network requests and API quota usage for every letter typed.
 **Action:** Implement a standard debounce pattern in the `handleInputChange` to reduce API calls to the Google Maps Places API, significantly improving performance and reducing quota.
+## 2026-10-12 - [Single Pass Map/Filter For Mixed Collections]
+**Learning:** Found an O(4N) anti-pattern in `AdminPortalView.tsx` where a large API response array was iterated four times (two `.filter().map()` chains) to separate the data into two distinct arrays based on role. This created multiple unnecessary intermediate array allocations, adding overhead for the garbage collector and taking 4x the iterations.
+**Action:** Replace multiple chained `.filter().map()` operations on the same data with a single `for` loop (O(N) time complexity) to filter and transform items simultaneously, pushing to the corresponding arrays and preventing intermediate object allocations.
