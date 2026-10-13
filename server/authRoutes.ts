@@ -286,7 +286,7 @@ router.post('/reset-password', authLimiter, catchAsync(async (req, res, next) =>
 // Ephemeral store for pending email verifications
 const pendingEmailVerifications = new Map<string, { pin: string; expires: number }>();
 
-router.post('/send-verification-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/send-verification-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const email = req.user?.email;
     if (!email) {
       res.status(401).json({ error: 'Unauthorized: Email is missing in token' });
@@ -364,7 +364,7 @@ router.post('/send-verification-email', authenticateToken, catchAsync(async (req
     res.json({ message: 'Verification email sent successfully' });
 }));
 
-router.post('/verify-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/verify-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { pin } = req.body;
     const email = req.user?.email;
     if (!email) {
@@ -433,7 +433,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   }
 }));
 
-router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/send-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
@@ -476,7 +476,7 @@ router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: Authent
     });
 }));
 
-router.post('/phone/verify-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/verify-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber, code } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     const cleanCode = (code || '').toString().trim().replace(/\D/g, '');
