@@ -544,9 +544,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   // ⚡ Bolt Performance Optimization: Single-pass booking aggregation
   // Replaced 3 independent O(N) array traversals (.filter x2, .filter+.reduce)
   // with a single O(N) memoized loop to prevent excessive recalculations on render.
-  const { pendingBookings, confirmedBookings, totalMonthlyNet } = React.useMemo(() => {
+  const { pendingBookings, confirmedBookings, totalMonthlyNet, payoutBookings } = React.useMemo(() => {
     const pending: BookingRequest[] = [];
     const confirmed: BookingRequest[] = [];
+    const payout: BookingRequest[] = [];
     let net = 0;
 
     for (let i = 0; i < bookingRequests.length; i++) {
@@ -554,14 +555,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       if (b.status === 'pending_host_approval') {
         pending.push(b);
       }
-      if (b.status === 'approved' || b.status === 'active') {
+      if (b.status === 'approved' || b.status === 'active' || b.status === 'completed') {
         confirmed.push(b);
       }
       if (b.status !== 'declined') {
+        payout.push(b);
         net += (b.hostNetPayout || 0);
       }
     }
-    return { pendingBookings: pending, confirmedBookings: confirmed, totalMonthlyNet: net };
+    return { pendingBookings: pending, confirmedBookings: confirmed, totalMonthlyNet: net, payoutBookings: payout };
   }, [bookingRequests]);
 
   return (
@@ -886,6 +888,37 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Payout History Section */}
+          <div className="space-y-3.5 mt-8">
+            <h2 className="text-base font-bold text-[#0B2559] dark:text-white">Payout History</h2>
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl border border-[rgba(11,37,89,0.06)] dark:border-[#233550] overflow-hidden shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+              <table className="w-full text-xs">
+                <thead className="bg-[#EFF6FB] dark:bg-[#0E1A2E] text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-bold">Date</th>
+                    <th className="px-4 py-3 text-left font-bold">Booking ID</th>
+                    <th className="px-4 py-3 text-right font-bold">Net Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
+                  {payoutBookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-gray-400">No payout history available.</td>
+                    </tr>
+                  ) : (
+                    payoutBookings.map(b => (
+                      <tr key={b.id} className="hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors">
+                        <td className="px-4 py-3">{b.startDate}</td>
+                        <td className="px-4 py-3 tabular-nums">{b.id}</td>
+                        <td className="px-4 py-3 text-right font-bold tabular-nums">${b.hostNetPayout.toFixed(2)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
