@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ConnectComponentsProvider, ConnectAccountOnboarding } from '@stripe/react-connect-js';
 import { loadConnectAndInitialize } from '@stripe/connect-js';
-import { BookingRequest } from '../types';
+import { BookingRequest, HousingListing } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
+import { ListingDetailModal } from './ListingDetailModal';
 
 interface HostPortalViewProps {
   isNightShiftMode: boolean;
@@ -33,8 +34,42 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   initialTab = 'dashboard',
   currentUser,
 }) => {
-  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>(initialTab);
+  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding' | 'profile'>(initialTab as any);
   const [editorStep, setEditorStep] = useState<1 | 2 | 3>(1);
+
+  const [hostFullName, setHostFullName] = useState(currentUser?.name || 'Sarah M.');
+  const [hostTitleBio, setHostTitleBio] = useState('RN Host • Superhost • Former UCSF Neuro ICU RN');
+  const [hostAvatarUrl, setHostAvatarUrl] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80');
+  const [profileSaveNotice, setProfileSaveNotice] = useState<string | null>(null);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const res = await fetch('/api/host/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          userId: currentUser?.id,
+          fullName: hostFullName,
+          hostTitle: hostTitleBio,
+          avatarUrl: hostAvatarUrl,
+        })
+      });
+      if (res.ok) {
+        setProfileSaveNotice('Host profile updated successfully and synchronized!');
+        setTimeout(() => setProfileSaveNotice(null), 3500);
+      } else {
+        setProfileSaveNotice('Failed to update profile.');
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setProfileSaveNotice('Error updating profile.');
+    }
+  };
 
   useEffect(() => {
     if (initialTab) {
@@ -140,6 +175,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [listingDocuments, setListingDocuments] = useState<{ id?: string, name: string, url: string, file?: File }[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('Saving listing...');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
@@ -237,6 +273,43 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [hasDedicatedParking, setHasDedicatedParking] = useState(true);
   const [hasFiberWifi, setHasFiberWifi] = useState(true);
   const [isSavedEditor, setIsSavedEditor] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const previewListingObject: HousingListing = {
+    id: editingListingId || 'preview-id',
+    title: listingTitle || 'Sanctuary Stay',
+    neighborhood: addressData?.formattedAddress || 'Durham, NC',
+    city: addressData?.city || 'Durham',
+    state: addressData?.state || 'NC',
+    proximityToHospital: 'Under 1 Mile',
+    nearestHospital: 'Duke University Hospital',
+    driveTimeMinutes: 5,
+    monthlyRate: roomPrices[0] || 1950,
+    weeklyRate: Math.round((roomPrices[0] || 1950) / 4),
+    beds: roomCount || 1,
+    baths: 1,
+    sqft: 850,
+    images: listingPhotos.map(p => p.url),
+    nurseRating: 5.0,
+    reviewsCount: 1,
+    amenities: {
+      blackoutCurtains: hasBlackout,
+      whiteNoiseMachine: true,
+      daySleeperQuietHours: hasQuietHours,
+      washerDryerInUnit: hasScrubWasher,
+      dedicatedParking: hasDedicatedParking,
+      highSpeedWifi: hasFiberWifi,
+      fullyFurnished: true,
+      petFriendly: petFee > 0,
+      privateEntrance: propertyType === 'entire_property',
+    },
+    contractFlexProtection: cancellationTier === 'Flexible',
+    featuredSanctuary: true,
+    propertyType: propertyType,
+    petFee: petFee,
+    parkingFee: parkingFee,
+    extraOptions: [],
+  };
 
   // Stripe Connect State
   // Mock state for Stripe connect button interactions if needed
@@ -356,6 +429,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploading(true);
+    setUploadMessage('Saving listing...');
 
     try {
       // Create listing update payload
@@ -410,7 +484,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         if (listingPhotos[i].file) newPhotosToUpload.push(listingPhotos[i]);
       }
 
+      const newDocsToUpload = [];
+      for (let i = 0; i < listingDocuments.length; i++) {
+        if (listingDocuments[i].file) newDocsToUpload.push(listingDocuments[i]);
+      }
+
       if (newPhotosToUpload.length > 0) {
+        setUploadMessage(newPhotosToUpload.length > 1 ? 'Uploading photos...' : 'Uploading photo...');
         // In a real app, this would be a multipart/form-data POST request
         // or getting presigned S3 urls. Here we simulate it.
         const photosPayload = await Promise.all(
@@ -445,8 +525,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       }
 
+      if (newDocsToUpload.length > 0) {
+        setUploadMessage(newDocsToUpload.length > 1 ? 'Uploading documents...' : 'Uploading document...');
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+
       setIsSavedEditor(true);
-      setTimeout(() => setIsSavedEditor(false), 3000);
+      setTimeout(() => {
+        setActiveHostTab('dashboard');
+      }, 1000);
     } catch (err) {
       console.error("Error saving listing:", err);
     } finally {
@@ -539,8 +626,79 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           >
             Verification
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveHostTab('profile')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              activeHostTab === 'profile'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white'
+            }`}
+          >
+            Host Profile
+          </button>
         </div>
       </div>
+
+      {/* Host Profile Tab */}
+      {activeHostTab === 'profile' && (
+        <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-lg space-y-6 max-w-2xl">
+          <div>
+            <h2 className="text-xl font-bold text-[#0B2559] dark:text-white">Host Public Profile &amp; Credentials</h2>
+            <p className="text-xs text-gray-500 mt-1">Customize how your host name, bio, and badge appear on your listings and public profile page.</p>
+          </div>
+
+          {profileSaveNotice && (
+            <div className="p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-xs font-bold flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <span>{profileSaveNotice}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Host Full Name</label>
+              <input
+                type="text"
+                value={hostFullName}
+                onChange={(e) => setHostFullName(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Host Title &amp; Bio</label>
+              <input
+                type="text"
+                value={hostTitleBio}
+                onChange={(e) => setHostTitleBio(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+                placeholder="E.g., Superhost • Former UCSF Neuro ICU RN"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Avatar Image URL</label>
+              <input
+                type="text"
+                value={hostAvatarUrl}
+                onChange={(e) => setHostAvatarUrl(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+              />
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-md hover:bg-[#0C7EBF] transition-all cursor-pointer"
+              >
+                Save Profile Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* SCREEN B3: Host Booking Requests Approval Queue */}
       {activeHostTab === 'dashboard' && (
@@ -768,6 +926,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         <form onSubmit={(e) => { e.preventDefault(); if (editorStep === 3) handleSaveListing(e); else setEditorStep(prev => (prev + 1) as 1 | 2 | 3); }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
+              <button
+                type="button"
+                onClick={() => setEditingListingId(null)}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline mb-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                <span>Back to Listings</span>
+              </button>
               <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase tracking-wider">
                 Listing &amp; Multi-Room Setup
               </span>
@@ -1134,6 +1300,16 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   </div>
                 )}
 
+                {isUploading && (
+                  <div className="p-3.5 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/30 text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-semibold flex items-center justify-between gap-3 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                      <span>{uploadMessage}</span>
+                    </div>
+                    <span className="text-[11px] font-bold">Please wait</span>
+                  </div>
+                )}
+
                 {/* Media Hub: Photo Uploads */}
                 <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
                   <div className="flex items-center justify-between">
@@ -1289,29 +1465,52 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   >
                     Back
                   </button>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-3">
                     <button
-                      type="submit"
-                      disabled={isUploading}
-                      className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                      type="button"
+                      onClick={() => setIsPreviewOpen(true)}
+                      className="px-5 py-2.5 rounded-full border border-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-sm font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
-                      {isUploading ? (
-                        <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
-                      ) : (
-                        <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
-                      )}
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      <span>Preview Listing</span>
                     </button>
-                    {(!currentUser?.isHostVerified || !payoutsEnabled) && (
-                      <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
-                        Cannot publish until Stripe & Admin verification complete.
-                      </div>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        type="submit"
+                        disabled={isUploading}
+                        className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {isUploading ? (
+                          <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+                        ) : (
+                          <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
+                        )}
+                      </button>
+                      {(!currentUser?.isHostVerified || !payoutsEnabled) && (
+                        <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
+                          Cannot publish until Stripe & Admin verification complete.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
         </form>
+      )}
+
+      {/* Live Preview Modal */}
+      {isPreviewOpen && (
+        <ListingDetailModal
+          listing={previewListingObject}
+          onClose={() => setIsPreviewOpen(false)}
+          isNightShiftMode={isNightShiftMode}
+          isSaved={false}
+          onToggleSave={() => {}}
+          isVerified={true}
+          onGoToVerification={() => {}}
+        />
       )}
 
       {/* Host Onboarding & Identity Verification - 3-Card Responsive Grid */}

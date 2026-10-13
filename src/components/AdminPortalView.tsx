@@ -503,7 +503,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">
-                  Host &amp; Property Verification Gate (Queue A-10)
+                  Host &amp; Property Verification Portal
                 </h2>
                 <p className="text-xs text-gray-500">
                   Verify host authority-to-list documentation and approve listings for public search indexing
@@ -658,7 +658,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">
-                  Booking Authorizations &amp; Split Engine Queue (Queue A-12)
+                  Booking Authorizations &amp; Split Engine Monitor
                 </h2>
                 <p className="text-xs text-gray-500">
                   Live monitor of pre-authorization holds, 5% platform fee deduction, and ~95% host split captures

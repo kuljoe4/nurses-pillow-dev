@@ -139,7 +139,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
     const { email, password } = req.body;
 
     const cleanEmail = email.trim().toLowerCase();
-    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     let user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -171,6 +171,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
         email_verified: Boolean(user.email_verified),
         phone_verified: Boolean(user.phone_verified),
         identity_verified: Boolean(user.identity_verified),
+        verification_status: user.verification_status || 'unverified',
       },
       token
     });
@@ -424,7 +425,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     const result = await db.query(
-      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE id = $1',
+      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status FROM users WHERE id = $1',
       [decoded.id]
     );
     res.json({ user: result.rows[0] || null });
