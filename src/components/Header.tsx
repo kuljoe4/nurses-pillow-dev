@@ -618,6 +618,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
                 aria-expanded={isProfileMenuOpen}
                 aria-haspopup="true"
+                aria-controls="profile-dropdown-menu"
                 aria-label="User profile and account settings"
               >
                 {/* Avatar with Verified checkmark */}
@@ -661,6 +662,7 @@ export const Header: React.FC<HeaderProps> = ({
               {isProfileMenuOpen && (
                 <>
                   <div
+                    id="profile-dropdown-menu"
                     className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-white dark:bg-[#0B1626] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-[0_12px_36px_rgba(11,37,89,0.12)] p-4 z-50 text-xs space-y-3 overflow-y-auto custom-scrollbar origin-top-right transition-all"
                     style={{
                       maxHeight: 'min(500px, calc(100vh - 5.5rem))',
