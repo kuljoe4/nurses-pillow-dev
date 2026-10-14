@@ -34,3 +34,7 @@
 ## 2026-10-12 - [Single Pass Map/Filter For Mixed Collections]
 **Learning:** Found an O(4N) anti-pattern in `AdminPortalView.tsx` where a large API response array was iterated four times (two `.filter().map()` chains) to separate the data into two distinct arrays based on role. This created multiple unnecessary intermediate array allocations, adding overhead for the garbage collector and taking 4x the iterations.
 **Action:** Replace multiple chained `.filter().map()` operations on the same data with a single `for` loop (O(N) time complexity) to filter and transform items simultaneously, pushing to the corresponding arrays and preventing intermediate object allocations.
+
+## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
+**Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
+**Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
