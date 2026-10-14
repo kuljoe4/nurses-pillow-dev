@@ -258,53 +258,64 @@ export const ListingDetailModal: React.FC<ListingDetailModalProps> = ({
           {/* Main Details (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Host Mini-Profile Banner */}
-            <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="relative shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
-                    alt="Host Sarah M."
-                    className="w-13 h-13 rounded-full object-cover shadow-xs"
-                  />
-                  <span className="absolute -bottom-1 -right-1 p-0.5 bg-[#195b4c] text-white rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[12px]">medical_services</span>
-                  </span>
-                </div>
-                <div>
+            {(() => {
+              const hostName = listing.hostName || 'Sarah M.';
+              const isPreseeded = !listing.hostName || listing.hostId === 'host-sarah-m' || listing.hostName === 'Sarah M.' || listing.hostName === 'Sarah Miller';
+              const hostTitle = isPreseeded ? 'RN Host' : (listing.hostType || 'Verified Sanctuary Host');
+              const hostSubtitle = isPreseeded ? 'Superhost • Former UCSF Neuro ICU RN' : 'Verified Property Host • Response < 1 hr';
+              const hostAvatar = isPreseeded
+                ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(hostName)}`;
+              return (
+                <div className="p-4 rounded-2xl bg-[#f2f3ff] dark:bg-[#182840] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative shrink-0">
+                      <img
+                        src={hostAvatar}
+                        alt={`Host ${hostName}`}
+                        className="w-13 h-13 rounded-full object-cover shadow-xs bg-gray-200"
+                      />
+                      <span className="absolute -bottom-1 -right-1 p-0.5 bg-[#195b4c] text-white rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[12px]">medical_services</span>
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold">Hosted by {hostName}</h3>
+                        <span className="px-2 py-0.2 rounded-full bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] text-[10px] font-bold">
+                          {hostTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">{hostSubtitle}</p>
+                      <div className="text-[11px] text-[#005684] dark:text-[#93ccff] font-semibold mt-0.5">
+                        Response time &lt; 2 hrs • 100% acceptance for verified RNs
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold">Hosted by Sarah M.</h3>
-                    <span className="px-2 py-0.2 rounded-full bg-[#195b4c]/15 text-[#195b4c] dark:text-[#aff0db] text-[10px] font-bold">
-                      RN Host
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500">Superhost • Former UCSF Neuro ICU RN</p>
-                  <div className="text-[11px] text-[#005684] dark:text-[#93ccff] font-semibold mt-0.5">
-                    Response time &lt; 2 hrs • 100% acceptance for verified RNs
+                    {onOpenHostProfile && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenHostProfile(listing?.hostId || 'host-sarah-m')}
+                        className="px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-xs hover:bg-[#0C7EBF] transition-colors cursor-pointer shrink-0"
+                      >
+                        View Host Profile
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHostContactStatus(`Connecting you with Host ${hostName}...`);
+                        setTimeout(() => setHostContactStatus(null), 3500);
+                      }}
+                      className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer shrink-0"
+                    >
+                      Contact {hostName.split(' ')[0]}
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {onOpenHostProfile && (
-                  <button
-                    type="button"
-                    onClick={() => onOpenHostProfile(listing?.hostId || 'host-sarah-m')}
-                    className="px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-xs hover:bg-[#0C7EBF] transition-colors cursor-pointer shrink-0"
-                  >
-                    View Host Profile
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHostContactStatus('Connecting you with Host Sarah M...');
-                    setTimeout(() => setHostContactStatus(null), 3500);
-                  }}
-                  className="px-4 py-2 rounded-full bg-white dark:bg-[#111e33] text-xs font-bold text-[#005684] dark:text-[#93ccff] shadow-xs hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 cursor-pointer shrink-0"
-                >
-                  Contact Sarah
-                </button>
-              </div>
-            </div>
+              );
+            })()}
 
             {hostContactStatus && (
               <div className="p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] text-xs font-bold flex items-center gap-2">

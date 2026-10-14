@@ -38,3 +38,6 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
+## 2024-10-24 - [O(N) Set Lookups for Array Inclusions]
+**Learning:** Found an O(N*M) nested array inclusion check using `.filter(item => array.includes(item.id))` in a React component's `useMemo`. React components re-evaluating these nested loops unnecessarily can create subtle UI jitter during complex state updates.
+**Action:** When filtering arrays based on inclusion in a second array, pre-compute a `Set` from the second array to convert the operation from O(N*M) to O(N) using `idsSet.has()`. Always wrap this optimization in a `useMemo` or use it as a single pass.

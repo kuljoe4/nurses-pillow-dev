@@ -1,6 +1,8 @@
 export interface DbListingRow {
   id: string;
   host_id?: string;
+  host_name?: string;
+  host_verified?: boolean;
   title: string;
   property_type?: string;
   address?: string;
@@ -26,6 +28,9 @@ export function mapDbListingToFrontend(dbRow: DbListingRow) {
 
   return {
     id: dbRow.id,
+    hostId: dbRow.host_id,
+    hostName: dbRow.host_name || undefined,
+    hostType: dbRow.host_name ? (dbRow.host_verified ? 'Verified Sanctuary Host' : 'Host Partner') : undefined,
     title: dbRow.title,
     neighborhood: dbRow.address || '',
     city: dbRow.city,

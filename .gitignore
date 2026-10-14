@@ -49,3 +49,6 @@ remaining_status.txt
 # Lockfiles
 package-lock.json
 bun.lock
+
+# Uploaded files
+uploads/

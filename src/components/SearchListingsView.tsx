@@ -429,6 +429,7 @@ useBodyScrollLock(isGsaModalOpen);
                 role="button"
                 tabIndex={0}
                 aria-expanded={isDropdownOpen}
+                aria-controls="hospital-selector-dropdown"
                 aria-label="Select assigned hospital campus"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -453,6 +454,7 @@ useBodyScrollLock(isGsaModalOpen);
               <AnimatePresence>
                 {isDropdownOpen && (
                   <motion.div
+                    id="hospital-selector-dropdown"
                     initial={{ opacity: 0, y: -4, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
