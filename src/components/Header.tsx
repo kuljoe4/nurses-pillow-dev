@@ -475,6 +475,9 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+              aria-expanded={isMoreMenuOpen}
+              aria-haspopup="true"
+              aria-controls="more-menu-panel"
               className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
                 isMoreMenuOpen
                   ? isNightShiftMode
@@ -493,6 +496,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {isMoreMenuOpen && (
               <div
+                id="more-menu-panel"
                 className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-[#233550] shadow-lg p-2 z-50 text-xs overflow-y-auto custom-scrollbar"
                 style={{
                   maxHeight: 'min(480px, calc(100vh - 5.5rem))',
