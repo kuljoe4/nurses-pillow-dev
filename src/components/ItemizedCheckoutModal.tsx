@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HousingListing, BookingRequest, UserRole } from '../types';
+import { HousingListing, BookingRequest } from '../types';
 import { stripeConnect, STRIPE_SANDBOX_CONFIG, STRIPE_TEST_CARDS, StripeSplitTransaction } from '../services/stripeConnect';
 import { CancellationRefundEngine, CancellationTier } from '../services/cancellationEngine';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
@@ -20,8 +20,6 @@ interface ItemizedCheckoutModalProps {
   };
   verificationData?: any;
   onGoToVerification?: () => void;
-  onSwitchRole?: (role: UserRole) => void;
-  onSetupClinician?: () => void;
   checkInDate: string;
   checkOutDate: string;
 }
@@ -35,8 +33,6 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   currentUser,
   verificationData,
   onGoToVerification,
-  onSwitchRole,
-  onSetupClinician,
   checkInDate,
   checkOutDate,
 }) => {
@@ -320,13 +316,13 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                   </div>
 
                   {isCheckoutLocked && (
-                    <div className="mb-5 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 flex flex-col gap-2.5">
+                    <div className="mb-5 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 flex flex-col gap-2">
                       <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-bold text-sm">
                         <span className="material-symbols-outlined text-[18px]">lock</span>
-                        Verification Required for Booking
+                        Verification Required
                       </div>
-                      <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-                        Nurses Pillow is a specialized travel healthcare housing marketplace. All reservations require verified clinician credentials (identity, contact, and nursing license) to ensure patient safety, insurance compliance, and trusted host-clinician matching.
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        Please complete your clinician identity and license verification before proceeding to checkout.
                       </p>
                     </div>
                   )}
@@ -335,15 +331,13 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        if (onSetupClinician) {
-                          onSetupClinician();
-                        } else if (onGoToVerification) {
+                        if (onGoToVerification) {
                           onGoToVerification();
                         }
                       }}
                       className="w-full py-4 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] active:bg-[#095C8C] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white font-bold text-sm shadow-md transition-all duration-200 ease-in-out cursor-pointer flex justify-center items-center gap-2"
                     >
-                      Set Up Clinician Account &amp; Verify
+                      Complete Verification to Book
                       <span className="material-symbols-outlined text-[18px]">verified_user</span>
                     </button>
                   ) : (

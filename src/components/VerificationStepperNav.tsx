@@ -6,7 +6,6 @@ interface VerificationStepperNavProps {
   data: VerificationFormData;
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
-  onExit?: () => void;
 }
 
 export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
@@ -14,7 +13,6 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
   data,
   onSelectStep,
   isNightShiftMode,
-  onExit,
 }) => {
   // Real step completion statuses based on database and form state
   const isStep1Verified = Boolean(data.isIdVerified);
@@ -37,13 +35,13 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
   return (
     <div className="max-w-3xl mx-auto mb-8">
       <div
-        className={`rounded-full p-2 px-3 shadow-xs transition-colors flex items-center justify-between gap-3 ${
+        className={`rounded-full p-2 shadow-xs transition-colors ${
           isNightShiftMode
             ? 'bg-[#0E1A2E] border border-[#233550]'
             : 'bg-white border border-[rgba(11,37,89,0.06)]'
         }`}
       >
-        <div className={`grid grid-cols-${steps.length} items-center gap-1.5 sm:gap-2 flex-1`}>
+        <div className={`grid grid-cols-${steps.length} items-center gap-1.5 sm:gap-2`}>
           {steps.map((step) => {
             const isActive = currentStep === step.id;
 
@@ -149,22 +147,6 @@ export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({
             );
           })}
         </div>
-        {onExit && (
-          <button
-            type="button"
-            onClick={onExit}
-            aria-label="Exit verification and return to stays"
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-colors shrink-0 cursor-pointer ${
-              isNightShiftMode
-                ? 'bg-white/10 hover:bg-white/15 text-gray-200'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-            }`}
-            title="Exit verification flow"
-          >
-            <span className="material-symbols-outlined text-[16px]">close</span>
-            <span className="hidden sm:inline">Exit</span>
-          </button>
-        )}
       </div>
     </div>
   );

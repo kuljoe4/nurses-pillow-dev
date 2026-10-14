@@ -22,7 +22,13 @@ if (process.env.DATABASE_URL) {
       ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
       : rawDbUrl;
 
-    const isRemoteDb = true;
+    const isRemoteDb =
+      process.env.NODE_ENV === 'production' ||
+      connectionString.includes('rlwy.net') ||
+      connectionString.includes('railway') ||
+      connectionString.includes('supabase') ||
+      connectionString.includes('neon.tech') ||
+      connectionString.includes('sslmode=require');
 
     pool = new pg.Pool({
       connectionString,
@@ -72,40 +78,32 @@ export const db = {
 
     // 2. Direct PostgreSQL Pool
     if (pool) {
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          const result = params && params.length > 0
-            ? await pool.query(text, params)
-            : await pool.query(text);
-          pgConnected = true;
-          lastConnectionError = null;
+      try {
+        const result = params && params.length > 0
+          ? await pool.query(text, params)
+          : await pool.query(text);
+        pgConnected = true;
+        lastConnectionError = null;
 
-          if (Array.isArray(result)) {
-            const lastResult = result[result.length - 1];
-            const rows = lastResult?.rows || [];
-            const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
-            return {
-              rows,
-              rowCount,
-            };
-          }
-
-          const rows = result?.rows || [];
-          const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
+        if (Array.isArray(result)) {
+          const lastResult = result[result.length - 1];
+          const rows = lastResult?.rows || [];
+          const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
           return {
             rows,
             rowCount,
           };
-        } catch (err: any) {
-          if (err.code === 'ECONNRESET' && retries > 1) {
-            retries--;
-            await new Promise(r => setTimeout(r, 1000));
-            continue;
-          }
-          console.error('[PostgreSQL] Query execution error:', err.message);
-          throw err;
         }
+
+        const rows = result?.rows || [];
+        const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
+        return {
+          rows,
+          rowCount,
+        };
+      } catch (err: any) {
+        console.error('[PostgreSQL] Query execution error:', err.message);
+        throw err;
       }
     }
 

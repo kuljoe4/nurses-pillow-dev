@@ -148,8 +148,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     currentTab === 'how-it-works' ||
     currentTab === 'for-hosts' ||
     currentTab === 'nurse-dashboard' ||
-    currentTab === 'host-dashboard' ||
-    currentTab === 'admin-portal' ||
     currentTab === 'verification' ||
     currentTab === 'email-verification' ||
     currentTab === 'phone-verification';

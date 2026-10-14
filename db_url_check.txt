@@ -1,1 +1,0 @@
-postgresql://postgres:OppuhxwyUcyAfvjewBGyzvSSAgIZTLbj@hopper.proxy.rlwy.net:21749/railway

@@ -11,7 +11,6 @@ interface ClinicalLicenseStepProps {
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
   onOpenSuccessModal: () => void;
-  onExit?: () => void;
 }
 
 export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
@@ -21,7 +20,6 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
   onSelectStep,
   isNightShiftMode,
   onOpenSuccessModal,
-  onExit,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -158,7 +156,6 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
         data={data}
         onSelectStep={onSelectStep}
         isNightShiftMode={isNightShiftMode}
-        onExit={onExit}
       />
 
       {/* Floating Notification Toast */}
@@ -397,16 +394,6 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
             >
               Primary License or Nursys e-Notify Document
             </label>
-
-            {isSubmitting && (
-              <div className="mb-3 p-3.5 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/30 text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-semibold flex items-center justify-between gap-3 animate-pulse">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                  <span>Uploading document...</span>
-                </div>
-                <span className="text-[11px] font-bold">Please wait</span>
-              </div>
-            )}
 
             {/* Drag & Drop Zone */}
             <div

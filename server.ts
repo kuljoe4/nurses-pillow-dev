@@ -5,7 +5,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -58,18 +57,10 @@ async function startServer() {
   }
 
   const app = express();
-  app.set('trust proxy', 1);
   const PORT = Number(process.env.PORT) || 3000;
 
   // Expose app for testing if needed
   (global as any).app = app;
-
-  // Configure uploads directory for Railway Persistent Volumes or local storage
-  const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-  app.use('/uploads', express.static(uploadDir));
 
   app.use(helmet({
     frameguard: false, // Disables X-Frame-Options to allow iframe embedding in preview
@@ -922,10 +913,9 @@ async function startServer() {
   app.get('/api/listings', async (req: Request, res: Response) => {
     try {
       const result = await db.query(`
-        SELECT l.id, l.host_id, l.title, l.property_type, l.address_line1 as address, l.city, l.state, l.postal_code as zip,
+        SELECT l.id, l.host_id, l.title, l.property_type, l.city, l.state, l.postal_code as zip,
         l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rent as monthly_rate, l.security_deposit_amount as security_deposit,
-        l.cleaning_fee, l.pet_fee, l.parking_fee, l.extra_options, l.is_published as is_active, l.cancellation_policy as cancellation_tier,
-        u.full_name as host_name, u.is_host_verified as host_verified,
+        l.cleaning_fee, l.is_published as is_active, l.cancellation_policy as cancellation_tier, l.pet_fee,
         COALESCE(
           (
             SELECT json_agg(
@@ -940,39 +930,13 @@ async function startServer() {
           ),
           '[]'::json
         ) as images
-        FROM listings l 
-        LEFT JOIN users u ON l.host_id = u.id
-        WHERE l.is_published = true
+        FROM listings l WHERE l.is_published = true
       `);
       const mapped = result.rows.map(mapDbListingToFrontend);
       res.json(mapped);
     } catch (error: any) {
       console.error('Error fetching listings from PostgreSQL:', error.message);
       res.status(503).json({ error: 'Database Unavailable', details: error.message });
-    }
-  });
-
-  // Update Host Profile Endpoint
-  app.put('/api/host/profile', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      const { fullName, hostTitle, avatarUrl } = req.body;
-      await db.query(
-        `UPDATE users 
-         SET full_name = COALESCE(NULLIF($1, ''), full_name), 
-             profession_type = COALESCE(NULLIF($2, ''), profession_type),
-             avatar_url = COALESCE(NULLIF($3, ''), avatar_url),
-             updated_at = NOW() 
-         WHERE id = $4`,
-        [fullName, hostTitle, avatarUrl, userId]
-      );
-      res.json({ success: true, message: 'Host profile updated successfully' });
-    } catch (error: any) {
-      console.error('Error updating host profile:', error.message);
-      res.status(500).json({ error: 'Failed to update host profile' });
     }
   });
 
@@ -1003,10 +967,9 @@ async function startServer() {
       const hostId = host.id;
 
       const listingsRes = await db.query(`
-        SELECT l.id, l.host_id, l.title, l.property_type, l.address_line1 as address, l.city, l.state, l.postal_code as zip,
+        SELECT l.id, l.host_id, l.title, l.property_type, l.city, l.state, l.postal_code as zip,
         l.latitude, l.longitude, l.nearest_hospital_id, l.monthly_rent as monthly_rate, l.security_deposit_amount as security_deposit,
-        l.cleaning_fee, l.pet_fee, l.parking_fee, l.extra_options, l.is_published as is_active, l.cancellation_policy as cancellation_tier,
-        u.full_name as host_name, u.is_host_verified as host_verified,
+        l.cleaning_fee, l.is_published as is_active, l.cancellation_policy as cancellation_tier, l.pet_fee,
         COALESCE(
           (
             SELECT json_agg(
@@ -1021,9 +984,7 @@ async function startServer() {
           ),
           '[]'::json
         ) as images
-        FROM listings l 
-        LEFT JOIN users u ON l.host_id = u.id
-        WHERE l.host_id = $1 AND l.is_published = true
+        FROM listings l WHERE l.host_id = $1 AND l.is_published = true
       `, [hostId]);
 
       const listings = listingsRes.rows.map(mapDbListingToFrontend);
@@ -1090,10 +1051,8 @@ async function startServer() {
         return res.status(403).json({ error: 'Unauthorized: Cannot create booking for another user.' });
       }
 
-      const effective_traveler_user_id = traveler_user_id || traveler_id;
-
       // Prevent IDOR: Ensure the traveler creating the booking matches the authenticated user
-      if (traveler_user_id && traveler_user_id !== traveler_id) {
+      if (traveler_user_id !== traveler_id) {
         return res.status(403).json({ error: 'Forbidden: traveler_user_id must match the authenticated user.' });
       }
 
@@ -1186,7 +1145,7 @@ async function startServer() {
           bookingId,
           listing_id,
           traveler_id,
-          effective_traveler_user_id,
+          traveler_id,
           hostId,
           start_date,
           end_date,
@@ -1228,17 +1187,26 @@ async function startServer() {
   // GET /api/bookings - Fetch live bookings from PostgreSQL DB
   app.get('/api/bookings', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { role, hostId } = req.query;
-      let { userId } = req.query;
+      const { userId, role, hostId } = req.query;
 
       // Prevent guests or unauthenticated users from fetching all bookings
       if (!role || role === 'guest') {
         return res.json([]);
       }
 
-      // If authenticated user is present, use req.user.id as source of truth to prevent 403s on mock ID mismatches
-      const effectiveUserId = req.user?.id || userId;
-      const effectiveHostId = req.user?.id || hostId;
+      // Prevent IDOR: Ensure users can only fetch their own bookings, unless they are admin
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
+        if (role === 'host') {
+          if (hostId !== req.user?.id && userId !== req.user?.id) {
+            return res.status(403).json({ error: 'Forbidden: Cannot access bookings for another user' });
+          }
+        } else {
+          // Default for nurse or any other role string that reaches this point
+          if (userId !== req.user?.id) {
+            return res.status(403).json({ error: 'Forbidden: Cannot access bookings for another user' });
+          }
+        }
+      }
 
       let query = `
         SELECT b.*,
@@ -1252,12 +1220,12 @@ async function startServer() {
         LEFT JOIN users u ON (b.traveler_id = u.id OR b.traveler_user_id = u.id)
       `;
       const params: any[] = [];
-      if (role === 'host' && (effectiveHostId || effectiveUserId)) {
+      if (role === 'host' && (hostId || userId)) {
         query += ` WHERE b.host_id = $1 OR l.host_id = $1`;
-        params.push(effectiveHostId || effectiveUserId);
-      } else if (role === 'nurse' && effectiveUserId) {
+        params.push(hostId || userId);
+      } else if (role === 'nurse' && userId) {
         query += ` WHERE b.traveler_id = $1 OR b.traveler_user_id = $1`;
-        params.push(effectiveUserId);
+        params.push(userId);
       }
       query += ` ORDER BY b.created_at DESC`;
       const result = await db.query(query, params);
@@ -1320,9 +1288,11 @@ async function startServer() {
 
       const booking = validationResult.data;
 
-      // If user is authenticated, align traveler_id with req.user.id
-      if (req.user?.id) {
-        booking.traveler_id = req.user.id;
+      // Prevent IDOR: Ensure users can only create bookings for themselves
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
+        if (booking.traveler_id !== req.user?.id) {
+          return res.status(403).json({ error: 'Forbidden: Cannot create booking for another user' });
+        }
       }
 
 
@@ -2230,34 +2200,19 @@ async function startServer() {
         const uploadedPhotos = [];
 
         for (const photo of photos) {
-          let photoUrl = photo.data;
-
-          if (photoUrl && photoUrl.startsWith('data:image/')) {
-            const matches = photoUrl.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
-            if (matches && matches.length === 3) {
-              const extension = matches[1];
-              const base64Data = matches[2];
-              const buffer = Buffer.from(base64Data, 'base64');
-              const fileName = `lst_${listingId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${extension}`;
-              const filePath = path.join(uploadDir, fileName);
-              fs.writeFileSync(filePath, buffer);
-              photoUrl = `/uploads/${fileName}`;
-            }
-          }
-
           const result = await db.query(
             `INSERT INTO listing_photos (listing_id, photo_url, display_order, is_cover)
              VALUES ($1, $2, $3, $4) RETURNING id, photo_url, display_order, is_cover`,
             [
               listingId,
-              photoUrl,
+              photo.data,
               photo.displayOrder || 0,
               photo.displayOrder === 0 ? true : false
             ]
           );
 
           const savedPhoto = result.rows[0];
-          // Handle legacy base64 if any returned
+          // Replace raw base64 data in the response payload with the lightweight proxy URL
           if (savedPhoto.photo_url && savedPhoto.photo_url.startsWith('data:image/')) {
             savedPhoto.photo_url = `/api/photos/${savedPhoto.id}`;
           }
@@ -2420,16 +2375,12 @@ async function startServer() {
               ]
             );
 
-            // Compliance check & publish sync:
-            // If the listing was already published or admin-verified, preserve publication.
-            // Otherwise, enforce host verification and Stripe payouts compliance.
-            const existingRes = await db.query('SELECT is_published, is_verified_by_admin FROM listings WHERE id = $1', [listingId]);
-            const wasPublished = existingRes.rows[0]?.is_published || existingRes.rows[0]?.is_verified_by_admin;
-
+            // Fetch host status to sync is_published
             const hostCheck = await db.query('SELECT is_host_verified, stripe_payouts_enabled FROM users WHERE id = $1', [req.user.id]);
-            const canPublish = wasPublished || (hostCheck.rows.length > 0 && hostCheck.rows[0].is_host_verified && hostCheck.rows[0].stripe_payouts_enabled);
-
-            await db.query("UPDATE listings SET is_published = $1 WHERE id = $2", [canPublish, listingId]);
+            const canPublish = hostCheck.rows.length > 0 && hostCheck.rows[0].is_host_verified && hostCheck.rows[0].stripe_payouts_enabled;
+            if (!canPublish) {
+              await db.query("UPDATE listings SET is_published = false WHERE id = $1", [listingId]);
+            }
 
           } else {
              return res.status(403).json({ error: "Forbidden: Not the owner of this listing." });

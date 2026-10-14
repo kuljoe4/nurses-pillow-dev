@@ -621,9 +621,7 @@ export default function App() {
             const isContactVerified = Boolean(user.email_verified);
             const phoneVerified = Boolean(user.phone_verified);
             const mobilePhone = user.phone_number || prevMobilePhone;
-            const licenseStatus = user.is_nurse_verified 
-              ? "verified" 
-              : (user.verification_status || prevLicenseStatus);
+            const licenseStatus = user.is_nurse_verified ? "verified" : prevLicenseStatus;
 
             if (
                 prev &&
@@ -749,11 +747,6 @@ export default function App() {
   // Seamless Perspective / Role Switcher for instant testing
   const handleSwitchRole = useCallback(
     async (role: UserRole) => {
-      if (import.meta.env.VITE_USE_MOCK_DATA !== 'true') {
-        await fetchUserProfile();
-        return;
-      }
-
       if (role === "host") {
         const hostUser = {
           id: "host-sarah-m",
@@ -946,7 +939,6 @@ export default function App() {
           start_date: booking.startDate,
           end_date: booking.endDate,
           traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
-          traveler_user_id: currentUser?.id,
           room_id: booking.roomId || undefined,
         }),
       });
@@ -1120,12 +1112,6 @@ export default function App() {
         savedListingIds={savedListingIds}
         onToggleSave={handleToggleSaveListing}
         selectedHospital={searchParamsState.hospital || 'Duke University Hospital'}
-        currentUser={currentUser}
-        onGoToHostPortal={() => {
-          setPublicHostId(null);
-          window.history.pushState({}, document.title, "/");
-          setCurrentTab('host-dashboard');
-        }}
       />
     );
   }
@@ -1230,7 +1216,6 @@ export default function App() {
           setSelectedBookingDetail(b);
           setIsBookingDetailOpen(true);
         }}
-        onSwitchRole={import.meta.env.VITE_USE_MOCK_DATA === 'true' ? handleSwitchRole : undefined}
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
@@ -1466,7 +1451,6 @@ export default function App() {
                     setAuthModalMode(mode || "signup");
                     setIsAuthModalOpen(true);
                   }}
-                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
               {verificationStep === 2 && (
@@ -1480,7 +1464,6 @@ export default function App() {
                     handleNavigateTab("email-verification")
                   }
                   onOpenTwilioOtp={() => handleNavigateTab("phone-verification")}
-                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
               {verificationStep === 3 && (
@@ -1491,7 +1474,6 @@ export default function App() {
                   onSelectStep={(step) => setVerificationStep(step)}
                   isNightShiftMode={isNightShiftMode}
                   onOpenSuccessModal={() => setIsSuccessModalOpen(true)}
-                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
             </>
@@ -1682,18 +1664,6 @@ export default function App() {
             currentUser={currentUser}
             verificationData={verificationData}
             onGoToVerification={() => {
-              handleNavigateTab("verification");
-              setIsCheckoutOpen(false);
-            }}
-            onSwitchRole={handleSwitchRole}
-            onSetupClinician={() => {
-              setCurrentUser(prev => ({
-                ...prev,
-                role: "nurse" as UserRole,
-                isNurseVerified: false,
-              }));
-              sessionStorage.setItem("np_active_role", "nurse");
-              setVerificationStep(1);
               handleNavigateTab("verification");
               setIsCheckoutOpen(false);
             }}

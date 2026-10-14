@@ -40,6 +40,3 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
 **Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
 **Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.
-## 2026-10-13 - Accessible Progressive Disclosure linkages
-**Learning:** When using Framer Motion's AnimatePresence for progressive disclosure UI (expand/collapse elements like dropdowns and date pickers), it's crucial to explicitly map the trigger button to the animated content container using `aria-controls` on the button and a matching `id` on the container.
-**Action:** Added `aria-controls` attributes to trigger buttons and corresponding `id` attributes to the `motion.div` containers for the Profile Dropdown, Hospital Selector Dropdown, and Clinical Date Picker components to ensure proper screen reader support.
