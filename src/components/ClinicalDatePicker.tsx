@@ -303,7 +303,6 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
           type="button"
           aria-haspopup="dialog"
           aria-expanded={isOpen}
-          aria-controls="clinical-date-picker-dropdown"
           onClick={() => setIsOpen((prev) => !prev)}
           className={`w-full h-12 rounded-xl border flex items-center justify-between px-3.5 sm:px-4 cursor-pointer transition-all duration-200 ease-in-out duration-200 text-left outline-none ${
             isOpen
@@ -372,7 +371,6 @@ export const ClinicalDatePicker: React.FC<ClinicalDatePickerProps> = ({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            id="clinical-date-picker-dropdown"
             initial={{ opacity: 0, y: 6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}

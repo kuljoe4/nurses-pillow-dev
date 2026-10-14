@@ -277,28 +277,45 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   }, []);
 
   const displayedFeaturedListings = useMemo(() => {
-    if (activeListingFilter === 'close') {
-      return featuredListings.filter((l) => (l.driveTimeMinutes || 10) <= 6 || (l.distanceBadge && l.distanceBadge.includes('0.')));
+    if (activeListingFilter === 'all') return featuredListings;
+
+    // ⚡ Bolt Performance Optimization: Single-pass early return filtering
+    // Replaced four separate .filter() and multiple .some() array operations with a single O(N) loop
+    const result = [];
+    for (let i = 0; i < featuredListings.length; i++) {
+      const l = featuredListings[i];
+      if (activeListingFilter === 'close') {
+        if ((l.driveTimeMinutes || 10) <= 6 || (l.distanceBadge && l.distanceBadge.includes('0.'))) {
+          result.push(l);
+        }
+      } else if (activeListingFilter === 'quiet') {
+        if (l.amenities?.daySleeperQuietHours || l.amenities?.blackoutCurtains) {
+          result.push(l);
+        } else if (l.highlightBadges) {
+          for (let j = 0; j < l.highlightBadges.length; j++) {
+            const b = l.highlightBadges[j];
+            if (b.includes('Quiet') || b.includes('dB') || b.includes('Blackout')) {
+              result.push(l);
+              break;
+            }
+          }
+        }
+      } else if (activeListingFilter === 'laundry') {
+        if (l.amenities?.washerDryerInUnit) {
+          result.push(l);
+        } else if (l.highlightBadges) {
+          for (let j = 0; j < l.highlightBadges.length; j++) {
+            if (l.highlightBadges[j].toLowerCase().includes('laundry')) {
+              result.push(l);
+              break;
+            }
+          }
+        }
+      } else if (activeListingFilter === 'pets') {
+        if (l.amenities?.petFriendly) result.push(l);
+      }
     }
-    if (activeListingFilter === 'quiet') {
-      return featuredListings.filter(
-        (l) =>
-          l.amenities?.daySleeperQuietHours ||
-          l.amenities?.blackoutCurtains ||
-          l.highlightBadges?.some((b: string) => b.includes('Quiet') || b.includes('dB') || b.includes('Blackout'))
-      );
-    }
-    if (activeListingFilter === 'laundry') {
-      return featuredListings.filter(
-        (l) =>
-          l.amenities?.washerDryerInUnit ||
-          l.highlightBadges?.some((b: string) => b.toLowerCase().includes('laundry'))
-      );
-    }
-    if (activeListingFilter === 'pets') {
-      return featuredListings.filter((l) => l.amenities?.petFriendly);
-    }
-    return featuredListings;
+    return result;
   }, [featuredListings, activeListingFilter]);
 
   // Streamlined date display with zero text wrapping

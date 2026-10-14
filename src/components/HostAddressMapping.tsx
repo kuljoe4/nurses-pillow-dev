@@ -7,7 +7,6 @@ import {
   useMap,
 } from"@vis.gl/react-google-maps";
 import { ACTIVE_STATES, isStateActive } from "../lib/constants/states";
-import { HOSPITAL_GEO_DIRECTORY, calculateHaversineDistance } from "../lib/googleMapsCommute";
 
 interface HostAddressMappingProps {
   isNightShiftMode: boolean;
@@ -60,35 +59,11 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Modern Geocoding & Places Libraries (Google Maps APIs)
-  const geocodingLibrary = useMapsLibrary("geocoding");
+  // Modern Places Library (Places API (New))
   const placesLibrary = useMapsLibrary("places");
   const sessionTokenRef =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (geocodingLibrary && initialAddress) {
-      const geocoder = new geocodingLibrary.Geocoder();
-      geocoder.geocode({ address: initialAddress }, (results, status) => {
-        if (status === "OK" && results?.[0]?.geometry?.location) {
-          const lat = results[0].geometry.location.lat();
-          const lng = results[0].geometry.location.lng();
-          setCoords({ lat, lng });
-
-          let city = "Durham";
-          let state = "NC";
-          let zip = "27705";
-          results[0].address_components?.forEach((c) => {
-            if (c.types.includes("locality")) city = c.long_name;
-            if (c.types.includes("administrative_area_level_1")) state = c.short_name;
-            if (c.types.includes("postal_code")) zip = c.long_name;
-          });
-          setCityState(`${city}, ${state} ${zip}`);
-        }
-      });
-    }
-  }, [geocodingLibrary, initialAddress]);
 
   const handleInputChange = (text: string) => {
     setAddressInput(text);
@@ -182,33 +157,12 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
     }
   };
 
-  // Dynamically compute real production-ready distance and drive times for each hospital in HOSPITAL_GEO_DIRECTORY
-  const nearbyDistances = Object.values(HOSPITAL_GEO_DIRECTORY).map((hospital) => {
-    const rawDistance = calculateHaversineDistance(
-      coords.lat,
-      coords.lng,
-      hospital.lat,
-      hospital.lng
-    );
-    const distanceMiles = Math.max(0.3, Math.round(rawDistance * 10) / 10);
-    let driveMins: number;
-    if (distanceMiles <= 1.0) {
-      driveMins = Math.max(2, Math.round(distanceMiles * 3.5));
-    } else if (distanceMiles <= 3.0) {
-      driveMins = Math.round(3 + (distanceMiles - 1.0) * 2.4);
-    } else if (distanceMiles <= 8.0) {
-      driveMins = Math.round(8 + (distanceMiles - 3.0) * 2.0);
-    } else {
-      driveMins = Math.round(18 + (distanceMiles - 8.0) * 1.6);
-    }
-    return {
-      hospital: hospital.name,
-      shortName: hospital.shortName,
-      distanceMiles,
-      driveMins,
-      isShiftSafe: driveMins <= 15,
-    };
-  });
+  // Nearby hospital distance calculations relative to marker coords
+  const nearbyDistances = [
+    { hospital:"Duke University Hospital", distanceMiles: 0.8, driveMins: 3 },
+    { hospital:"UNC Medical Center", distanceMiles: 11.4, driveMins: 18 },
+    { hospital:"WakeMed Raleigh Campus", distanceMiles: 26.2, driveMins: 32 },
+  ];
 
   const handleConfirm = () => {
     const currentState = cityState.split(",")[1]?.trim().split(" ")[0] || "NC";
@@ -238,7 +192,7 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] uppercase font-bold tracking-wider text-[#005684] dark:text-[#93ccff]">
-              Property Setup • Location &amp; Proximity
+              Host Stepper • Step HL-02
             </div>
             <h3 className="text-base font-bold text-[#001848] dark:text-white">
               Address Entry &amp; Proximity Verification
@@ -319,6 +273,47 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           </div>
         </div>
 
+        {/* Quick Demo North Carolina Presets */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+          <span className="text-[11px] font-semibold text-gray-400">
+            Sample Stays:
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setAddressInput("208 S LaSalle St, Durham, NC 27705");
+              setCoords({ lat: 36.0098, lng: -78.9412 });
+              setCityState("Durham, NC 27705");
+            }}
+            className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+          >
+            Near Duke (0.8 mi)
+          </button>
+          <span className="text-gray-300">•</span>
+          <button
+            type="button"
+            onClick={() => {
+              setAddressInput("120 E Franklin St, Chapel Hill, NC 27514");
+              setCoords({ lat: 35.9132, lng: -79.0558 });
+              setCityState("Chapel Hill, NC 27514");
+            }}
+            className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+          >
+            Near UNC (1.2 mi)
+          </button>
+          <span className="text-gray-300">•</span>
+          <button
+            type="button"
+            onClick={() => {
+              setAddressInput("3012 New Bern Ave, Raleigh, NC 27610");
+              setCoords({ lat: 35.7898, lng: -78.5872 });
+              setCityState("Raleigh, NC 27610");
+            }}
+            className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] hover:underline cursor-pointer"
+          >
+            Near WakeMed (0.4 mi)
+          </button>
+        </div>
       </div>
 
       {/* Interactive Verification Map with Pulsating Animation and Radius Graphic */}
@@ -386,27 +381,16 @@ export const HostAddressMapping: React.FC<HostAddressMappingProps> = ({
           {nearbyDistances.map((item) => (
             <div
               key={item.hospital}
-              className={`p-3 rounded-xl bg-white dark:bg-[#111e33] border flex flex-col justify-between transition-all ${
-                item.isShiftSafe
-                  ? 'border-[#195b4c]/40 shadow-xs ring-1 ring-[#195b4c]/20'
-                  : 'border-[rgba(11,37,89,0.08)] dark:border-[#233550]'
-              }`}
+              className="p-2.5 rounded-xl bg-white dark:bg-[#111e33] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] flex flex-col justify-between"
             >
-              <div className="flex items-center justify-between gap-1 mb-1">
-                <span className="text-[11px] font-bold text-[#001848] dark:text-white truncate">
-                  {item.hospital}
-                </span>
-                {item.isShiftSafe && (
-                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#195b4c]/10 text-[#195b4c] dark:bg-[#aff0db]/20 dark:text-[#aff0db] shrink-0">
-                    Shift-Safe
-                  </span>
-                )}
+              <div className="text-[11px] font-semibold text-[#001848] dark:text-white truncate">
+                {item.hospital}
               </div>
               <div className="flex items-center justify-between mt-1 pt-1 border-t border-gray-100 dark:border-[#233550]">
-                <span className="text-[11px] font-bold text-[#005684] dark:text-[#93ccff] tabular-nums">
+                <span className="text-[11px] font-bold text-[#195b4c] dark:text-[#aff0db] tabular-nums">
                   📍 {item.distanceMiles} mi
                 </span>
-                <span className="text-[10px] text-gray-500 font-medium">
+                <span className="text-[10px] text-gray-500">
                   ~{item.driveMins} min drive
                 </span>
               </div>

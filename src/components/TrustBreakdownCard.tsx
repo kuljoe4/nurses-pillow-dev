@@ -161,15 +161,25 @@ export const TrustBreakdownCard: React.FC<TrustBreakdownCardProps> = ({
                 Credential
               </span>
               <span className="text-xs font-bold text-[#001848] dark:text-[#E6ECF7]">
-                {clinicianTitle?.toUpperCase().includes('CNA')
-                  ? 'State Nurse Aide Registry'
-                  : clinicianTitle?.toUpperCase() === 'PA' || clinicianTitle?.toUpperCase().includes('PHYSICIAN ASSISTANT')
-                  ? 'State Medical Board'
-                  : clinicianTitle?.toUpperCase() === 'MD' || clinicianTitle?.toUpperCase() === 'DO' || clinicianTitle?.toUpperCase().includes('PHYSICIAN (MD')
-                  ? 'FSMB DocInfo'
-                  : clinicianTitle && !['RN', 'LPN', 'LVN', 'NP', 'CRNA', 'CNM', 'APRN'].some(p => clinicianTitle!.toUpperCase().includes(p))
-                  ? 'State Professional Registry'
-                  : 'Primary Source Registry'}
+                {(() => {
+                  if (!clinicianTitle) return 'Primary Source Registry';
+                  const titleStr = clinicianTitle.toUpperCase();
+                  if (titleStr.includes('CNA')) return 'State Nurse Aide Registry';
+                  if (titleStr === 'PA' || titleStr.includes('PHYSICIAN ASSISTANT')) return 'State Medical Board';
+                  if (titleStr === 'MD' || titleStr === 'DO' || titleStr.includes('PHYSICIAN (MD')) return 'FSMB DocInfo';
+                  // ⚡ Bolt Performance Optimization: Single-pass checking
+                  // Replaced array .some() with a single loop over predefined tokens
+                  const nursingTokens = ['RN', 'LPN', 'LVN', 'NP', 'CRNA', 'CNM', 'APRN'];
+                  let isNursing = false;
+                  for (let i = 0; i < nursingTokens.length; i++) {
+                    if (titleStr.includes(nursingTokens[i])) {
+                      isNursing = true;
+                      break;
+                    }
+                  }
+                  if (!isNursing) return 'State Professional Registry';
+                  return 'Primary Source Registry';
+                })()}
               </span>
             </div>
           </div>

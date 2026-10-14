@@ -139,7 +139,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
     const { email, password } = req.body;
 
     const cleanEmail = email.trim().toLowerCase();
-    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     let user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -171,7 +171,6 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
         email_verified: Boolean(user.email_verified),
         phone_verified: Boolean(user.phone_verified),
         identity_verified: Boolean(user.identity_verified),
-        verification_status: user.verification_status || 'unverified',
       },
       token
     });
@@ -287,7 +286,7 @@ router.post('/reset-password', authLimiter, catchAsync(async (req, res, next) =>
 // Ephemeral store for pending email verifications
 const pendingEmailVerifications = new Map<string, { pin: string; expires: number }>();
 
-router.post('/send-verification-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/send-verification-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const email = req.user?.email;
     if (!email) {
       res.status(401).json({ error: 'Unauthorized: Email is missing in token' });
@@ -365,7 +364,7 @@ router.post('/send-verification-email', authLimiter, authenticateToken, catchAsy
     res.json({ message: 'Verification email sent successfully' });
 }));
 
-router.post('/verify-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/verify-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { pin } = req.body;
     const email = req.user?.email;
     if (!email) {
@@ -425,7 +424,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     const result = await db.query(
-      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status FROM users WHERE id = $1',
+      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE id = $1',
       [decoded.id]
     );
     res.json({ user: result.rows[0] || null });
@@ -434,7 +433,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   }
 }));
 
-router.post('/phone/send-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
@@ -477,7 +476,7 @@ router.post('/phone/send-otp', authLimiter, authenticateToken, catchAsync(async 
     });
 }));
 
-router.post('/phone/verify-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/verify-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber, code } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     const cleanCode = (code || '').toString().trim().replace(/\D/g, '');

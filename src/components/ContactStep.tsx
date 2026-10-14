@@ -11,7 +11,6 @@ interface ContactStepProps {
   isNightShiftMode: boolean;
   onOpenPostmarkEmail?: () => void;
   onOpenTwilioOtp?: () => void;
-  onExit?: () => void;
 }
 
 export const ContactStep: React.FC<ContactStepProps> = ({
@@ -22,7 +21,6 @@ export const ContactStep: React.FC<ContactStepProps> = ({
   isNightShiftMode,
   onOpenPostmarkEmail,
   onOpenTwilioOtp,
-  onExit,
 }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -218,7 +216,6 @@ export const ContactStep: React.FC<ContactStepProps> = ({
         data={data}
         onSelectStep={onSelectStep}
         isNightShiftMode={isNightShiftMode}
-        onExit={onExit}
       />
 
       {/* Main Card */}

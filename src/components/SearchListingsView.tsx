@@ -263,11 +263,28 @@ useBodyScrollLock(isGsaModalOpen);
     for (let i = 0; i < list.length; i++) {
       const l = list[i];
       // 1. Quick chip filter
-      if (activeFilterChip === 'entire' && !(l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo'))) continue;
-      if (activeFilterChip === 'private' && !(l.propertyType?.toLowerCase().includes('room') || l.propertyType?.toLowerCase().includes('suite') || l.propertyType?.toLowerCase().includes('studio'))) continue;
-      if (activeFilterChip === 'blackout' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')) || l.amenities?.blackoutCurtains)) continue;
-      if (activeFilterChip === 'laundry' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')) || l.amenities?.washerDryerInUnit)) continue;
-      if (activeFilterChip === 'parking' && !(l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')) || l.amenities?.dedicatedParking)) continue;
+      const typeLower = l.propertyType?.toLowerCase() || '';
+      if (activeFilterChip === 'entire' && !(typeLower.includes('entire') || typeLower.includes('condo'))) continue;
+      if (activeFilterChip === 'private' && !(typeLower.includes('room') || typeLower.includes('suite') || typeLower.includes('studio'))) continue;
+
+      let hasBlackout = !!l.amenities?.blackoutCurtains;
+      let hasLaundry = !!l.amenities?.washerDryerInUnit;
+      let hasParking = !!l.amenities?.dedicatedParking;
+      let hasQuiet = l.amenities?.daySleeperQuietHours === true;
+
+      if (l.highlightBadges && (!hasBlackout || !hasLaundry || !hasParking || !hasQuiet)) {
+        for (let j = 0; j < l.highlightBadges.length; j++) {
+          const badgeLower = l.highlightBadges[j].toLowerCase();
+          if (!hasBlackout && badgeLower.includes('blackout')) hasBlackout = true;
+          if (!hasLaundry && (badgeLower.includes('washer') || badgeLower.includes('laundry'))) hasLaundry = true;
+          if (!hasParking && badgeLower.includes('parking')) hasParking = true;
+          if (!hasQuiet && (badgeLower.includes('quiet') || badgeLower.includes('day-sleeper'))) hasQuiet = true;
+        }
+      }
+
+      if (activeFilterChip === 'blackout' && !hasBlackout) continue;
+      if (activeFilterChip === 'laundry' && !hasLaundry) continue;
+      if (activeFilterChip === 'parking' && !hasParking) continue;
 
       // 2. Commute Buffer
       if (commuteBuffer && commuteBuffer < 15) {
@@ -277,7 +294,7 @@ useBodyScrollLock(isGsaModalOpen);
 
       // 3. Assignment Duration
       if (targetWeeks) {
-        const minWeeks = l.minWeeks || ((l.propertyType?.toLowerCase().includes('entire') || l.propertyType?.toLowerCase().includes('condo')) ? 8 : 4);
+        const minWeeks = l.minWeeks || ((typeLower.includes('entire') || typeLower.includes('condo')) ? 8 : 4);
         const maxWeeks = l.maxWeeks || 52;
         if (targetWeeks < minWeeks || targetWeeks > maxWeeks) continue;
       }
@@ -285,11 +302,11 @@ useBodyScrollLock(isGsaModalOpen);
       // 4. Extended filter criteria
       if (maxPrice < 3500 && l.monthlyRate > maxPrice) continue;
       if (minRating > 0 && l.nurseRating < minRating) continue;
-      if (filterBlackout && !(l.amenities?.blackoutCurtains || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('blackout')))) continue;
-      if (filterScrubWasher && !(l.amenities?.washerDryerInUnit || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('washer') || b.toLowerCase().includes('laundry')))) continue;
-      if (filterQuietDay && !(l.amenities?.daySleeperQuietHours === true || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('quiet') || b.toLowerCase().includes('day-sleeper')))) continue;
+      if (filterBlackout && !hasBlackout) continue;
+      if (filterScrubWasher && !hasLaundry) continue;
+      if (filterQuietDay && !hasQuiet) continue;
       if (filterSoundMachine && !l.amenities?.whiteNoiseMachine) continue;
-      if (filterDedicatedParking && !(l.amenities?.dedicatedParking || l.highlightBadges?.some((b: string) => b.toLowerCase().includes('parking')))) continue;
+      if (filterDedicatedParking && !hasParking) continue;
       if (filterPetFriendly && !l.amenities?.petFriendly) continue;
       if (filterContractFlex && !l.contractFlexProtection) continue;
 
@@ -412,7 +429,6 @@ useBodyScrollLock(isGsaModalOpen);
                 role="button"
                 tabIndex={0}
                 aria-expanded={isDropdownOpen}
-                aria-controls="hospital-selector-dropdown"
                 aria-label="Select assigned hospital campus"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -437,7 +453,6 @@ useBodyScrollLock(isGsaModalOpen);
               <AnimatePresence>
                 {isDropdownOpen && (
                   <motion.div
-                    id="hospital-selector-dropdown"
                     initial={{ opacity: 0, y: -4, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.98 }}

@@ -10,8 +10,6 @@ interface HostPublicProfileViewProps {
   savedListingIds: string[];
   onToggleSave: (id: string) => void;
   selectedHospital?: string;
-  currentUser?: { id?: string; role?: string };
-  onGoToHostPortal?: () => void;
 }
 
 export const HostPublicProfileView: React.FC<HostPublicProfileViewProps> = ({
@@ -22,8 +20,6 @@ export const HostPublicProfileView: React.FC<HostPublicProfileViewProps> = ({
   savedListingIds,
   onToggleSave,
   selectedHospital = 'Duke University Hospital',
-  currentUser,
-  onGoToHostPortal,
 }) => {
   const [profileData, setProfileData] = useState<{
     host: {
@@ -123,24 +119,13 @@ export const HostPublicProfileView: React.FC<HostPublicProfileViewProps> = ({
               <span>Back to Search</span>
             </button>
           )}
-          <div className="flex items-center gap-2">
-            {onGoToHostPortal && (currentUser?.role === 'host' || currentUser?.id === hostId) && (
-              <button
-                onClick={onGoToHostPortal}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0A6FA8] text-white text-xs font-bold hover:bg-[#0C7EBF] transition-colors shadow-xs cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[16px]">edit</span>
-                <span>Edit Profile &amp; Listings</span>
-              </button>
-            )}
-            <button
-              onClick={handleCopyShareLink}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[16px] text-[#0A6FA8]">share</span>
-              <span>{copiedLink ? 'Link Copied!' : 'Share Host Profile URL'}</span>
-            </button>
-          </div>
+          <button
+            onClick={handleCopyShareLink}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white dark:bg-[#0E1A2E] border border-gray-200 dark:border-gray-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-xs cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px] text-[#0A6FA8]">share</span>
+            <span>{copiedLink ? 'Link Copied!' : 'Share Host Profile URL'}</span>
+          </button>
         </div>
 
         {/* Host Header Card */}

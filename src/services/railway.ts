@@ -514,20 +514,12 @@ class RailwayDatabaseManager {
                 FROM pg_constraint
                 WHERE conname = 'no_overlapping_bookings'
             ) THEN
-                -- Backfill missing start_date / end_date from check_in_date / check_out_date
-                UPDATE bookings SET start_date = check_in_date WHERE start_date IS NULL AND check_in_date IS NOT NULL;
-                UPDATE bookings SET end_date = check_out_date WHERE end_date IS NULL AND check_out_date IS NOT NULL;
-
-                BEGIN
-                    ALTER TABLE bookings
-                    ADD CONSTRAINT no_overlapping_bookings EXCLUDE USING gist (
-                        listing_id WITH =,
-                        COALESCE(room_id, '00000000-0000-0000-0000-000000000000'::uuid) WITH =,
-                        daterange(start_date, end_date, '[)') WITH &&
-                    ) WHERE (status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval'));
-                EXCEPTION WHEN others THEN
-                    RAISE NOTICE 'Could not create no_overlapping_bookings constraint due to existing overlapping data: %', SQLERRM;
-                END;
+                ALTER TABLE bookings
+                ADD CONSTRAINT no_overlapping_bookings EXCLUDE USING gist (
+                    listing_id WITH =,
+                    COALESCE(room_id, '00000000-0000-0000-0000-000000000000'::uuid) WITH =,
+                    daterange(start_date, end_date, '[)') WITH &&
+                ) WHERE (status IN ('requested', 'accepted', 'approved', 'active', 'paid', 'pending_host_approval'));
             END IF;
         END $$;
 

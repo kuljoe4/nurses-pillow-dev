@@ -13,7 +13,6 @@ interface IdentityStepProps {
   onNextStep: () => void;
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
-  onExit?: () => void;
 }
 
 export const IdentityStep: React.FC<IdentityStepProps> = ({
@@ -23,7 +22,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
   onSelectStep,
   isNightShiftMode,
   onOpenAuth,
-  onExit,
 }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
@@ -151,7 +149,6 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         data={data}
         onSelectStep={onSelectStep}
         isNightShiftMode={isNightShiftMode}
-        onExit={onExit}
       />
 
       {/* Main Card */}
