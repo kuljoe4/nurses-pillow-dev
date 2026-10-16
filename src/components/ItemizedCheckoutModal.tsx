@@ -20,6 +20,8 @@ interface ItemizedCheckoutModalProps {
   };
   verificationData?: any;
   onGoToVerification?: () => void;
+  onSwitchRole?: (role?: any) => void | Promise<void>;
+  onSetupClinician?: () => void;
   checkInDate: string;
   checkOutDate: string;
 }

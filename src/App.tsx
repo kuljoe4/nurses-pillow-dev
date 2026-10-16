@@ -1358,57 +1358,64 @@ export default function App() {
       {/* Sticky Navigation Header */}
       <Header
         topBanner={
-          currentUser.role === "nurse" && activeNurseBooking ? (
-            <div className="bg-[#FBF0D6] dark:bg-[#20190d] border-b border-[#B9822E]/25 text-[#0B2559] dark:text-[#FBF0D6] px-3 sm:px-6 py-2 text-xs transition-colors">
-              <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{
-                      backgroundColor:
-                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                          ? "#2F6E5E"
-                          : activeNurseBooking.status === "declined"
-                          ? "#A8452E"
-                          : "#B9822E",
-                    }}
-                  />
-                  <span className="font-medium truncate">
-                    {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                      ? "Confirmed Sanctuary: "
-                      : "Pending Request: "}
-                    <strong className="font-bold text-[#0B2559] dark:text-white">
-                      {activeNurseBooking.listingTitle}
-                    </strong>
-                  </span>
-                  <span className="hidden md:inline text-gray-400 dark:text-gray-500">•</span>
-                  <span
-                    className="hidden md:inline font-semibold"
-                    style={{
-                      color:
-                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                          ? "#2F6E5E"
-                          : activeNurseBooking.status === "declined"
-                          ? "#A8452E"
-                          : "#B9822E",
-                    }}
-                  >
-                    Status: {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active" ? "Accepted & Secured" : "Awaiting Host Response"}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedBookingDetail(activeNurseBooking);
-                    setIsBookingDetailOpen(true);
-                  }}
-                  className="shrink-0 px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  View request details
-                </button>
+          <>
+            {accessNotice ? (
+              <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
+                {accessNotice.title}: {accessNotice.message}
               </div>
-            </div>
-          ) : null
+            ) : null}
+            {currentUser.role === "nurse" && activeNurseBooking ? (
+              <div className="bg-[#FBF0D6] dark:bg-[#20190d] border-b border-[#B9822E]/25 text-[#0B2559] dark:text-[#FBF0D6] px-3 sm:px-6 py-2 text-xs transition-colors">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{
+                        backgroundColor:
+                          activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                            ? "#2F6E5E"
+                            : activeNurseBooking.status === "declined"
+                            ? "#A8452E"
+                            : "#B9822E",
+                      }}
+                    />
+                    <span className="font-medium truncate">
+                      {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                        ? "Confirmed Sanctuary: "
+                        : "Pending Request: "}
+                      <strong className="font-bold text-[#0B2559] dark:text-white">
+                        {activeNurseBooking.listingTitle}
+                      </strong>
+                    </span>
+                    <span className="hidden md:inline text-gray-400 dark:text-gray-500">•</span>
+                    <span
+                      className="hidden md:inline font-semibold"
+                      style={{
+                        color:
+                          activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                            ? "#2F6E5E"
+                            : activeNurseBooking.status === "declined"
+                            ? "#A8452E"
+                            : "#B9822E",
+                      }}
+                    >
+                      Status: {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active" ? "Accepted & Secured" : "Awaiting Host Response"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedBookingDetail(activeNurseBooking);
+                      setIsBookingDetailOpen(true);
+                    }}
+                    className="shrink-0 px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    View request details
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </>
         }
         currentTab={currentTab}
         currentUser={currentUser}
@@ -1433,13 +1440,6 @@ export default function App() {
           setSelectedBookingDetail(b);
           setIsBookingDetailOpen(true);
         }}
-        topBanner={
-          accessNotice ? (
-            <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
-              {accessNotice.title}: {accessNotice.message}
-            </div>
-          ) : undefined
-        }
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
