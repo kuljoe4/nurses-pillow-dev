@@ -7,7 +7,7 @@ interface BookingDetailModalProps {
   booking: BookingRequest | null;
   listing?: HousingListing;
   isNightShiftMode: boolean;
-  onCancelBooking: (bookingId: string) => Promise<void> | void;
+  onCancelBooking: (bookingId: string, reason: string) => Promise<void> | void;
   onGoToHousing: () => void;
   onOpenHostProfile?: (hostId: string) => void;
 }
@@ -24,6 +24,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 }) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
   const cancelConfirmRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const handleConfirmCancel = async () => {
     setIsCancelling(true);
     try {
-      await onCancelBooking(booking.id);
+      await onCancelBooking(booking.id, cancellationReason);
       setShowCancelConfirm(false);
       onClose();
     } catch (err) {
@@ -212,6 +213,12 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 ${booking.totalInitialCharge?.toLocaleString() || (booking.monthlyRent + (booking.cleaningFee || 150)).toLocaleString()}
               </span>
             </div>
+            {booking.paymentIntentId && (
+              <div className="pt-1.5 flex justify-between items-center text-[11px] font-mono text-gray-500">
+                <span>Hold ID:</span>
+                <span className="text-[#0A6FA8] dark:text-[#3E9AD1]">{booking.paymentIntentId}</span>
+              </div>
+            )}
           </div>
 
           {/* Cancel Confirmation Prompt */}
@@ -221,13 +228,29 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <span className="material-symbols-outlined text-[18px]">warning</span>
                 <span>Release authorization hold and cancel request?</span>
               </div>
+              
+              <div className="space-y-1.5">
+                <label className="block font-semibold text-[#0B2559] dark:text-white">Reason for cancellation:</label>
+                <select
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#15233a] text-xs"
+                >
+                  <option value="">Select a reason...</option>
+                  <option value="Assignment changed">Assignment changed</option>
+                  <option value="Found another option">Found another option</option>
+                  <option value="Personal reasons">Personal reasons</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Your pre-authorization hold will be released immediately with zero cancellation fees. Your card will not be charged.
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
-                  disabled={isCancelling}
+                  disabled={isCancelling || !cancellationReason}
                   onClick={handleConfirmCancel}
                   className="px-4 py-2 rounded-full bg-[#A8452E] hover:bg-[#8e3925] text-white font-bold cursor-pointer transition-colors disabled:opacity-50"
                 >

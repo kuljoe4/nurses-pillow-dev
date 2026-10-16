@@ -1,6 +1,6 @@
 {
-  "summary": "Revised implementation plan featuring deep research on Stripe Accounts v2 (/v2/core/accounts), merchant configuration, Direct Charges vs Destination Charges, resolution of sandbox invalids, and role-isolated routing.",
-  "updatedAt": "2026-10-15T08:31:31.677350491Z",
+  "summary": "Implementation plan to add an availability percentage header and color-coded status badge banner above each month in the ListingCalendar component.",
+  "updatedAt": "2026-10-16T11:09:52.766846931Z",
   "requestFeedback": true,
   "userFacing": true
 }

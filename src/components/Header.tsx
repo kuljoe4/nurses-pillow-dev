@@ -1307,29 +1307,6 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="material-symbols-outlined text-[18px]">logout</span>
                   <span>Log out</span>
                 </button>
-              ) : onOpenAuth ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onOpenAuth('signin');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 px-3 rounded-xl border border-gray-300 dark:border-[#233550] text-xs font-bold text-center text-[#001848] dark:text-white hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-50 dark:hover:bg-[#182840] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#182840]"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onOpenAuth('signup');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-[#001848] dark:bg-[#005684] text-white text-xs font-bold text-center hover:opacity-90 shadow-xs"
-                  >
-                    Get Started
-                  </button>
-                </div>
               ) : null}
             </div>
           </div>
