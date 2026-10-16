@@ -62,7 +62,7 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
       setConflict({
         error: 'Cannot block these dates as there is already a confirmed or pending booking.',
         conflictingBooking: {
-          traveler_name: conflictingBooking.traveler_name_from_db || 'Clinician',
+          traveler_name: conflictingBooking.traveler_name || conflictingBooking.traveler_name_from_db || 'Clinician',
           traveler_phone: conflictingBooking.traveler_phone_from_db || 'N/A',
           traveler_email: conflictingBooking.traveler_email_from_db || 'N/A'
         }
@@ -181,8 +181,20 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
           <div className="space-y-3">
             {bookedDays.map(b => (
               <div key={b.id} className="flex justify-between items-center text-xs p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E]">
-                <span className="font-bold tabular-nums">{format(new Date(b.start_date), 'MMM d')} – {format(new Date(b.end_date), 'MMM d')}</span>
-                <span className="text-gray-500">{b.traveler_name_from_db || 'Clinician'}</span>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={b.clinicianAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(b.traveler_name_from_db || 'Clinician') + '&background=random'} 
+                    alt={b.traveler_name_from_db || 'Clinician'} 
+                    className="w-7 h-7 rounded-full object-cover" 
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-bold tabular-nums text-[#0B2559] dark:text-white text-[11px]">{format(new Date(b.start_date), 'MMM d')} – {format(new Date(b.end_date), 'MMM d')}</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-[10px] font-semibold">
+                      {b.traveler_name || b.traveler_name_from_db || 'Clinician'}
+                      {b.clinicianTitle ? ' • ' + b.clinicianTitle : ''}
+                    </span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

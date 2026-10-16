@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan to add an availability percentage header and color-coded status badge banner above each month in the ListingCalendar component.",
-  "updatedAt": "2026-10-16T11:09:52.766846931Z",
+  "summary": "Comprehensive production plan to review and enforce listings date range filtering, blackout date exclusion, booking conflict resolution, listing visibility gating, clinician verification with dynamic profession/document/license validation and state board links, add listing host validation, and search/map spatial decluttering with the fix for the NaN wks display bug.",
+  "updatedAt": "2026-10-16T12:04:49.181781332Z",
   "requestFeedback": true,
   "userFacing": true
 }

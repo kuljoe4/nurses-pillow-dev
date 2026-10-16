@@ -174,9 +174,15 @@ export const ListingCalendar: React.FC<ListingCalendarProps> = ({
               <div key={b.id} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-gray-50 dark:bg-[#0E1A2E] border border-gray-200/50 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#22c55e]"></span>
-                  <span className="font-bold tabular-nums text-[#0B2559] dark:text-white">{format(new Date(b.startDate), 'MMM d')} – {format(new Date(b.endDate), 'MMM d')}</span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600 dark:text-gray-300">{b.clinicianName}</span>
+                  <img 
+                    src={b.clinicianAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(b.clinicianName) + '&background=random'} 
+                    alt={b.clinicianName} 
+                    className="w-6 h-6 rounded-full object-cover" 
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-bold tabular-nums text-[#0B2559] dark:text-white text-[11px]">{format(new Date(b.startDate), 'MMM d')} – {format(new Date(b.endDate), 'MMM d')}</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-[10px] font-semibold">{b.clinicianName} {b.clinicianTitle ? '• ' + b.clinicianTitle : ''}</span>
+                  </div>
                 </div>
                 <span className="text-[11px] font-semibold text-[#0A6FA8] dark:text-[#3E9AD1]">{b.hospitalName}</span>
               </div>
