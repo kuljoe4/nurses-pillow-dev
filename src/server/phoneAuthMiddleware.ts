@@ -87,6 +87,7 @@ export function createPhoneAuthMiddleware() {
         const authHeader = 'Basic ' + Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
 
         if (url.includes('/send-otp')) {
+          console.log('[Phone Middleware] Received /send-otp request, body:', body);
           const phoneNumber = body.phoneNumber;
           const cleanPhone = (phoneNumber || '').toString().trim();
           if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {

@@ -51,7 +51,7 @@ export const uploadMiddleware = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  fileFilter: (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);
     } else {

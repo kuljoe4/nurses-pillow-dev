@@ -218,6 +218,19 @@ class RailwayDatabaseManager {
           created_at TIMESTAMPTZ DEFAULT NOW()
         );
 
+        CREATE TABLE IF NOT EXISTS listing_availability_blocks (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            listing_id VARCHAR(255) NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+            room_id UUID REFERENCES listing_rooms(id) ON DELETE CASCADE,
+            start_date DATE NOT NULL,
+            end_date DATE NOT NULL,
+            is_blocked BOOLEAN DEFAULT TRUE,
+            block_reason VARCHAR(100) DEFAULT 'host_blocked',
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_availability_dates ON listing_availability_blocks(listing_id, start_date, end_date);
+
         -- First create custom ENUM types if they don't exist
         DO $$ BEGIN
             CREATE TYPE verification_type AS ENUM (
@@ -505,6 +518,26 @@ class RailwayDatabaseManager {
         ALTER TABLE bookings ADD COLUMN IF NOT EXISTS start_date DATE;
         ALTER TABLE bookings ADD COLUMN IF NOT EXISTS end_date DATE;
         ALTER TABLE bookings ADD COLUMN IF NOT EXISTS room_id UUID;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS traveler_id VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS traveler_user_id VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cleaning_fee NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pet_fee NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS extra_options_fee NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS deposit_hold_amount NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS gross_booking_value NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS host_platform_fee_amount NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS host_payout_amount NUMERIC DEFAULT 0;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_policy_agreed VARCHAR(50) DEFAULT 'flexible';
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'uncaptured';
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_payment_intent_id VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_transfer_id VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS deposit_hold_payment_intent_id VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS traveler_name VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS listing_title VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255);
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS declined_at TIMESTAMPTZ;
+        ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
 
         -- Safely add the overlapping bookings constraint if it doesn't already exist
         DO $$
@@ -635,31 +668,54 @@ class RailwayDatabaseManager {
    * Executes a SQL query against Railway with automatic fallback handling
    */
   public async query<T = any>(text: string, params?: any[]): Promise<QueryResult<T>> {
-    if (this.isReady()) {
-      try {
-        const result = params && params.length > 0
-          ? await this.pool.query(text, params)
-          : await this.pool.query(text);
+    if (!this.isReady()) {
+      await this.initialize();
+    }
 
-        if (Array.isArray(result)) {
-          const lastResult = result[result.length - 1];
-          const rows = lastResult?.rows || [];
-          const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+    if (this.isReady()) {
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          const result = params && params.length > 0
+            ? await this.pool.query(text, params)
+            : await this.pool.query(text);
+
+          if (Array.isArray(result)) {
+            const lastResult = result[result.length - 1];
+            const rows = lastResult?.rows || [];
+            const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+            return {
+              rows,
+              rowCount,
+            };
+          }
+
+          const rows = result?.rows || [];
+          const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
           return {
             rows,
             rowCount,
           };
-        }
+        } catch (err: any) {
+          const isConnectionError = 
+            err.code === 'ECONNRESET' || 
+            err.code === 'ECONNREFUSED' || 
+            err.code === 'ETIMEDOUT' || 
+            err.message?.includes('terminated unexpectedly') || 
+            err.message?.includes('closed') ||
+            err.message?.includes('Connection terminated');
 
-        const rows = result?.rows || [];
-        const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
-        return {
-          rows,
-          rowCount,
-        };
-      } catch (err: any) {
-        console.warn('[Railway DB] Query execution error:', err.message);
-        throw err;
+          if (isConnectionError && retries > 1) {
+            retries--;
+            console.warn(`[Railway DB] Connection lost (${err.message}). Re-initializing and retrying (${retries} retries left)...`);
+            this.isConnected = false;
+            await this.initialize();
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          console.warn('[Railway DB] Query execution error:', err.message);
+          throw err;
+        }
       }
     }
     throw new Error('Railway database is not currently connected');

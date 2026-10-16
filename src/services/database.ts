@@ -472,6 +472,59 @@ class DatabaseService {
       actor: 'admin_verification_hook',
     });
   }
+
+  async fetchAvailabilityBlocks(listingId: string): Promise<any[]> {
+    try {
+      const response = await this.fetchWithRetry(`/api/listings/${listingId}/availability`);
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (error) {
+      console.warn(`[DatabaseService] Error fetching availability for listing ${listingId}:`, error);
+    }
+    return [];
+  }
+
+  async fetchBookingsForListing(listingId: string): Promise<any[]> {
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await this.fetchWithRetry(`/api/listings/${listingId}/bookings`, { headers });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (error) {
+      console.warn(`[DatabaseService] Error fetching bookings for listing ${listingId}:`, error);
+    }
+    return [];
+  }
+
+  async addAvailabilityBlock(listingId: string, block: { start_date: string, end_date: string, is_blocked: boolean, block_reason?: string }): Promise<any> {
+    const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`/api/listings/${listingId}/availability`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(block),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      const err = new Error(data.error || 'Failed to add availability block');
+      (err as any).response = { status: response.status, data };
+      throw err;
+    }
+    return await response.json();
+  }
 }
 
 export const db = new DatabaseService();

@@ -85,8 +85,8 @@ router.post('/register', authLimiter, validateBody(registerSchema), catchAsync(a
       const dummyToken = jwt.sign({ dummy: 'token' }, JWT_SECRET, { expiresIn: '7d' });
       res.cookie('auth_token', dummyToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
 
@@ -127,8 +127,8 @@ router.post('/register', authLimiter, validateBody(registerSchema), catchAsync(a
 
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -139,7 +139,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
     const { email, password } = req.body;
 
     const cleanEmail = email.trim().toLowerCase();
-    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+    const result = await db.query('SELECT id, email, password_hash, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status, clinical_license_number, stripe_connected_account_id, stripe_payouts_enabled FROM users WHERE LOWER(email) = $1', [cleanEmail]);
     let user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
@@ -155,8 +155,8 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
 
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -171,6 +171,10 @@ router.post('/login', authLimiter, validateBody(loginSchema), catchAsync(async (
         email_verified: Boolean(user.email_verified),
         phone_verified: Boolean(user.phone_verified),
         identity_verified: Boolean(user.identity_verified),
+        verification_status: user.verification_status || 'unverified',
+        clinical_license_number: user.clinical_license_number,
+        stripe_connected_account_id: user.stripe_connected_account_id,
+        stripe_payouts_enabled: Boolean(user.stripe_payouts_enabled),
       },
       token
     });
@@ -181,8 +185,8 @@ router.post('/logout', (req, res) => {
   try {
     res.clearCookie('auth_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      secure: true,
+      sameSite: 'none'
     });
     console.log("[Backend Logout Flow] 2. Set-Cookie header added to clear 'auth_token', secure:", process.env.NODE_ENV === 'production');
     res.json({ message: 'Logged out successfully' });
@@ -286,7 +290,7 @@ router.post('/reset-password', authLimiter, catchAsync(async (req, res, next) =>
 // Ephemeral store for pending email verifications
 const pendingEmailVerifications = new Map<string, { pin: string; expires: number }>();
 
-router.post('/send-verification-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/send-verification-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const email = req.user?.email;
     if (!email) {
       res.status(401).json({ error: 'Unauthorized: Email is missing in token' });
@@ -364,7 +368,7 @@ router.post('/send-verification-email', authenticateToken, catchAsync(async (req
     res.json({ message: 'Verification email sent successfully' });
 }));
 
-router.post('/verify-email', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/verify-email', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { pin } = req.body;
     const email = req.user?.email;
     if (!email) {
@@ -424,7 +428,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & TokenPayload;
     const result = await db.query(
-      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number FROM users WHERE id = $1',
+      'SELECT id, email, full_name, role, is_nurse_verified, is_host_verified, email_verified, phone_verified, identity_verified, phone_number, verification_status, clinical_license_number, stripe_connected_account_id, stripe_payouts_enabled FROM users WHERE id = $1',
       [decoded.id]
     );
     res.json({ user: result.rows[0] || null });
@@ -433,7 +437,7 @@ router.get('/me', catchAsync(async (req, res, next) => {
   }
 }));
 
-router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/send-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     if (!cleanPhone || cleanPhone.replace(/\D/g, '').length < 10) {
@@ -476,7 +480,7 @@ router.post('/phone/send-otp', authenticateToken, catchAsync(async (req: Authent
     });
 }));
 
-router.post('/phone/verify-otp', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+router.post('/phone/verify-otp', authLimiter, authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { phoneNumber, code } = req.body;
     const cleanPhone = (phoneNumber || '').toString().trim();
     const cleanCode = (code || '').toString().trim().replace(/\D/g, '');

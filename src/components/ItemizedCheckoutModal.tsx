@@ -103,7 +103,7 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   // Verification Checkpoint lock
   const isIdentityVerified = verificationData?.isIdVerified === true || verificationData?.isIdentityVerified === true || (currentUser as any)?.isIdVerified === true;
   const isContactAndPhoneVerified = (verificationData?.phoneVerified === true && verificationData?.isContactVerified === true) || (currentUser as any)?.phoneVerified === true;
-  const isLicenseVerified = verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review' || (currentUser as any)?.isNurseVerified === true || currentUser?.role === 'nurse';
+  const isLicenseVerified = verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review' || (currentUser as any)?.isNurseVerified === true || currentUser?.role === 'nurse' || currentUser?.role === 'dual';
   const isCheckoutLocked = !isIdentityVerified || !isContactAndPhoneVerified || !isLicenseVerified;
 
   // Split calculation preview based on final effective fee rate
@@ -125,6 +125,11 @@ export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreedToPolicy) return;
+    if (currentUser?.id && listing.hostId === currentUser.id) {
+      alert("You cannot book your own listing.");
+      setIsSubmitting(false);
+      return;
+    }
     setIsSubmitting(true);
 
     try {

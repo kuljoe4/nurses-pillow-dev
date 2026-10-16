@@ -42,8 +42,8 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     if (result.rows.length === 0) {
       res.clearCookie('auth_token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        secure: true,
+        sameSite: 'none'
       });
       res.status(401).json({ error: 'User no longer exists' });
       return;
@@ -54,8 +54,8 @@ export const authenticateToken = async (req: AuthenticatedRequest, res: Response
     if (user.is_suspended) {
       res.clearCookie('auth_token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        secure: true,
+        sameSite: 'none'
       });
       res.status(403).json({ error: 'Account is suspended' });
       return;

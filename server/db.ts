@@ -22,13 +22,7 @@ if (process.env.DATABASE_URL) {
       ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
       : rawDbUrl;
 
-    const isRemoteDb =
-      process.env.NODE_ENV === 'production' ||
-      connectionString.includes('rlwy.net') ||
-      connectionString.includes('railway') ||
-      connectionString.includes('supabase') ||
-      connectionString.includes('neon.tech') ||
-      connectionString.includes('sslmode=require');
+    const isRemoteDb = true;
 
     pool = new pg.Pool({
       connectionString,
@@ -78,32 +72,49 @@ export const db = {
 
     // 2. Direct PostgreSQL Pool
     if (pool) {
-      try {
-        const result = params && params.length > 0
-          ? await pool.query(text, params)
-          : await pool.query(text);
-        pgConnected = true;
-        lastConnectionError = null;
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          const result = params && params.length > 0
+            ? await pool.query(text, params)
+            : await pool.query(text);
+          pgConnected = true;
+          lastConnectionError = null;
 
-        if (Array.isArray(result)) {
-          const lastResult = result[result.length - 1];
-          const rows = lastResult?.rows || [];
-          const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+          if (Array.isArray(result)) {
+            const lastResult = result[result.length - 1];
+            const rows = lastResult?.rows || [];
+            const rowCount = lastResult?.rowCount ?? (rows ? rows.length : 0);
+            return {
+              rows,
+              rowCount,
+            };
+          }
+
+          const rows = result?.rows || [];
+          const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
           return {
             rows,
             rowCount,
           };
-        }
+        } catch (err: any) {
+          const isConnectionError = 
+            err.code === 'ECONNRESET' || 
+            err.code === 'ECONNREFUSED' || 
+            err.code === 'ETIMEDOUT' || 
+            err.message?.includes('terminated unexpectedly') || 
+            err.message?.includes('closed') ||
+            err.message?.includes('Connection terminated');
 
-        const rows = result?.rows || [];
-        const rowCount = result?.rowCount ?? (rows ? rows.length : 0);
-        return {
-          rows,
-          rowCount,
-        };
-      } catch (err: any) {
-        console.error('[PostgreSQL] Query execution error:', err.message);
-        throw err;
+          if (isConnectionError && retries > 1) {
+            retries--;
+            console.warn(`[PostgreSQL] Connection lost (${err.message}). Retrying (${retries} retries left)...`);
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          console.error('[PostgreSQL] Query execution error:', err.message);
+          throw err;
+        }
       }
     }
 
@@ -132,15 +143,21 @@ export const db = {
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
           ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
-
-
-
+          ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS is_nurse_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS is_host_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30),
           ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS profession_type VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
           ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS stripe_connected_account_id VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS stripe_payouts_enabled BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS document_purged BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS document_purged_at TIMESTAMPTZ;
         `);
@@ -167,13 +184,28 @@ export const db = {
           ALTER TABLE bookings
           ADD COLUMN IF NOT EXISTS start_date DATE,
           ADD COLUMN IF NOT EXISTS end_date DATE,
+          ADD COLUMN IF NOT EXISTS room_id UUID,
           ADD COLUMN IF NOT EXISTS traveler_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS traveler_user_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS cleaning_fee NUMERIC DEFAULT 0,
           ADD COLUMN IF NOT EXISTS pet_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS parking_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS extra_options_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS deposit_hold_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS gross_booking_value NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS host_platform_fee_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS host_payout_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS cancellation_policy_agreed VARCHAR(50) DEFAULT 'flexible',
+          ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'uncaptured',
+          ADD COLUMN IF NOT EXISTS stripe_payment_intent_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS stripe_transfer_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS deposit_hold_payment_intent_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS traveler_name VARCHAR(255),
           ADD COLUMN IF NOT EXISTS listing_title VARCHAR(255),
-          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255);
+          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS declined_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
         `);
         return;
       }
@@ -190,21 +222,26 @@ export const db = {
         await pool.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`);
         await pool.query(`CREATE EXTENSION IF NOT EXISTS "btree_gist";`);
 
-        // Ensure reset password & verification columns exist
         await pool.query(`
           ALTER TABLE users
           ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(255),
           ADD COLUMN IF NOT EXISTS reset_password_expires TIMESTAMP WITH TIME ZONE,
           ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN DEFAULT FALSE,
-
-
-
+          ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS is_nurse_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS is_host_verified BOOLEAN DEFAULT FALSE,
+          ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30),
           ADD COLUMN IF NOT EXISTS clinical_license_number VARCHAR(100),
           ADD COLUMN IF NOT EXISTS clinical_state_board VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS profession_type VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS profession_specialty VARCHAR(150),
           ADD COLUMN IF NOT EXISTS clinical_document_url TEXT,
           ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'unverified',
           ADD COLUMN IF NOT EXISTS primary_source_name VARCHAR(150),
+          ADD COLUMN IF NOT EXISTS stripe_connected_account_id VARCHAR(100),
+          ADD COLUMN IF NOT EXISTS stripe_payouts_enabled BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS document_purged BOOLEAN DEFAULT FALSE,
           ADD COLUMN IF NOT EXISTS document_purged_at TIMESTAMPTZ;
         `);
@@ -231,13 +268,28 @@ export const db = {
           ALTER TABLE bookings
           ADD COLUMN IF NOT EXISTS start_date DATE,
           ADD COLUMN IF NOT EXISTS end_date DATE,
+          ADD COLUMN IF NOT EXISTS room_id UUID,
           ADD COLUMN IF NOT EXISTS traveler_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS traveler_user_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS cleaning_fee NUMERIC DEFAULT 0,
           ADD COLUMN IF NOT EXISTS pet_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS parking_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS extra_options_fee NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS deposit_hold_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS gross_booking_value NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS host_platform_fee_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS host_payout_amount NUMERIC DEFAULT 0,
+          ADD COLUMN IF NOT EXISTS cancellation_policy_agreed VARCHAR(50) DEFAULT 'flexible',
+          ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'uncaptured',
+          ADD COLUMN IF NOT EXISTS stripe_payment_intent_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS stripe_transfer_id VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS deposit_hold_payment_intent_id VARCHAR(255),
           ADD COLUMN IF NOT EXISTS traveler_name VARCHAR(255),
           ADD COLUMN IF NOT EXISTS listing_title VARCHAR(255),
-          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255);
+          ADD COLUMN IF NOT EXISTS hospital_name VARCHAR(255),
+          ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS declined_at TIMESTAMPTZ,
+          ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
         `);
       } else {
         console.warn(`[PostgreSQL] Live database not yet connected: ${lastConnectionError || 'DATABASE_URL pending'}`);

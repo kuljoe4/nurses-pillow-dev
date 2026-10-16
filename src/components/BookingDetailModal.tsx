@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookingRequest, HousingListing } from '../types';
 
 interface BookingDetailModalProps {
@@ -24,6 +24,13 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 }) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const cancelConfirmRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showCancelConfirm && cancelConfirmRef.current) {
+      cancelConfirmRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [showCancelConfirm]);
 
   if (!isOpen || !booking) return null;
 
@@ -71,7 +78,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             >
               {isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Requested'}
             </span>
-            <span className="text-xs text-gray-500 font-medium">NB-05 Booking Detail</span>
+            <span className="text-xs text-gray-500 font-medium">Booking Request Details</span>
           </div>
 
           <button
@@ -209,7 +216,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
           {/* Cancel Confirmation Prompt */}
           {showCancelConfirm && (
-            <div className="p-4 rounded-2xl bg-[#F4E2DC] dark:bg-[#2b1712] border border-[#A8452E]/30 text-xs space-y-3">
+            <div ref={cancelConfirmRef} className="p-4 rounded-2xl bg-[#F4E2DC] dark:bg-[#2b1712] border border-[#A8452E]/30 text-xs space-y-3">
               <div className="font-bold text-[#A8452E] dark:text-[#F4E2DC] flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">warning</span>
                 <span>Release authorization hold and cancel request?</span>

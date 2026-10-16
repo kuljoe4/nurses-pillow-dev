@@ -11,8 +11,6 @@ import {
 import {
   INITIAL_VERIFICATION_DATA,
   BLANK_VERIFICATION_DATA,
-  MOCK_DEMAND_REPORTS,
-  MOCK_ADMIN_LICENSE_REVIEWS,
 } from "./data/mockData";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
@@ -29,6 +27,9 @@ import { ScrollProgressIndicator } from "./components/ScrollProgressIndicator";
 import type { AdminSheetsPreset } from "./components/GoogleSheetsSyncModal";
 import { Stethoscope, Building2, ShieldAlert } from "lucide-react";
 import { HostPublicProfileView } from "./components/HostPublicProfileView";
+import { Toast } from "./components/ui/Toast";
+import { SearchListingsSkeleton } from "./components/skeletons/SearchListingsSkeleton";
+import { NurseDashboardSkeleton } from "./components/skeletons/NurseDashboardSkeleton";
 
 // Code-split secondary views & heavy feature modules to eliminate initial bundle bloat
 const SearchListingsView = React.lazy(() =>
@@ -142,16 +143,28 @@ const BookingDetailModal = React.lazy(() =>
   })),
 );
 
-const ViewLoadingFallback = () => (
-  <div className="flex-1 flex items-center justify-center min-h-[50vh] p-8">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 rounded-full border border-[#0A6FA8]/20 border-t-[#0A6FA8] animate-spin" />
-      <span className="text-xs text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">
-        Loading clinical workspace...
-      </span>
+const ViewLoadingFallback: React.FC<{ currentTab?: string; isNightShiftMode?: boolean }> = ({ currentTab, isNightShiftMode }) => {
+  if (currentTab === "search-listings") {
+    return <SearchListingsSkeleton isNightShiftMode={isNightShiftMode} />;
+  }
+  if (currentTab === "nurse-dashboard") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full">
+        <NurseDashboardSkeleton isNightShiftMode={isNightShiftMode} />
+      </div>
+    );
+  }
+  return (
+    <div className="flex-1 flex items-center justify-center min-h-[50vh] p-8">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 rounded-full border border-[#0A6FA8]/20 border-t-[#0A6FA8] animate-spin" />
+        <span className="text-xs text-[#0B2559]/60 dark:text-[#E6ECF7]/60 font-medium">
+          Loading clinical workspace...
+        </span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ModalLoadingFallback = () => (
   <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 bg-black/65 backdrop-blur-xs flex justify-center items-center">
@@ -194,6 +207,7 @@ export default function App() {
     isNurseVerified?: boolean;
     isHostVerified?: boolean;
     isIdVerified?: boolean;
+    verificationStatus?: string;
   }>({ role: "guest", name: "Guest User" });
   const isDeveloper = stagingUser === "developer" || currentUser.role === "developer";
 
@@ -202,6 +216,17 @@ export default function App() {
     title: string;
     message: string;
   } | null>(null);
+
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const prevVerificationStatus = useRef<string | undefined>(currentUser.verificationStatus);
+
+  useEffect(() => {
+    if (prevVerificationStatus.current === 'pending' && currentUser.verificationStatus === 'verified') {
+      setToastMessage("Congratulations! Your clinician credentials have been verified.");
+    }
+    prevVerificationStatus.current = currentUser.verificationStatus;
+  }, [currentUser.verificationStatus]);
 
   // Navigation & verification step state
   const [currentTab, setCurrentTab] = useState<NavigationTab>("find-housing");
@@ -272,7 +297,7 @@ export default function App() {
         : BLANK_VERIFICATION_DATA
     );
 
-  const [demandReports, setDemandReports] = useState(MOCK_DEMAND_REPORTS);
+  const [demandReports, setDemandReports] = useState<any[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem('np_auth_token');
@@ -316,6 +341,9 @@ export default function App() {
   // Proactive Role-Based Access Navigation Guard
   const handleNavigateTab = useCallback(
     (tab: NavigationTab) => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
       // 1. Technical specs & dev simulators: redirect to public marketplace
       if (tab === "phase1-inventory" || tab === "mobile-preview") {
         setTabHistory((prev) => [...prev, currentTab]);
@@ -334,17 +362,66 @@ export default function App() {
         return;
       }
 
-      // Enforce role-based access for dashboards
-      if (tab === "nurse-dashboard" && currentUser.role !== "nurse" && currentUser.role !== "super_admin") return;
-      if (tab === "host-dashboard" && currentUser.role !== "host" && currentUser.role !== "super_admin") return;
-      if (tab === "admin-portal" && currentUser.role !== "super_admin") return;
+      // Enforce role-based access for dashboards: allow authenticated dual access for both nurse & host dashboards
+      if (tab === "nurse-dashboard" && currentUser.role === "guest") {
+        setAuthModalMode("signin");
+        setIsAuthModalOpen(true);
+        return;
+      }
+      if (tab === "host-dashboard" && currentUser.role === "guest") {
+        setAuthModalMode("signin");
+        setIsAuthModalOpen(true);
+        return;
+      }
+
+      // Role isolation: Standard clinicians without host privileges are guided to Host Onboarding to list their sanctuary
+      const hasHostPrivileges =
+        currentUser.role === "host" ||
+        currentUser.role === "dual" ||
+        Boolean(currentUser.isHostVerified) ||
+        currentUser.role === "super_admin" ||
+        isDeveloper;
+
+      if (tab === "host-dashboard" && !hasHostPrivileges) {
+        setAccessNotice({
+          title: "Become a Property Host",
+          message: "To access the Host Portal, list your first sanctuary below and join our verified host community.",
+        });
+        setTimeout(() => setAccessNotice(null), 5000);
+        setTabHistory((prev) => [...prev, currentTab]);
+        setCurrentTab("host-onboarding");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      // Pure hosts without clinician verification are guided to clinician verification
+      const hasClinicianPrivileges =
+        currentUser.role === "nurse" ||
+        currentUser.role === "dual" ||
+        Boolean(currentUser.isNurseVerified) ||
+        currentUser.role === "super_admin" ||
+        isDeveloper;
+
+      if (tab === "nurse-dashboard" && !hasClinicianPrivileges) {
+        setAccessNotice({
+          title: "Clinician Profile Required",
+          message: "The Clinician Dashboard is designed for traveling nurses and dual hosts. Complete clinician verification to manage rotations.",
+        });
+        setTimeout(() => setAccessNotice(null), 5000);
+        setTabHistory((prev) => [...prev, currentTab]);
+        setCurrentTab("verification");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (tab === "admin-portal" && currentUser.role !== "super_admin" && !isDeveloper) return;
 
       // Allow open navigation across all workspaces and dashboards with interactive preview
       setTabHistory((prev) => [...prev, currentTab]);
       setCurrentTab(tab);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [currentTab, currentUser],
+    [currentTab, currentUser, isDeveloper],
   );
 
   const handleGoBack = () => {
@@ -539,10 +616,13 @@ export default function App() {
   const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRequest | null>(null);
   const [isBookingDetailOpen, setIsBookingDetailOpen] = useState(false);
 
-  const handleCancelBooking = useCallback((bookingId: string) => {
+  const handleCancelBooking = useCallback(async (bookingId: string) => {
+    // 1. Update UI state optimistically
     setBookingRequests((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, status: "declined" } : b))
     );
+
+    // 2. Persist to localStorage
     try {
       const email = currentUser.email || localStorage.getItem("np_user_email");
       if (email) {
@@ -554,6 +634,21 @@ export default function App() {
         localStorage.setItem(key, JSON.stringify(updated));
       }
     } catch {}
+
+    // 3. Persist to backend (DB)
+    try {
+      const token = localStorage.getItem('np_auth_token');
+      await fetch(`/api/bookings/${bookingId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: "declined" }),
+      });
+    } catch (err) {
+      console.error("Failed to update booking status in DB:", err);
+    }
   }, [currentUser.email]);
 
   const activeNurseBooking =
@@ -591,6 +686,7 @@ export default function App() {
               isNurseVerified: Boolean(user.is_nurse_verified),
               isHostVerified: Boolean(user.is_host_verified),
               isIdVerified: Boolean(user.identity_verified),
+              verificationStatus: user.verification_status,
             };
             if (
               prev &&
@@ -621,7 +717,9 @@ export default function App() {
             const isContactVerified = Boolean(user.email_verified);
             const phoneVerified = Boolean(user.phone_verified);
             const mobilePhone = user.phone_number || prevMobilePhone;
-            const licenseStatus = user.is_nurse_verified ? "verified" : prevLicenseStatus;
+            const licenseStatus = user.is_nurse_verified 
+              ? "verified" 
+              : (user.verification_status || prevLicenseStatus);
 
             if (
                 prev &&
@@ -732,7 +830,19 @@ export default function App() {
         if (res.ok) {
           const liveBookings = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
           if (Array.isArray(liveBookings) && liveBookings.length > 0) {
-            setBookingRequests((prev) => JSON.stringify(prev) === JSON.stringify(liveBookings) ? prev : liveBookings);
+            setBookingRequests((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(liveBookings)) return prev;
+              
+              // Check for status changes
+              liveBookings.forEach((newBooking) => {
+                const oldBooking = prev.find((b) => b.id === newBooking.id);
+                if (oldBooking && oldBooking.status !== newBooking.status && currentUser.role === 'nurse') {
+                    setToastMessage(`Booking for ${newBooking.listingTitle} updated to ${newBooking.status}`);
+                }
+              });
+              
+              return liveBookings;
+            });
             return liveBookings;
           }
         }
@@ -744,9 +854,38 @@ export default function App() {
     [currentUser?.id, currentUser?.role],
   );
 
-  // Seamless Perspective / Role Switcher for instant testing
+  // Seamless Perspective / Role Switcher for single-account dual access
   const handleSwitchRole = useCallback(
     async (role: UserRole) => {
+      // 1. If user is authenticated on a real account, preserve their real account identity
+      if (currentUser?.email || currentUser?.id) {
+        // Prevent unauthorized role escalation
+        if (role === 'super_admin' && currentUser.role !== 'super_admin' && currentUser.role !== 'developer') {
+          console.error("Unauthorized role escalation attempt");
+          return;
+        }
+
+        const targetRole = role;
+        setCurrentUser((prev) => ({
+          ...prev,
+          role: targetRole,
+        }));
+        sessionStorage.setItem("np_active_role", targetRole);
+
+        if (targetRole === "host") {
+          handleNavigateTab("host-dashboard");
+        } else if (targetRole === "nurse") {
+          handleNavigateTab("nurse-dashboard");
+        } else if (targetRole === "super_admin") {
+          handleNavigateTab("admin-portal");
+        } else if (targetRole === "guest") {
+          handleNavigateTab("find-housing");
+        }
+        await fetchLiveBookings({ ...currentUser, role: targetRole });
+        return;
+      }
+
+      // 2. Demo/Staging sandbox perspective switching when not signed in
       if (role === "host") {
         const hostUser = {
           id: "host-sarah-m",
@@ -761,7 +900,7 @@ export default function App() {
         localStorage.setItem("np_user_email", hostUser.email);
         sessionStorage.setItem("np_active_role", "host");
         await fetchLiveBookings(hostUser);
-        setCurrentTab("host-dashboard");
+        handleNavigateTab("host-dashboard");
       } else if (role === "nurse") {
         const nurseUser = {
           id: "usr_fc8f118f-e4a2-4622-bd12-8fb004bae4eb",
@@ -776,22 +915,10 @@ export default function App() {
         localStorage.setItem("np_user_email", nurseUser.email);
         sessionStorage.setItem("np_active_role", "nurse");
         await fetchLiveBookings(nurseUser);
-        setCurrentTab("nurse-dashboard");
+        handleNavigateTab("nurse-dashboard");
       } else if (role === "super_admin") {
-        const adminUser = {
-          id: "admin-root",
-          role: "super_admin" as UserRole,
-          name: "Operations Administrator",
-          email: "admin@nursespillow.com",
-          isNurseVerified: true,
-          isHostVerified: true,
-          isIdVerified: true,
-        };
-        setCurrentUser(adminUser);
-        localStorage.setItem("np_user_email", adminUser.email);
-        sessionStorage.setItem("np_active_role", "super_admin");
-        await fetchLiveBookings(adminUser);
-        setCurrentTab("admin-portal");
+        // Prevent unauthorized staging role escalation
+        return;
       } else {
         const guestUser = {
           role: "guest" as UserRole,
@@ -801,7 +928,7 @@ export default function App() {
         sessionStorage.setItem("np_active_role", "guest");
       }
     },
-    [fetchLiveBookings],
+    [currentUser, fetchLiveBookings],
   );
 
   const handleUpdateVerification = useCallback((updates: Partial<VerificationFormData>) => {
@@ -838,6 +965,24 @@ export default function App() {
   useEffect(() => {
     fetchLiveBookings();
   }, [fetchLiveBookings]);
+
+  // Background sync: Poll for booking status updates every 60 seconds
+  useEffect(() => {
+    if (!currentUser.id || currentUser.role === 'guest') return;
+
+    let timeoutId: NodeJS.Timeout;
+    const poll = async () => {
+      try {
+        await fetchLiveBookings();
+      } catch (err) {
+        console.error("Background sync polling failed:", err);
+      }
+      timeoutId = setTimeout(poll, 60000);
+    };
+
+    poll();
+    return () => clearTimeout(timeoutId);
+  }, [currentUser.id, currentUser.role, fetchLiveBookings]);
 
   // Handle email verification / confirmation query parameters in URL
   useEffect(() => {
@@ -916,8 +1061,8 @@ export default function App() {
   }, [currentUser]);
 
   const handleSelectHospitalFromDirectory = useCallback(() => {
-    setCurrentTab("find-housing");
-  }, []);
+    handleNavigateTab("find-housing");
+  }, [handleNavigateTab]);
 
   const handleOpenCheckout = useCallback((listing: HousingListing) => {
     setCheckoutListing(listing);
@@ -925,7 +1070,14 @@ export default function App() {
   }, []);
 
   const handleConfirmCheckout = useCallback(async (booking: BookingRequest) => {
-    // 1. Persist booking and create Stripe payment intent via backend production endpoint
+    // 1. Prevent host from booking own listing
+    const listing = appData.listings.find(l => l.id === booking.listingId);
+    if (listing && currentUser?.id && listing.hostId === currentUser.id) {
+      alert("You cannot book your own listing.");
+      return;
+    }
+    
+    // 2. Persist booking and create Stripe payment intent via backend production endpoint
     try {
       const token = localStorage.getItem("np_auth_token");
       const res = await fetch("/api/checkout/create-booking-request", {
@@ -939,6 +1091,7 @@ export default function App() {
           start_date: booking.startDate,
           end_date: booking.endDate,
           traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
+          traveler_user_id: currentUser?.id,
           room_id: booking.roomId || undefined,
         }),
       });
@@ -961,39 +1114,81 @@ export default function App() {
       return next;
     });
     setIsCheckoutOpen(false);
-    setCurrentTab("nurse-dashboard");
+    handleNavigateTab("nurse-dashboard");
   }, [currentUser]);
 
   const handleApproveBooking = useCallback(async (id: string) => {
     const booking = bookingRequests.find((b) => b.id === id);
-    if (booking?.paymentIntentId) {
-      try {
-        await stripeConnect.capturePaymentIntent(booking.paymentIntentId);
-      } catch (error) {
-        console.error("Failed to capture payment:", error);
-      }
-    }
+    if (!booking) return;
 
-    // Persist status update in live PostgreSQL database
     try {
-      await fetch(`/api/bookings/${id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "approved" }),
-      });
-    } catch (err) {
-      console.warn("Failed to update booking status in DB:", err);
-    }
+      // 1. Diagnostic Check: Verify PaymentIntent exists
+      if (booking.paymentIntentId) {
+        try {
+          const statusCheck = await stripeConnect.checkPaymentIntent(booking.paymentIntentId);
+          if (statusCheck && statusCheck.status === 'not_found') {
+            console.warn('[Booking Approval] PaymentIntent status not found, attempting direct capture fallback');
+          }
+        } catch (checkErr) {
+          console.warn('[Booking Approval] Status check notice:', checkErr);
+        }
+        
+        // 2. Capture payment (non-custodial direct charge settlement with 5% platform split)
+        await stripeConnect.capturePaymentIntent(booking.paymentIntentId);
+      }
 
-    setBookingRequests((prev) => {
-      const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
-      const key = getBookingsKey(currentUser?.email, currentUser?.id);
+      // 3. Update DB
+      let dbUpdated = false;
       try {
-        localStorage.setItem(key, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  }, [currentUser, bookingRequests]);
+        const res = await fetch(`/api/bookings/${id}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "approved" }),
+        });
+        if (res.ok) {
+          dbUpdated = true;
+        } else {
+          // Attempt accept route
+          const altRes = await fetch(`/api/bookings/${id}/accept`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (altRes.ok) dbUpdated = true;
+        }
+      } catch (dbErr) {
+        console.warn('[Booking Approval] Server status update note:', dbErr);
+      }
+
+      // 4. Update UI state optimistically and reliably
+      setBookingRequests((prev) => {
+        const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
+        const key = getBookingsKey(currentUser?.email, currentUser?.id);
+        try {
+          localStorage.setItem(key, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+
+      setAccessNotice({
+        title: "Booking Accepted",
+        message: "Sanctuary booking confirmed! Pre-authorization payment hold captured directly to host account (5% platform fee split applied).",
+      });
+      setTimeout(() => setAccessNotice(null), 5000);
+      
+    } catch (error: any) {
+      console.error(`Failed to approve booking [ID: ${id}]:`, error);
+      let errorMessage = "Failed to accept booking. Please try again or check your connection.";
+      if (error.message && error.message.includes("payment")) {
+        errorMessage = "Payment capture failed: " + error.message;
+      }
+      
+      setAccessNotice({
+        title: "Booking Error",
+        message: errorMessage
+      });
+      setTimeout(() => setAccessNotice(null), 5000);
+    }
+  }, [bookingRequests, currentUser]);
 
   const handleDeclineBooking = useCallback(async (id: string) => {
     const booking = bookingRequests.find((b) => b.id === id);
@@ -1001,17 +1196,23 @@ export default function App() {
       try {
         await stripeConnect.cancelPaymentIntent(booking.paymentIntentId);
       } catch (error) {
-        console.error("Failed to cancel payment:", error);
+        console.warn("Payment intent cancellation note:", error);
       }
     }
 
     // Persist status update in live PostgreSQL database
     try {
-      await fetch(`/api/bookings/${id}/status`, {
+      const res = await fetch(`/api/bookings/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "declined" }),
       });
+      if (!res.ok) {
+        await fetch(`/api/bookings/${id}/decline`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     } catch (err) {
       console.warn("Failed to update booking status in DB:", err);
     }
@@ -1024,6 +1225,12 @@ export default function App() {
       } catch {}
       return next;
     });
+
+    setAccessNotice({
+      title: "Booking Declined",
+      message: "Booking request declined. Pre-authorization hold on clinician card was successfully released ($0 traveler fee).",
+    });
+    setTimeout(() => setAccessNotice(null), 5000);
   }, [currentUser, bookingRequests]);
 
   const handleAuthenticated = useCallback(
@@ -1112,6 +1319,12 @@ export default function App() {
         savedListingIds={savedListingIds}
         onToggleSave={handleToggleSaveListing}
         selectedHospital={searchParamsState.hospital || 'Duke University Hospital'}
+        currentUser={currentUser}
+        onGoToHostPortal={() => {
+          setPublicHostId(null);
+          window.history.pushState({}, document.title, "/");
+          setCurrentTab('host-dashboard');
+        }}
       />
     );
   }
@@ -1205,17 +1418,28 @@ export default function App() {
         isNightShiftMode={isNightShiftMode}
         onToggleNightShift={() => setIsNightShiftMode(!isNightShiftMode)}
         onOpenSupport={() => setIsSupportOpen(true)}
-        isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
+        isVerified={verificationData.licenseStatus === "verified"}
+        verificationStatus={verificationData.licenseStatus}
         onOpenAuth={(mode = "signup") => {
           setAuthModalMode(mode);
           setIsAuthModalOpen(true);
         }}
         onLogout={handleInitiateLogout}
         activeBooking={activeNurseBooking}
+        onSwitchRole={handleSwitchRole}
+        isNurseVerified={!!currentUser.isNurseVerified}
+        isHostVerified={!!currentUser.isHostVerified}
         onOpenBookingDetail={(b) => {
           setSelectedBookingDetail(b);
           setIsBookingDetailOpen(true);
         }}
+        topBanner={
+          accessNotice ? (
+            <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
+              {accessNotice.title}: {accessNotice.message}
+            </div>
+          ) : undefined
+        }
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
@@ -1240,19 +1464,21 @@ export default function App() {
           onGoBack={handleGoBack}
           canGoBack={tabHistory.length > 0 || currentTab !== "find-housing"}
         />
-        <Suspense fallback={<ViewLoadingFallback />}>
-          {/* Clinician Dashboard & Trust Profile: Restricted to clinician and super_admin */}
+        <Suspense fallback={<ViewLoadingFallback currentTab={currentTab} isNightShiftMode={isNightShiftMode} />}>
+          {/* Clinician Dashboard & Trust Profile: Accessible to authenticated clinicians & dual-role users */}
           {currentTab === "nurse-dashboard" &&
-            (currentUser.role === "nurse" || currentUser.role === "super_admin" ? (
+            (currentUser.role !== "guest" ? (
               <NurseDashboardView
                 isNightShiftMode={isNightShiftMode}
-                isVerified={currentUser.isNurseVerified || verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
+                isVerified={currentUser.isNurseVerified || verificationData.licenseStatus === "verified"}
                 onGoToVerification={() => {
                   handleNavigateTab("verification");
                   setVerificationStep(3);
                 }}
                 onGoToHousing={() => handleNavigateTab("find-housing")}
                 onOpenSupport={() => setIsSupportOpen(true)}
+                onGoToHostPortal={() => handleNavigateTab("host-dashboard")}
+                onStartHostOnboarding={() => handleNavigateTab("host-onboarding")}
                 savedListingIds={savedListingIds}
                 onToggleSave={handleToggleSaveListing}
                 allListings={appData.listings}
@@ -1274,32 +1500,20 @@ export default function App() {
                       Traveling Clinician Access Required
                     </h2>
                     <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {currentUser.role === "host"
-                        ? "You are signed in as a Property Host. Your dedicated workspace is the Host Sanctuary Portal."
-                        : "Please sign in with your traveling clinician credentials to view your rotation bookings and credentials."}
+                      Please sign in with your account to view your clinician rotation bookings, verification status, and housing.
                     </p>
                   </div>
                   <div className="pt-2 flex flex-col gap-2">
-                    {currentUser.role === "host" ? (
-                      <button
-                        type="button"
-                        onClick={() => handleNavigateTab("host-dashboard")}
-                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
-                      >
-                        Go to My Host Portal
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthModalMode("signin");
-                          setIsAuthModalOpen(true);
-                        }}
-                        className="w-full py-2.5 px-4 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
-                      >
-                        Sign In as Clinician
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthModalMode("signin");
+                        setIsAuthModalOpen(true);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-full bg-[#001848] text-white text-xs font-bold hover:bg-[#162e62] cursor-pointer"
+                    >
+                      Sign In
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleNavigateTab("find-housing")}
@@ -1312,9 +1526,9 @@ export default function App() {
               </div>
             ))}
 
-          {/* Host Portal & Sanctuary Dashboard: Restricted to host and super_admin */}
+          {/* Host Portal & Sanctuary Dashboard: Accessible to authenticated hosts & dual-role users */}
           {(currentTab === "host-dashboard" || currentTab === "host-onboarding") &&
-            (currentUser.role === "host" || currentUser.role === "super_admin" ? (
+            (currentUser.role !== "guest" ? (
               <HostPortalView
                 isNightShiftMode={isNightShiftMode}
                 bookingRequests={bookingRequests}
@@ -1322,6 +1536,13 @@ export default function App() {
                 onDeclineBooking={handleDeclineBooking}
                 onGoToHousing={() => handleNavigateTab("find-housing")}
                 initialTab={currentTab === "host-onboarding" ? "onboarding" : "dashboard"}
+                isNurseVerified={currentUser.isNurseVerified || currentUser.role === "nurse" || currentUser.role === "dual" || verificationData.licenseStatus === "verified"}
+                verificationStatus={verificationData.licenseStatus}
+                onGoToClinicianDashboard={() => handleNavigateTab("nurse-dashboard")}
+                onStartClinicianVerification={() => {
+                  handleNavigateTab("verification");
+                  setVerificationStep(1);
+                }}
                 currentUser={currentUser}
               />
             ) : (
@@ -1338,32 +1559,20 @@ export default function App() {
                       Host Sanctuary Account Required
                     </h2>
                     <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {currentUser.role === "nurse"
-                        ? "You are signed in as a Clinician. The Host Portal is reserved for registered property owners."
-                        : "Please sign in with your property host account or review our host onboarding standards."}
+                      Please sign in with your property host account or review our host onboarding standards.
                     </p>
                   </div>
                   <div className="pt-2 flex flex-col gap-2">
-                    {currentUser.role === "nurse" ? (
-                      <button
-                        type="button"
-                        onClick={() => handleNavigateTab("nurse-dashboard")}
-                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
-                      >
-                        Go to Clinician Dashboard
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthModalMode("signin");
-                          setIsAuthModalOpen(true);
-                        }}
-                        className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
-                      >
-                        Sign In as Property Host
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthModalMode("signin");
+                        setIsAuthModalOpen(true);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-full bg-[#005684] text-white text-xs font-bold hover:bg-[#00476d] cursor-pointer"
+                    >
+                      Sign In as Property Host
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleNavigateTab("find-housing")}
@@ -1451,6 +1660,8 @@ export default function App() {
                     setAuthModalMode(mode || "signup");
                     setIsAuthModalOpen(true);
                   }}
+                  isHostVerified={currentUser.isHostVerified}
+                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
               {verificationStep === 2 && (
@@ -1464,6 +1675,7 @@ export default function App() {
                     handleNavigateTab("email-verification")
                   }
                   onOpenTwilioOtp={() => handleNavigateTab("phone-verification")}
+                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
               {verificationStep === 3 && (
@@ -1474,6 +1686,7 @@ export default function App() {
                   onSelectStep={(step) => setVerificationStep(step)}
                   isNightShiftMode={isNightShiftMode}
                   onOpenSuccessModal={() => setIsSuccessModalOpen(true)}
+                  onExit={() => handleNavigateTab(currentUser.role === 'host' ? 'host-dashboard' : 'find-housing')}
                 />
               )}
             </>
@@ -1485,7 +1698,7 @@ export default function App() {
               isNightShiftMode={isNightShiftMode}
               savedListingIds={savedListingIds}
               onToggleSave={handleToggleSaveListing}
-              isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
+              isVerified={verificationData.licenseStatus === "verified"}
               onGoToVerification={() => {
                 handleNavigateTab("verification");
                 setVerificationStep(3);
@@ -1527,7 +1740,7 @@ export default function App() {
               isNightShiftMode={isNightShiftMode}
               savedListingIds={savedListingIds}
               onToggleSave={handleToggleSaveListing}
-              isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
+              isVerified={verificationData.licenseStatus === "verified"}
               onGoToVerification={() => {
                 handleNavigateTab("verification");
                 setVerificationStep(3);
@@ -1667,6 +1880,18 @@ export default function App() {
               handleNavigateTab("verification");
               setIsCheckoutOpen(false);
             }}
+            onSwitchRole={handleSwitchRole}
+            onSetupClinician={() => {
+              setCurrentUser(prev => ({
+                ...prev,
+                role: "nurse" as UserRole,
+                isNurseVerified: false,
+              }));
+              sessionStorage.setItem("np_active_role", "nurse");
+              setVerificationStep(1);
+              handleNavigateTab("verification");
+              setIsCheckoutOpen(false);
+            }}
             checkInDate={searchParamsState.checkInDate || '2026-10-01'}
             checkOutDate={searchParamsState.checkOutDate || '2026-12-31'}
           />
@@ -1688,7 +1913,7 @@ export default function App() {
                 localStorage.setItem("np_user_email", email);
                 setVerificationData((prev) => ({ ...prev, workEmail: email }));
               }
-              setCurrentTab("email-verification");
+              handleNavigateTab("email-verification");
             }}
           />
         </Suspense>
@@ -1703,7 +1928,7 @@ export default function App() {
             data={verificationData}
             onGoToHousing={() => {
               setIsSuccessModalOpen(false);
-              setCurrentTab("find-housing");
+              handleNavigateTab("find-housing");
             }}
             isNightShiftMode={isNightShiftMode}
           />
@@ -1731,11 +1956,11 @@ export default function App() {
             allListings={appData.listings}
             onToggleSave={handleToggleSaveListing}
             onSelectListing={() => {
-              setCurrentTab("find-housing");
+              handleNavigateTab("find-housing");
             }}
             isNightShiftMode={isNightShiftMode}
             onGoToHousing={() => {
-              setCurrentTab("find-housing");
+              handleNavigateTab("find-housing");
             }}
           />
         </Suspense>
@@ -1752,7 +1977,7 @@ export default function App() {
             bookingRequests={bookingRequests}
             listings={appData.listings}
             demandReports={demandReports}
-            licenseReviews={MOCK_ADMIN_LICENSE_REVIEWS}
+            licenseReviews={[]}
             userRole={currentUser.role}
           />
         </Suspense>
@@ -1783,7 +2008,7 @@ export default function App() {
             onCancelBooking={handleCancelBooking}
             onGoToHousing={() => {
               setIsBookingDetailOpen(false);
-              setCurrentTab("find-housing");
+              handleNavigateTab("find-housing");
             }}
             onOpenHostProfile={(hostId) => {
               setIsBookingDetailOpen(false);
@@ -1809,7 +2034,7 @@ export default function App() {
             isNightShiftMode={isNightShiftMode}
             isSaved={savedListingIds.includes(detailListing.id)}
             onToggleSave={handleToggleSaveListing}
-            isVerified={verificationData.licenseStatus === "verified" || verificationData.licenseStatus === "pending_review"}
+            isVerified={verificationData.licenseStatus === "verified"}
             onGoToVerification={() => {
               setDetailListing(null);
               handleNavigateTab("verification");
@@ -1829,6 +2054,9 @@ export default function App() {
             }}
           />
         </Suspense>
+      )}
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
     </div>
   );

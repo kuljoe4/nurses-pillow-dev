@@ -13,12 +13,15 @@ interface HeaderProps {
   onOpenSupport: () => void;
   isVerified: boolean;
   onOpenAuth?: (mode?: 'signin' | 'signup') => void;
-  currentUser: { role: UserRole; name: string };
+  currentUser: { role: UserRole; name: string; verificationStatus?: string };
   isDeveloper?: boolean;
   onLogout?: () => void;
   activeBooking?: BookingRequest | null;
   onOpenBookingDetail?: (booking: BookingRequest) => void;
   onSwitchRole?: (role: UserRole) => void;
+  isNurseVerified?: boolean;
+  isHostVerified?: boolean;
+  verificationStatus?: string;
 }
 
 export const LOGO_URL = '/nurses-pillow-logo.png';
@@ -40,6 +43,9 @@ export const Header: React.FC<HeaderProps> = ({
   activeBooking,
   onOpenBookingDetail,
   onSwitchRole,
+  isNurseVerified,
+  isHostVerified,
+  verificationStatus,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -124,6 +130,8 @@ export const Header: React.FC<HeaderProps> = ({
         return 'Clinician';
       case 'host':
         return 'Property Host';
+      case 'dual':
+        return 'Host & Clinician';
       case 'super_admin':
         return 'Super-Admin';
       case 'developer':
@@ -139,6 +147,8 @@ export const Header: React.FC<HeaderProps> = ({
         return 'SJ';
       case 'host':
         return 'MV';
+      case 'dual':
+        return 'NP';
       case 'super_admin':
         return 'OA';
       case 'developer':
@@ -158,6 +168,11 @@ export const Header: React.FC<HeaderProps> = ({
       case 'host':
         return {
           badge: 'bg-[#005684]/10 text-[#005684] dark:bg-[#93ccff]/15 dark:text-[#93ccff]',
+          avatar: 'bg-[#005684] text-white',
+        };
+      case 'dual':
+        return {
+          badge: 'bg-teal-500/15 text-teal-800 dark:text-teal-300',
           avatar: 'bg-[#005684] text-white',
         };
       case 'super_admin':
@@ -221,135 +236,50 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Clinician Navigation */}
           {currentUser.role === 'nurse' && (
             <>
-              <button
-                onClick={() => onSelectTab('nurse-dashboard')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'nurse-dashboard'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('nurse-dashboard')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'nurse-dashboard' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
                 <span>My Dashboard</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('find-housing')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'find-housing'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('find-housing')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'find-housing' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span>Explore Stays</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('search-listings')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'search-listings'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('search-listings')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'search-listings' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span className="material-symbols-outlined text-[17px]">travel_explore</span>
                 <span>Search &amp; Map</span>
-              </button>
-
-
-
-              <button
-                onClick={() => onSelectTab('how-it-works')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'how-it-works'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span>How It Works</span>
               </button>
             </>
           )}
 
-          {/* Host Navigation */}
+          {/* Dual Role Navigation */}
+          {currentUser.role === 'dual' && (
+            <>
+              <button onClick={() => onSelectTab('nurse-dashboard')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'nurse-dashboard' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
+                <span className="material-symbols-outlined text-[17px]">space_dashboard</span>
+                <span>Clinician Dashboard</span>
+              </button>
+              <button onClick={() => onSelectTab('host-dashboard')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'host-dashboard' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
+                <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
+                <span>Host Portal</span>
+              </button>
+              <button onClick={() => onSelectTab('find-housing')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'find-housing' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
+                <span>Explore Stays</span>
+              </button>
+            </>
+          )}
+
+          {/* Pure Host Navigation */}
           {currentUser.role === 'host' && (
             <>
-              <button
-                onClick={() => onSelectTab('host-dashboard')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'host-dashboard'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('host-dashboard')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'host-dashboard' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span className="material-symbols-outlined text-[17px]">real_estate_agent</span>
                 <span>My Sanctuaries</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('host-onboarding')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'host-onboarding'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[17px]">add_home</span>
-                <span>List Sanctuary</span>
+              <button onClick={() => onSelectTab('find-housing')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'find-housing' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
+                <span>Explore Stays</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('for-hosts')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'for-hosts'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span>Host Standards</span>
-              </button>
-
-              <button
-                onClick={() => onSelectTab('how-it-works')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'how-it-works'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span>How It Works</span>
+              <button onClick={() => onSelectTab('search-listings')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'search-listings' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
+                <span className="material-symbols-outlined text-[17px]">travel_explore</span>
+                <span>Search &amp; Map</span>
               </button>
             </>
           )}
@@ -357,47 +287,14 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Super Admin / Operations Navigation */}
           {currentUser.role === 'super_admin' && (
             <>
-              <button
-                onClick={() => onSelectTab('admin-portal')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'admin-portal'
-                    ? 'bg-amber-500 text-white font-bold'
-                    : isNightShiftMode
-                    ? 'text-amber-400 hover:bg-amber-400/10'
-                    : 'text-amber-700 hover:bg-amber-50'
-                }`}
-              >
+              <button onClick={() => onSelectTab('admin-portal')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'admin-portal' ? 'bg-amber-500 text-white font-bold' : (isNightShiftMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-amber-700 hover:bg-amber-50')}`}>
                 <span className="material-symbols-outlined text-[17px]">admin_panel_settings</span>
                 <span>Operations Portal</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('find-housing')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'find-housing'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('find-housing')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'find-housing' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span>Explore Stays</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('search-listings')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'search-listings'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('search-listings')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'search-listings' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span>Search &amp; Map</span>
               </button>
             </>
@@ -406,66 +303,16 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Guest Navigation */}
           {currentUser.role === 'guest' && (
             <>
-              <button
-                onClick={() => onSelectTab('find-housing')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'find-housing'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('find-housing')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${currentTab === 'find-housing' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span>Explore Stays</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('search-listings')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'search-listings'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('search-listings')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'search-listings' ? (isNightShiftMode ? 'bg-[#182840] text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span className="material-symbols-outlined text-[17px]">travel_explore</span>
                 <span>Search &amp; Map</span>
               </button>
-
-              <button
-                onClick={() => onSelectTab('for-hosts')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  currentTab === 'for-hosts'
-                    ? isNightShiftMode
-                      ? 'bg-[#005684]/25 text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
+              <button onClick={() => onSelectTab('for-hosts')} className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${currentTab === 'for-hosts' ? (isNightShiftMode ? 'bg-[#005684]/25 text-[#93ccff] font-bold' : 'bg-[#eaedff] text-[#005684] font-bold') : (isNightShiftMode ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5' : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100')}`}>
                 <span className="material-symbols-outlined text-[17px]">home</span>
                 <span>For Property Hosts</span>
-              </button>
-
-              <button
-                onClick={() => onSelectTab('how-it-works')}
-                className={`px-3.5 py-2 rounded-xl text-xs xl:text-sm font-semibold transition-colors cursor-pointer ${
-                  currentTab === 'how-it-works'
-                    ? isNightShiftMode
-                      ? 'bg-[#182840] text-[#93ccff] font-bold'
-                      : 'bg-[#eaedff] text-[#005684] font-bold'
-                    : isNightShiftMode
-                    ? 'text-[#c0c7d1] hover:text-white hover:bg-white/5'
-                    : 'text-[#404850] hover:text-[#001848] hover:bg-gray-100'
-                }`}
-              >
-                <span>How It Works</span>
               </button>
             </>
           )}
@@ -505,51 +352,44 @@ export const Header: React.FC<HeaderProps> = ({
                   Healthcare Directory
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('verified-hospitals');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">
-                    local_hospital
-                  </span>
+                <button type="button" onClick={() => { onSelectTab('verified-hospitals'); setIsMoreMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer">
+                  <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">local_hospital</span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Verified Hospitals Directory
-                    </div>
+                    <div className="font-bold text-[#001848] dark:text-white">Verified Hospitals Directory</div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">NC trauma centers &amp; teaching systems</div>
                   </div>
                 </button>
 
+                {/* Role-Specific Additional Resources */}
+                {(currentUser.role === 'nurse' || currentUser.role === 'guest') && (
+                  <button type="button" onClick={() => { onSelectTab('how-it-works'); setIsMoreMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer">
+                    <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">verified</span>
+                    <div className="font-bold text-[#001848] dark:text-white">How It Works</div>
+                  </button>
+                )}
 
+                {(currentUser.role === 'host' || currentUser.role === 'dual') && (
+                  <>
+                    <button type="button" onClick={() => { onSelectTab('host-onboarding'); setIsMoreMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">add_home</span>
+                      <div className="font-bold text-[#001848] dark:text-white">List Sanctuary</div>
+                    </button>
+                    <button type="button" onClick={() => { onSelectTab('for-hosts'); setIsMoreMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px] text-[#005684] dark:text-[#93ccff]">verified_user</span>
+                      <div className="font-bold text-[#001848] dark:text-white">Host Standards</div>
+                    </button>
+                  </>
+                )}
 
-
-
-
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectTab('system-status');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">
-                    dns
-                  </span>
+                <button type="button" onClick={() => { onSelectTab('system-status'); setIsMoreMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#182840] flex items-center gap-2.5 transition-colors cursor-pointer">
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">dns</span>
                   <div>
-                    <div className="font-bold text-[#001848] dark:text-white">
-                      Platform Reliability &amp; Status
-                    </div>
+                    <div className="font-bold text-[#001848] dark:text-white">Platform Reliability &amp; Status</div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400">Live uptime &amp; system health metrics</div>
                   </div>
                 </button>
 
-                {/* Separator was here, removed with Portals & Workspaces section */}
+                {/* Separator was here */}
                 <div className="my-1.5 border-t border-gray-100 dark:border-[#1e3048]"></div>
               </div>
             )}
@@ -701,6 +541,13 @@ export const Header: React.FC<HeaderProps> = ({
                             <span className="material-symbols-outlined text-[12px]">verified</span>
                             <span className="group-hover:underline">Verified Status</span>
                           </button>
+                        ) : currentUser.role === 'nurse' && verificationStatus === 'pending_review' ? (
+                          <div
+                            className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-0.5"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">hourglass_top</span>
+                            <span>Pending Admin Approval</span>
+                          </div>
                         ) : currentUser.role === 'nurse' && (
                           <button
                             type="button"
@@ -748,7 +595,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
                         {activeBooking.hospitalName} • {activeBooking.durationWeeks || 13} wks
                       </div>
-                      {onOpenBookingDetail && (
+                    {onOpenBookingDetail && activeBooking.status !== 'declined' && (
                         <button
                           type="button"
                           onClick={() => {
@@ -765,11 +612,10 @@ export const Header: React.FC<HeaderProps> = ({
                   )}
 
                   {/* Perspective / Role Switcher */}
-                  {onSwitchRole && (
+                  {onSwitchRole && currentUser && (currentUser.role === 'dual' || currentUser.role === 'super_admin' || currentUser.role === 'developer') && (
                     <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-1.5">
                       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                        <span>Role Perspective</span>
-                        <span className="text-[9px] text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold">One-click test</span>
+                        <span>Workspace Perspective</span>
                       </div>
                       <div className="grid grid-cols-2 gap-1.5 text-[11px] font-semibold">
                         <button
@@ -778,7 +624,7 @@ export const Header: React.FC<HeaderProps> = ({
                             onSwitchRole('nurse');
                             setIsProfileMenuOpen(false);
                           }}
-                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'nurse' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentTab === 'nurse-dashboard' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
                         >
                           Clinician
                         </button>
@@ -788,30 +634,22 @@ export const Header: React.FC<HeaderProps> = ({
                             onSwitchRole('host');
                             setIsProfileMenuOpen(false);
                           }}
-                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'host' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentTab === 'host-dashboard' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
                         >
                           Host
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSwitchRole('super_admin');
-                            setIsProfileMenuOpen(false);
-                          }}
-                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
-                        >
-                          Admin
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSwitchRole('guest' as any);
-                            setIsProfileMenuOpen(false);
-                          }}
-                          className={`py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === ('guest' as any) ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
-                        >
-                          Guest
-                        </button>
+                        {(currentUser.role === 'super_admin' || currentUser.role === 'developer') && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onSwitchRole('super_admin');
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className={`col-span-2 py-1.5 px-2 rounded-lg text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-amber-600 text-white font-bold' : 'bg-gray-100 dark:bg-[#182840] hover:bg-gray-200 text-gray-700 dark:text-gray-300'}`}
+                          >
+                            Operations Admin
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1000,20 +838,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                 </div>
 
-                {/* Dashboard Shortcut */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (currentUser.role === 'nurse') onSelectTab('nurse-dashboard');
-                    else if (currentUser.role === 'host') onSelectTab('host-dashboard');
-                    else if (currentUser.role === 'super_admin') onSelectTab('admin-portal');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="px-2.5 py-1.5 rounded-xl bg-[#005684] text-white text-xs font-bold shrink-0 flex items-center gap-1 hover:bg-[#00476d] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#00476d] cursor-pointer shadow-2xs"
-                >
-                  <span>Dashboard</span>
-                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                </button>
               </div>
             )}
 
@@ -1023,7 +847,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Main Navigation</span>
               </div>
 
-              {/* Clinician Navigation */}
+              {/* Clinician Navigation (3 items) */}
               {currentUser.role === 'nurse' && (
                 <>
                   <button
@@ -1082,35 +906,78 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
                       }`}>travel_explore</span>
-                      <span>Search Stays &amp; Map</span>
+                      <span>Search &amp; Map</span>
                     </div>
                   </button>
+                </>
+              )}
 
-
-
+              {/* Dual Role Navigation (3 items) */}
+              {currentUser.role === 'dual' && (
+                <>
                   <button
                     type="button"
                     onClick={() => {
-                      onSelectTab('how-it-works');
+                      onSelectTab('nurse-dashboard');
                       setIsMobileMenuOpen(false);
                     }}
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      currentTab === 'how-it-works'
+                      currentTab === 'nurse-dashboard'
                         ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
                         : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className={`material-symbols-outlined text-[20px] ${
-                        currentTab === 'how-it-works' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`}>verified</span>
-                      <span>How It Works &amp; Quiet Guarantee</span>
+                        currentTab === 'nurse-dashboard' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>space_dashboard</span>
+                      <span>Clinician Dashboard</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('host-dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'host-dashboard'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'host-dashboard' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>real_estate_agent</span>
+                      <span>Host Portal</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('find-housing');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'find-housing'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>bed</span>
+                      <span>Explore Stays</span>
                     </div>
                   </button>
                 </>
               )}
 
-              {/* Host Navigation */}
+              {/* Pure Host Navigation (3 items) */}
               {currentUser.role === 'host' && (
                 <>
                   <button
@@ -1136,46 +1003,6 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onSelectTab('host-onboarding');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      currentTab === 'host-onboarding'
-                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`material-symbols-outlined text-[20px] ${
-                        currentTab === 'host-onboarding' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`}>add_home</span>
-                      <span>List Sanctuary</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('for-hosts');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      currentTab === 'for-hosts'
-                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`material-symbols-outlined text-[20px] ${
-                        currentTab === 'for-hosts' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`}>verified_user</span>
-                      <span>Host Standards</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
                       onSelectTab('find-housing');
                       setIsMobileMenuOpen(false);
                     }}
@@ -1188,14 +1015,34 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="flex items-center gap-3">
                       <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'find-housing' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
-                      }`}>travel_explore</span>
+                      }`}>bed</span>
                       <span>Explore Stays</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('search-listings');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'search-listings'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
+                      }`}>travel_explore</span>
+                      <span>Search &amp; Map</span>
                     </div>
                   </button>
                 </>
               )}
 
-              {/* Admin Navigation */}
+              {/* Super Admin Navigation (3 items) */}
               {currentUser.role === 'super_admin' && (
                 <>
                   <button
@@ -1229,14 +1076,32 @@ export const Header: React.FC<HeaderProps> = ({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[20px]">travel_explore</span>
+                      <span className="material-symbols-outlined text-[20px]">bed</span>
                       <span>Explore Stays</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectTab('search-listings');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                      currentTab === 'search-listings'
+                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
+                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[20px]">travel_explore</span>
+                      <span>Search &amp; Map</span>
                     </div>
                   </button>
                 </>
               )}
 
-              {/* Guest Navigation */}
+              {/* Guest Navigation (3 items) */}
               {currentUser.role === 'guest' && (
                 <>
                   <button
@@ -1275,7 +1140,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <span className={`material-symbols-outlined text-[20px] ${
                         currentTab === 'search-listings' ? 'text-[#005684] dark:text-[#93ccff]' : 'text-gray-500 dark:text-gray-400'
                       }`}>travel_explore</span>
-                      <span>Search Stays &amp; Map</span>
+                      <span>Search &amp; Map</span>
                     </div>
                   </button>
 
@@ -1294,24 +1159,6 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">home</span>
                       <span>For Property Hosts</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectTab('how-it-works');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      currentTab === 'how-it-works'
-                        ? 'bg-[#eaedff] dark:bg-[#182840] text-[#005684] dark:text-[#93ccff] shadow-2xs'
-                        : 'text-[#001848] dark:text-white hover:bg-gray-100 dark:hover:bg-[#182840]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-gray-400">verified</span>
-                      <span>How It Works &amp; Quiet Guarantee</span>
                     </div>
                   </button>
                 </>
@@ -1392,11 +1239,10 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* 5. ROLE PERSPECTIVE SWITCHER */}
-            {onSwitchRole && (
+            {onSwitchRole && currentUser && (currentUser.role === 'dual' || currentUser.role === 'super_admin' || currentUser.role === 'developer') && (
               <div className="pt-2 border-t border-gray-100 dark:border-[#233550] space-y-1.5">
-                <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center justify-between">
-                  <span>Role Perspective (Interactive Test)</span>
-                  <span className="text-[9px] text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold">{currentUser.role.toUpperCase()}</span>
+                <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  <span>Workspace Perspective</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
                   <button
@@ -1405,9 +1251,9 @@ export const Header: React.FC<HeaderProps> = ({
                       onSwitchRole('nurse');
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'nurse' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentTab === 'nurse-dashboard' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
                   >
-                    Clinician View
+                    Clinician
                   </button>
                   <button
                     type="button"
@@ -1415,30 +1261,22 @@ export const Header: React.FC<HeaderProps> = ({
                       onSwitchRole('host');
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'host' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentTab === 'host-dashboard' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
                   >
-                    Host View
+                    Host
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSwitchRole('super_admin');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
-                  >
-                    Admin View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSwitchRole('guest' as UserRole);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'guest' as UserRole ? 'bg-[#0A6FA8] text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
-                  >
-                    Guest View
-                  </button>
+                  {(currentUser.role === 'super_admin' || currentUser.role === 'developer') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSwitchRole('super_admin');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`col-span-2 py-2 px-3 rounded-xl text-center cursor-pointer transition-colors ${currentUser.role === 'super_admin' ? 'bg-amber-600 text-white font-bold' : 'bg-gray-100 dark:bg-[#15233a] text-gray-700 dark:text-gray-300'}`}
+                    >
+                      Operations Portal
+                    </button>
+                  )}
                 </div>
               </div>
             )}

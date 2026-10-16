@@ -3,6 +3,7 @@ import { VerificationFormData, VerificationStepId } from '../types';
 import { STATE_BOARDS } from '../data/mockData';
 import { VerificationStepperNav } from './VerificationStepperNav';
 import { getProfessionOptionsGroupedByCategory, HealthcareProfessionEnum } from '../lib/professionConstants';
+import { DocumentPreviewModal } from './DocumentPreviewModal';
 
 interface ClinicalLicenseStepProps {
   data: VerificationFormData;
@@ -32,11 +33,14 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
   }, [submitError]);
   const [isDragging, setIsDragging] = useState(false);
   const [savedNotification, setSavedNotification] = useState<string | null>(null);
+  const [localFile, setLocalFile] = useState<File | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setLocalFile(file);
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
       onChange({
         uploadedDocument: {
@@ -55,6 +59,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
+      setLocalFile(file);
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
       onChange({
         uploadedDocument: {
@@ -70,6 +75,7 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
 
   const handleRemoveFile = () => {
     onChange({ uploadedDocument: null });
+    setLocalFile(null);
     showTemporaryNotice('License document removed');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -487,15 +493,30 @@ export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="shrink-0 text-xs font-semibold text-[#ba1a1a] hover:underline px-2.5 py-1.5 rounded-lg hover:bg-[#ba1a1a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#ba1a1a]/10 transition-colors"
-                >
-                  Remove
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setIsPreviewOpen(true)}
+                        className="shrink-0 text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline px-2.5 py-1.5 rounded-lg hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors"
+                    >
+                        Preview
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="shrink-0 text-xs font-semibold text-[#ba1a1a] hover:underline px-2.5 py-1.5 rounded-lg hover:bg-[#ba1a1a] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#ba1a1a]/10 transition-colors"
+                    >
+                        Remove
+                    </button>
+                </div>
               </div>
             )}
+            
+            <DocumentPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                file={localFile}
+            />
           </div>
 
           {/* Privacy / Verification Guarantee Note */}

@@ -446,9 +446,18 @@ class StripeConnectService {
     };
 
     try {
+      const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
+        : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
           monthlyRent,
           listingId,
@@ -492,7 +501,7 @@ class StripeConnectService {
       this.transactions.unshift(transaction);
       return transaction;
     } catch (err) {
-      console.error('Error processing split payment', err);
+      console.warn('[Stripe Connect] Payment-intent API notice (using sandbox transaction fallback):', err);
       // Fallback for non-connected network environments (like sandbox previews)
       const transaction: StripeSplitTransaction = {
         id: `txn_${Date.now()}`,
@@ -528,10 +537,42 @@ class StripeConnectService {
     return this.transactions;
   }
 
+  async checkPaymentIntent(paymentIntentId: string): Promise<any> {
+    const token = typeof window !== 'undefined'
+      ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
+      : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`/api/stripe/payment-intent/${paymentIntentId}/status`, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (res.status === 404) {
+      return { status: 'not_found' };
+    }
+
+    const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to check payment intent status');
+    }
+    return data;
+  }
+
   async capturePaymentIntent(paymentIntentId: string): Promise<any> {
+    const token = typeof window !== 'undefined'
+      ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
+      : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch(`/api/stripe/payment-intent/${paymentIntentId}/capture`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
+      credentials: 'include',
     });
     const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
     if (!res.ok) {
@@ -541,9 +582,17 @@ class StripeConnectService {
   }
 
   async cancelPaymentIntent(paymentIntentId: string): Promise<any> {
+    const token = typeof window !== 'undefined'
+      ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
+      : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch(`/api/stripe/payment-intent/${paymentIntentId}/cancel`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
+      credentials: 'include',
     });
     const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
     if (!res.ok) {

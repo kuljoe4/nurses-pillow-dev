@@ -14,6 +14,7 @@ import { ClinicalDateRangePicker, calculateAssignmentDuration } from './Clinical
 import { Calendar as CalendarIcon, Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { calculateCommuteDuration, resolveHospitalCoordinates, getListingCoordinates } from '../lib/googleMapsCommute';
 import { fetchLiveCommuteRoute, LiveCommuteResult } from '../services/liveCommuteApi';
+import { useAvailability } from '../context/AvailabilityContext';
 
 interface SearchListingsViewProps {
   isNightShiftMode: boolean;

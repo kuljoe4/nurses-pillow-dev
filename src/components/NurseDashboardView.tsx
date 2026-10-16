@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { HousingListing, BookingRequest } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { PillowSaveButton } from './PillowSaveButton';
+import { NurseDashboardSkeleton } from './skeletons/NurseDashboardSkeleton';
 
 
 // ⚡ Bolt Performance Optimization: Extracted wrapper to prevent inline arrow functions
@@ -33,6 +34,8 @@ interface NurseDashboardViewProps {
   isVerified?: boolean;
   onGoToVerification?: () => void;
   onOpenSupport?: () => void;
+  onGoToHostPortal?: () => void;
+  onStartHostOnboarding?: () => void;
   currentUser?: {
     id?: string;
     role: string;
@@ -43,6 +46,7 @@ interface NurseDashboardViewProps {
     isIdVerified?: boolean;
   };
   verificationData?: any;
+  isLoading?: boolean;
 }
 
 export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
@@ -56,9 +60,19 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   isVerified,
   onGoToVerification,
   onOpenSupport,
+  onGoToHostPortal,
+  onStartHostOnboarding,
   currentUser,
   verificationData,
+  isLoading = false,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full">
+        <NurseDashboardSkeleton isNightShiftMode={isNightShiftMode} />
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState<'bookings' | 'saved' | 'verification'>('bookings');
 
   const savedListings = React.useMemo(() => {
@@ -97,11 +111,29 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
   }
   const initials = calculatedInitials.toUpperCase() || 'RN';
 
-  const userIsVerified = Boolean(
+  const isLicenseVerified = Boolean(
     currentUser?.isNurseVerified ||
     (isVerified !== undefined ? isVerified : false) ||
-    verificationData?.licenseStatus === 'verified' || verificationData?.licenseStatus === 'pending_review'
+    verificationData?.licenseStatus === 'verified'
   );
+
+  const userIsVerified = isLicenseVerified;
+
+  const isLicensePending = Boolean(
+    verificationData?.licenseStatus === 'pending_review' && !isLicenseVerified
+  );
+
+  const statusLabel = isLicenseVerified
+    ? 'Nurses Pillow Verified'
+    : isLicensePending
+    ? 'Pending Admin Approval'
+    : 'Audit In Progress';
+
+  const statusStyle = isLicenseVerified
+    ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' }
+    : { backgroundColor: '#FBF0D6', color: '#B9822E' };
+
+  const dotColor = isLicenseVerified ? '#2F6E5E' : '#B9822E';
 
   const isIdVerified = Boolean(
     (currentUser as any)?.isIdVerified ||
@@ -110,6 +142,21 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
   const phoneVerified = Boolean(
     verificationData?.phoneVerified
+  );
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'declined'>('all');
+
+  const filteredStays = activeBookings.filter(b => {
+    if (statusFilter === 'pending') return b.status === 'pending_host_approval';
+    if (statusFilter === 'accepted') return b.status === 'approved' || b.status === 'active';
+    if (statusFilter === 'declined') return b.status === 'declined';
+    return true; // 'all'
+  });
+
+  const activeBookingsList = activeBookings.filter(b => 
+    b.status === 'pending_host_approval' || 
+    b.status === 'approved' || 
+    b.status === 'active'
   );
 
   return (
@@ -129,18 +176,14 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#0B2559] dark:text-white truncate">
-                  {displayName}
+                  Hi, {displayName}
                 </h1>
                 <span
                   className="px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1"
-                  style={
-                    userIsVerified
-                      ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' }
-                      : { backgroundColor: '#FBF0D6', color: '#B9822E' }
-                  }
+                  style={statusStyle}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: userIsVerified ? '#2F6E5E' : '#B9822E' }} />
-                  {userIsVerified ? 'Nurses Pillow Verified' : 'Audit In Progress'}
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dotColor }} />
+                  {statusLabel}
                 </span>
               </div>
               <p className="text-xs text-[#0B2559]/70 dark:text-[#E6ECF7]/70 truncate">
@@ -158,7 +201,7 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             >
               Search housing
             </button>
-            {!userIsVerified && onGoToVerification && (
+            {!isLicenseVerified && !isLicensePending && onGoToVerification && (
               <button
                 type="button"
                 onClick={onGoToVerification}
@@ -167,6 +210,12 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 Complete verification
               </button>
             )}
+            {isLicensePending && (
+              <span className="px-3.5 py-2 rounded-full bg-[#FBF0D6] text-[#B9822E] text-xs font-bold inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B9822E]" />
+                Awaiting Admin Approval
+              </span>
+            )}
             {onOpenSupport && (
               <button
                 type="button"
@@ -174,6 +223,26 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
                 className="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0B2559]/80 dark:text-gray-300 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors cursor-pointer"
               >
                 Clinician support
+              </button>
+            )}
+            {(currentUser?.isHostVerified || (currentUser as any)?.role === 'host' || (currentUser as any)?.role === 'dual') && onGoToHostPortal && (
+              <button
+                type="button"
+                onClick={onGoToHostPortal}
+                className="px-3.5 py-2 rounded-full border border-teal-600/30 text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/20 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">real_estate_agent</span>
+                <span>Host Portal</span>
+              </button>
+            )}
+            {!currentUser?.isHostVerified && (currentUser as any)?.role !== 'host' && (currentUser as any)?.role !== 'dual' && onStartHostOnboarding && (
+              <button
+                type="button"
+                onClick={onStartHostOnboarding}
+                className="px-3.5 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">add_home</span>
+                <span>List Sanctuary</span>
               </button>
             )}
           </div>
@@ -233,9 +302,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
           >
             <span className="material-symbols-outlined text-[16px]">hotel</span>
             <span>Stays</span>
-            {activeBookings.length > 0 && (
+            {activeBookingsList.length > 0 && (
               <span className="px-1.5 py-0.2 rounded-full bg-[#0A6FA8] text-white text-[10px] font-bold tabular-nums">
-                {activeBookings.length}
+                {activeBookingsList.length}
               </span>
             )}
           </button>
@@ -277,17 +346,30 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
 
       {/* TAB 1: Stays & Requests */}
       {activeTab === 'bookings' && (
-        <div>
-          {activeBookings.length === 0 ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Stay Requests</h2>
+            <select 
+              className="px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-xs font-bold text-[#0B2559] dark:text-white cursor-pointer"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+            >
+              <option value="all">All Stays</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="declined">Declined</option>
+            </select>
+          </div>
+          {filteredStays.length === 0 ? (
             <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-8 sm:p-10 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col items-center justify-center text-center max-w-xl mx-auto">
               <div className="w-12 h-12 rounded-full bg-[#EFF6FB] dark:bg-[#182840] flex items-center justify-center mb-3 text-[#0A6FA8] dark:text-[#3E9AD1]">
                 <span className="material-symbols-outlined text-[24px]">hotel</span>
               </div>
               <h2 className="text-base sm:text-lg font-bold mb-1.5 text-[#0B2559] dark:text-white">
-                No active property bookings
+                No stays found
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mb-5 leading-relaxed">
-                When you request to book a furnished property near your hospital assignment, your reservation status, pre-authorization hold, and host response will appear here.
+                When you request to book a furnished property near your hospital assignment, your reservation status will appear here.
               </p>
               <button
                 type="button"
@@ -299,113 +381,9 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {activeBookings.map((booking) => {
-                const listing = allListings.find((l) => l.id === booking.listingId);
-                const isAccepted = booking.status === 'approved' || booking.status === 'active';
-                const isDeclined = booking.status === 'declined';
-                const isPending = !isAccepted && !isDeclined;
-
-                return (
-                  <div
-                    key={booking.id}
-                    className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between space-y-4"
-                  >
-                    {/* Booking Header Tag */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span
-                        className="px-2.5 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider"
-                        style={
-                          isAccepted
-                            ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' }
-                            : isDeclined
-                            ? { backgroundColor: '#F4E2DC', color: '#A8452E' }
-                            : { backgroundColor: '#FBF0D6', color: '#B9822E' }
-                        }
-                      >
-                        {isAccepted ? 'Accepted & Confirmed' : isDeclined ? 'Declined' : 'Requested — Hold Placed'}
-                      </span>
-                      <div className="text-xs font-semibold text-[#0A6FA8] dark:text-[#3E9AD1] flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[15px]">local_hospital</span>
-                        <span className="truncate max-w-[180px]">{booking.hospitalName || 'Placement Hospital'}</span>
-                      </div>
-                    </div>
-
-                    {/* Booking Content Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-start">
-                      {/* Thumbnail */}
-                      <div className="sm:col-span-4 relative rounded-xl overflow-hidden aspect-[4/3] bg-gray-100 dark:bg-gray-800">
-                        <img
-                          src={
-                            listing?.images?.[0] ||
-                            'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'
-                          }
-                          alt={booking.listingTitle || 'Property housing'}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-1.5 left-1.5 right-1.5 text-white bg-black/70 backdrop-blur-xs p-1.5 rounded-lg text-[10px]">
-                          <div className="truncate font-semibold">{booking.listingTitle}</div>
-                        </div>
-                      </div>
-
-                      {/* Details & Transparent Pricing */}
-                      <div className="sm:col-span-8 space-y-2.5">
-                        <div>
-                          <h2 className="text-base font-bold tracking-tight text-[#0B2559] dark:text-white truncate">
-                            {booking.listingTitle}
-                          </h2>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                            <span className="material-symbols-outlined text-[14px] text-[#0A6FA8]">calendar_month</span>
-                            <span>
-                              {booking.startDate} – {booking.endDate} ({booking.durationWeeks || 13} wks)
-                            </span>
-                          </p>
-                        </div>
-
-                        {/* Itemized Pricing Guarantee */}
-                        <div className="p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] space-y-1 text-[11px]">
-                          <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                            <span>Monthly Rent</span>
-                            <span className="font-semibold tabular-nums">${booking.monthlyRent?.toLocaleString()} / mo</span>
-                          </div>
-                          <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                            <span>Cleaning Fee</span>
-                            <span className="font-semibold tabular-nums">${booking.cleaningFee || 150}</span>
-                          </div>
-                          <div className="flex justify-between text-gray-600 dark:text-gray-300">
-                            <span>Traveler Fee</span>
-                            <span className="font-bold text-[#2F6E5E] dark:text-[#aff0db] tabular-nums">$0.00</span>
-                          </div>
-                          <div className="pt-1.5 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex justify-between font-bold text-[#0B2559] dark:text-white">
-                            <span>Initial Pre-Authorization</span>
-                            <span className="tabular-nums text-xs text-[#0A6FA8] dark:text-[#3E9AD1]">
-                              ${booking.totalInitialCharge?.toLocaleString() || (booking.monthlyRent + (booking.cleaningFee || 150)).toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status Notice Callout */}
-                    <div className="p-3 rounded-xl bg-[#EFF6FB]/60 dark:bg-[#14233a] text-[11px] text-gray-600 dark:text-gray-300">
-                      {isPending && (
-                        <p>
-                          <strong>Hold Status:</strong> Funds pre-authorized. Host has 24 hours to confirm. If declined, hold releases instantly.
-                        </p>
-                      )}
-                      {isAccepted && (
-                        <p className="text-[#2F6E5E] dark:text-[#aff0db] font-medium">
-                          <strong>Confirmed:</strong> Reservation secured for hospital rotation dates.
-                        </p>
-                      )}
-                      {isDeclined && (
-                        <p className="text-[#A8452E] dark:text-red-300 font-medium">
-                          <strong>Hold Released:</strong> Rotation dates unavailable; pre-authorization voided.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {filteredStays.map((booking) => (
+                <div key={booking.id}>Booking</div>
+              ))}
             </div>
           )}
         </div>
@@ -524,14 +502,10 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             </div>
             <span
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-              style={
-                userIsVerified
-                  ? { backgroundColor: '#E1EFE9', color: '#2F6E5E' }
-                  : { backgroundColor: '#FBF0D6', color: '#B9822E' }
-              }
+              style={statusStyle}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: userIsVerified ? '#2F6E5E' : '#B9822E' }} />
-              <span>{userIsVerified ? 'Nurses Pillow Verified' : 'Audit In Progress'}</span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dotColor }} />
+              <span>{statusLabel}</span>
             </span>
           </div>
 
@@ -622,7 +596,15 @@ export const NurseDashboardView: React.FC<NurseDashboardViewProps> = ({
             </div>
           </div>
 
-          {!userIsVerified && onGoToVerification && (
+          {isLicensePending ? (
+            <div className="p-3.5 rounded-xl bg-[#FBF0D6] dark:bg-[#2A2215] text-xs text-[#B9822E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">hourglass_top</span>
+                <span className="font-bold">Verification Submitted — Awaiting Admin Final Approval</span>
+              </div>
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/80 dark:bg-black/30 text-[#B9822E]">Pending Review</span>
+            </div>
+          ) : !userIsVerified && onGoToVerification && (
             <div className="pt-1 flex justify-end">
               <button
                 type="button"

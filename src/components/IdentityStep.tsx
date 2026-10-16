@@ -13,6 +13,8 @@ interface IdentityStepProps {
   onNextStep: () => void;
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
+  onExit?: () => void;
+  isHostVerified?: boolean;
 }
 
 export const IdentityStep: React.FC<IdentityStepProps> = ({
@@ -22,10 +24,22 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
   onSelectStep,
   isNightShiftMode,
   onOpenAuth,
+  onExit,
+  isHostVerified,
 }) => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isHostVerified && !data.isIdVerified) {
+       onChange({ isIdVerified: true });
+       // Auto-redirect to Step 2 after short delay for better UX
+       setTimeout(() => {
+         onSelectStep(2);
+       }, 500);
+    }
+  }, [isHostVerified, data.isIdVerified, onChange, onSelectStep]);
 
   useEffect(() => {
     if (verificationError && errorRef.current) {
@@ -49,6 +63,18 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isHostVerified || data.isIdVerified) {
+      if (data.legalFirstName && data.legalLastName) {
+        onChange({
+          isIdVerified: true,
+          legalFirstName: data.legalFirstName.trim(),
+          legalLastName: data.legalLastName.trim(),
+        });
+      }
+      onSelectStep(2);
+      return;
+    }
 
     const validationMsg = validateInputs();
     if (validationMsg) {
@@ -149,6 +175,7 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
         data={data}
         onSelectStep={onSelectStep}
         isNightShiftMode={isNightShiftMode}
+        onExit={onExit}
       />
 
       {/* Main Card */}
@@ -232,19 +259,35 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
           </div>
 
           <div className="pt-2">
-            <div className={`p-4 rounded-2xl flex items-start gap-3 border ${
-              isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#EFF6FB] border-[#0A6FA8]/20'
-            }`}>
-              <div className="mt-0.5 text-[#0A6FA8] dark:text-[#3E9AD1]">
-                <span className="material-symbols-outlined text-xl">shield_person</span>
+            {isHostVerified || data.isIdVerified ? (
+              <div className={`p-4 rounded-2xl flex items-start gap-3 border ${
+                isNightShiftMode ? 'bg-[#142823] border-[#2F6E5E]/40 text-[#aff0db]' : 'bg-[#E1EFE9] border-[#2F6E5E]/30 text-[#2F6E5E]'
+              }`}>
+                <div className="mt-0.5 text-[#2F6E5E] dark:text-[#aff0db]">
+                  <span className="material-symbols-outlined text-xl">verified_user</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold mb-1">Identity Verified via Host Verification (Stripe KYC)</h4>
+                  <p className="text-xs leading-relaxed opacity-90">
+                    Your legal identity was already verified during host onboarding with Stripe KYC. You do not need to re-verify your ID. You can proceed directly to contact details and clinical licensing.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-bold mb-1 text-[#0B2559] dark:text-white">Secure Identity Verification</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Upon continuing, you will be redirected to our secure partner, <strong>Stripe Identity</strong>. You will be asked to securely upload a government-issued photo ID and take a real-time selfie. We do not store your documents.
-                </p>
+            ) : (
+              <div className={`p-4 rounded-2xl flex items-start gap-3 border ${
+                isNightShiftMode ? 'bg-[#15233a] border-[#233550]' : 'bg-[#EFF6FB] border-[#0A6FA8]/20'
+              }`}>
+                <div className="mt-0.5 text-[#0A6FA8] dark:text-[#3E9AD1]">
+                  <span className="material-symbols-outlined text-xl">shield_person</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold mb-1 text-[#0B2559] dark:text-white">Secure Identity Verification</h4>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Upon continuing, you will be redirected to our secure partner, <strong>Stripe Identity</strong>. You will be asked to securely upload a government-issued photo ID and take a real-time selfie. We do not store your documents.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="pt-4 flex items-center justify-between gap-3">
@@ -253,16 +296,16 @@ export const IdentityStep: React.FC<IdentityStepProps> = ({
               disabled={isVerifying}
               className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
             >
-              <span>{isVerifying ? 'Verifying legal identity...' : 'Save & continue'}</span>
+              <span>{isVerifying ? 'Verifying legal identity...' : (isHostVerified || data.isIdVerified ? 'Continue to Step 2 (Contact)' : 'Save & continue')}</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
-            {data.isIdVerified && (
+            {(data.isIdVerified || isHostVerified) && (
               <button
                 type="button"
                 onClick={() => onSelectStep(2)}
                 className="px-3 py-1.5 text-xs text-[#0A6FA8] dark:text-[#3E9AD1] font-semibold hover:underline cursor-pointer"
               >
-                Continue to Step 2
+                Skip to Step 2 →
               </button>
             )}
           </div>

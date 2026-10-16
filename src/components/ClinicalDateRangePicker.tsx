@@ -13,6 +13,7 @@ export interface ClinicalDateRangePickerProps {
   onChange: (startDate: string, endDate: string) => void;
   minDate?: string; // 'YYYY-MM-DD'
   maxDate?: string; // 'YYYY-MM-DD'
+  blackoutDates?: string[];
   isNightShiftMode?: boolean;
   onApply?: () => void;
   onClose?: () => void;
@@ -112,6 +113,7 @@ export const ClinicalDateRangePicker: React.FC<ClinicalDateRangePickerProps> = (
   maxDate,
   onApply,
   onClose,
+  blackoutDates = [],
   className = '',
 }) => {
   const [activeStep, setActiveStep] = useState<'start' | 'end'>('start');
@@ -270,7 +272,8 @@ export const ClinicalDateRangePicker: React.FC<ClinicalDateRangePickerProps> = (
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const isDisabled =
         (effectiveMinDate ? dateStr < effectiveMinDate : false) ||
-        (maxDate ? dateStr > maxDate : false);
+        (maxDate ? dateStr > maxDate : false) ||
+        (blackoutDates.includes(dateStr));
 
       const isStart = Boolean(startDate && dateStr === startDate);
       const isEnd = Boolean(endDate && dateStr === endDate);

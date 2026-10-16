@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ConnectComponentsProvider, ConnectAccountOnboarding } from '@stripe/react-connect-js';
 import { loadConnectAndInitialize } from '@stripe/connect-js';
-import { BookingRequest } from '../types';
+import { BookingRequest, HousingListing } from '../types';
 import { TrustBreakdownCard } from './TrustBreakdownCard';
 import { HostAddressMapping } from './HostAddressMapping';
+import { ListingDetailModal } from './ListingDetailModal';
+import { HostAvailabilityCalendar } from './HostAvailabilityCalendar';
+import { AvailabilityInsight } from './AvailabilityInsight';
 
 interface HostPortalViewProps {
   isNightShiftMode: boolean;
@@ -12,6 +15,10 @@ interface HostPortalViewProps {
   onDeclineBooking: (id: string) => Promise<void> | void;
   onGoToHousing: () => void;
   initialTab?: 'dashboard' | 'editor' | 'onboarding';
+  isNurseVerified?: boolean;
+  verificationStatus?: string;
+  onGoToClinicianDashboard?: () => void;
+  onStartClinicianVerification?: () => void;
   currentUser?: {
     isHostVerified?: boolean;
     isIdVerified?: boolean;
@@ -31,10 +38,56 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   onDeclineBooking,
   onGoToHousing,
   initialTab = 'dashboard',
+  isNurseVerified,
+  verificationStatus,
+  onGoToClinicianDashboard,
+  onStartClinicianVerification,
   currentUser,
 }) => {
-  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding'>(initialTab);
+  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding' | 'profile'>(initialTab as any);
   const [editorStep, setEditorStep] = useState<1 | 2 | 3>(1);
+
+  const [hostFullName, setHostFullName] = useState(currentUser?.name || 'Sarah M.');
+  const [hostTitleBio, setHostTitleBio] = useState('RN Host • Superhost • Former UCSF Neuro ICU RN');
+  const [hostAvatarUrl, setHostAvatarUrl] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80');
+  const [profileSaveNotice, setProfileSaveNotice] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined'>('all');
+
+  const filteredRequests = React.useMemo(() => bookingRequests.filter(req => {
+    if (filterStatus === 'pending') return req.status === 'pending_host_approval';
+    if (filterStatus === 'confirmed') return req.status === 'approved' || req.status === 'active' || req.status === 'completed';
+    if (filterStatus === 'declined') return req.status === 'declined';
+    return true;
+  }), [bookingRequests, filterStatus]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const res = await fetch('/api/host/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          userId: currentUser?.id,
+          fullName: hostFullName,
+          hostTitle: hostTitleBio,
+          avatarUrl: hostAvatarUrl,
+        })
+      });
+      if (res.ok) {
+        setProfileSaveNotice('Host profile updated successfully and synchronized!');
+        setTimeout(() => setProfileSaveNotice(null), 3500);
+      } else {
+        setProfileSaveNotice('Failed to update profile.');
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setProfileSaveNotice('Error updating profile.');
+    }
+  };
 
   useEffect(() => {
     if (initialTab) {
@@ -52,7 +105,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
     let isMounted = true;
     const controller = new AbortController();
 
-    if (activeHostTab === 'editor') {
+    if (activeHostTab === 'editor' || activeHostTab === 'calendar') {
       const fetchListing = async () => {
         try {
           const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
@@ -140,6 +193,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [listingDocuments, setListingDocuments] = useState<{ id?: string, name: string, url: string, file?: File }[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('Saving listing...');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
@@ -237,6 +291,43 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const [hasDedicatedParking, setHasDedicatedParking] = useState(true);
   const [hasFiberWifi, setHasFiberWifi] = useState(true);
   const [isSavedEditor, setIsSavedEditor] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const previewListingObject: HousingListing = {
+    id: editingListingId || 'preview-id',
+    title: listingTitle || 'Sanctuary Stay',
+    neighborhood: addressData?.formattedAddress || 'Durham, NC',
+    city: addressData?.city || 'Durham',
+    state: addressData?.state || 'NC',
+    proximityToHospital: 'Under 1 Mile',
+    nearestHospital: 'Duke University Hospital',
+    driveTimeMinutes: 5,
+    monthlyRate: roomPrices[0] || 1950,
+    weeklyRate: Math.round((roomPrices[0] || 1950) / 4),
+    beds: roomCount || 1,
+    baths: 1,
+    sqft: 850,
+    images: listingPhotos.map(p => p.url),
+    nurseRating: 5.0,
+    reviewsCount: 1,
+    amenities: {
+      blackoutCurtains: hasBlackout,
+      whiteNoiseMachine: true,
+      daySleeperQuietHours: hasQuietHours,
+      washerDryerInUnit: hasScrubWasher,
+      dedicatedParking: hasDedicatedParking,
+      highSpeedWifi: hasFiberWifi,
+      fullyFurnished: true,
+      petFriendly: petFee > 0,
+      privateEntrance: propertyType === 'entire_property',
+    },
+    contractFlexProtection: cancellationTier === 'Flexible',
+    featuredSanctuary: true,
+    propertyType: propertyType,
+    petFee: petFee,
+    parkingFee: parkingFee,
+    extraOptions: [],
+  };
 
   // Stripe Connect State
   // Mock state for Stripe connect button interactions if needed
@@ -356,6 +447,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUploading(true);
+    setUploadMessage('Saving listing...');
 
     try {
       // Create listing update payload
@@ -410,7 +502,13 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         if (listingPhotos[i].file) newPhotosToUpload.push(listingPhotos[i]);
       }
 
+      const newDocsToUpload = [];
+      for (let i = 0; i < listingDocuments.length; i++) {
+        if (listingDocuments[i].file) newDocsToUpload.push(listingDocuments[i]);
+      }
+
       if (newPhotosToUpload.length > 0) {
+        setUploadMessage(newPhotosToUpload.length > 1 ? 'Uploading photos...' : 'Uploading photo...');
         // In a real app, this would be a multipart/form-data POST request
         // or getting presigned S3 urls. Here we simulate it.
         const photosPayload = await Promise.all(
@@ -445,8 +543,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       }
 
+      if (newDocsToUpload.length > 0) {
+        setUploadMessage(newDocsToUpload.length > 1 ? 'Uploading documents...' : 'Uploading document...');
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+
       setIsSavedEditor(true);
-      setTimeout(() => setIsSavedEditor(false), 3000);
+      setTimeout(() => {
+        setActiveHostTab('dashboard');
+      }, 1000);
     } catch (err) {
       console.error("Error saving listing:", err);
     } finally {
@@ -457,9 +562,10 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   // ⚡ Bolt Performance Optimization: Single-pass booking aggregation
   // Replaced 3 independent O(N) array traversals (.filter x2, .filter+.reduce)
   // with a single O(N) memoized loop to prevent excessive recalculations on render.
-  const { pendingBookings, confirmedBookings, totalMonthlyNet } = React.useMemo(() => {
+  const { pendingBookings, confirmedBookings, totalMonthlyNet, payoutBookings } = React.useMemo(() => {
     const pending: BookingRequest[] = [];
     const confirmed: BookingRequest[] = [];
+    const payout: BookingRequest[] = [];
     let net = 0;
 
     for (let i = 0; i < bookingRequests.length; i++) {
@@ -467,14 +573,15 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       if (b.status === 'pending_host_approval') {
         pending.push(b);
       }
-      if (b.status === 'approved' || b.status === 'active') {
+      if (b.status === 'approved' || b.status === 'active' || b.status === 'completed') {
         confirmed.push(b);
       }
       if (b.status !== 'declined') {
+        payout.push(b);
         net += (b.hostNetPayout || 0);
       }
     }
-    return { pendingBookings: pending, confirmedBookings: confirmed, totalMonthlyNet: net };
+    return { pendingBookings: pending, confirmedBookings: confirmed, totalMonthlyNet: net, payoutBookings: payout };
   }, [bookingRequests]);
 
   return (
@@ -530,6 +637,17 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => setActiveHostTab('calendar')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              activeHostTab === 'calendar'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:white'
+            }`}
+          >
+            Calendar
+          </button>
+          <button
+            type="button"
             onClick={() => setActiveHostTab('onboarding')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeHostTab === 'onboarding'
@@ -539,14 +657,97 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           >
             Verification
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveHostTab('profile')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              activeHostTab === 'profile'
+                ? 'bg-white dark:bg-[#182840] text-[#0B2559] dark:text-white shadow-[0_1px_3px_rgba(11,37,89,0.08)]'
+                : 'text-gray-600 dark:text-gray-300 hover:text-[#0B2559] dark:hover:text-white'
+            }`}
+          >
+            Host Profile
+          </button>
         </div>
       </div>
 
-      {/* SCREEN B3: Host Booking Requests Approval Queue */}
+      {activeHostTab === 'calendar' && (
+          <div className="max-w-xl mx-auto">
+              {editingListingId ? (
+                <HostAvailabilityCalendar listingId={editingListingId} />
+              ) : hostListings.length > 0 ? (
+                <HostAvailabilityCalendar listingId={hostListings[0].id} />
+              ) : (
+                <div className="text-center p-8 text-gray-500">No listings found.</div>
+              )}
+          </div>
+      )}
+
+      {/* Host Profile Tab */}
+      {activeHostTab === 'profile' && (
+        <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-lg space-y-6 max-w-2xl">
+          <div>
+            <h2 className="text-xl font-bold text-[#0B2559] dark:text-white">Host Public Profile &amp; Credentials</h2>
+            <p className="text-xs text-gray-500 mt-1">Customize how your host name, bio, and badge appear on your listings and public profile page.</p>
+          </div>
+
+          {profileSaveNotice && (
+            <div className="p-3 rounded-xl bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-xs font-bold flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">check_circle</span>
+              <span>{profileSaveNotice}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Host Full Name</label>
+              <input
+                type="text"
+                value={hostFullName}
+                onChange={(e) => setHostFullName(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Host Title &amp; Bio</label>
+              <input
+                type="text"
+                value={hostTitleBio}
+                onChange={(e) => setHostTitleBio(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+                placeholder="E.g., Superhost • Former UCSF Neuro ICU RN"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#0B2559] dark:text-white mb-1.5">Avatar Image URL</label>
+              <input
+                type="text"
+                value={hostAvatarUrl}
+                onChange={(e) => setHostAvatarUrl(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-sm font-medium outline-none focus:border-[#0A6FA8]"
+              />
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-full bg-[#0A6FA8] text-white text-xs font-bold shadow-md hover:bg-[#0C7EBF] transition-all cursor-pointer"
+              >
+                Save Profile Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {activeHostTab === 'dashboard' && (
         <div className="space-y-4">
           {/* Quick Metrics 4-Card Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+
             <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-3.5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-col justify-between">
               <span className="text-[11px] font-medium text-gray-500 block">Pending Review</span>
               <div>
@@ -589,145 +790,65 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             </div>
           </div>
 
-          {/* Pending Booking Requests Approval Queue */}
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#0A6FA8] text-[20px]">pending_actions</span>
-                <h2 className="text-base font-bold text-[#0B2559] dark:text-white">
-                  Booking Requests Queue
-                </h2>
-              </div>
-              {pendingBookings.length > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full bg-[#F4E2DC] text-[#A8452E] dark:bg-[#F4E2DC]/20 dark:text-[#F4E2DC] text-[11px] font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#A8452E]"></span>
-                  <span>{pendingBookings.length} Awaiting Decision</span>
-                </span>
-              )}
-            </div>
+          <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Booking Requests</h2>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+                className="px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0E1A2E] text-xs font-bold text-[#0B2559] dark:text-white outline-none"
+              >
+                <option value="all">All Requests</option>
+                <option value="pending">Pending Only</option>
+                <option value="confirmed">Confirmed Only</option>
+                <option value="declined">Declined Only</option>
+              </select>
+          </div>
 
-            {bookingRequests.length === 0 ? (
-              <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-8 text-center text-xs text-gray-400 shadow-[0_2px_12px_rgba(11,37,89,0.06)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                No pending requests. Incoming traveling clinician requests will appear here with instant alerts.
+          {/* Booking List */}
+          <div className="space-y-4">
+            {filteredRequests.length === 0 ? (
+              <div className="text-center p-8 text-gray-500 bg-white dark:bg-[#0B1626] rounded-2xl border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                No booking requests found.
               </div>
             ) : (
-              <div className="space-y-3.5">
-                {bookingRequests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-4"
-                  >
-                    {/* Header & Clinician Identity */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      <div className="flex items-start gap-3.5">
-                        <img
-                          src={req.clinicianAvatar}
-                          alt={req.clinicianName}
-                          className="w-12 h-12 rounded-full object-cover ring-2 ring-[#0A6FA8]/20 shrink-0"
-                        />
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                            <h3 className="text-base font-bold text-[#0B2559] dark:text-white">
-                              {req.clinicianName}
-                            </h3>
-                            <span className="px-2 py-0.5 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[10px] font-bold">
-                              {req.clinicianTitle}
-                            </span>
-                            <span className="text-[11px] text-gray-400">({req.clinicianPhone})</span>
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
-                            <p>
-                              <strong>Hospital Assignment:</strong> {req.hospitalName} • {req.unitSpecialty}
-                            </p>
-                            <p>
-                              <strong>Duration:</strong> {req.startDate} to {req.endDate} ({req.durationWeeks} Weeks)
-                            </p>
-                            {req.specialRequests && (
-                              <p className="italic text-gray-500 mt-1 bg-[#EFF6FB] dark:bg-[#0E1A2E] p-2 rounded-lg text-[11px]">
-                                “{req.specialRequests}”
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Net Payout & Action Buttons */}
-                      <div className="flex flex-col sm:flex-row lg:flex-col items-end justify-between gap-3 shrink-0">
-                        <div className="text-right">
-                          <div className="text-[11px] text-gray-500">Monthly Net Payout:</div>
-                          <div className="text-lg font-bold text-[#2F6E5E] dark:text-[#aff0db] tabular-nums">
-                            ${req.hostNetPayout.toFixed(2)} / mo
-                          </div>
-                          <div className="text-[10px] text-gray-400 tabular-nums">Total pre-auth hold: ${req.totalInitialCharge.toLocaleString()}</div>
-                        </div>
-
-                        {req.status === 'pending_host_approval' ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={processingBookingId === req.id}
-                              onClick={async () => {
-                                setProcessingBookingId(req.id);
-                                await onDeclineBooking(req.id);
-                                setProcessingBookingId(null);
-                              }}
-                              className="px-3.5 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {processingBookingId === req.id ? 'Processing...' : 'Decline'}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={processingBookingId === req.id}
-                              onClick={async () => {
-                                setProcessingBookingId(req.id);
-                                await onApproveBooking(req.id);
-                                setProcessingBookingId(null);
-                              }}
-                              className="px-4 py-1.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {processingBookingId === req.id ? (
-                                <span className="flex items-center gap-1.5">
-                                  <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                  Processing...
-                                </span>
-                              ) : (
-                                <span>Accept Booking</span>
-                              )}
-                            </button>
-                          </div>
-                        ) : req.status === 'declined' ? (
-                          <div className="px-3 py-1 rounded-sm bg-[#F4E2DC] text-[#A8452E] dark:bg-[#F4E2DC]/20 dark:text-[#F4E2DC] text-[11px] font-bold flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[15px]">cancel</span>
-                            <span>Declined</span>
-                          </div>
-                        ) : (
-                          <div className="px-3 py-1 rounded-sm bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[11px] font-bold flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[15px]">task_alt</span>
-                            <span>Accepted &amp; Confirmed</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Compact Clinician Verification Badges */}
-                    <div className="pt-2 border-t border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#142823] dark:text-[#aff0db] text-[11px] font-bold">
-                        <span className="material-symbols-outlined text-[13px]">verified</span>
-                        <span>Active State Nursing License</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[11px] font-semibold">
-                        <span className="material-symbols-outlined text-[13px]">badge</span>
-                        <span>Government RealID Verified</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#EFF6FB] text-[#0A6FA8] dark:bg-[#182840] dark:text-[#3E9AD1] text-[11px] font-semibold">
-                        <span className="material-symbols-outlined text-[13px]">phonelink_ring</span>
-                        <span>Mobile Confirmed</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              filteredRequests.map((req) => (
+                <div key={req.id} className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
+                  <h3 className="font-bold text-[#0B2559] dark:text-white">Request: {req.id}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Status: {req.status}</p>
+                </div>
+              ))
             )}
+          </div>
+
+          {/* Payout History Section */}
+          <div className="space-y-3.5 mt-8">
+            <h2 className="text-base font-bold text-[#0B2559] dark:text-white">Payout History</h2>
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl border border-[rgba(11,37,89,0.06)] dark:border-[#233550] overflow-hidden shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+              <table className="w-full text-xs">
+                <thead className="bg-[#EFF6FB] dark:bg-[#0E1A2E] text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-bold">Date</th>
+                    <th className="px-4 py-3 text-left font-bold">Booking ID</th>
+                    <th className="px-4 py-3 text-right font-bold">Net Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
+                  {payoutBookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-gray-400">No payout history available.</td>
+                    </tr>
+                  ) : (
+                    payoutBookings.map(b => (
+                      <tr key={b.id} className="hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors">
+                        <td className="px-4 py-3">{b.startDate}</td>
+                        <td className="px-4 py-3 tabular-nums">{b.id}</td>
+                        <td className="px-4 py-3 text-right font-bold tabular-nums">${b.hostNetPayout.toFixed(2)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -768,6 +889,14 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
         <form onSubmit={(e) => { e.preventDefault(); if (editorStep === 3) handleSaveListing(e); else setEditorStep(prev => (prev + 1) as 1 | 2 | 3); }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
+              <button
+                type="button"
+                onClick={() => setEditingListingId(null)}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1] hover:underline mb-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                <span>Back to Listings</span>
+              </button>
               <span className="text-[11px] font-bold text-[#0A6FA8] dark:text-[#3E9AD1] uppercase tracking-wider">
                 Listing &amp; Multi-Room Setup
               </span>
@@ -1134,6 +1263,16 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   </div>
                 )}
 
+                {isUploading && (
+                  <div className="p-3.5 rounded-xl bg-[#EFF6FB] dark:bg-[#15233a] border border-[#0A6FA8]/30 text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-semibold flex items-center justify-between gap-3 animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                      <span>{uploadMessage}</span>
+                    </div>
+                    <span className="text-[11px] font-bold">Please wait</span>
+                  </div>
+                )}
+
                 {/* Media Hub: Photo Uploads */}
                 <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] space-y-3.5">
                   <div className="flex items-center justify-between">
@@ -1289,29 +1428,52 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
                   >
                     Back
                   </button>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-3">
                     <button
-                      type="submit"
-                      disabled={isUploading}
-                      className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                      type="button"
+                      onClick={() => setIsPreviewOpen(true)}
+                      className="px-5 py-2.5 rounded-full border border-[#0A6FA8] text-[#0A6FA8] dark:text-[#3E9AD1] text-sm font-bold hover:bg-[#EFF6FB] dark:hover:bg-[#15233a] transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
-                      {isUploading ? (
-                        <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
-                      ) : (
-                        <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
-                      )}
+                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      <span>Preview Listing</span>
                     </button>
-                    {(!currentUser?.isHostVerified || !payoutsEnabled) && (
-                      <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
-                        Cannot publish until Stripe & Admin verification complete.
-                      </div>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        type="submit"
+                        disabled={isUploading}
+                        className="px-6 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-sm font-bold shadow-[0_1px_3px_rgba(10,111,168,0.25)] cursor-pointer transition-all disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {isUploading ? (
+                          <><span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> Saving...</>
+                        ) : (
+                          <><span className="material-symbols-outlined text-[18px]">{(!currentUser?.isHostVerified || !payoutsEnabled) ? 'save' : 'publish'}</span> {(!currentUser?.isHostVerified || !payoutsEnabled) ? 'Save Draft' : 'Publish Listing'}</>
+                        )}
+                      </button>
+                      {(!currentUser?.isHostVerified || !payoutsEnabled) && (
+                        <div className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold mt-1">
+                          Cannot publish until Stripe & Admin verification complete.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
         </form>
+      )}
+
+      {/* Live Preview Modal */}
+      {isPreviewOpen && (
+        <ListingDetailModal
+          listing={previewListingObject}
+          onClose={() => setIsPreviewOpen(false)}
+          isNightShiftMode={isNightShiftMode}
+          isSaved={false}
+          onToggleSave={() => {}}
+          isVerified={true}
+          onGoToVerification={() => {}}
+        />
       )}
 
       {/* Host Onboarding & Identity Verification - 3-Card Responsive Grid */}

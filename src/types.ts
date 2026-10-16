@@ -17,7 +17,7 @@ export type NavigationTab =
   | 'mobile-preview'
   | 'system-status';
 
-export type UserRole = 'nurse' | 'host' | 'super_admin' | 'developer' | 'guest';
+export type UserRole = 'nurse' | 'host' | 'dual' | 'super_admin' | 'developer' | 'guest';
 
 export type CancellationTier = 'flexible_30d' | 'moderate_60d' | 'strict_90d';
 
@@ -66,6 +66,8 @@ export interface AdminLicenseReview {
   submittedAt: string;
   nursysLookupUrl: string;
   documentPurged: boolean;
+  isDualRole?: boolean;
+  userRole?: string;
 }
 
 export interface MarketDemandReport {

@@ -90,31 +90,38 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
 
             for (let i = 0; i < data.length; i++) {
               const d = data[i];
-              if (d.role !== 'host') {
+              const isDualRole = d.role === 'dual' || (d.role === 'host' && (Boolean(d.license_number) || Boolean(d.is_nurse_verified) || d.verification_status === 'pending_review'));
+              const hasClinicalRecord = d.role !== 'host' || isDualRole;
+
+              if (hasClinicalRecord) {
                 mappedReviews.push({
                   id: d.id,
                   clinicianLegalName: d.full_name || d.email,
-                  profession: d.profession || d.profession_specialty || 'RN',
+                  profession: d.profession || d.profession_specialty || (isDualRole ? 'RN (Host & Clinician)' : 'RN'),
                   issuingState: d.state_board || d.clinical_state_board || 'NC',
                   licenseNumber: d.license_number || d.clinical_license_number || 'PENDING',
                   licenseStatus: d.verification_status || (d.is_nurse_verified ? 'verified' : 'pending_review'),
-                  hospitalAffiliation: d.contract_hospital || 'Duke University Hospital',
+                  hospitalAffiliation: d.contract_hospital || (isDualRole ? 'Host & Clinician Dual Role' : 'Duke University Hospital'),
                   submittedAt: 'Recently',
                   nursysLookupUrl: 'https://www.nursys.com',
                   documentPurged: Boolean(d.document_purged || d.is_nurse_verified),
+                  isDualRole: isDualRole,
+                  userRole: d.role,
                 });
-              } else {
+              }
+              if (d.role === 'host' || d.role === 'dual' || d.is_host_verified || d.stripe_account_id) {
                 hosts.push({
                   id: d.id,
                   hostName: d.full_name || d.email,
                   stripeAccountId: d.stripe_account_id,
                   stripePayoutsEnabled: d.stripe_payouts_enabled,
                   isHostVerified: d.is_host_verified,
+                  isDualRole: isDualRole,
                 });
               }
             }
 
-            setReviews(mappedReviews); // Proper check to separate hosts and nurses based on role
+            setReviews(mappedReviews);
             setHostReviews(hosts);
 
             return;
@@ -262,6 +269,14 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   const pendingCliniciansCount = reviews.filter((r) => r.licenseStatus === 'pending_review').length;
   const pendingPropertiesCount = managedListings.filter((l) => !l.verified).length;
 
+  if (!currentUser || (currentUser.role !== 'super_admin' && currentUser.role !== 'developer')) {
+    return (
+      <div className="w-full min-h-[80vh] flex items-center justify-center text-sm font-bold text-red-700 dark:text-red-400">
+        Access Denied: You do not have permission to view this portal.
+      </div>
+    );
+  }
+
   return (
     <div
       className={`w-full min-h-[80vh] py-8 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-colors ${
@@ -273,14 +288,14 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0A6FA8] dark:text-[#3E9AD1]">
-              Platform Operations Hub • Milestone 1
+              Operations Hub
             </span>
             <span className="px-2.5 py-0.5 rounded-full bg-[#E1EFE9] text-[#2F6E5E] dark:bg-[#195b4c]/30 dark:text-[#aff0db] text-[11px] font-bold">
-              Super-Admin Console
+              Admin Dashboard
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0B2559] dark:text-white">
-            Administrative Verification &amp; Operations
+            Verifications &amp; Operations
           </h1>
         </div>
 
@@ -295,7 +310,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
             }`}
           >
-            <span>Clinician Licenses</span>
+            <span>Clinicians</span>
             {pendingCliniciansCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-bold tabular-nums">
                 {pendingCliniciansCount}
@@ -312,7 +327,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
             }`}
           >
-            <span>Property &amp; Authority Gate</span>
+            <span>Property Verification</span>
             {pendingPropertiesCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-bold tabular-nums">
                 {pendingPropertiesCount}
@@ -329,7 +344,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#182840]'
             }`}
           >
-            <span>Booking Authorizations</span>
+            <span>Bookings</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#0A6FA8]/20 text-[#0A6FA8] dark:text-[#3E9AD1] font-bold tabular-nums">
               {dbBookings.length}
             </span>
@@ -345,7 +360,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </div>
       )}
 
-      {/* TAB 1: SCREEN C1 / A-07 Clinician License Verification Queue */}
+      {/* TAB 1: Clinician License Verification Queue */}
       {activeAdminTab === 'clinicians' && (
         <div className="space-y-6">
           {/* Data Privacy Callout Box */}
@@ -386,7 +401,14 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
                   {reviews.map((r) => (
                     <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-[#14233a] transition-colors">
                       <td className="py-3.5 px-3 font-bold text-[#0B2559] dark:text-white">
-                        {r.clinicianLegalName}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>{r.clinicianLegalName}</span>
+                          {r.isDualRole && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-blue-100 text-[#005684] dark:bg-blue-900/40 dark:text-blue-300 text-[9px] font-bold">
+                              Dual Role Host
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[10px] text-gray-400 font-normal">{r.submittedAt}</div>
                       </td>
                       <td className="py-3.5 px-3">
@@ -496,17 +518,17 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: SCREEN A-10 Host Authority-to-List & Property Queue */}
+      {/* TAB 2: Host & Property Verification Queue */}
       {activeAdminTab === 'properties' && (
         <div className="space-y-6">
           <div className="bg-white dark:bg-[#0B1626] rounded-3xl p-6 sm:p-8 shadow-sm border border-[rgba(11,37,89,0.08)] dark:border-[#233550]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">
-                  Host &amp; Property Verification Gate (Queue A-10)
+                  Host &amp; Property Verification
                 </h2>
                 <p className="text-xs text-gray-500">
-                  Verify host authority-to-list documentation and approve listings for public search indexing
+                  Verify host documentation and approve listings for public search
                 </p>
               </div>
               <span className="text-xs font-bold text-[#0A6FA8] dark:text-[#3E9AD1]">
@@ -658,7 +680,7 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">
-                  Booking Authorizations &amp; Split Engine Queue (Queue A-12)
+                  Booking Authorizations &amp; Split Engine Monitor
                 </h2>
                 <p className="text-xs text-gray-500">
                   Live monitor of pre-authorization holds, 5% platform fee deduction, and ~95% host split captures
