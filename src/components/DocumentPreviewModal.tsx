@@ -35,6 +35,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               <h3 className="text-lg font-bold text-[#0B2559] dark:text-white">Document Preview</h3>
               <button
                 onClick={onClose}
+                aria-label="Close document preview"
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#15233a] text-gray-500"
               >
                 <span className="material-symbols-outlined">close</span>
