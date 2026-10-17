@@ -40,3 +40,7 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
 **Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
 **Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.
+
+## 2024-10-25 - [Missing aria-label on icon-only buttons]
+**Learning:** Found an icon-only `<button>` containing only a `<span className="material-symbols-outlined">close</span>` inside `DocumentPreviewModal.tsx`. Without an `aria-label`, screen readers have no context for what the button does.
+**Action:** When implementing icon-only action buttons (like close buttons in modals), always ensure an explicit `aria-label` is provided to describe the action (e.g. `aria-label="Close document preview"`).
