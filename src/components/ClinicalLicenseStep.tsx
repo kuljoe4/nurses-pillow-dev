@@ -12,6 +12,7 @@ interface ClinicalLicenseStepProps {
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
   onOpenSuccessModal: () => void;
+  onExit?: () => void;
 }
 
 export const ClinicalLicenseStep: React.FC<ClinicalLicenseStepProps> = ({

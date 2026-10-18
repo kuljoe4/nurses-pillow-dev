@@ -43,3 +43,7 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2024-10-25 - [Accessibility] Missing aria-pressed and aria-label on password visibility toggles
 **Learning:** Icon-only buttons used as toggles (like "Show password" visibility toggles) often miss critical accessibility attributes (`aria-label` and `aria-pressed`). While the "Show/Hide" text variation is somewhat better for standard users, screen reader users still require explicit indication of the button's purpose and its current pressed state to understand that the input mode is changing.
 **Action:** When implementing password visibility toggles or similar interactive elements, always ensure they have an explicit `aria-label` (if icon-only) and `aria-pressed={boolean}` to semantically convey their toggle state to screen readers.
+
+## 2024-10-25 - [Missing aria-label on icon-only buttons]
+**Learning:** Icon-only buttons used for actions (like the "delete/remove bookmark" button in the `SavedListingsModal` using a Material icon) without an `aria-label` are inaccessible to screen reader users, even if they have a `title` attribute.
+**Action:** Always add an `aria-label` to icon-only buttons that explicitly describes the action to assist assistive technologies.

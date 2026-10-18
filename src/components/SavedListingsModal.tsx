@@ -140,6 +140,7 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
                           }}
                           className="text-[#ba1a1a] hover:opacity-80 p-0.5"
                           title="Remove bookmark"
+                          aria-label="Remove bookmark"
                         >
                           <span className="material-symbols-outlined text-base">delete</span>
                         </button>

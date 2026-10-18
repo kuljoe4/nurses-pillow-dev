@@ -152,6 +152,7 @@ class DatabaseService {
         this.fetchHospitals(),
         this.fetchListings(),
         this.fetchAuditLogs(),
+        this.fetchBookings(),
       ]);
 
       return {
@@ -213,6 +214,26 @@ class DatabaseService {
       console.warn('[DatabaseService] Network error fetching listings from PostgreSQL API:', error);
     }
     return this.getListings();
+  }
+
+  async fetchBookings(): Promise<DbBooking[]> {
+    try {
+      const token = localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await this.fetchWithRetry('/api/bookings', { headers });
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
+        if (Array.isArray(data)) {
+          this.bookings = data;
+        }
+      }
+    } catch (error) {
+      console.warn('[DatabaseService] Network error fetching bookings from API:', error);
+    }
+    return this.bookings;
   }
 
   async fetchAuditLogs(): Promise<DbAuditLog[]> {
@@ -400,10 +421,10 @@ class DatabaseService {
         const crypto = require('crypto');
         randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
       } catch (e) {
-        randPart = Math.random().toString(36).substring(2, 6);
+        throw new Error('Secure random generation not supported');
       }
     } else {
-      randPart = Math.random().toString(36).substring(2, 6);
+      throw new Error('Secure random generation not supported');
     }
     const entry: DbAuditLog = {
       ...log,
@@ -448,10 +469,10 @@ class DatabaseService {
         const crypto = require('crypto');
         randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
       } catch (e) {
-        randPart = Math.random().toString(36).substring(2, 6);
+        throw new Error('Secure random generation not supported');
       }
     } else {
-      randPart = Math.random().toString(36).substring(2, 6);
+      throw new Error('Secure random generation not supported');
     }
     return {
       ...log,
