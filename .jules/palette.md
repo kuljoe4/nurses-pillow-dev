@@ -40,3 +40,7 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
 **Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
 **Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.
+
+## 2024-10-25 - [Missing aria-label on icon-only buttons]
+**Learning:** Icon-only buttons used for actions (like the "delete/remove bookmark" button in the `SavedListingsModal` using a Material icon) without an `aria-label` are inaccessible to screen reader users, even if they have a `title` attribute.
+**Action:** Always add an `aria-label` to icon-only buttons that explicitly describes the action to assist assistive technologies.
