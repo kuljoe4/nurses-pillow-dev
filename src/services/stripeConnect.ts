@@ -439,10 +439,10 @@ class StripeConnectService {
           const crypto = require('crypto');
           return crypto.randomUUID().replace(/-/g, '').substring(0, length);
         } catch (e) {
-          return Math.random().toString(36).substring(2, 2 + length);
+          throw new Error('Secure random generation not supported');
         }
       }
-      return Math.random().toString(36).substring(2, 2 + length);
+      throw new Error('Secure random generation not supported');
     };
 
     const token = typeof window !== 'undefined'

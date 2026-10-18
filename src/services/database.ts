@@ -421,10 +421,10 @@ class DatabaseService {
         const crypto = require('crypto');
         randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
       } catch (e) {
-        randPart = Math.random().toString(36).substring(2, 6);
+        throw new Error('Secure random generation not supported');
       }
     } else {
-      randPart = Math.random().toString(36).substring(2, 6);
+      throw new Error('Secure random generation not supported');
     }
     const entry: DbAuditLog = {
       ...log,
@@ -469,10 +469,10 @@ class DatabaseService {
         const crypto = require('crypto');
         randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 4);
       } catch (e) {
-        randPart = Math.random().toString(36).substring(2, 6);
+        throw new Error('Secure random generation not supported');
       }
     } else {
-      randPart = Math.random().toString(36).substring(2, 6);
+      throw new Error('Secure random generation not supported');
     }
     return {
       ...log,
