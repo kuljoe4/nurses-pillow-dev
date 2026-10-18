@@ -181,10 +181,10 @@ class PostmarkMailService {
         const crypto = require('crypto');
         randPart = crypto.randomUUID().replace(/-/g, '').substring(0, 6);
       } catch (e) {
-        throw new Error('Secure random generation not supported');
+        randPart = Math.random().toString(36).substring(2, 8);
       }
     } else {
-      throw new Error('Secure random generation not supported');
+      randPart = Math.random().toString(36).substring(2, 8);
     }
     const message: PostmarkMessage = {
       messageId: `pm_${Date.now()}_${randPart}`,

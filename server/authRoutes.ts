@@ -538,25 +538,6 @@ router.post('/phone/verify-otp', authLimiter, authenticateToken, catchAsync(asyn
     }
 }));
 
-async function resolveUserIdentity(req: express.Request, initialUserId?: string, initialUserEmail?: string) {
-  const token =
-    req.cookies?.auth_token ||
-    (req.headers.authorization && req.headers.authorization.replace(/^Bearer\s+/i, ''));
-  let userId = undefined;
-  let userEmail = undefined;
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      if (decoded?.id) userId = decoded.id;
-      if (decoded?.email) userEmail = decoded.email;
-    } catch {}
-  }
-
-  const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean))) as string[];
-  return { userId, userEmail, searchKeys };
-}
-
 // In-memory store for favorites fallback
 const memoryFavorites = new Map<string, Set<string>>();
 
@@ -583,12 +564,11 @@ async function ensureFavoritesTable() {
   }
 }
 
-router.get('/favorites', catchAsync(async (req, res, next) => {
-    const { userId, userEmail, searchKeys } = await resolveUserIdentity(
-      req,
-      req.query.userId as string,
-      req.query.email as string
-    );
+router.get('/favorites', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+    const userId = req.user?.id;
+    const userEmail = req.user?.email;
+    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean))) as string[];
+
     if (searchKeys.length === 0) {
       res.json({ listingIds: [] });
       return;
@@ -619,18 +599,16 @@ router.get('/favorites', catchAsync(async (req, res, next) => {
     }
 }));
 
-router.post('/favorites/toggle', catchAsync(async (req, res, next) => {
+router.post('/favorites/toggle', authenticateToken, catchAsync(async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const { listingId } = req.body;
     if (!listingId) {
       res.status(400).json({ error: 'listingId is required' });
       return;
     }
 
-    const { userId, userEmail, searchKeys } = await resolveUserIdentity(
-      req,
-      req.body.userId,
-      req.body.email
-    );
+    const userId = req.user?.id;
+    const userEmail = req.user?.email;
+    const searchKeys = Array.from(new Set([userId, userEmail, userEmail ? userEmail.trim().toLowerCase() : ''].filter(Boolean))) as string[];
     const primaryKey = userId || (userEmail ? userEmail.trim().toLowerCase() : 'guest');
 
     if (!memoryFavorites.has(primaryKey)) {

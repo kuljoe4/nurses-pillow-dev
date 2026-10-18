@@ -161,13 +161,8 @@ useBodyScrollLock(isGsaModalOpen);
     filterContractFlex,
   ]);
 
-  // Initial simulated load for realistic clinical data fetching feedback and database sync
-  const [listingsVersion, setListingsVersion] = useState(0);
+  // Initial simulated load for realistic clinical data fetching feedback
   useEffect(() => {
-    Promise.all([db.fetchListings(), db.fetchBookings()]).then(() => {
-      setListingsVersion(v => v + 1);
-    }).catch(console.error);
-
     const timer = setTimeout(() => {
       setInternalLoading(false);
     }, 550);
@@ -316,27 +311,6 @@ useBodyScrollLock(isGsaModalOpen);
       if (filterPetFriendly && !l.amenities?.petFriendly) continue;
       if (filterContractFlex && !l.contractFlexProtection) continue;
 
-      // 5. Date-Range Availability Check: Booked listings still show if searched dates are available
-      if (earliestCheckIn && latestCheckOut) {
-        const bookings = db.getBookings() || [];
-        let isBooked = false;
-        for (let b = 0; b < bookings.length; b++) {
-          const booking = bookings[b];
-          const bListingId = booking.listing_id || (booking as any).listingId;
-          if (bListingId !== l.id) continue;
-          if (booking.status === 'declined' || booking.status === 'cancelled' || booking.status === 'refunded') continue;
-          const bStart = booking.start_date || (booking as any).startDate;
-          const bEnd = booking.end_date || (booking as any).endDate;
-          if (!bStart || !bEnd) continue;
-
-          if (bStart <= latestCheckOut && bEnd >= earliestCheckIn) {
-            isBooked = true;
-            break;
-          }
-        }
-        if (isBooked) continue;
-      }
-
       filtered.push(l); // Passed all active filters
     }
     list = filtered;
@@ -371,9 +345,6 @@ useBodyScrollLock(isGsaModalOpen);
     selectedDuration,
     customDuration,
     selectedHospital,
-    earliestCheckIn,
-    latestCheckOut,
-    listingsVersion,
   ]);
 
   const selectedMapListing = useMemo(() => {

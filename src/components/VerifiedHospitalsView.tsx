@@ -73,9 +73,9 @@ export const VerifiedHospitalsView: React.FC<VerifiedHospitalsViewProps> = ({
             <div className="col-span-1 md:col-span-2 text-center text-sm text-gray-500 py-10">Loading verified hospitals...</div>
           ) : hospitals.length === 0 ? (
             <div className="col-span-1 md:col-span-2 text-center text-sm text-gray-500 py-10">No active hospitals found.</div>
-          ) : hospitals.map((hosp, index) => (
+          ) : hospitals.map((hosp) => (
             <div
-              key={`${hosp.id}-${index}`}
+              key={hosp.id}
               className={`p-6 rounded-3xl border shadow-md transition-all duration-200 ease-in-out flex flex-col justify-between ${
                 isNightShiftMode
                   ? 'bg-[#0E1A2E] border-[#233550] text-[#E6ECF7]'

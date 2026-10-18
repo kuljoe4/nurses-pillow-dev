@@ -6,7 +6,6 @@ interface VerificationStepperNavProps {
   data: VerificationFormData;
   onSelectStep: (step: VerificationStepId) => void;
   isNightShiftMode: boolean;
-  onExit?: () => void;
 }
 
 export const VerificationStepperNav: React.FC<VerificationStepperNavProps> = ({

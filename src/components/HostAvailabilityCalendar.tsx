@@ -62,7 +62,7 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
       setConflict({
         error: 'Cannot block these dates as there is already a confirmed or pending booking.',
         conflictingBooking: {
-          traveler_name: conflictingBooking.traveler_name || conflictingBooking.traveler_name_from_db || 'Clinician',
+          traveler_name: conflictingBooking.traveler_name_from_db || 'Clinician',
           traveler_phone: conflictingBooking.traveler_phone_from_db || 'N/A',
           traveler_email: conflictingBooking.traveler_email_from_db || 'N/A'
         }
@@ -108,22 +108,19 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
   const calendarEnd = endOfWeek(monthEnd);
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const bookedDays = bookings.filter(b => b.status === 'approved' || b.status === 'active' || b.status === 'completed');
-  const pendingRequests = bookings.filter(b => b.status === 'pending_host_approval');
-
   return (
-    <div className="space-y-6">
+    <div>
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-6 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-[#0B2559] dark:text-white">{format(currentMonth, 'MMMM yyyy')}</h3>
           <div className="flex gap-2">
               <button onClick={() => setIsRangeModalOpen(true)} className="px-3 py-1 bg-[#0A6FA8] text-white rounded-lg text-xs font-bold">Block Range</button>
-              <button onClick={() => setCurrentMonth(prev => addMonths(prev, -1))} className="px-3 py-1 bg-gray-100 dark:bg-[#182840] rounded-lg text-xs">Prev</button>
-              <button onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} className="px-3 py-1 bg-gray-100 dark:bg-[#182840] rounded-lg text-xs">Next</button>
+              <button onClick={() => setCurrentMonth(prev => addMonths(prev, -1))} className="px-3 py-1 bg-gray-100 dark:bg-[#182840] rounded-lg">Prev</button>
+              <button onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} className="px-3 py-1 bg-gray-100 dark:bg-[#182840] rounded-lg">Next</button>
           </div>
         </div>
 
-        {isRangeModalOpen && (
+      {isRangeModalOpen && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
               <div className="bg-white dark:bg-[#0B1626] p-6 rounded-3xl max-w-lg w-full my-auto">
                   <h3 className="text-lg font-bold mb-4">Select Blackout Range</h3>
@@ -137,72 +134,34 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
               </div>
           </div>
         )}
-        
-        <div className="flex flex-wrap gap-4 mb-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#A8452E] border border-gray-200"></span> Blocked</div>
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#22c55e] dark:bg-[#065f46] border border-gray-200"></span> Booked</div>
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#FBF0D6] dark:bg-[#20190d] border border-gray-200"></span> Action Needed</div>
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-gray-200"></span> Available</div>
-        </div>
-
-        <div className="grid grid-cols-7 gap-2 mb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">{day}</div>)}
-        </div>
         <div className="grid grid-cols-7 gap-2">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
             const bookingForDay = bookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
-            const isConfirmed = bookingForDay.some(b => b.status === 'approved' || b.status === 'active' || b.status === 'completed');
-            const isPending = bookingForDay.some(b => b.status === 'pending_host_approval');
+            const isBooked = bookingForDay.length > 0;
+            const hasConflict = bookingForDay.length > 1;
             const isCurrentMonth = isSameMonth(day, monthStart);
             
             return (
               <button
                 key={dateStr}
                 onClick={() => handleDateClick(day)}
-                className={`h-12 flex flex-col items-center justify-center rounded-lg text-xs font-bold relative ${
+                className={`h-12 flex items-center justify-center rounded-lg text-sm font-bold relative ${
                   isCurrentMonth ? 'text-[#0B2559] dark:text-white' : 'text-gray-300'
-                } ${isBlocked ? 'bg-[#A8452E] text-white' : isConfirmed ? 'bg-[#22c55e] dark:bg-[#065f46] text-white' : isPending ? 'bg-[#FBF0D6] dark:bg-[#20190d] text-[#B9822E]' : 'bg-[#EFF6FB] dark:bg-[#0E1A2E]'}`}
+                } ${isBlocked ? 'bg-[#A8452E] text-white' : isBooked ? 'bg-[#E1EFE9] dark:bg-[#142823] text-[#2F6E5E]' : 'bg-[#EFF6FB] dark:bg-[#0E1A2E]'}`}
               >
                 {format(day, 'd')}
-                {isBlocked && <span className="text-[8px] uppercase">Blocked</span>}
+                {hasConflict && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" title="Multiple requests"/>
+                )}
               </button>
             );
           })}
         </div>
       </div>
-      
-      <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-6 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md">
-        <h4 className="text-sm font-bold text-[#0B2559] dark:text-white mb-4">Upcoming Bookings</h4>
-        {bookedDays.length === 0 ? (
-          <p className="text-xs text-gray-500">No upcoming confirmed bookings.</p>
-        ) : (
-          <div className="space-y-3">
-            {bookedDays.map(b => (
-              <div key={b.id} className="flex justify-between items-center text-xs p-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E]">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src={b.clinicianAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(b.traveler_name_from_db || 'Clinician') + '&background=random'} 
-                    alt={b.traveler_name_from_db || 'Clinician'} 
-                    className="w-7 h-7 rounded-full object-cover" 
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-bold tabular-nums text-[#0B2559] dark:text-white text-[11px]">{format(new Date(b.start_date), 'MMM d')} – {format(new Date(b.end_date), 'MMM d')}</span>
-                    <span className="text-gray-600 dark:text-gray-300 text-[10px] font-semibold">
-                      {b.traveler_name || b.traveler_name_from_db || 'Clinician'}
-                      {b.clinicianTitle ? ' • ' + b.clinicianTitle : ''}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       <HostCalendarTips />
-      
       {conflict && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#0B1626] p-6 rounded-3xl max-w-sm w-full border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-2xl">
