@@ -22,7 +22,7 @@ if (process.env.DATABASE_URL) {
       ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
       : rawDbUrl;
 
-    const isRemoteDb = true;
+    const isRemoteDb = !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1');
 
     pool = new pg.Pool({
       connectionString,

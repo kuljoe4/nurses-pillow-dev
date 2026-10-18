@@ -240,7 +240,7 @@ export function createPhoneAuthMiddleware() {
             codeSent: session.codeSent,
             createdAt: new Date(session.createdAt).toISOString(),
             expiresInSeconds: 600,
-            deliveryTimeMs: Math.floor(140 + (typeof require !== 'undefined' ? (require('crypto').randomBytes(4).readUInt32LE(0) / (0xffffffff + 1)) : 0.5) * 100),
+            deliveryTimeMs: Math.floor(140 + (typeof require !== 'undefined' ? (require('crypto').randomBytes(4).readUInt32LE(0) / (0xffffffff + 1)) : Math.random()) * 100),
             message: 'Verification code dispatched successfully.',
           })
         );

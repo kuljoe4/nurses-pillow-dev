@@ -256,13 +256,11 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
   }, []);
 
   const [popularHubs, setPopularHubs] = useState<string[]>([]);
-  const [listingsVersion, setListingsVersion] = useState(0);
   useEffect(() => {
-    Promise.all([db.fetchHospitals(), db.fetchListings(), db.fetchBookings()]).then(data => {
-      if (data[0] && data[0].length > 0) {
-        setPopularHubs(data[0].map((h: any) => h.name));
+    Promise.resolve(db.getHospitals()).then(data => {
+      if (data && data.length > 0) {
+        setPopularHubs(data.map((h: any) => h.name));
       }
-      setListingsVersion(v => v + 1);
     }).catch(console.error);
   }, []);
 
@@ -272,39 +270,11 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     return popularHubs.filter((h) => h.toLowerCase().includes(q));
   }, [hospitalSearchQuery, popularHubs]);
 
-  // Curated Featured Listings for the Home Page filtered by selected dates availability
+  // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
     const dbListings = db.getListings() || [];
-    const available = [];
-    const bookings = db.getBookings() || [];
-
-    for (let i = 0; i < dbListings.length; i++) {
-      const l = dbListings[i];
-      let isBooked = false;
-
-      if (earliestCheckIn && latestCheckOut) {
-        for (let b = 0; b < bookings.length; b++) {
-          const booking = bookings[b];
-          const bListingId = booking.listing_id || (booking as any).listingId;
-          if (bListingId !== l.id) continue;
-          if (booking.status === 'declined' || booking.status === 'cancelled' || booking.status === 'refunded') continue;
-          const bStart = booking.start_date || (booking as any).startDate;
-          const bEnd = booking.end_date || (booking as any).endDate;
-          if (!bStart || !bEnd) continue;
-
-          if (bStart <= latestCheckOut && bEnd >= earliestCheckIn) {
-            isBooked = true;
-            break;
-          }
-        }
-      }
-
-      if (!isBooked) {
-        available.push(l);
-      }
-    }
-    return available.slice(0, 6);
-  }, [earliestCheckIn, latestCheckOut, listingsVersion]);
+    return dbListings.slice(0, 6);
+  }, []);
 
   const displayedFeaturedListings = useMemo(() => {
     if (activeListingFilter === 'all') return featuredListings;

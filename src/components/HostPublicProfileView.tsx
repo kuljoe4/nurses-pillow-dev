@@ -10,8 +10,6 @@ interface HostPublicProfileViewProps {
   savedListingIds: string[];
   onToggleSave: (id: string) => void;
   selectedHospital?: string;
-  currentUser?: { role?: string; name?: string; [key: string]: any };
-  onGoToHostPortal?: () => void;
 }
 
 export const HostPublicProfileView: React.FC<HostPublicProfileViewProps> = ({

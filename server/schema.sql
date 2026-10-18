@@ -434,7 +434,6 @@ CREATE TABLE bookings (
     stripe_payment_intent_id VARCHAR(100),
     stripe_transfer_id VARCHAR(100),
     deposit_hold_payment_intent_id VARCHAR(100),
-    special_requests TEXT,
 
     -- Workflow Timestamps
     requested_at TIMESTAMPTZ DEFAULT NOW(),

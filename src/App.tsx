@@ -354,12 +354,21 @@ export default function App() {
 
       if (tab === currentTab) return;
 
-      if (tab === "verification" && currentUser.role === "guest") {
-        setAccessNotice({
-          title: "Sign In or Register Required",
-          message: "Please sign in or register before starting your clinician credential verification.",
-        });
-        setTimeout(() => setAccessNotice(null), 5000);
+      // Block unauthenticated users from verification flow and dashboards in production
+      const isProduction = import.meta.env.PROD;
+      if (isProduction && currentUser.role === "guest" && (tab === "verification" || tab === "email-verification" || tab === "phone-verification" || tab === "nurse-dashboard" || tab === "host-dashboard" || tab === "admin-portal")) {
+        setAuthModalMode("signin");
+        setIsAuthModalOpen(true);
+        return;
+      }
+
+      // Enforce role-based access for dashboards: allow authenticated dual access for both nurse & host dashboards
+      if (tab === "nurse-dashboard" && currentUser.role === "guest") {
+        setAuthModalMode("signin");
+        setIsAuthModalOpen(true);
+        return;
+      }
+      if (tab === "host-dashboard" && currentUser.role === "guest") {
         setAuthModalMode("signin");
         setIsAuthModalOpen(true);
         return;
@@ -607,10 +616,10 @@ export default function App() {
   const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRequest | null>(null);
   const [isBookingDetailOpen, setIsBookingDetailOpen] = useState(false);
 
-  const handleCancelBooking = useCallback(async (bookingId: string, reason: string) => {
+  const handleCancelBooking = useCallback(async (bookingId: string) => {
     // 1. Update UI state optimistically
     setBookingRequests((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: "declined", cancellationReason: reason } : b))
+      prev.map((b) => (b.id === bookingId ? { ...b, status: "declined" } : b))
     );
 
     // 2. Persist to localStorage
@@ -620,7 +629,7 @@ export default function App() {
         const key = `np_bookings_${email}`;
         const current = JSON.parse(localStorage.getItem(key) || "[]");
         const updated = current.map((b: any) =>
-          b.id === bookingId ? { ...b, status: "declined", cancellationReason: reason } : b
+          b.id === bookingId ? { ...b, status: "declined" } : b
         );
         localStorage.setItem(key, JSON.stringify(updated));
       }
@@ -1068,34 +1077,32 @@ export default function App() {
       return;
     }
     
-    // 2. If booking was not already persisted by modal, persist via create-booking-request
-    if (!booking.paymentIntentId) {
-      try {
-        const token = localStorage.getItem("np_auth_token") || sessionStorage.getItem("np_auth_token");
-        const res = await fetch("/api/checkout/create-booking-request", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            listing_id: booking.listingId,
-            start_date: booking.startDate,
-            end_date: booking.endDate,
-            traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
-            traveler_user_id: currentUser?.id,
-            room_id: booking.roomId || undefined,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.booking && data.paymentIntentId) {
-            booking.paymentIntentId = data.paymentIntentId;
-          }
+    // 2. Persist booking and create Stripe payment intent via backend production endpoint
+    try {
+      const token = localStorage.getItem("np_auth_token");
+      const res = await fetch("/api/checkout/create-booking-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          listing_id: booking.listingId,
+          start_date: booking.startDate,
+          end_date: booking.endDate,
+          traveler_name: currentUser?.name || booking.clinicianName || "Travel Clinician",
+          traveler_user_id: currentUser?.id,
+          room_id: booking.roomId || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.booking && data.paymentIntentId) {
+          booking.paymentIntentId = data.paymentIntentId;
         }
-      } catch (dbErr) {
-        console.warn("Failed to persist booking in PostgreSQL DB:", dbErr);
       }
+    } catch (dbErr) {
+      console.warn("Failed to persist booking in PostgreSQL DB:", dbErr);
     }
 
     setBookingRequests((prev) => {
@@ -1108,43 +1115,51 @@ export default function App() {
     });
     setIsCheckoutOpen(false);
     handleNavigateTab("nurse-dashboard");
-  }, [currentUser, appData.listings]);
+  }, [currentUser]);
 
   const handleApproveBooking = useCallback(async (id: string) => {
     const booking = bookingRequests.find((b) => b.id === id);
     if (!booking) return;
 
     try {
-      const token = localStorage.getItem("np_auth_token") || sessionStorage.getItem("np_auth_token");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
-
-      // 1. Call primary accept endpoint which executes direct charge capture on host's Stripe Connect account
-      const acceptRes = await fetch(`/api/bookings/${id}/accept`, {
-        method: "POST",
-        headers,
-      });
-
-      if (!acceptRes.ok) {
-        // Fallback: Try capture by paymentIntentId directly if available
-        if (booking.paymentIntentId) {
-          const capRes = await fetch(`/api/stripe/payment-intent/${booking.paymentIntentId}/capture`, {
-            method: "POST",
-            headers,
-          });
-          if (!capRes.ok) {
-            const errData = await capRes.json();
-            throw new Error(errData.error || "Failed to capture pre-authorized hold on Stripe.");
+      // 1. Diagnostic Check: Verify PaymentIntent exists
+      if (booking.paymentIntentId) {
+        try {
+          const statusCheck = await stripeConnect.checkPaymentIntent(booking.paymentIntentId);
+          if (statusCheck && statusCheck.status === 'not_found') {
+            console.warn('[Booking Approval] PaymentIntent status not found, attempting direct capture fallback');
           }
-        } else {
-          const errData = await acceptRes.json();
-          throw new Error(errData.error || "Failed to accept booking.");
+        } catch (checkErr) {
+          console.warn('[Booking Approval] Status check notice:', checkErr);
         }
+
+        // 2. Capture payment (non-custodial direct charge settlement with 5% platform split)
+        await stripeConnect.capturePaymentIntent(booking.paymentIntentId);
       }
 
-      // 2. Update UI state optimistically and reliably
+      // 3. Update DB
+      let dbUpdated = false;
+      try {
+        const res = await fetch(`/api/bookings/${id}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "approved" }),
+        });
+        if (res.ok) {
+          dbUpdated = true;
+        } else {
+          // Attempt accept route
+          const altRes = await fetch(`/api/bookings/${id}/accept`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (altRes.ok) dbUpdated = true;
+        }
+      } catch (dbErr) {
+        console.warn('[Booking Approval] Server status update note:', dbErr);
+      }
+
+      // 4. Update UI state optimistically and reliably
       setBookingRequests((prev) => {
         const next = prev.map((b) => (b.id === id ? { ...b, status: "approved" as const } : b));
         const key = getBookingsKey(currentUser?.email, currentUser?.id);
@@ -1155,60 +1170,67 @@ export default function App() {
       });
 
       setAccessNotice({
-        title: "Booking Accepted & Captured",
-        message: "Sanctuary booking confirmed! Pre-authorization hold was successfully captured to the host's Stripe Connect account, and the 5% platform fee was collected.",
+        title: "Booking Accepted",
+        message: "Sanctuary booking confirmed! Pre-authorization payment hold captured directly to host account (5% platform fee split applied).",
       });
       setTimeout(() => setAccessNotice(null), 5000);
       
     } catch (error: any) {
       console.error(`Failed to approve booking [ID: ${id}]:`, error);
+      let errorMessage = "Failed to accept booking. Please try again or check your connection.";
+      if (error.message && error.message.includes("payment")) {
+        errorMessage = "Payment capture failed: " + error.message;
+      }
+
       setAccessNotice({
-        title: "Stripe Capture Error",
-        message: error.message || "Failed to capture payment intent on Stripe.",
+        title: "Booking Error",
+        message: errorMessage
       });
-      setTimeout(() => setAccessNotice(null), 6000);
+      setTimeout(() => setAccessNotice(null), 5000);
     }
   }, [bookingRequests, currentUser]);
 
   const handleDeclineBooking = useCallback(async (id: string) => {
     const booking = bookingRequests.find((b) => b.id === id);
+    if (booking?.paymentIntentId) {
+      try {
+        await stripeConnect.cancelPaymentIntent(booking.paymentIntentId);
+      } catch (error) {
+        console.warn("Payment intent cancellation note:", error);
+      }
+    }
+
+    // Persist status update in live PostgreSQL database
     try {
-      const token = localStorage.getItem("np_auth_token") || sessionStorage.getItem("np_auth_token");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
-
-      // Call decline endpoint which releases/cancels the pre-authorized hold on Stripe Connect
-      const res = await fetch(`/api/bookings/${id}/decline`, {
-        method: "POST",
-        headers,
+      const res = await fetch(`/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "declined" }),
       });
-
-      if (!res.ok && booking?.paymentIntentId) {
-        await fetch(`/api/stripe/payment-intent/${booking.paymentIntentId}/cancel`, {
+      if (!res.ok) {
+        await fetch(`/api/bookings/${id}/decline`, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
         });
       }
-
-      setBookingRequests((prev) => {
-        const next = prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
-        const key = getBookingsKey(currentUser?.email, currentUser?.id);
-        try {
-          localStorage.setItem(key, JSON.stringify(next));
-        } catch {}
-        return next;
-      });
-
-      setAccessNotice({
-        title: "Booking Declined",
-        message: "Booking request declined. Pre-authorization hold on clinician card was successfully released ($0 traveler fee).",
-      });
-      setTimeout(() => setAccessNotice(null), 5000);
-    } catch (err: any) {
-      console.error("Failed to decline booking:", err);
+    } catch (err) {
+      console.warn("Failed to update booking status in DB:", err);
     }
+
+    setBookingRequests((prev) => {
+      const next = prev.map((b) => (b.id === id ? { ...b, status: "declined" as const } : b));
+      const key = getBookingsKey(currentUser?.email, currentUser?.id);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    setAccessNotice({
+      title: "Booking Declined",
+      message: "Booking request declined. Pre-authorization hold on clinician card was successfully released ($0 traveler fee).",
+    });
+    setTimeout(() => setAccessNotice(null), 5000);
   }, [currentUser, bookingRequests]);
 
   const handleAuthenticated = useCallback(
@@ -1336,64 +1358,57 @@ export default function App() {
       {/* Sticky Navigation Header */}
       <Header
         topBanner={
-          <>
-            {accessNotice ? (
-              <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
-                {accessNotice.title}: {accessNotice.message}
-              </div>
-            ) : null}
-            {currentUser.role === "nurse" && activeNurseBooking ? (
-              <div className="bg-[#FBF0D6] dark:bg-[#20190d] border-b border-[#B9822E]/25 text-[#0B2559] dark:text-[#FBF0D6] px-3 sm:px-6 py-2 text-xs transition-colors">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{
-                        backgroundColor:
-                          activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                            ? "#2F6E5E"
-                            : activeNurseBooking.status === "declined"
-                            ? "#A8452E"
-                            : "#B9822E",
-                      }}
-                    />
-                    <span className="font-medium truncate">
-                      {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                        ? "Confirmed Sanctuary: "
-                        : "Pending Request: "}
-                      <strong className="font-bold text-[#0B2559] dark:text-white">
-                        {activeNurseBooking.listingTitle}
-                      </strong>
-                    </span>
-                    <span className="hidden md:inline text-gray-400 dark:text-gray-500">•</span>
-                    <span
-                      className="hidden md:inline font-semibold"
-                      style={{
-                        color:
-                          activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
-                            ? "#2F6E5E"
-                            : activeNurseBooking.status === "declined"
-                            ? "#A8452E"
-                            : "#B9822E",
-                      }}
-                    >
-                      Status: {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active" ? "Accepted & Secured" : "Awaiting Host Response"}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedBookingDetail(activeNurseBooking);
-                      setIsBookingDetailOpen(true);
+          currentUser.role === "nurse" && activeNurseBooking ? (
+            <div className="bg-[#FBF0D6] dark:bg-[#20190d] border-b border-[#B9822E]/25 text-[#0B2559] dark:text-[#FBF0D6] px-3 sm:px-6 py-2 text-xs transition-colors">
+              <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{
+                      backgroundColor:
+                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                          ? "#2F6E5E"
+                          : activeNurseBooking.status === "declined"
+                          ? "#A8452E"
+                          : "#B9822E",
                     }}
-                    className="shrink-0 px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                  />
+                  <span className="font-medium truncate">
+                    {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                      ? "Confirmed Sanctuary: "
+                      : "Pending Request: "}
+                    <strong className="font-bold text-[#0B2559] dark:text-white">
+                      {activeNurseBooking.listingTitle}
+                    </strong>
+                  </span>
+                  <span className="hidden md:inline text-gray-400 dark:text-gray-500">•</span>
+                  <span
+                    className="hidden md:inline font-semibold"
+                    style={{
+                      color:
+                        activeNurseBooking.status === "approved" || activeNurseBooking.status === "active"
+                          ? "#2F6E5E"
+                          : activeNurseBooking.status === "declined"
+                          ? "#A8452E"
+                          : "#B9822E",
+                    }}
                   >
-                    View request details
-                  </button>
+                    Status: {activeNurseBooking.status === "approved" || activeNurseBooking.status === "active" ? "Accepted & Secured" : "Awaiting Host Response"}
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedBookingDetail(activeNurseBooking);
+                    setIsBookingDetailOpen(true);
+                  }}
+                  className="shrink-0 px-3 py-1 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  View request details
+                </button>
               </div>
-            ) : null}
-          </>
+            </div>
+          ) : null
         }
         currentTab={currentTab}
         currentUser={currentUser}
@@ -1418,6 +1433,13 @@ export default function App() {
           setSelectedBookingDetail(b);
           setIsBookingDetailOpen(true);
         }}
+        topBanner={
+          accessNotice ? (
+            <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
+              {accessNotice.title}: {accessNotice.message}
+            </div>
+          ) : undefined
+        }
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
@@ -1463,10 +1485,6 @@ export default function App() {
                 activeBookings={bookingRequests}
                 currentUser={currentUser}
                 verificationData={verificationData}
-                onSelectBooking={(b) => {
-                  setSelectedBookingDetail(b);
-                  setIsBookingDetailOpen(true);
-                }}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center p-6 bg-[#f8fafc] dark:bg-[#07101e]">
@@ -1859,19 +1877,8 @@ export default function App() {
             currentUser={currentUser}
             verificationData={verificationData}
             onGoToVerification={() => {
-              if (currentUser.role === 'guest') {
-                setIsCheckoutOpen(false);
-                setAuthModalMode('signin');
-                setIsAuthModalOpen(true);
-                return;
-              }
               handleNavigateTab("verification");
               setIsCheckoutOpen(false);
-            }}
-            onOpenAuth={(mode) => {
-              setIsCheckoutOpen(false);
-              setAuthModalMode(mode || 'signin');
-              setIsAuthModalOpen(true);
             }}
             onSwitchRole={handleSwitchRole}
             onSetupClinician={() => {
