@@ -22,7 +22,7 @@ if (process.env.DATABASE_URL) {
       ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
       : rawDbUrl;
 
-    const isRemoteDb = true;
+    const isRemoteDb = connectionString.includes('railway.app') || connectionString.includes('amazonaws.com') || connectionString.includes('supabase');
 
     pool = new pg.Pool({
       connectionString,
