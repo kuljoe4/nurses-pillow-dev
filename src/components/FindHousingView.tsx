@@ -264,11 +264,15 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     }).catch(console.error);
   }, []);
 
+  // ⚡ Bolt Performance Optimization: Pre-compute lowercased strings
+  // Prevents calling .toLowerCase() on every array element during filtering re-renders
+  const hubsWithLower = useMemo(() => popularHubs.map(h => ({ name: h, lower: h.toLowerCase() })), [popularHubs]);
+
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
-  }, [hospitalSearchQuery, popularHubs]);
+    return hubsWithLower.filter(h => h.lower.includes(q)).map(h => h.name);
+  }, [hospitalSearchQuery, popularHubs, hubsWithLower]);
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
