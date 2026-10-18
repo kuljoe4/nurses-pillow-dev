@@ -103,10 +103,10 @@ class PhoneAuthStore {
         const crypto = require('crypto');
         rand = crypto.randomBytes(4).readUInt32LE(0) / (0xffffffff + 1);
       } catch (e) {
-        throw new Error('Secure random generation not supported');
+        throw new Error('Secure random generation failed');
       }
     } else {
-      throw new Error('Secure random generation not supported');
+      throw new Error('No secure random generator available');
     }
 
     const generatedCode = Math.floor(100000 + rand * 900000).toString();
@@ -119,10 +119,10 @@ class PhoneAuthStore {
          const crypto = require('crypto');
          sidRand = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
        } catch (e) {
-         throw new Error('Secure random generation not supported');
+         throw new Error('Secure random generation failed');
        }
     } else {
-       throw new Error('Secure random generation not supported');
+       throw new Error('No secure random generator available');
     }
 
     const session: StoredOtpSession = {
