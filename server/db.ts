@@ -22,11 +22,11 @@ if (process.env.DATABASE_URL) {
       ? rawDbUrl.replace('postgresql+asyncpg://', 'postgresql://')
       : rawDbUrl;
 
-    const isRemoteDb = connectionString.includes('railway.app') || connectionString.includes('amazonaws.com') || connectionString.includes('supabase');
+    const isRemoteDb = connectionString.includes('railway.app') || connectionString.includes('amazonaws.com') || connectionString.includes('supabase') || (connectionString.includes('sslmode=require') && !connectionString.includes('localhost'));
 
     pool = new pg.Pool({
       connectionString,
-      ssl: isRemoteDb ? { rejectUnauthorized: false } : false,
+      ssl: (isRemoteDb && !connectionString.includes('localhost') && !connectionString.includes('testdb')) ? { rejectUnauthorized: false } : false,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
       max: 20,

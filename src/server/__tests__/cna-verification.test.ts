@@ -91,7 +91,7 @@ app.post('/api/admin/verifications/:userId/approve', authenticateToken, async (r
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? 'fallback_secret_for_development_only' : (() => { throw new Error('JWT_SECRET is not set in production'); })());
 const testToken = jwt.sign({ id: 'test-cna-user', email: 'testcna@example.com', role: 'super_admin' }, JWT_SECRET);
 
-const runTests = process.env.DATABASE_URL ? describe : describe.skip;
+const runTests = process.env.DATABASE_URL && process.env.DATABASE_URL !== 'mock' ? describe : describe.skip;
 
 runTests('CNA Verification API (Real DB)', () => {
   beforeAll(async () => {

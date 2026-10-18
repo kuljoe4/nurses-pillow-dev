@@ -151,7 +151,7 @@ class RailwayDatabaseManager {
 
       this.pool = new pg.Pool({
         connectionString: this.config.connectionString,
-        ssl: this.config.ssl ? { rejectUnauthorized: false } : false,
+        ssl: (this.config.ssl && !this.config.connectionString.includes('localhost')) ? { rejectUnauthorized: false } : false,
         connectionTimeoutMillis: 5000,
         max: 10,
         idleTimeoutMillis: 30000,
