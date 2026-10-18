@@ -2675,7 +2675,7 @@ async function startServer() {
               const extension = matches[1];
               const base64Data = matches[2];
               const buffer = Buffer.from(base64Data, 'base64');
-              const fileName = `lst_${listingId}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${extension}`;
+              const fileName = `lst_${listingId}_${Date.now()}_${crypto.randomBytes(3).toString('hex')}.${extension}`;
               const filePath = path.join(uploadDir, fileName);
               fs.writeFileSync(filePath, buffer);
               photoUrl = `/uploads/${fileName}`;
