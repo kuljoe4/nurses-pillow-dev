@@ -517,6 +517,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-[11px] text-[#005684] dark:text-[#93ccff] font-semibold cursor-pointer"
+                    aria-pressed={showPassword}
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -724,6 +725,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {showPassword ? "visibility_off" : "visibility"}
@@ -748,6 +750,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showConfirmPassword}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {showConfirmPassword ? "visibility_off" : "visibility"}
@@ -831,6 +835,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {showPassword ? "visibility_off" : "visibility"}

@@ -44,7 +44,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   onStartClinicianVerification,
   currentUser,
 }) => {
-  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding' | 'profile'>(initialTab as any);
+  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'calendar' | 'onboarding' | 'profile'>(initialTab as any);
   const [editorStep, setEditorStep] = useState<1 | 2 | 3>(1);
 
   const [hostFullName, setHostFullName] = useState(currentUser?.name || 'Sarah M.');
@@ -99,6 +99,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
   const [hostListings, setHostListings] = useState<any[]>([]);
+  const [selectedCalendarListingId, setSelectedCalendarListingId] = useState<string | null>(null);
 
   // Fetch host's listing on load to get the ID
   useEffect(() => {
@@ -120,7 +121,9 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
             const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
             if (isMounted && data.listings) {
               setHostListings(data.listings);
-              // We'll let the user choose or hit 'Create New Listing'
+              if (data.listings.length > 0 && !selectedCalendarListingId) {
+                setSelectedCalendarListingId(data.listings[0].id);
+              }
             }
 
           } else if (!res.ok) {
@@ -550,7 +553,8 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       setIsSavedEditor(true);
       setTimeout(() => {
-        setActiveHostTab('dashboard');
+        setEditingListingId(null);
+        setActiveHostTab('editor');
       }, 1000);
     } catch (err) {
       console.error("Error saving listing:", err);
@@ -672,11 +676,30 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
       </div>
 
       {activeHostTab === 'calendar' && (
-          <div className="max-w-xl mx-auto">
+          <div className="max-w-xl mx-auto space-y-4">
+              {hostListings.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider shrink-0">Property:</span>
+                  {hostListings.map(listing => (
+                    <button
+                      key={listing.id}
+                      onClick={() => setSelectedCalendarListingId(listing.id)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs ${
+                        (selectedCalendarListingId || hostListings[0]?.id) === listing.id
+                          ? 'bg-[#0A6FA8] text-white'
+                          : 'bg-white dark:bg-[#0E1A2E] text-gray-600 dark:text-gray-300 hover:bg-gray-100 border border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {listing.title || listing.address || `Sanctuary ${listing.id.slice(0, 6)}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {editingListingId ? (
                 <HostAvailabilityCalendar listingId={editingListingId} />
               ) : hostListings.length > 0 ? (
-                <HostAvailabilityCalendar listingId={hostListings[0].id} />
+                <HostAvailabilityCalendar listingId={selectedCalendarListingId || hostListings[0].id} />
               ) : (
                 <div className="text-center p-8 text-gray-500">No listings found.</div>
               )}
@@ -812,9 +835,48 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
               </div>
             ) : (
               filteredRequests.map((req) => (
-                <div key={req.id} className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550]">
-                  <h3 className="font-bold text-[#0B2559] dark:text-white">Request: {req.id}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Status: {req.status}</p>
+                <div key={req.id} className="bg-white dark:bg-[#0B1626] rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex flex-wrap sm:flex-nowrap items-center justify-between gap-4">
+                  <div className="flex-1 min-w-[200px]">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-bold text-sm text-[#0B2559] dark:text-white">{req.listingTitle}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-sm font-bold uppercase tracking-wider ${
+                        req.status === 'pending_host_approval' ? 'bg-[#FBF0D6] text-[#B9822E]' :
+                        ['approved', 'active', 'completed'].includes(req.status) ? 'bg-[#E1EFE9] text-[#2F6E5E]' : 'bg-[#F4E2DC] text-[#A8452E]'
+                      }`}>{req.status === 'pending_host_approval' ? 'Requested' : req.status === 'approved' ? 'Accepted' : req.status}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Clinician: <span className="font-semibold text-[#0B2559] dark:text-gray-200">{req.clinicianName || 'Travel Clinician'}</span> • {req.startDate} – {req.endDate} ({req.durationWeeks} wks)
+                    </p>
+                    {req.paymentIntentId && (
+                      <p className="text-[11px] font-mono text-[#0A6FA8] dark:text-[#3E9AD1] mt-1 flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">lock</span>
+                        <span>Pre-Auth Hold: {req.paymentIntentId}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-[#0B2559] dark:text-white tabular-nums">${req.totalInitialCharge}</div>
+                      <div className="text-[10px] text-gray-400">Total Payout (95%)</div>
+                    </div>
+                    {req.status === 'pending_host_approval' && (
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          onClick={() => onApproveBooking(req.id)}
+                          className="px-3.5 py-1.5 bg-[#2F6E5E] hover:bg-[#195b4c] text-white text-[11px] font-bold rounded-lg cursor-pointer transition-colors shadow-xs flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">check</span>
+                          Accept &amp; Capture
+                        </button>
+                        <button
+                          onClick={() => onDeclineBooking(req.id)}
+                          className="px-3.5 py-1 bg-[#F4E2DC] hover:bg-[#e4c9c1] text-[#A8452E] text-[11px] font-bold rounded-lg cursor-pointer transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))
             )}
@@ -823,31 +885,25 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
           {/* Payout History Section */}
           <div className="space-y-3.5 mt-8">
             <h2 className="text-base font-bold text-[#0B2559] dark:text-white">Payout History</h2>
-            <div className="bg-white dark:bg-[#0B1626] rounded-2xl border border-[rgba(11,37,89,0.06)] dark:border-[#233550] overflow-hidden shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
-              <table className="w-full text-xs">
-                <thead className="bg-[#EFF6FB] dark:bg-[#0E1A2E] text-gray-500">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-bold">Date</th>
-                    <th className="px-4 py-3 text-left font-bold">Booking ID</th>
-                    <th className="px-4 py-3 text-right font-bold">Net Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
-                  {payoutBookings.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="px-4 py-8 text-center text-gray-400">No payout history available.</td>
-                    </tr>
-                  ) : (
-                    payoutBookings.map(b => (
-                      <tr key={b.id} className="hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors">
-                        <td className="px-4 py-3">{b.startDate}</td>
-                        <td className="px-4 py-3 tabular-nums">{b.id}</td>
-                        <td className="px-4 py-3 text-right font-bold tabular-nums">${b.hostNetPayout.toFixed(2)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="bg-white dark:bg-[#0B1626] rounded-2xl border border-[rgba(11,37,89,0.06)] dark:border-[#233550] shadow-[0_2px_12px_rgba(11,37,89,0.06)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+              <div className="p-4 border-b border-[rgba(11,37,89,0.06)] dark:border-[#233550] flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500">Date</span>
+                <span className="text-xs font-bold text-gray-500">Booking ID</span>
+                <span className="text-xs font-bold text-gray-500">Net Amount</span>
+              </div>
+              <div className="divide-y divide-[rgba(11,37,89,0.06)] dark:divide-[#233550]">
+                {payoutBookings.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-xs text-gray-400">No payout history available.</div>
+                ) : (
+                  payoutBookings.map(b => (
+                    <div key={b.id} className="flex items-center justify-between p-4 hover:bg-[#EFF6FB] dark:hover:bg-[#182840] transition-colors">
+                      <span className="text-xs font-medium text-[#0B2559] dark:text-gray-300">{b.startDate}</span>
+                      <span className="text-xs text-gray-500 tabular-nums">{b.id}</span>
+                      <span className="text-xs font-bold text-[#2F6E5E] dark:text-[#aff0db] tabular-nums">+${b.hostNetPayout.toFixed(2)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -855,30 +911,73 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
 
       {/* Listings List Selector */}
       {activeHostTab === 'editor' && !editingListingId && hostListings.length > 0 && (
-        <div className="mb-6 space-y-4">
-          <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Your Listings</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-[#0B2559] dark:text-white">Your Listed Sanctuaries</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Manage rates, photos, and availability instantly with one click.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setEditingListingId('new'); setEditorStep(1); }}
+              className="px-5 py-2.5 rounded-full bg-[#0A6FA8] hover:bg-[#0C7EBF] text-white text-xs font-bold shadow-md transition-all cursor-pointer flex items-center gap-2 self-start"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              Create New Sanctuary
+            </button>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {hostListings.map(l => (
-              <div key={l.id} onClick={() => setEditingListingId(l.id)} className="p-4 bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.06)] dark:border-[#233550] rounded-2xl cursor-pointer hover:border-[#0A6FA8] transition-all">
-                <h3 className="font-bold text-[#0B2559] dark:text-white">{l.title || l.address_line1 || 'Sanctuary Stay'}</h3>
-                <p className="text-xs text-gray-500">{l.city}, {l.state}</p>
+              <div key={l.id} className="p-5 bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] rounded-3xl shadow-[0_4px_12px_rgba(11,37,89,0.04)] flex flex-col justify-between gap-4 transition-all hover:border-[#0A6FA8] group">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                      Active &amp; Published
+                    </span>
+                    <span className="text-xs font-black text-[#0A6FA8] dark:text-[#3E9AD1] tabular-nums">
+                      ${Number(l.monthly_rate || l.monthlyRate || 2800).toLocaleString()}/mo
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-sm text-[#0B2559] dark:text-white group-hover:text-[#0A6FA8] transition-colors line-clamp-1">{l.title || l.address_line1 || 'Sanctuary Stay'}</h3>
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    {l.city}, {l.state} {l.zip_code || ''}
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setEditingListingId(l.id); setEditorStep(1); }}
+                    className="flex-1 py-2 px-3 rounded-xl bg-[#EFF6FB] dark:bg-[#0E1A2E] text-[#0A6FA8] dark:text-[#3E9AD1] text-xs font-bold hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">edit</span>
+                    Quick Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveHostTab('calendar'); setEditingListingId(l.id); }}
+                    className="py-2 px-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Manage Availability Calendar"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">calendar_month</span>
+                    Calendar
+                  </button>
+                </div>
               </div>
             ))}
-            <div onClick={() => setEditingListingId('new')} className="p-4 bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-dashed border-[#0A6FA8] rounded-2xl cursor-pointer flex items-center justify-center flex-col gap-2 hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-all">
-              <span className="material-symbols-outlined text-[#0A6FA8]">add_circle</span>
-              <span className="text-sm font-bold text-[#0A6FA8]">Create New Listing</span>
-            </div>
           </div>
         </div>
       )}
 
       {activeHostTab === 'editor' && hostListings.length === 0 && !editingListingId && (
         <div className="mb-6 space-y-4">
-          <h2 className="text-lg font-bold text-[#0B2559] dark:text-white">Your Listings</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-[#0B2559] dark:text-white">Your Listed Sanctuaries</h2>
+          </div>
            <div className="grid gap-4 md:grid-cols-2">
-             <div onClick={() => setEditingListingId('new')} className="p-4 bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-dashed border-[#0A6FA8] rounded-2xl cursor-pointer flex items-center justify-center flex-col gap-2 hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-all">
-              <span className="material-symbols-outlined text-[#0A6FA8]">add_circle</span>
-              <span className="text-sm font-bold text-[#0A6FA8]">Create New Listing</span>
+             <div onClick={() => { setEditingListingId('new'); setEditorStep(1); }} className="p-6 bg-[#EFF6FB] dark:bg-[#0E1A2E] border border-dashed border-[#0A6FA8] rounded-3xl cursor-pointer flex items-center justify-center flex-col gap-2 hover:bg-[#eaedff] dark:hover:bg-[#182840] transition-all">
+              <span className="material-symbols-outlined text-[#0A6FA8] text-3xl">add_circle</span>
+              <span className="text-sm font-bold text-[#0A6FA8]">Create New Sanctuary</span>
             </div>
           </div>
         </div>

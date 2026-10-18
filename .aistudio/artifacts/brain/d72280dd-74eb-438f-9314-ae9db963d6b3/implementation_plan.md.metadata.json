@@ -1,6 +1,6 @@
 {
-  "summary": "Revised implementation plan featuring deep research on Stripe Accounts v2 (/v2/core/accounts), merchant configuration, Direct Charges vs Destination Charges, resolution of sandbox invalids, and role-isolated routing.",
-  "updatedAt": "2026-10-15T08:31:31.677350491Z",
+  "summary": "Comprehensive production plan to review and enforce listings date range filtering, blackout date exclusion, booking conflict resolution, listing visibility gating, clinician verification with dynamic profession/document/license validation and state board links, add listing host validation, and search/map spatial decluttering with the fix for the NaN wks display bug.",
+  "updatedAt": "2026-10-16T12:04:49.181781332Z",
   "requestFeedback": true,
   "userFacing": true
 }

@@ -97,7 +97,7 @@ const DEFAULT_HOST_PROFILES: HostFeeOverride[] = [
     phone: '+1 (919) 555-0144',
     propertyTitle: 'Acoustically Insulated Ninth Street Suite',
     listingId: 'nc-duke-condo',
-    connectedAccountId: 'acct_1NC_DukeHost_Express',
+    connectedAccountId: 'acct_1UQm3TFzdRvZq0i5',
     hasOverride: true,
     overridePercent: 5.0,
     isGrandfathered: true,
@@ -111,7 +111,7 @@ const DEFAULT_HOST_PROFILES: HostFeeOverride[] = [
     phone: '+1 (919) 555-0182',
     propertyTitle: 'Historic Franklin Street Daylight Sanctuary',
     listingId: 'nc-chapel-hill-loft',
-    connectedAccountId: 'acct_1NC_UNC_Host_Express',
+    connectedAccountId: 'acct_1UQm3TFzdRvZq0i5',
     hasOverride: false,
     overridePercent: 5.0,
     reason: 'Standard Global Platform Rate',
@@ -124,7 +124,7 @@ const DEFAULT_HOST_PROFILES: HostFeeOverride[] = [
     phone: '+1 (919) 555-0199',
     propertyTitle: 'North Hills Day-Sleeper Garden Cottage',
     listingId: 'nc-wakemed-cottage',
-    connectedAccountId: 'acct_1NC_WakeMedHost_Express',
+    connectedAccountId: 'acct_1UQm3TFzdRvZq0i5',
     hasOverride: false,
     overridePercent: 5.0,
     reason: 'Standard Global Platform Rate',
@@ -137,7 +137,7 @@ const DEFAULT_HOST_PROFILES: HostFeeOverride[] = [
     phone: '+1 (919) 555-0131',
     propertyTitle: 'Duke Medical District Condo',
     listingId: 'nc-duke-condo-2',
-    connectedAccountId: 'acct_1NC_Marcus_Express',
+    connectedAccountId: 'acct_1UQm3TFzdRvZq0i5',
     hasOverride: true,
     overridePercent: 4.5,
     isGrandfathered: false,
@@ -439,98 +439,67 @@ class StripeConnectService {
           const crypto = require('crypto');
           return crypto.randomUUID().replace(/-/g, '').substring(0, length);
         } catch (e) {
-          return Math.random().toString(36).substring(2, 2 + length);
+          throw new Error('Secure random generation not supported');
         }
       }
-      return Math.random().toString(36).substring(2, 2 + length);
+      throw new Error('Secure random generation not supported');
     };
 
-    try {
-      const token = typeof window !== 'undefined'
-        ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
-        : null;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch('/api/stripe/payment-intent', {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          monthlyRent,
-          listingId,
-          cleaningFee,
-          securityDeposit,
-          hostConnectedAccountId,
-          platformFeePercent: split.feePercent / 100, // send as decimal (e.g. 0.05)
-        }),
-      });
-
-      const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create payment intent');
-      }
-
-      const transaction: StripeSplitTransaction = {
-        id: `txn_${Date.now()}`,
-        paymentIntentId: data.paymentIntentId || `pi_test_${getSecureRandomString(8)}`,
-        chargeId: `ch_test_${getSecureRandomString(8)}`,
-        transferId: `tr_test_${getSecureRandomString(8)}`,
-        authorizationHoldId:
-          securityDeposit > 0 ? `hold_test_${getSecureRandomString(8)}` : undefined,
-        grossAmount: split.grossCharge,
-        platformFeeAmount: split.platformFee,
-        hostPayoutAmount: split.hostNetPayout,
-        securityDepositHoldAmount: split.securityDepositHold,
-        hostConnectedAccountId,
-        currency: 'USD',
-        status: 'succeeded',
-        paymentMethod: {
-          brand: 'visa',
-          last4,
-          expMonth: '12',
-          expYear: '2028',
-        },
-        clientSecret: data.clientSecret || `pi_test_${Date.now()}_secret_${getSecureRandomString(6)}`,
-        createdAt: new Date().toISOString(),
-        receiptUrl: `https://pay.stripe.com/receipts/test/nurses-pillow-${Date.now()}`,
-      };
-
-      this.transactions.unshift(transaction);
-      return transaction;
-    } catch (err) {
-      console.warn('[Stripe Connect] Payment-intent API notice (using sandbox transaction fallback):', err);
-      // Fallback for non-connected network environments (like sandbox previews)
-      const transaction: StripeSplitTransaction = {
-        id: `txn_${Date.now()}`,
-        paymentIntentId: `pi_test_${getSecureRandomString(8)}`,
-        chargeId: `ch_test_${getSecureRandomString(8)}`,
-        transferId: `tr_test_${getSecureRandomString(8)}`,
-        authorizationHoldId:
-          securityDeposit > 0 ? `hold_test_${getSecureRandomString(8)}` : undefined,
-        grossAmount: split.grossCharge,
-        platformFeeAmount: split.platformFee,
-        hostPayoutAmount: split.hostNetPayout,
-        securityDepositHoldAmount: split.securityDepositHold,
-        hostConnectedAccountId,
-        currency: 'USD',
-        status: 'succeeded',
-        paymentMethod: {
-          brand: 'visa',
-          last4,
-          expMonth: '12',
-          expYear: '2028',
-        },
-        clientSecret: `pi_test_${Date.now()}_secret_${getSecureRandomString(6)}`,
-        createdAt: new Date().toISOString(),
-        receiptUrl: `https://pay.stripe.com/receipts/test/nurses-pillow-${Date.now()}`,
-      };
-
-      this.transactions.unshift(transaction);
-      return transaction;
+    const token = typeof window !== 'undefined'
+      ? (localStorage.getItem('np_auth_token') || sessionStorage.getItem('np_auth_token'))
+      : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
+
+    const res = await fetch('/api/stripe/payment-intent', {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        monthlyRent,
+        listingId,
+        cleaningFee,
+        securityDeposit,
+        cardNumber,
+        hostConnectedAccountId,
+        platformFeePercent: split.feePercent / 100, // send as decimal (e.g. 0.05)
+      }),
+    });
+
+    const data = (res.headers.get('content-type')?.includes('application/json') ? await res.json() : {});
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to create payment intent');
+    }
+
+    const transaction: StripeSplitTransaction = {
+      id: `txn_${Date.now()}`,
+      paymentIntentId: data.paymentIntentId,
+      chargeId: `ch_${data.paymentIntentId || Date.now()}`,
+      transferId: `tr_${data.paymentIntentId || Date.now()}`,
+      authorizationHoldId:
+        securityDeposit > 0 ? `hold_${data.paymentIntentId || Date.now()}` : undefined,
+      grossAmount: split.grossCharge,
+      platformFeeAmount: split.platformFee,
+      hostPayoutAmount: split.hostNetPayout,
+      securityDepositHoldAmount: split.securityDepositHold,
+      hostConnectedAccountId,
+      currency: 'USD',
+      status: 'succeeded',
+      paymentMethod: {
+        brand: 'visa',
+        last4,
+        expMonth: '12',
+        expYear: '2028',
+      },
+      clientSecret: data.clientSecret,
+      createdAt: new Date().toISOString(),
+      receiptUrl: `https://pay.stripe.com/receipts/nurses-pillow-${Date.now()}`,
+    };
+
+    this.transactions.unshift(transaction);
+    return transaction;
   }
 
   getTransactionHistory(): StripeSplitTransaction[] {

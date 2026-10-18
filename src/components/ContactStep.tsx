@@ -11,6 +11,7 @@ interface ContactStepProps {
   isNightShiftMode: boolean;
   onOpenPostmarkEmail?: () => void;
   onOpenTwilioOtp?: () => void;
+  onExit?: () => void;
 }
 
 export const ContactStep: React.FC<ContactStepProps> = ({
