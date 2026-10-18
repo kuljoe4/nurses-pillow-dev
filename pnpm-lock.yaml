@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@electric-sql/pglite':
-        specifier: ^0.5.8
+        specifier: ^0.5.10
         version: 0.5.10
       '@google-cloud/storage':
-        specifier: ^8.2.0
-        version: 8.4.0(supports-color@10.2.2)
+        specifier: ^8.4.0
+        version: 8.4.0
       '@google/genai':
-        specifier: ^2.4.0
-        version: 2.30.0(supports-color@10.2.2)
+        specifier: ^2.30.0
+        version: 2.30.0
       '@googlemaps/markerclusterer':
         specifier: ^2.6.2
         version: 2.6.2
@@ -27,7 +27,7 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4(@stripe/connect-js@3.4.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@stripe/stripe-js':
-        specifier: ^10.0.0
+        specifier: ^10.1.0
         version: 10.1.0
       '@tailwindcss/vite':
         specifier: ^4.3.3
@@ -57,16 +57,16 @@ importers:
         specifier: ^17.4.2
         version: 17.4.2
       express:
-        specifier: ^4.21.2
-        version: 4.22.3(supports-color@10.2.2)
+        specifier: ^4.22.3
+        version: 4.22.3
       express-rate-limit:
         specifier: ^8.7.1
-        version: 8.7.1(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 8.7.1(express@4.22.3)
       firebase:
         specifier: ^12.19.0
         version: 12.19.0
       framer-motion:
-        specifier: ^13.4.1
+        specifier: ^13.5.1
         version: 13.5.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       helmet:
         specifier: ^8.3.0
@@ -78,22 +78,22 @@ importers:
         specifier: ^0.546.0
         version: 0.546.0(react@19.3.1)
       motion:
-        specifier: ^12.23.24
+        specifier: ^12.43.0
         version: 12.43.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       multer:
         specifier: ^2.4.0
         version: 2.4.0
       pg:
-        specifier: ^8.23.0
+        specifier: ^8.23.1
         version: 8.23.1
       pg-hstore:
         specifier: ^2.3.4
         version: 2.3.4
       react:
-        specifier: ^19.0.1
+        specifier: ^19.3.1
         version: 19.3.1
       react-dom:
-        specifier: ^19.0.1
+        specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
       react-simple-maps:
         specifier: ^5.0.5
@@ -105,11 +105,11 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       uuid:
-        specifier: ^14.0.2
+        specifier: ^14.0.3
         version: 14.0.3
     devDependencies:
       '@playwright/test':
-        specifier: ^1.49.1
+        specifier: ^1.64.1
         version: 1.64.1
       '@testing-library/jest-dom':
         specifier: ^7.0.1
@@ -127,10 +127,10 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       '@types/express':
-        specifier: ^4.17.21
+        specifier: ^4.17.25
         version: 4.17.25
       '@types/google.maps':
-        specifier: ^3.66.4
+        specifier: ^3.66.7
         version: 3.66.7
       '@types/jsonwebtoken':
         specifier: ^9.0.10
@@ -139,7 +139,7 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       '@types/node':
-        specifier: ^26.6.3
+        specifier: ^26.6.5
         version: 26.6.5
       '@types/pg':
         specifier: ^8.23.1
@@ -163,26 +163,26 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       '@vitejs/plugin-react':
-        specifier: ^6.1.1
+        specifier: ^6.1.2
         version: 6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       '@vitest/coverage-v8':
-        specifier: ^5.0.2
+        specifier: ^5.0.5
         version: 5.0.5(vitest@5.0.5)
       autoprefixer:
-        specifier: ^10.4.21
+        specifier: ^10.6.1
         version: 10.6.1(postcss@8.5.30)
       concurrently:
-        specifier: ^10.0.5
+        specifier: ^10.0.6
         version: 10.0.6
       esbuild:
-        specifier: ^0.28.0
+        specifier: ^0.28.2
         version: 0.28.2
       playwright:
-        specifier: ^1.49.1
+        specifier: ^1.64.1
         version: 1.64.1
       supertest:
-        specifier: ^7.3.0
-        version: 7.3.1(supports-color@10.2.2)
+        specifier: ^7.3.1
+        version: 7.3.1
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -193,13 +193,13 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vite:
-        specifier: ^8.3.2
+        specifier: ^8.3.4
         version: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
       vitest:
-        specifier: ^5.0.2
+        specifier: ^5.0.5
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       zod:
-        specifier: ^4.6.5
+        specifier: ^4.6.7
         version: 4.6.7
 
 packages:
@@ -1588,8 +1588,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.458:
-    resolution: {integrity: sha512-/hIH2gRSmxrf4/X4Nw/t/Wc8PVS22l8/3HnWjWTWsTOM5dsnMUPZF/+u+yr3LqweNuTBJE1rq6qAQzKkZVwMfA==}
+  electron-to-chromium@1.5.459:
+    resolution: {integrity: sha512-4SC9HHSFjO/liAhifpdOL5hG9b4BP7/5G3y3UPZVO8trlAXr1CaUEEJL0gWK3kOcYcZrOA5rkwG45Gra/lTIgg==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -2354,9 +2354,9 @@ packages:
     resolution: {integrity: sha512-s4VSOf6yN0rvbRZGxs8Om5CWj6seneMwK3oDb4lWDH0UPhWcxwOWw5+qk24bxq87szX1ydrwylIOp2uG1ojUpA==}
     engines: {node: '>= 0.8'}
 
-  re2js@2.8.6:
-    resolution: {integrity: sha512-xLgQil4kIUCrAzVk9fRSkxkFNwmygLFjVxXrLc65aE1F0+Zsb8rxumFBy4XKyvgMCTL6kilDq3EZ0piE2dP/Dg==}
-    engines: {node: '>=18.0.0'}
+  re2js@2.8.8:
+    resolution: {integrity: sha512-E2FVgqD2mzJ+ZmMSHLnkOvZ7PiZ4FgMdfVCA3YsJWs9gtyoaKmUMxyVPCXS1yK209/mz3XkdT7kr3OlMWW2Fww==}
+    engines: {node: '>=20.0.0'}
 
   react-dom@19.3.1:
     resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
@@ -3052,7 +3052,7 @@ snapshots:
       '@firebase/webchannel-wrapper': 1.0.7
       '@grpc/grpc-js': 1.9.16
       '@grpc/proto-loader': 0.7.15
-      re2js: 2.8.6
+      re2js: 2.8.8
       tslib: 2.8.1
 
   '@firebase/functions-compat@0.5.0(@firebase/app-compat@0.5.18)(@firebase/app@0.16.2)':
@@ -3209,7 +3209,7 @@ snapshots:
 
   '@google-cloud/promisify@6.2.0': {}
 
-  '@google-cloud/storage@8.4.0(supports-color@10.2.2)':
+  '@google-cloud/storage@8.4.0':
     dependencies:
       '@google-cloud/paginator': 7.2.0
       '@google-cloud/projectify': 6.2.0
@@ -3218,19 +3218,19 @@ snapshots:
       async-retry: 1.3.3
       duplexify: 4.1.3
       fast-xml-parser: 5.11.2
-      gaxios: 7.3.1(supports-color@10.2.2)
-      google-auth-library: 11.3.1(supports-color@10.2.2)
+      gaxios: 7.3.1
+      google-auth-library: 11.3.1
       html-entities: 2.6.0
       mime: 3.0.0
       p-limit: 3.1.0
       retry-request: 9.1.0
-      teeny-request: 11.1.1(supports-color@10.2.2)
+      teeny-request: 11.1.1
     transitivePeerDependencies:
       - supports-color
 
-  '@google/genai@2.30.0(supports-color@10.2.2)':
+  '@google/genai@2.30.0':
     dependencies:
-      google-auth-library: 10.9.1(supports-color@10.2.2)
+      google-auth-library: 10.9.1
       p-retry: 4.6.2
       protobufjs: 7.6.6
       ws: 8.22.0
@@ -3821,11 +3821,11 @@ snapshots:
 
   bignumber.js@9.3.1: {}
 
-  body-parser@1.20.8(supports-color@10.2.2):
+  body-parser@1.20.8:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 2.6.9(supports-color@10.2.2)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       http-errors: 2.0.1
@@ -3842,7 +3842,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.29
       caniuse-lite: 1.0.30001816
-      electron-to-chromium: 1.5.458
+      electron-to-chromium: 1.5.459
       node-releases: 2.0.59
       update-browserslist-db: 1.3.4(browserslist@4.29.3)
 
@@ -3983,17 +3983,13 @@ snapshots:
 
   date-fns@4.4.0: {}
 
-  debug@2.6.9(supports-color@10.2.2):
+  debug@2.6.9:
     dependencies:
       ms: 2.0.0
-    optionalDependencies:
-      supports-color: 10.2.2
 
-  debug@4.4.3(supports-color@10.2.2):
+  debug@4.4.3:
     dependencies:
       ms: 2.1.3
-    optionalDependencies:
-      supports-color: 10.2.2
 
   delayed-stream@1.0.0: {}
 
@@ -4035,7 +4031,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.458: {}
+  electron-to-chromium@1.5.459: {}
 
   emoji-regex@10.6.0: {}
 
@@ -4112,29 +4108,29 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  express-rate-limit@8.7.1(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2):
+  express-rate-limit@8.7.1(express@4.22.3):
     dependencies:
-      debug: 4.4.3(supports-color@10.2.2)
-      express: 4.22.3(supports-color@10.2.2)
+      debug: 4.4.3
+      express: 4.22.3
       ip-address: 10.7.4
     transitivePeerDependencies:
       - supports-color
 
-  express@4.22.3(supports-color@10.2.2):
+  express@4.22.3:
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.8(supports-color@10.2.2)
+      body-parser: 1.20.8
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookie: 0.7.2
       cookie-signature: 1.0.7
-      debug: 2.6.9(supports-color@10.2.2)
+      debug: 2.6.9
       depd: 2.0.0
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 1.3.2(supports-color@10.2.2)
+      finalhandler: 1.3.2
       fresh: 0.5.2
       http-errors: 2.0.1
       merge-descriptors: 1.0.3
@@ -4146,8 +4142,8 @@ snapshots:
       qs: 6.16.1
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2(supports-color@10.2.2)
-      serve-static: 1.16.3(supports-color@10.2.2)
+      send: 0.19.2
+      serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
       type-is: 1.6.18
@@ -4191,9 +4187,9 @@ snapshots:
       node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
 
-  finalhandler@1.3.2(supports-color@10.2.2):
+  finalhandler@1.3.2:
     dependencies:
-      debug: 2.6.9(supports-color@10.2.2)
+      debug: 2.6.9
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -4283,33 +4279,33 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  gaxios@7.3.1(supports-color@10.2.2):
+  gaxios@7.3.1:
     dependencies:
       extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
     transitivePeerDependencies:
       - supports-color
 
-  gaxios@8.3.1(supports-color@10.2.2):
+  gaxios@8.3.1:
     dependencies:
       extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
     transitivePeerDependencies:
       - supports-color
 
-  gcp-metadata@8.1.2(supports-color@10.2.2):
+  gcp-metadata@8.1.2:
     dependencies:
-      gaxios: 7.3.1(supports-color@10.2.2)
+      gaxios: 7.3.1
       google-logging-utils: 1.1.3
       json-bigint: 1.0.0
     transitivePeerDependencies:
       - supports-color
 
-  gcp-metadata@9.2.1(supports-color@10.2.2):
+  gcp-metadata@9.2.1:
     dependencies:
-      gaxios: 8.3.1(supports-color@10.2.2)
+      gaxios: 8.3.1
       google-logging-utils: 2.1.0
       json-bigint: 1.0.0
     transitivePeerDependencies:
@@ -4337,23 +4333,23 @@ snapshots:
       dunder-proto: 1.0.1
       es-object-atoms: 1.1.2
 
-  google-auth-library@10.9.1(supports-color@10.2.2):
+  google-auth-library@10.9.1:
     dependencies:
       base64-js: 1.5.1
       ecdsa-sig-formatter: 1.0.11
-      gaxios: 7.3.1(supports-color@10.2.2)
-      gcp-metadata: 8.1.2(supports-color@10.2.2)
+      gaxios: 7.3.1
+      gcp-metadata: 8.1.2
       google-logging-utils: 1.1.3
       jws: 4.0.1
     transitivePeerDependencies:
       - supports-color
 
-  google-auth-library@11.3.1(supports-color@10.2.2):
+  google-auth-library@11.3.1:
     dependencies:
       base64-js: 1.5.1
       ecdsa-sig-formatter: 1.0.11
-      gaxios: 8.3.1(supports-color@10.2.2)
-      gcp-metadata: 9.2.1(supports-color@10.2.2)
+      gaxios: 8.3.1
+      gcp-metadata: 9.2.1
       google-logging-utils: 2.1.0
       jws: 4.0.1
     transitivePeerDependencies:
@@ -4391,17 +4387,17 @@ snapshots:
 
   http-parser-js@0.5.10: {}
 
-  http-proxy-agent@7.0.2(supports-color@10.2.2):
+  http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3(supports-color@10.2.2)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.6(supports-color@10.2.2):
+  https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3(supports-color@10.2.2)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -4802,7 +4798,7 @@ snapshots:
       iconv-lite: 0.4.24
       unpipe: 1.0.0
 
-  re2js@2.8.6: {}
+  re2js@2.8.8: {}
 
   react-dom@19.3.1(react@19.3.1):
     dependencies:
@@ -4880,9 +4876,9 @@ snapshots:
 
   semver@7.8.5: {}
 
-  send@0.19.2(supports-color@10.2.2):
+  send@0.19.2:
     dependencies:
-      debug: 2.6.9(supports-color@10.2.2)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       encodeurl: 2.0.0
@@ -4898,12 +4894,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serve-static@1.16.3(supports-color@10.2.2):
+  serve-static@1.16.3:
     dependencies:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 0.19.2(supports-color@10.2.2)
+      send: 0.19.2
     transitivePeerDependencies:
       - supports-color
 
@@ -4993,11 +4989,11 @@ snapshots:
 
   stubs@3.0.0: {}
 
-  superagent@10.4.1(supports-color@10.2.2):
+  superagent@10.4.1:
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
-      debug: 4.4.3(supports-color@10.2.2)
+      debug: 4.4.3
       fast-safe-stringify: 2.1.1
       form-data: 4.0.6
       formidable: 3.5.4
@@ -5011,11 +5007,11 @@ snapshots:
     dependencies:
       kdbush: 4.1.0
 
-  supertest@7.3.1(supports-color@10.2.2):
+  supertest@7.3.1:
     dependencies:
       cookie-signature: 1.2.2
       methods: 1.1.2
-      superagent: 10.4.1(supports-color@10.2.2)
+      superagent: 10.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5025,10 +5021,10 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  teeny-request@11.1.1(supports-color@10.2.2):
+  teeny-request@11.1.1:
     dependencies:
-      http-proxy-agent: 7.0.2(supports-color@10.2.2)
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
       node-fetch: 3.3.2
       stream-events: 1.0.5
     transitivePeerDependencies:

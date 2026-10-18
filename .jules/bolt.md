@@ -38,3 +38,7 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
+
+## 2026-10-14 - [O(1) Set Lookups for Array Filters]
+**Learning:** Using `Array.includes()` within an `Array.filter()` results in O(N*M) time complexity. For UI components that render lists, this can cause significant rendering delays when the dataset is large.
+**Action:** Replace `Array.includes()` checks within filtering or mapping loops with a pre-computed `Set`. Looking up an element in a Set is an O(1) operation, reducing the overall time complexity to O(N).
