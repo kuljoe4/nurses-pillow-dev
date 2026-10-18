@@ -38,3 +38,7 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
+
+## 2023-10-27 - [Optimize HostAvailabilityCalendar.tsx Rendering]
+**Learning:** Performing nested array iteration methods (e.g. `.filter()`, `.some()`, or `.find()`) inside a loop that renders UI elements (such as `calendarDays.map` for generating a grid) results in an O(Days * Bookings) complexity which will cause severe rendering lag as a Host's calendar naturally grows.
+**Action:** Always pre-compute and transform collections into O(1) lookup sets (using `new Set()` combined with `useMemo`) *before* executing the React render loop. This drastically reduces React render cycles from O(N*M) down to O(N).

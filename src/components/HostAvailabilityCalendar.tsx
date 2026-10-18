@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { db } from '../services/database';
 import { HostCalendarTips } from './HostCalendarTips';
@@ -56,7 +56,7 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
     const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
     
     // Check for existing bookings on this date
-    const conflictingBooking = bookings.find(b => b.start_date <= dateStr && b.end_date >= dateStr);
+    const conflictingBooking = bookings.find(b => b.start_date <= dateStr && b.end_date >= dateStr && b.status !== 'declined' && b.status !== 'cancelled' && b.status !== 'refunded');
 
     if (!isBlocked && conflictingBooking) {
       setConflict({
@@ -111,6 +111,45 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
   const bookedDays = bookings.filter(b => b.status === 'approved' || b.status === 'active' || b.status === 'completed');
   const pendingRequests = bookings.filter(b => b.status === 'pending_host_approval');
 
+  // ⚡ Bolt Performance Optimization: Pre-compute date lookups
+  // Replaced multiple nested O(N) array scans inside the calendar render loop with O(1) Set lookups
+  const { blockedDatesSet, confirmedDatesSet, pendingDatesSet } = useMemo(() => {
+    const blocked = new Set<string>();
+    const confirmed = new Set<string>();
+    const pending = new Set<string>();
+
+    availability.forEach(b => {
+      if (b.is_blocked) {
+        try {
+          const bStart = new Date(b.start_date + 'T12:00:00');
+          const bEnd = new Date(b.end_date + 'T12:00:00');
+          const days = eachDayOfInterval({ start: bStart, end: bEnd });
+          days.forEach(d => blocked.add(format(d, 'yyyy-MM-dd')));
+        } catch(e) {}
+      }
+    });
+
+    bookedDays.forEach(b => {
+      try {
+        const bStart = new Date(b.start_date + 'T12:00:00');
+        const bEnd = new Date(b.end_date + 'T12:00:00');
+        const days = eachDayOfInterval({ start: bStart, end: bEnd });
+        days.forEach(d => confirmed.add(format(d, 'yyyy-MM-dd')));
+      } catch(e) {}
+    });
+
+    pendingRequests.forEach(b => {
+      try {
+        const bStart = new Date(b.start_date + 'T12:00:00');
+        const bEnd = new Date(b.end_date + 'T12:00:00');
+        const days = eachDayOfInterval({ start: bStart, end: bEnd });
+        days.forEach(d => pending.add(format(d, 'yyyy-MM-dd')));
+      } catch(e) {}
+    });
+
+    return { blockedDatesSet: blocked, confirmedDatesSet: confirmed, pendingDatesSet: pending };
+  }, [availability, bookedDays, pendingRequests]);
+
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-6 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md">
@@ -151,10 +190,9 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
-            const bookingForDay = bookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
-            const isConfirmed = bookingForDay.some(b => b.status === 'approved' || b.status === 'active' || b.status === 'completed');
-            const isPending = bookingForDay.some(b => b.status === 'pending_host_approval');
+            const isBlocked = blockedDatesSet.has(dateStr);
+            const isConfirmed = confirmedDatesSet.has(dateStr);
+            const isPending = pendingDatesSet.has(dateStr);
             const isCurrentMonth = isSameMonth(day, monthStart);
             
             return (
