@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { db } from '../services/database';
 import { HostCalendarTips } from './HostCalendarTips';
@@ -108,6 +108,44 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
   const calendarEnd = endOfWeek(monthEnd);
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
+  // ⚡ Bolt Performance Optimization: O(1) lookups for calendar rendering
+  // Pre-compute lookup tables for availability and bookings by iterating the data source ONCE
+  // reducing complexity from O(M*N) calendar scanning to O(M+N)
+  const { blockedDates, bookingsCountMap } = useMemo(() => {
+    const blocked = new Set<string>();
+    const counts = new Map<string, number>();
+
+    // Using string manipulation to increment days safely to avoid timezone shift issues
+    const addOneDayToString = (dateStr: string) => {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        date.setDate(date.getDate() + 1);
+        return format(date, 'yyyy-MM-dd');
+    };
+
+    for (const b of availability) {
+      if (b.is_blocked) {
+        let current = b.start_date;
+        const end = b.end_date;
+        while (current <= end) {
+          blocked.add(current);
+          current = addOneDayToString(current);
+        }
+      }
+    }
+
+    for (const b of bookings) {
+      let current = b.start_date;
+      const end = b.end_date;
+      while (current <= end) {
+        counts.set(current, (counts.get(current) || 0) + 1);
+        current = addOneDayToString(current);
+      }
+    }
+
+    return { blockedDates: blocked, bookingsCountMap: counts };
+  }, [availability, bookings]);
+
   return (
     <div>
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-6 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md">
@@ -138,10 +176,10 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
-            const bookingForDay = bookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
-            const isBooked = bookingForDay.length > 0;
-            const hasConflict = bookingForDay.length > 1;
+            const isBlocked = blockedDates.has(dateStr);
+            const bookingsCount = bookingsCountMap.get(dateStr) || 0;
+            const isBooked = bookingsCount > 0;
+            const hasConflict = bookingsCount > 1;
             const isCurrentMonth = isSameMonth(day, monthStart);
             
             return (
