@@ -38,10 +38,13 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const sourceListings = allListings && allListings.length > 0 ? allListings : [];
-  const savedListings = sourceListings.filter((item) =>
-    savedListingIds.includes(item.id)
-  );
+  // ⚡ Bolt Optimization: Use a Set for O(1) lookups instead of array.includes() which is O(M)
+  // This reduces the filtering from O(N * M) to O(N + M) complexity
+  const savedListings = React.useMemo(() => {
+    const sourceListings = allListings && allListings.length > 0 ? allListings : [];
+    const savedIdsSet = new Set(savedListingIds);
+    return sourceListings.filter((item) => savedIdsSet.has(item.id));
+  }, [allListings, savedListingIds]);
 
   return (
     <div
