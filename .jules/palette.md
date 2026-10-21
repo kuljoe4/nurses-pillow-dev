@@ -40,3 +40,7 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
 **Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
 **Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.
+
+## 2024-10-25 - [Missing aria-label on Toast utility component]
+**Learning:** Small utility components like Toasts and Notifications are often overlooked for accessibility. Their close buttons are frequently implemented as icon-only elements without an `aria-label`, leaving screen reader users without context on what the button does.
+**Action:** When implementing or reviewing utility components (Toasts, Snackbars, Tooltips with close buttons), always ensure icon-only buttons include descriptive `aria-label`s (e.g., "Close notification") and standard keyboard accessibility (`type="button"`, `focus-visible` styles).
