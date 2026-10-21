@@ -25,7 +25,12 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
           <CheckCircle className="w-5 h-5 text-[#2F6E5E]" />
         </div>
         <p className="text-sm font-medium text-[#0B2559]">{message}</p>
-        <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1 hover:bg-gray-100 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-200 cursor-pointer"
+          aria-label="Close notification"
+        >
           <X className="w-4 h-4 text-gray-500" />
         </button>
       </motion.div>
