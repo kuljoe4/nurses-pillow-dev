@@ -236,19 +236,22 @@ useBodyScrollLock(isGsaModalOpen);
     { miles: 15, label: '15+ mi', desc: 'Max value radius' },
   ];
 
-  const [popularHubs, setPopularHubs] = useState<string[]>([]);
+  const [popularHubs, setPopularHubs] = useState<{ name: string; lower: string }[]>([]);
   useEffect(() => {
     Promise.resolve(db.getHospitals()).then(data => {
       if (data && data.length > 0) {
-        setPopularHubs(data.map((h: any) => h.name));
+        setPopularHubs(data.map((h: any) => ({
+          name: h.name,
+          lower: h.name.toLowerCase()
+        })));
       }
     }).catch(console.error);
   }, []);
 
   const filteredHospitals = useMemo(() => {
-    if (!hospitalSearchQuery.trim()) return popularHubs;
+    if (!hospitalSearchQuery.trim()) return popularHubs.map(h => h.name);
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
+    return popularHubs.filter((h) => h.lower.includes(q)).map(h => h.name);
   }, [hospitalSearchQuery, popularHubs]);
 
   // Filter listings based on current settings

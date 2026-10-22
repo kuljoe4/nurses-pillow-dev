@@ -255,19 +255,22 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     };
   }, []);
 
-  const [popularHubs, setPopularHubs] = useState<string[]>([]);
+  const [popularHubs, setPopularHubs] = useState<{ name: string; lower: string }[]>([]);
   useEffect(() => {
     Promise.resolve(db.getHospitals()).then(data => {
       if (data && data.length > 0) {
-        setPopularHubs(data.map((h: any) => h.name));
+        setPopularHubs(data.map((h: any) => ({
+          name: h.name,
+          lower: h.name.toLowerCase()
+        })));
       }
     }).catch(console.error);
   }, []);
 
   const filteredHospitals = useMemo(() => {
-    if (!hospitalSearchQuery.trim()) return popularHubs;
+    if (!hospitalSearchQuery.trim()) return popularHubs.map(h => h.name);
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
+    return popularHubs.filter((h) => h.lower.includes(q)).map(h => h.name);
   }, [hospitalSearchQuery, popularHubs]);
 
   // Curated Featured Listings for the Home Page
@@ -727,17 +730,17 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
             <span className="font-semibold text-[#0B2559] dark:text-[#E6ECF7]">Popular Clinical Hubs:</span>
             {popularHubs.slice(0, 5).map((hub) => (
               <motion.button
-                key={hub}
+                key={hub.name}
                 type="button"
                 whileHover={{ scale: 1.05, y: -1 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => {
-                  setSelectedHospital(hub);
-                  onGoToSearchListings({ hospital: hub, duration: selectedDuration, radius: commuteBuffer });
+                  setSelectedHospital(hub.name);
+                  onGoToSearchListings({ hospital: hub.name, duration: selectedDuration, radius: commuteBuffer });
                 }}
                 className="px-3 py-1 rounded-full bg-white dark:bg-[#15233a] border border-[rgba(11,37,89,0.08)] dark:border-[#233550] hover:border-[#0A6FA8] dark:hover:border-[#3E9AD1] font-medium transition-colors cursor-pointer text-[#0B2559] dark:text-white shadow-xs"
               >
-                {hub.split(' - ')[0]}
+                {hub.name.split(' - ')[0]}
               </motion.button>
             ))}
           </motion.div>

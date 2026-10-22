@@ -10,6 +10,9 @@ export interface SelectedHospitalInfo {
   lng?: number;
   system?: string;
   state?: string;
+  nameLower?: string;
+  addressLower?: string;
+  systemLower?: string;
 }
 
 interface GoogleHospitalAutocompleteProps {
@@ -56,14 +59,20 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
   useEffect(() => {
     Promise.resolve(db.getHospitals()).then((data: any[]) => {
         if (data && data.length > 0) {
-          const fetched = data.map(h => ({
-            name: h.name,
-            address: `${h.address || ''}, ${h.city || ''}, ${h.state || ''} ${h.zip || ''}`.trim().replace(/^,|,$/g, ''),
-            lat: h.latitude,
-            lng: h.longitude,
-            system: h.health_system,
-            state: h.state,
-          }));
+          const fetched = data.map(h => {
+            const addressStr = `${h.address || ''}, ${h.city || ''}, ${h.state || ''} ${h.zip || ''}`.trim().replace(/^,|,$/g, '');
+            return {
+              name: h.name,
+              address: addressStr,
+              lat: h.latitude,
+              lng: h.longitude,
+              system: h.health_system,
+              state: h.state,
+              nameLower: h.name.toLowerCase(),
+              addressLower: addressStr.toLowerCase(),
+              systemLower: h.health_system?.toLowerCase()
+            };
+          });
           setCuratedHospitals(fetched);
         }
       })
@@ -89,9 +98,9 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
     }
     return curatedHospitals.filter(
       (h) =>
-        h.name.toLowerCase().includes(query) ||
-        h.address.toLowerCase().includes(query) ||
-        (h.system && h.system.toLowerCase().includes(query))
+        (h.nameLower && h.nameLower.includes(query)) ||
+        (h.addressLower && h.addressLower.includes(query)) ||
+        (h.systemLower && h.systemLower.includes(query))
     );
   }, [inputValue, curatedHospitals]);
 
