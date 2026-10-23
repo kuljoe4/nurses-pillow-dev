@@ -72,3 +72,7 @@
 **Vulnerability:** The `/api/favorites` and `/api/favorites/toggle` endpoints lacked authentication and authorization checks, allowing unauthenticated requests to view and modify any user's saved listings by arbitrarily passing `userId` or `email` as request query/body parameters instead of relying on token identity.
 **Learning:** Helper identity resolution functions (`resolveUserIdentity`) that fallback to parsing request bodies or queries for a user identifier (`req.body.userId`) instead of strictly requiring and extracting identity from a verified JWT token are insecure. They enable attackers to trivially bypass authorization and manipulate other users' data.
 **Prevention:** Always apply the standard `authenticateToken` middleware to routes that access or modify user-specific data (like favorites or profiles). Endpoints must strictly rely on `req.user.id` or `req.user.email` from the verified token context, and completely ignore client-provided identity hints in the request payload.
+## 2026-10-23 - Secure Random Generation
+**Vulnerability:** Insecure Math.random() fallback used for sensitive values like OTPs and Session IDs.
+**Learning:** Math.random() is predictable and can be exploited. If secure crypto is unavailable, it is safer to fail than to proceed insecurely.
+**Prevention:** Always use cryptographically secure random number generators (e.g., crypto.randomBytes) for sensitive security values. If unavailable, throw an error.
