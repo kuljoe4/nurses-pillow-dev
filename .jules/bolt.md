@@ -38,3 +38,6 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
+## 2026-10-23 - Pre-computing Lowercased Strings for Rapid Filtering
+**Learning:** Calling `.toLowerCase()` directly inside high-frequency filter callbacks (like search inputs updating on every keystroke) creates redundant string allocations and CPU cycles for every element in the array on every render.
+**Action:** Always pre-compute lowercased variants of static or slowly-changing datasets using `useMemo` and map to objects containing both the original and lowercased string before performing the filter operation.
