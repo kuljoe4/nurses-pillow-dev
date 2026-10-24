@@ -38,3 +38,6 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
+## 2024-05-24 - [Optimize Array Filtering with Set and useMemo]
+**Learning:** Simple array filtering operations inside the render loop using `.filter()` combined with `.includes()` create an O(N * M) operation that recalculates on every render (even unrelated prop changes).
+**Action:** Always pre-compute collections into O(1) lookup structures like `Set` or `Map` using `useMemo` prior to rendering for operations combining multiple arrays.

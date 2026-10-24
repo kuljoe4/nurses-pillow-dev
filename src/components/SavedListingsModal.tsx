@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { HousingListing } from '../types';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
@@ -38,10 +38,14 @@ export const SavedListingsModal: React.FC<SavedListingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const sourceListings = allListings && allListings.length > 0 ? allListings : [];
-  const savedListings = sourceListings.filter((item) =>
-    savedListingIds.includes(item.id)
-  );
+  const savedListings = useMemo(() => {
+    // ⚡ Bolt Performance Optimization: Array filtering with Set lookup
+    // Replaced O(N*M) `.filter().includes()` with an O(N+M) `Set` lookup to
+    // improve the speed of the filter and prevent recalculations when props change.
+    const sourceListings = allListings && allListings.length > 0 ? allListings : [];
+    const savedIdsSet = new Set(savedListingIds);
+    return sourceListings.filter((item) => savedIdsSet.has(item.id));
+  }, [allListings, savedListingIds]);
 
   return (
     <div
