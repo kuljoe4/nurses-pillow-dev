@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { db } from '../services/database';
 import { HostCalendarTips } from './HostCalendarTips';
@@ -104,9 +104,58 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  // ⚡ Bolt Performance Optimization:
+  // Calculate calendar days inside useMemo using currentMonth.getTime() as the primitive dependency.
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth));
+    const end = endOfWeek(endOfMonth(startOfMonth(currentMonth)));
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth.getTime()]);
+
+  // ⚡ Bolt Performance Optimization:
+  // Pre-compute blocked dates and bookings into O(1) lookup structures (Set and Map).
+  // By iterating over the availability and bookings arrays directly instead of checking each day,
+  // we reduce the time complexity from O(Days * Blocks) to O(Blocks * BlockDuration),
+  // virtually eliminating main thread blocking during state updates.
+  // Impact: O(1) lookups during the 35+ day render cycle.
+  const { blockedDatesSet, bookingsCountByDate } = useMemo(() => {
+    const blocked = new Set<string>();
+    const bookingCounts = new Map<string, number>();
+
+    // Parse Date strictly by manual splitting to avoid timezone shift on local strings
+    const parseLocalDate = (dateStr: string) => {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    };
+
+    // Iterate availability blocks and fill Set
+    for (const b of availability) {
+      if (b.is_blocked && b.start_date && b.end_date) {
+         let current = parseLocalDate(b.start_date);
+         const end = parseLocalDate(b.end_date);
+         while (current <= end) {
+             blocked.add(format(current, 'yyyy-MM-dd'));
+             current = addDays(current, 1);
+         }
+      }
+    }
+
+    // Iterate bookings and fill Map
+    for (const b of bookings) {
+      if (b.start_date && b.end_date) {
+          let current = parseLocalDate(b.start_date);
+          const end = parseLocalDate(b.end_date);
+          while (current <= end) {
+              const dStr = format(current, 'yyyy-MM-dd');
+              bookingCounts.set(dStr, (bookingCounts.get(dStr) || 0) + 1);
+              current = addDays(current, 1);
+          }
+      }
+    }
+
+    return { blockedDatesSet: blocked, bookingsCountByDate: bookingCounts };
+  }, [availability, bookings]);
 
   return (
     <div>
@@ -138,10 +187,10 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
-            const bookingForDay = bookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
-            const isBooked = bookingForDay.length > 0;
-            const hasConflict = bookingForDay.length > 1;
+            const isBlocked = blockedDatesSet.has(dateStr);
+            const bookingCount = bookingsCountByDate.get(dateStr) || 0;
+            const isBooked = bookingCount > 0;
+            const hasConflict = bookingCount > 1;
             const isCurrentMonth = isSameMonth(day, monthStart);
             
             return (
