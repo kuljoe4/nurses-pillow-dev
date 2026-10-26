@@ -1433,13 +1433,6 @@ export default function App() {
           setSelectedBookingDetail(b);
           setIsBookingDetailOpen(true);
         }}
-        topBanner={
-          accessNotice ? (
-            <div className="w-full bg-[#F1CF78] text-[#0B2559] px-4 py-2 text-center text-xs font-bold">
-              {accessNotice.title}: {accessNotice.message}
-            </div>
-          ) : undefined
-        }
       />
 
       {/* Main Content Area - Seamlessly flush against sticky header */}
