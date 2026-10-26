@@ -38,9 +38,6 @@
 ## 2026-10-13 - [Single-Pass Array Check instead of find/filter/some in SearchListingsView]
 **Learning:** Found multiple array filtering and searching anti-patterns (`.filter`, `.some`, `.find`, `.map`) within React component rendering blocks, triggering O(M * N) calculations on state changes. This is computationally expensive, especially inside components with large object lists like `SearchListingsView` or `FindHousingView`.
 **Action:** Replaced chained and multi-iteration array methods with single-pass O(N) `for` loop iteration logic to reduce Javascript processing time and intermediate allocations. Early returns or `break;` statements inside `for` loops were also added to skip unnecessary computations once criteria are met.
-## 2026-10-26 - O(1) Calendar Rendering Replacements
-**Learning:** Performing multiple chained array iterations like `.filter()` or `.some()` inside a React `Array.map()` loop for calendar rendering causes O(Days * Blocks) time complexity which scales extremely poorly when many blocks or bookings exist.
-**Action:** Always pre-compute calendar booking and blackout data into O(1) lookup structures like `Set` or `Map` inside a `useMemo` block prior to the render cycle.
 
 ## 2026-10-26 - Pre-filtering vs O(1) Lookups in Render Loops
 **Learning:** While replacing fast O(N) string comparisons with O(1) Set/Map lookups is generally a good pattern for reducing render loop complexity, blindly iterating through all historical and future calendar dates to construct those lookup structures introduces an unbounded O(Historical/Future Dates) time complexity bottleneck. This scales disastrously for users with large booking histories or long-term blackout dates.
