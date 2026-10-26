@@ -108,6 +108,18 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
   const calendarEnd = endOfWeek(monthEnd);
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
+  // ⚡ Bolt Performance Optimization: Pre-filter arrays to visible window
+  // Avoids evaluating all historical/future bookings on every render loop iteration
+  const { visibleAvailability, visibleBookings } = React.useMemo(() => {
+    const startStr = format(calendarStart, 'yyyy-MM-dd');
+    const endStr = format(calendarEnd, 'yyyy-MM-dd');
+
+    return {
+      visibleAvailability: availability.filter(b => b.is_blocked && b.start_date <= endStr && b.end_date >= startStr),
+      visibleBookings: bookings.filter(b => b.start_date <= endStr && b.end_date >= startStr)
+    };
+  }, [availability, bookings, calendarStart, calendarEnd]);
+
   return (
     <div>
       <div className="bg-white dark:bg-[#0B1626] rounded-2xl p-6 border border-[rgba(11,37,89,0.08)] dark:border-[#233550] shadow-md">
@@ -138,8 +150,8 @@ export const HostAvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ 
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}
           {calendarDays.map(day => {
             const dateStr = format(day, 'yyyy-MM-dd');
-            const isBlocked = availability.some(b => b.start_date <= dateStr && b.end_date >= dateStr && b.is_blocked);
-            const bookingForDay = bookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
+            const isBlocked = visibleAvailability.some(b => b.start_date <= dateStr && b.end_date >= dateStr);
+            const bookingForDay = visibleBookings.filter(b => b.start_date <= dateStr && b.end_date >= dateStr);
             const isBooked = bookingForDay.length > 0;
             const hasConflict = bookingForDay.length > 1;
             const isCurrentMonth = isSameMonth(day, monthStart);
