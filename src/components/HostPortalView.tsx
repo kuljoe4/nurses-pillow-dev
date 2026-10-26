@@ -44,7 +44,7 @@ export const HostPortalView: React.FC<HostPortalViewProps> = ({
   onStartClinicianVerification,
   currentUser,
 }) => {
-  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding' | 'profile'>(initialTab as any);
+  const [activeHostTab, setActiveHostTab] = useState<'dashboard' | 'editor' | 'onboarding' | 'profile' | 'calendar'>(initialTab as any);
   const [editorStep, setEditorStep] = useState<1 | 2 | 3>(1);
 
   const [hostFullName, setHostFullName] = useState(currentUser?.name || 'Sarah M.');

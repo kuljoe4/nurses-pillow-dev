@@ -22,6 +22,8 @@ interface ItemizedCheckoutModalProps {
   onGoToVerification?: () => void;
   checkInDate: string;
   checkOutDate: string;
+  onSwitchRole?: (role: 'nurse' | 'host') => void;
+  onSetupClinician?: () => void;
 }
 
 export const ItemizedCheckoutModal: React.FC<ItemizedCheckoutModalProps> = ({
