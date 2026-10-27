@@ -264,11 +264,26 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     }).catch(console.error);
   }, []);
 
+  const precomputedHubs = useMemo(() => {
+    return popularHubs.map(hub => ({
+      name: hub,
+      lower: hub.toLowerCase()
+    }));
+  }, [popularHubs]);
+
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
-  }, [hospitalSearchQuery, popularHubs]);
+
+    // ⚡ Bolt Performance Optimization: Pre-compute lowercase string array filtering
+    const result: string[] = [];
+    for (let i = 0; i < precomputedHubs.length; i++) {
+      if (precomputedHubs[i].lower.includes(q)) {
+        result.push(precomputedHubs[i].name);
+      }
+    }
+    return result;
+  }, [hospitalSearchQuery, precomputedHubs, popularHubs]);
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
