@@ -89,6 +89,9 @@ importers:
       pg-hstore:
         specifier: ^2.3.4
         version: 2.3.4
+      pnpm:
+        specifier: 9.15.4
+        version: 9.15.4
       react:
         specifier: ^19.0.1
         version: 19.3.0
@@ -2408,6 +2411,11 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  pnpm@9.15.4:
+    resolution: {integrity: sha512-stwg4vxys+GISEWbNzWaMgZGY+VielHkx0ssKd2OjgSRSDw6u0B4nP1Xi/Ni+2uoJhsF8Dh9dnku1uI+o7G2oA==}
+    engines: {node: '>=18.12'}
+    hasBin: true
+
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
@@ -4159,7 +4167,7 @@ snapshots:
   css-tree@3.2.1:
     dependencies:
       mdn-data: 2.27.1
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
     optional: true
 
   css.escape@1.5.1: {}
@@ -5032,6 +5040,8 @@ snapshots:
   playwright@1.64.1:
     dependencies:
       playwright-core: 1.64.1
+
+  pnpm@9.15.4: {}
 
   postcss-value-parser@4.2.0: {}
 
