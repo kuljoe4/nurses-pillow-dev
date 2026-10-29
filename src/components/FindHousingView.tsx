@@ -264,11 +264,17 @@ export const FindHousingView: React.FC<FindHousingViewProps> = ({
     }).catch(console.error);
   }, []);
 
+  const popularHubsLower = useMemo(() => {
+    return popularHubs.map(h => h.toLowerCase());
+  }, [popularHubs]);
+
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
-  }, [hospitalSearchQuery, popularHubs]);
+    // ⚡ Bolt Performance Optimization:
+    // Uses pre-computed parallel array to avoid O(N) string allocations (.toLowerCase()) on every keystroke
+    return popularHubs.filter((_, i) => popularHubsLower[i].includes(q));
+  }, [hospitalSearchQuery, popularHubs, popularHubsLower]);
 
   // Curated Featured Listings for the Home Page
   const featuredListings = useMemo(() => {
