@@ -103,10 +103,10 @@ class PhoneAuthStore {
         const crypto = require('crypto');
         rand = crypto.randomBytes(4).readUInt32LE(0) / (0xffffffff + 1);
       } catch (e) {
-        rand = Math.random();
+        throw new Error('Secure crypto unavailable for OTP generation');
       }
     } else {
-      rand = Math.random();
+      throw new Error('Secure crypto unavailable for OTP generation');
     }
 
     const generatedCode = Math.floor(100000 + rand * 900000).toString();
@@ -119,10 +119,10 @@ class PhoneAuthStore {
          const crypto = require('crypto');
          sidRand = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
        } catch (e) {
-         sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
+         throw new Error('Secure crypto unavailable for Session ID generation');
        }
     } else {
-       sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
+       throw new Error('Secure crypto unavailable for Session ID generation');
     }
 
     const session: StoredOtpSession = {
