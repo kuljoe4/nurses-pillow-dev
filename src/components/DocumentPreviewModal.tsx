@@ -34,10 +34,12 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
             <div className="p-4 border-b border-gray-200 dark:border-[#233550] flex items-center justify-between">
               <h3 className="text-lg font-bold text-[#0B2559] dark:text-white">Document Preview</h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#15233a] text-gray-500"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-[#15233a] text-gray-500 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[#0A6FA8]"
+                aria-label="Close document preview modal"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
               </button>
             </div>
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center">

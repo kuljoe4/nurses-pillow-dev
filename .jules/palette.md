@@ -40,3 +40,6 @@ This section acts as the memory tracker for the regular UI/UX interval reviews. 
 ## 2026-10-10 - Performance, Accessibility, and Backend Typing Improvements
 **Learning:** Verified existing code optimizations like Schwartzian transforms and single-pass loops. Found chained `.filter()` loops inside `AdminPortalView.tsx` and refactored them to a single pass `for` loop within `useMemo` to fix a potential bottleneck. Addressed missing `AuthenticatedRequest` typing in `server.ts` for better robustness.
 **Action:** Implemented useMemo and single-pass loops for calculating pending clinician/property counts. Unified backend API types using `AuthenticatedRequest`.
+## 2026-10-31 - DocumentPreviewModal Close Button Accessibility
+**Learning:** Icon-only close buttons in modals frequently omit critical semantic attributes. Using `aria-label` for screen readers and `aria-hidden="true"` on the literal icon content prevents confusing announcements (like reading out 'close' as random text), while explicitly defining `type="button"` and `focus-visible` rings ensures keyboard operability.
+**Action:** When creating icon-only action buttons (especially those dismissing UI overlays), always pair `aria-label` with standard focus classes, `type="button"`, and mask the inner visual text node from assistive technologies.
