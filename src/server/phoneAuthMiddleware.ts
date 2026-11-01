@@ -168,8 +168,8 @@ export function createPhoneAuthMiddleware() {
           if (data.status === 'approved') {
              try {
                const { db } = await import('../../server/db.js');
-               let userId = body.userId;
-               let userEmail = body.email;
+               let userId: string | undefined;
+               let userEmail: string | undefined;
 
                const headersRecord = req.headers as Record<string, string | string[] | undefined>;
                const authHeaderVal = (headersRecord['authorization'] as string) || '';
@@ -343,8 +343,8 @@ export function createPhoneAuthMiddleware() {
           try {
             const { db } = await import('../../server/db.js');
             const cleanPhone = (body.phoneNumber || '').toString().trim();
-            let userId = body.userId;
-            let userEmail = body.email;
+            let userId: string | undefined;
+            let userEmail: string | undefined;
 
             // Extract user identity from auth header or cookie if present
             const authHeader = (headers['authorization'] as string) || '';
