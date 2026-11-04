@@ -245,11 +245,15 @@ useBodyScrollLock(isGsaModalOpen);
     }).catch(console.error);
   }, []);
 
+  const popularHubsLower = useMemo(() => {
+    return popularHubs.map(h => h.toLowerCase());
+  }, [popularHubs]);
+
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
-  }, [hospitalSearchQuery, popularHubs]);
+    return popularHubs.filter((_, idx) => popularHubsLower[idx].includes(q));
+  }, [hospitalSearchQuery, popularHubs, popularHubsLower]);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
