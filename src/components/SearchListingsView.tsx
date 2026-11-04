@@ -245,6 +245,8 @@ useBodyScrollLock(isGsaModalOpen);
     }).catch(console.error);
   }, []);
 
+  // ⚡ Bolt: Pre-compute lowercased strings to prevent O(N) string allocations
+  // and recalculations on every keystroke during rapid string array filtering.
   const popularHubsLower = useMemo(() => {
     return popularHubs.map(h => h.toLowerCase());
   }, [popularHubs]);
