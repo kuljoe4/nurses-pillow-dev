@@ -6,3 +6,4 @@ allowBuilds:
   protobufjs: false
 packages:
   - '.'
+catalogs:
