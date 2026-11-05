@@ -99,14 +99,10 @@ class PhoneAuthStore {
       window.crypto.getRandomValues(array);
       rand = array[0] / (0xffffffff + 1);
     } else if (typeof require !== 'undefined') {
-      try {
-        const crypto = require('crypto');
-        rand = crypto.randomBytes(4).readUInt32LE(0) / (0xffffffff + 1);
-      } catch (e) {
-        rand = Math.random();
-      }
+      const crypto = require('crypto');
+      rand = crypto.randomBytes(4).readUInt32LE(0) / (0xffffffff + 1);
     } else {
-      rand = Math.random();
+      throw new Error('Cryptographically secure random number generator is required but unavailable.');
     }
 
     const generatedCode = Math.floor(100000 + rand * 900000).toString();
@@ -115,14 +111,10 @@ class PhoneAuthStore {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
        sidRand = window.crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
     } else if (typeof require !== 'undefined') {
-       try {
-         const crypto = require('crypto');
-         sidRand = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
-       } catch (e) {
-         sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
-       }
+       const crypto = require('crypto');
+       sidRand = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
     } else {
-       sidRand = Math.random().toString(36).substring(2, 10).toUpperCase();
+       throw new Error('Cryptographically secure random number generator is required but unavailable.');
     }
 
     const session: StoredOtpSession = {
