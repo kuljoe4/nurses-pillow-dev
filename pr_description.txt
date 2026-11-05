@@ -1,4 +1,4 @@
-💡 What: Replaced `.slice`, `.some`, and `.find` with a single `.findIndex` loop inside `GoogleMapsSplitView`.
-🎯 Why: Multiple O(N) array scans create unnecessary performance overhead and object duplication when pulling a single listing.
-📊 Impact: Reduces time complexity and intermediate array allocations when searching the listing pool.
-🔬 Measurement: Compare UI lag when selecting properties in the GoogleMapsSplitView map component.
+💡 What: Optimized array filtering in GoogleHospitalAutocomplete by pre-computing lowercased string arrays in a separate useMemo block.
+🎯 Why: Calling .toLowerCase() inside array.filter() is inefficient for rapid user search input, as it re-allocates strings every keystroke.
+📊 Impact: Reduces repetitive string allocation inside the React component loop during rapid search, improving typing performance in the hospital autocomplete dropdown.
+🔬 Measurement: Typing in the hospital autocomplete is visibly faster and profiles show fewer repetitive string allocations on each keystroke.

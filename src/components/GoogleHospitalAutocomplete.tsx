@@ -81,6 +81,15 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Pre-compute lowercased fields in a parallel array to prevent redundant allocations during filtering
+  const curatedHospitalsLower = useMemo(() => {
+    return curatedHospitals.map(h => ({
+      name: h.name.toLowerCase(),
+      address: h.address.toLowerCase(),
+      system: h.system ? h.system.toLowerCase() : undefined
+    }));
+  }, [curatedHospitals]);
+
   // Filter curated hospitals based on user input
   const filteredCurated = useMemo(() => {
     const query = inputValue.trim().toLowerCase();
@@ -88,12 +97,14 @@ export const GoogleHospitalAutocomplete: React.FC<GoogleHospitalAutocompleteProp
       return curatedHospitals.slice(0, 6);
     }
     return curatedHospitals.filter(
-      (h) =>
-        h.name.toLowerCase().includes(query) ||
-        h.address.toLowerCase().includes(query) ||
-        (h.system && h.system.toLowerCase().includes(query))
+      (_, i) => {
+        const lower = curatedHospitalsLower[i];
+        return lower.name.includes(query) ||
+          lower.address.includes(query) ||
+          (lower.system && lower.system.includes(query));
+      }
     );
-  }, [inputValue, curatedHospitals]);
+  }, [inputValue, curatedHospitals, curatedHospitalsLower]);
 
   // Handle typing: use Places API (New) AutocompleteSuggestion if available
   const handleInputChange = (text: string) => {
