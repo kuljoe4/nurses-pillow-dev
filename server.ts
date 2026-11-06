@@ -1624,26 +1624,9 @@ async function startServer() {
   });
 
   // Stripe Connect Account Link (Option 2: Pure Accounts v2 Hosted Link with Recipient Configuration)
-  app.post('/api/stripe/account-link', async (req: Request, res: Response) => {
+  app.post('/api/stripe/account-link', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-      let decodedUserId: string | null = null;
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET) as any;
-          decodedUserId = decoded?.id || null;
-        } catch {}
-      }
-
-      // 1. Identify the host (from session or request body)
-      const hostId = decodedUserId || req.body.hostId;
-      if (!hostId) {
-        return res.status(401).json({ error: 'Unauthorized: missing host ID' });
-      }
-
-      if (decodedUserId && req.body.hostId && decodedUserId !== req.body.hostId) {
-        return res.status(403).json({ error: 'Forbidden: hostId mismatch' });
-      }
+      const hostId = req.user.id;
 
       // 2. Fetch host record from database
       const userRes = await db.query(
@@ -1771,21 +1754,9 @@ async function startServer() {
   });
 
   // Stripe Connect Accounts v2 Account Session for Embedded Components
-  app.post('/api/stripe/account-session', async (req: Request, res: Response) => {
+  app.post('/api/stripe/account-session', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-      let decodedUserId: string | null = null;
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET) as any;
-          decodedUserId = decoded?.id || null;
-        } catch {}
-      }
-
-      const hostId = decodedUserId || req.body.hostId;
-      if (!hostId) {
-        return res.status(401).json({ error: 'Unauthorized: Missing host identifier' });
-      }
+      const hostId = req.user.id;
 
       const userRes = await db.query(
         'SELECT id, email, full_name, stripe_connected_account_id FROM users WHERE id = $1',
@@ -2123,18 +2094,9 @@ async function startServer() {
   });
 
   // Stripe Complete Onboarding (Persists to PostgreSQL)
-  app.post('/api/stripe/complete-onboarding', async (req: Request, res: Response) => {
+  app.post('/api/stripe/complete-onboarding', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const token = req.cookies?.auth_token || req.headers['authorization']?.split(' ')[1];
-      let decodedUserId: string | null = null;
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET) as any;
-          decodedUserId = decoded?.id || null;
-        } catch {}
-      }
-      const hostId = req.body.hostId || decodedUserId;
-      if (!hostId) return res.status(400).json({ error: 'hostId is required' });
+      const hostId = req.user.id;
 
       const accountId = req.body.accountId || `acct_express_${uuidv4().replace(/-/g, '').slice(0, 16)}`;
       // We no longer automatically set is_host_verified to true. Admin must approve.
@@ -2174,10 +2136,9 @@ async function startServer() {
   });
 
   // Stripe Sync Payout Status (Authentic Stripe check without fake mock fallbacks)
-  app.get('/api/stripe/sync-payout-status', async (req: Request, res: Response) => {
+  app.get('/api/stripe/sync-payout-status', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const hostId = (req as any).user?.id || req.query.hostId;
-      if (!hostId) return res.status(400).json({ error: 'hostId is required' });
+      const hostId = req.user.id;
 
       const userRes = await db.query(
         'SELECT id, stripe_connected_account_id FROM users WHERE id = $1',
@@ -2218,10 +2179,9 @@ async function startServer() {
   });
 
   // Stripe Test Reset Account (Sandbox QA - Dynamic, Zero Hardcoded Data)
-  app.post('/api/stripe/test-reset-account', async (req: Request, res: Response) => {
+  app.post('/api/stripe/test-reset-account', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const hostId = req.body.hostId || (req as any).user?.id;
-      if (!hostId) return res.status(400).json({ error: 'hostId is required' });
+      const hostId = req.user.id;
 
       // Reset the target host account dynamically without hardcoded emails
       await db.query(
