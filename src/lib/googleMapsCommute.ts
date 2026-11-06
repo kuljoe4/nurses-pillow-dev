@@ -181,6 +181,17 @@ export function calculateHaversineDistance(
 // multiple times during list rendering and filtering loops. By caching the results,
 // we reduce this to O(1) for repeated lookups of the same hospital query.
 const resolveHospitalCache = new Map<string, HospitalCoordinates>();
+
+// ⚡ Bolt: Cache lowercased property derivatives outside the loop
+// to prevent O(N) redundant string allocations on every hospital lookup.
+type LowerHospitalCache = {
+  key: string;
+  shortName: string;
+  name: string;
+  address: string;
+  hospital: HospitalCoordinates;
+};
+let cachedHospitalDirectory: LowerHospitalCache[] | null = null;
 const MAX_CACHE_SIZE = 1000;
 
 export function resolveHospitalCoordinates(query: string): HospitalCoordinates {
@@ -194,14 +205,24 @@ export function resolveHospitalCoordinates(query: string): HospitalCoordinates {
 
   let result: HospitalCoordinates | undefined;
 
-  for (const [key, hospital] of Object.entries(HOSPITAL_GEO_DIRECTORY)) {
+  if (!cachedHospitalDirectory) {
+    cachedHospitalDirectory = Object.entries(HOSPITAL_GEO_DIRECTORY).map(([key, hospital]) => ({
+      key: key.toLowerCase(),
+      shortName: hospital.shortName.toLowerCase(),
+      name: hospital.name.toLowerCase(),
+      address: hospital.address ? hospital.address.toLowerCase() : '',
+      hospital
+    }));
+  }
+
+  for (const entry of cachedHospitalDirectory) {
     if (
-      normalized.includes(key.toLowerCase()) ||
-      normalized.includes(hospital.shortName.toLowerCase()) ||
-      hospital.name.toLowerCase().includes(normalized) ||
-      (hospital.address && hospital.address.toLowerCase().includes(normalized))
+      normalized.includes(entry.key) ||
+      normalized.includes(entry.shortName) ||
+      entry.name.includes(normalized) ||
+      (entry.address && entry.address.includes(normalized))
     ) {
-      result = hospital;
+      result = entry.hospital;
       break;
     }
   }
