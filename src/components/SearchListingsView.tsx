@@ -245,11 +245,21 @@ useBodyScrollLock(isGsaModalOpen);
     }).catch(console.error);
   }, []);
 
+  // ⚡ Bolt Performance Optimization: Pre-compute lowercased strings
+  // Prevents redundant string allocations and toLowerCase() calls on every keystroke
+  const popularHubsLower = useMemo(() => popularHubs.map(h => h.toLowerCase()), [popularHubs]);
+
   const filteredHospitals = useMemo(() => {
     if (!hospitalSearchQuery.trim()) return popularHubs;
     const q = hospitalSearchQuery.toLowerCase();
-    return popularHubs.filter((h) => h.toLowerCase().includes(q));
-  }, [hospitalSearchQuery, popularHubs]);
+    const result = [];
+    for (let i = 0; i < popularHubs.length; i++) {
+      if (popularHubsLower[i].includes(q)) {
+        result.push(popularHubs[i]);
+      }
+    }
+    return result;
+  }, [hospitalSearchQuery, popularHubs, popularHubsLower]);
 
   // Filter listings based on current settings
   const filteredListings = useMemo(() => {
